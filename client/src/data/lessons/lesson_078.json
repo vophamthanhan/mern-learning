@@ -1,0 +1,213 @@
+{
+  "id": 78,
+  "title": "Bài 60: Viết API Get Board Details - Bước đầu tích hợp vào Front-end",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Bài 60: Viết API Get Board Details - Bước đầu tích hợp vào Front-end\n\n## Mục tiêu bài học\n\nVideo này là bài học đầu tiên trong phần 3 của khóa học MERN Stack Pro, tập trung vào việc tích hợp giữa Front-end và Back-end. Mục tiêu chính của bài học này bao gồm:\n\n- **Xây dựng API lấy chi tiết Board:** Viết một API endpoint mới phía Back-end (Node.js, Express.js) để có thể lấy ra toàn bộ thông tin chi tiết của một Board dựa vào ID của nó.\n- **Hiểu rõ luồng xử lý request:** Nắm vững luồng đi của một request trong một ứng dụng được xây dựng theo kiến trúc nhiều lớp, từ `Route` -> `Controller` -> `Service` -> `Model`.\n- **Sử dụng Postman để kiểm thử:** Thực hành cách dùng Postman để gửi request và kiểm tra kết quả trả về từ API vừa xây dựng.\n- **Giới thiệu về MongoDB Aggregation:** Hiểu được khái niệm và sự cần thiết của việc sử dụng `aggregate` trong MongoDB để thực hiện các truy vấn phức tạp, cụ thể là để lấy dữ liệu của Board cùng với các Columns và Cards lồng nhau bên trong.\n\n---\n\n## Kiến thức chi tiết\n\n### 1. Tầm quan trọng của việc tích hợp Front-end và Back-end\n\nTrong một ứng dụng Full-stack, Front-end (giao diện người dùng) và Back-end (hệ thống máy chủ và cơ sở dữ liệu) là hai phần tách biệt nhưng có mối quan hệ mật thiết. Front-end chịu trách nhiệm hiển thị dữ liệu và tương tác với người dùng, trong khi Back-end cung cấp, xử lý và lưu trữ dữ liệu đó. \n\n**API (Application Programming Interface)** đóng vai trò là cây cầu nối, cho phép hai bên \"giao tiếp\" với nhau. Front-end gửi các yêu cầu (requests) đến các địa chỉ API được Back-end định nghĩa sẵn, và Back-end xử lý các yêu cầu đó, truy vấn cơ sở dữ liệu nếu cần, và trả về kết quả (responses) cho Front-end để hiển thị.\n\nBài học này đánh dấu bước đầu tiên trong việc kết nối hai thành phần này lại với nhau, bắt đầu bằng việc xây dựng API để Front-end có thể lấy dữ liệu và hiển thị một Board hoàn chỉnh.\n\n### 2. Luồng xử lý Request trong kiến trúc nhiều lớp\n\nỨng dụng Back-end được xây dựng theo một kiến trúc phân lớp rõ ràng để dễ dàng quản lý, bảo trì và mở rộng. Luồng xử lý cho API `GET /boards/:id` sẽ đi qua các lớp sau:\n\n- **Route (`routes/v1/boardRoute.js`):**\n  - Đây là lớp đầu tiên tiếp nhận request. Nó định nghĩa URL (`/:id`) và phương thức HTTP (`GET`).\n  - Khi có một request khớp với định nghĩa này, nó sẽ chuyển quyền xử lý cho hàm tương ứng trong `Controller`.\n\n  ```javascript\n  // routes/v1/boardRoute.js\n  import express from 'express'\n  import { boardController } from '~/controllers/boardController'\n  \n  const Router = express.Router()\n  \n  Router.route('/:id')\n    .get(boardController.getDetails)\n  \n  export const boardRoute = Router\n  ```\n\n- **Controller (`controllers/boardController.js`):**\n  - Chịu trách nhiệm điều hướng. Nó nhận request từ Route, trích xuất các thông tin cần thiết (như `req.params.id`).\n  - Gọi đến `Service` để thực hiện các tác vụ logic chính.\n  - Sau khi `Service` xử lý xong và trả về kết quả, `Controller` sẽ đóng gói kết quả đó vào một response (thường là JSON) và gửi về cho client.\n\n  ```javascript\n  // controllers/boardController.js\n  import { boardService } from '~/services/boardService'\n\n  const getDetails = async (req, res, next) => {\n    try {\n      const boardId = req.params.id\n      // Gọi sang Service\n      const board = await boardService.getDetails(boardId)\n      // Trả kết quả về cho client\n      res.status(200).json(board)\n    } catch (error) {\n      next(error) // Chuyển lỗi cho Middleware xử lý lỗi tập trung\n    }\n  }\n  ```\n\n- **Service (`services/boardService.js`):**\n  - Nơi chứa toàn bộ \"não\" của ứng dụng, xử lý tất cả các logic nghiệp vụ (business logic).\n  - Nó sẽ nhận dữ liệu từ `Controller`, thực hiện các phép tính toán, kiểm tra, và gọi đến `Model` để tương tác với cơ sở dữ liệu.\n\n  ```javascript\n  // services/boardService.js\n  import { boardModel } from '~/models/boardModel'\n\n  const getDetails = async (boardId) => {\n    try {\n      // Gọi sang Model để lấy dữ liệu từ Database\n      const board = await boardModel.getDetails(boardId)\n      // ...Thực hiện các logic nghiệp vụ khác nếu có...\n      return board\n    } catch (error) { throw error }\n  }\n  ```\n\n- **Model (`models/boardModel.js`):**\n  - Lớp duy nhất được phép \"nói chuyện\" trực tiếp với cơ sở dữ liệu.\n  - Nó chứa các hàm để thực hiện các truy vấn như tìm kiếm, tạo mới, cập nhật, xóa dữ liệu.\n  - Trong bài này, hàm `getDetails` sẽ được tạo ra để tìm một document trong collection `boards` dựa trên `_id`.\n\n  ```javascript\n  // models/boardModel.js\n  import Joi from 'joi'\n  import { ObjectId } from 'mongodb'\n  import { GET_DB } from '~/config/mongodb'\n\n  // ... (Định nghĩa schema và các hàm khác)\n\n  const getDetails = async (id) => {\n    try {\n      // Sử dụng findOne để tìm một bản ghi theo ID\n      // Trong các video sau, hàm này sẽ được thay thế bằng aggregate\n      const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })\n      return result\n    } catch (error) { throw error }\n  }\n  ```\n\n### 3. MongoDB Aggregation Framework\n\nVideo có giới thiệu trước về việc sẽ sử dụng **Aggregation** trong các bài học tiếp theo. Đây là một tính năng cực kỳ mạnh mẽ của MongoDB.\n\n- **Vấn đề:** Dữ liệu của chúng ta có tính quan hệ: một `Board` chứa nhiều `Columns`, và một `Column` chứa nhiều `Cards`. Nếu chỉ dùng `findOne`, chúng ta chỉ lấy được thông tin của `Board` đó. Để lấy được `Columns` và `Cards` liên quan, chúng ta sẽ phải thực hiện thêm nhiều truy vấn khác, dẫn đến tình trạng \"N+1 query\" và làm giảm hiệu năng.\n- **Giải pháp (Aggregation):** Aggregation cho phép chúng ta định nghĩa một \"đường ống\" (pipeline) gồm nhiều giai đoạn xử lý. Chúng ta có thể dùng các giai đoạn như `$match` (tương đương `find`), `$lookup` (tương đương `JOIN` trong SQL) để kết nối các collection `boards`, `columns`, `cards` lại với nhau và lấy ra một cấu trúc dữ liệu hoàn chỉnh chỉ trong **một lần truy vấn duy nhất**.\n\n---\n\n## Các bước thực hành\n\n1.  **Tạo Route:** Mở file `src/routes/v1/boardRoute.js`, thêm một định nghĩa route mới cho phương thức `GET` với đường dẫn `/:id` và trỏ nó tới hàm `boardController.getDetails`.\n2.  **Tạo Controller:** Trong file `src/controllers/boardController.js`, tạo hàm `getDetails`. Bên trong hàm, lấy `boardId` từ `req.params.id`, sau đó gọi hàm `boardService.getDetails(boardId)`.\n3.  **Tạo Service:** Trong file `src/services/boardService.js`, tạo hàm `getDetails` nhận vào `boardId` và gọi tiếp đến hàm `boardModel.getDetails(boardId)`.\n4.  **Tạo Model:** Trong file `src/models/boardModel.js`, tạo hàm `getDetails` nhận vào `id`. Bên trong, sử dụng `findOne({ _id: new ObjectId(id) })` để tìm và trả về board tương ứng trong cơ sở dữ liệu.\n5.  **Kiểm thử với Postman:**\n    - Mở Postman, tạo một request mới.\n    - Chọn phương thức `GET`.\n    - Nhập URL: `http://localhost:8017/v1/boards/<board_id>`, thay `<board_id>` bằng một ID board có thật trong MongoDB của bạn.\n    - Bấm \"Send\" và kiểm tra kết quả JSON trả về.\n\n---\n\n## Lưu ý quan trọng\n\n- **Luồng dữ liệu một chiều:** Luôn tuân thủ nghiêm ngặt luồng xử lý `Route` -> `Controller` -> `Service` -> `Model`. `Controller` không bao giờ được gọi trực tiếp `Model`, và `Service` không bao giờ được thao tác trực tiếp với `req`, `res`.\n- **Xử lý lỗi tập trung:** Toàn bộ lỗi phát sinh trong chuỗi xử lý sẽ được `catch` và `next(error)` để đưa về một Middleware xử lý lỗi tập trung. Điều này giúp code sạch sẽ và dễ quản lý hơn.\n- **`ObjectId`:** Khi truy vấn theo `_id` trong MongoDB, phải luôn bọc chuỗi ID bằng `new ObjectId(id)` để MongoDB có thể hiểu và tìm kiếm chính xác.\n\n---\n\n## Tài liệu tham khảo\n\n- [1] [FULL STACK] MERN PRO Playlist - TrungQuanDev: https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy\n- [2] TrungQuanDev Blog: https://trungquandev.com/\n- [3] Back-end Boilerplate GitHub Repo: https://github.com/trungquandev/nodejs-express-mongodb-rest-api-boilerplate\n- [4] MongoDB Aggregation Documentation: https://www.mongodb.com/docs/manual/aggregation/\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của việc xây dựng API get board details trong bài học là gì?",
+        "options": [
+          "A. Để xóa một board khỏi cơ sở dữ liệu.",
+          "B. Để Front-end có thể lấy toàn bộ dữ liệu chi tiết của một board và hiển thị ra giao diện.",
+          "C. Để cập nhật tên của một board.",
+          "D. Để tạo một board mới với các column mặc định."
+        ],
+        "correctAnswer": 1,
+        "explanation": "API get board details được tạo ra để cung cấp một endpoint cho Front-end gọi đến và lấy tất cả thông tin cần thiết của một board (bao gồm columns và cards) để hiển thị một trang chi tiết hoàn chỉnh."
+      },
+      {
+        "question": "Luồng xử lý một request trong kiến trúc nhiều lớp được mô tả trong bài học diễn ra theo thứ tự nào?",
+        "options": [
+          "A. Route -> Service -> Controller -> Model",
+          "B. Controller -> Route -> Service -> Model",
+          "C. Route -> Controller -> Service -> Model",
+          "D. Model -> Service -> Controller -> Route"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Request từ client đầu tiên sẽ được Route tiếp nhận, sau đó chuyển cho Controller điều hướng, Controller gọi Service để xử lý logic, và cuối cùng Service gọi Model để tương tác với cơ sở dữ liệu."
+      },
+      {
+        "question": "Lớp nào trong kiến trúc Back-end chịu trách nhiệm định nghĩa URL và phương thức HTTP cho một API endpoint?",
+        "options": [
+          "A. Controller",
+          "B. Service",
+          "C. Model",
+          "D. Route"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Lớp Route là nơi định nghĩa các đường dẫn (URL) và các phương thức HTTP (GET, POST, PUT, DELETE) tương ứng, sau đó ánh xạ chúng tới các hàm xử lý trong Controller."
+      },
+      {
+        "question": "Trong đoạn code controller sau, `req.params.id` dùng để làm gì?\n```javascript\nconst getDetails = async (req, res, next) => {\n  try {\n    const boardId = req.params.id;\n    // ...\n  } catch (error) { next(error); }\n};\n```",
+        "options": [
+          "A. Lấy dữ liệu từ body của request.",
+          "B. Lấy một tham số từ query string của URL (ví dụ: ?id=123).",
+          "C. Lấy một tham số được định nghĩa trên đường dẫn của URL (ví dụ: /boards/:id).",
+          "D. Lấy một header từ request."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`req.params` là một object chứa các tham số được định nghĩa trên đường dẫn URL. Trong trường hợp `Router.route('/:id')`, `req.params.id` sẽ lấy giá trị tương ứng với `:id` trên URL."
+      },
+      {
+        "question": "Lớp nào được coi là \"bộ não\" của ứng dụng, chứa toàn bộ logic nghiệp vụ (business logic)?",
+        "options": [
+          "A. Route",
+          "B. Controller",
+          "C. Service",
+          "D. Model"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lớp Service là nơi tập trung xử lý các logic nghiệp vụ phức tạp, tính toán, kiểm tra dữ liệu trước khi gọi xuống lớp Model để tương tác với database."
+      },
+      {
+        "question": "Tại sao lớp Model là lớp duy nhất được phép tương tác trực tiếp với cơ sở dữ liệu?",
+        "options": [
+          "A. Để tăng hiệu năng cho ứng dụng.",
+          "B. Để tuân thủ nguyên tắc đóng gói và giúp code dễ bảo trì, quản lý.",
+          "C. Vì các lớp khác không có đủ quyền truy cập.",
+          "D. Để giảm số lượng kết nối đến cơ sở dữ liệu."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc tập trung toàn bộ các thao tác với cơ sở dữ liệu vào lớp Model giúp đóng gói logic truy cập dữ liệu, làm cho code trở nên module hóa, dễ dàng thay đổi và bảo trì hơn."
+      },
+      {
+        "question": "Khi truy vấn một document trong MongoDB theo `_id`, tại sao cần phải sử dụng `new ObjectId(id)`?",
+        "options": [
+          "A. Để chuyển đổi chuỗi ID thành một kiểu dữ liệu số (Integer).",
+          "B. Vì `_id` trong MongoDB là một kiểu dữ liệu đặc biệt (ObjectId), không phải là một chuỗi đơn thuần.",
+          "C. Để mã hóa chuỗi ID trước khi gửi đến cơ sở dữ liệu.",
+          "D. Đây là một yêu cầu của thư viện Express.js."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trường `_id` của MongoDB có kiểu dữ liệu là ObjectId, một kiểu dữ liệu nhị phân 12-byte. Do đó, khi tìm kiếm bằng một chuỗi ID, ta cần chuyển đổi nó về đúng kiểu ObjectId để MongoDB có thể so khớp chính xác."
+      },
+      {
+        "question": "Vấn đề \"N+1 query\" xảy ra khi nào?",
+        "options": [
+          "A. Khi thực hiện một truy vấn quá phức tạp.",
+          "B. Khi gửi N+1 request từ Front-end đến Back-end.",
+          "C. Khi để lấy một tập dữ liệu có quan hệ, ta phải thực hiện 1 truy vấn cho đối tượng cha và N truy vấn cho các đối tượng con.",
+          "D. Khi cơ sở dữ liệu trả về N+1 bản ghi không mong muốn."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vấn đề N+1 query là một vấn đề hiệu năng phổ biến, xảy ra khi ứng dụng thực hiện một truy vấn ban đầu để lấy danh sách các mục, sau đó thực hiện thêm N truy vấn nữa để lấy chi tiết cho từng mục trong danh sách đó."
+      },
+      {
+        "question": "Giải pháp nào được bài học giới thiệu để giải quyết vấn đề \"N+1 query\" và lấy dữ liệu lồng nhau một cách hiệu quả?",
+        "options": [
+          "A. Sử dụng vòng lặp `for` để gọi `findOne` nhiều lần.",
+          "B. Viết các hàm đệ quy trong Service.",
+          "C. Sử dụng MongoDB Aggregation Framework.",
+          "D. Tăng số lượng kết nối đến cơ sở dữ liệu."
+        ],
+        "correctAnswer": 2,
+        "explanation": "MongoDB Aggregation Framework cho phép xây dựng một pipeline xử lý dữ liệu qua nhiều giai đoạn, đặc biệt là dùng `$lookup` để \"join\" các collection, giúp lấy toàn bộ dữ liệu quan hệ trong một lần truy vấn duy nhất."
+      },
+      {
+        "question": "Trong MongoDB Aggregation, toán tử `$lookup` có chức năng tương đương với khái niệm nào trong SQL?",
+        "options": [
+          "A. GROUP BY",
+          "B. WHERE",
+          "C. ORDER BY",
+          "D. JOIN"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`$lookup` được dùng để thực hiện một phép \"left outer join\" với một collection khác trong cùng cơ sở dữ liệu, cho phép kết hợp các document từ hai collection lại với nhau."
+      },
+      {
+        "question": "Postman được sử dụng trong bài học với mục đích gì?",
+        "options": [
+          "A. Để viết code cho Back-end.",
+          "B. Để thiết kế giao diện cho Front-end.",
+          "C. Để kiểm thử API, gửi request và xem kết quả trả về.",
+          "D. Để quản lý cơ sở dữ liệu MongoDB."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Postman là một công cụ mạnh mẽ giúp lập trình viên kiểm thử các API bằng cách cho phép tạo và gửi các HTTP request (GET, POST, etc.) tới server và kiểm tra response trả về."
+      },
+      {
+        "question": "Theo nguyên tắc luồng dữ liệu một chiều được nêu trong bài, điều nào sau đây KHÔNG được phép xảy ra?",
+        "options": [
+          "A. Controller gọi Service.",
+          "B. Service gọi Model.",
+          "C. Controller gọi trực tiếp Model.",
+          "D. Route gọi Controller."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để đảm bảo sự phân tách rõ ràng về trách nhiệm, Controller không nên biết về cách dữ liệu được lưu trữ hay truy xuất. Nó chỉ nên yêu cầu dữ liệu từ Service, và Service sẽ chịu trách nhiệm gọi Model."
+      },
+      {
+        "question": "Cơ chế `try...catch` và `next(error)` trong Controller có tác dụng gì?",
+        "options": [
+          "A. Bỏ qua tất cả các lỗi xảy ra.",
+          "B. Tự động sửa lỗi và chạy lại request.",
+          "C. Bắt lỗi và chuyển cho một Middleware xử lý lỗi tập trung.",
+          "D. Ghi lỗi ra console và trả về status 500 ngay lập tức."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cơ chế này giúp bắt các lỗi phát sinh trong quá trình xử lý request và chuyển chúng đến một middleware chuyên dụng để xử lý lỗi một cách nhất quán, tránh lặp lại code xử lý lỗi ở nhiều nơi."
+      },
+      {
+        "question": "Lớp Service KHÔNG nên làm gì?",
+        "options": [
+          "A. Chứa business logic.",
+          "B. Gọi các hàm từ lớp Model.",
+          "C. Thực hiện các phép tính toán, kiểm tra dữ liệu.",
+          "D. Thao tác trực tiếp với các đối tượng `req` và `res`."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Lớp Service nên độc lập với tầng web. Nó chỉ nhận dữ liệu thuần (primitive types, objects) từ Controller, xử lý và trả về kết quả. Việc thao tác với `req`, `res` là trách nhiệm của Controller."
+      },
+      {
+        "question": "Trong file `boardRoute.js`, `express.Router()` được dùng để làm gì?",
+        "options": [
+          "A. Tạo một server Express mới.",
+          "B. Tạo một đối tượng router để nhóm các định nghĩa route lại với nhau.",
+          "C. Kết nối đến cơ sở dữ liệu MongoDB.",
+          "D. Phân tích (parse) body của request."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`express.Router()` tạo ra một instance router riêng biệt. Điều này cho phép chúng ta định nghĩa các route trong một file module riêng, giúp code có tổ chức và dễ quản lý hơn."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Hoàn thành file Route",
+        "description": "Trong file `routes/v1/boardRoute.js`, hãy hoàn thành định nghĩa route để khi có request `GET` đến đường dẫn `/:id`, nó sẽ gọi đến hàm `getDetails` của `boardController`.",
+        "starterCode": "import express from 'express'\nimport { boardController } from '~/controllers/boardController'\n\nconst Router = express.Router()\n\n// Viết code của bạn ở đây\n\nexport const boardRoute = Router",
+        "solution": "import express from 'express'\nimport { boardController } from '~/controllers/boardController'\n\nconst Router = express.Router()\n\nRouter.route('/:id')\n  .get(boardController.getDetails)\n\nexport const boardRoute = Router",
+        "testCases": "Gửi request GET đến `/v1/boards/some-board-id`. Server phải gọi đến hàm `boardController.getDetails`."
+      },
+      {
+        "title": "Bài 2: Hoàn thành hàm Controller",
+        "description": "Trong file `controllers/boardController.js`, hãy viết hoàn chỉnh hàm `getDetails`. Hàm này cần lấy `boardId` từ `req.params`, gọi đến `boardService.getDetails`, và cuối cùng trả về kết quả cho client với status code 200.",
+        "starterCode": "import { boardService } from '~/services/boardService'\n\nconst getDetails = async (req, res, next) => {\n  try {\n    // Viết code của bạn ở đây\n  } catch (error) {\n    next(error)\n  }\n}\n\nexport const boardController = { getDetails }",
+        "solution": "import { boardService } from '~/services/boardService'\n\nconst getDetails = async (req, res, next) => {\n  try {\n    const boardId = req.params.id\n    const board = await boardService.getDetails(boardId)\n    res.status(200).json(board)\n  } catch (error) {\n    next(error)\n  }\n}\n\nexport const boardController = { getDetails }",
+        "testCases": "Khi được gọi bởi Route, hàm phải lấy được `id` từ `req.params`. Sau khi `boardService.getDetails` trả về dữ liệu, hàm phải gửi lại response JSON với status 200 và body là dữ liệu đó."
+      },
+      {
+        "title": "Bài 3: Hoàn thành hàm Service",
+        "description": "Trong file `services/boardService.js`, hãy viết hàm `getDetails` nhận vào `boardId`, gọi đến hàm `getDetails` của `boardModel` để lấy dữ liệu từ database và trả về kết quả đó.",
+        "starterCode": "import { boardModel } from '~/models/boardModel'\n\nconst getDetails = async (boardId) => {\n  try {\n    // Viết code của bạn ở đây\n  } catch (error) { throw error }\n}\n\nexport const boardService = { getDetails }",
+        "solution": "import { boardModel } from '~/models/boardModel'\n\nconst getDetails = async (boardId) => {\n  try {\n    const board = await boardModel.getDetails(boardId)\n    // Trong tương lai có thể có thêm nhiều logic nghiệp vụ ở đây\n    return board\n  } catch (error) { throw error }\n}\n\nexport const boardService = { getDetails }",
+        "testCases": "Hàm phải nhận vào một `boardId`, gọi `boardModel.getDetails` với `boardId` đó và trả về chính xác kết quả mà hàm model trả ra."
+      },
+      {
+        "title": "Bài 4: Hoàn thành hàm Model",
+        "description": "Trong file `models/boardModel.js`, hãy viết hàm `getDetails` để truy vấn vào collection `boards`. Hàm cần tìm một document có `_id` khớp với `id` được truyền vào. Lưu ý sử dụng `ObjectId`.",
+        "starterCode": "import { ObjectId } from 'mongodb'\nimport { GET_DB } from '~/config/mongodb'\n\nconst BOARD_COLLECTION_NAME = 'boards'\n\nconst getDetails = async (id) => {\n  try {\n    // Viết code của bạn ở đây\n  } catch (error) { throw error }\n}\n\nexport const boardModel = { getDetails }",
+        "solution": "import { ObjectId } from 'mongodb'\nimport { GET_DB } from '~/config/mongodb'\n\nconst BOARD_COLLECTION_NAME = 'boards'\n\nconst getDetails = async (id) => {\n  try {\n    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })\n    return result\n  } catch (error) { throw error }\n}\n\nexport const boardModel = { getDetails }",
+        "testCases": "Hàm phải sử dụng `findOne` với điều kiện `{ _id: new ObjectId(id) }`. Khi truyền vào một ID hợp lệ, hàm phải trả về document tương ứng từ collection `boards`."
+      },
+      {
+        "title": "Bài 5: Mô tả Aggregation Pipeline",
+        "description": "Dựa vào kiến thức được giới thiệu trong bài, hãy mô tả các bước (stages) cần thiết trong một pipeline của MongoDB Aggregation để lấy thông tin chi tiết của một Board, đồng thời \"join\" với collection `columns` và `cards` để có được một document lồng nhau hoàn chỉnh.",
+        "starterCode": "const getDetailsWithAggregation = async (id) => {\n  const pipeline = [\n    // Liệt kê các stage của bạn ở đây dưới dạng comment\n  ];\n  // ...\n}",
+        "solution": "const getDetailsWithAggregation = async (id) => {\n  const pipeline = [\n    // Stage 1: Lọc ra board cần tìm dựa trên _id.\n    // {$match: { _id: new ObjectId(id) } }\n\n    // Stage 2: \"Join\" với collection 'columns' dựa trên boardId.\n    // {$lookup: { from: 'columns', localField: '_id', foreignField: 'boardId', as: 'columns' } }\n\n    // Stage 3: \"Join\" với collection 'cards' dựa trên boardId.\n    // {$lookup: { from: 'cards', localField: '_id', foreignField: 'boardId', as: 'cards' } }\n\n    // Các stage sau có thể dùng để sắp xếp lại dữ liệu, gộp card vào column...\n  ];\n  // ...\n}",
+        "testCases": "Mô tả phải bao gồm ít nhất 3 stage chính: `$match` để tìm board, và hai lần `$lookup` để kết nối với `columns` và `cards`."
+      }
+    ]
+  }
+}

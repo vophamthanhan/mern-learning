@@ -1,0 +1,213 @@
+{
+  "id": 39,
+  "title": "Buổi 20: AutoComplete Search Board, Debounce Function và QueryFilters Regex",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Buổi 20: AutoComplete Search Board, Debounce Function và QueryFilters Regex\n\n## 1. Mục tiêu bài học\n\nBài học này tập trung vào việc xây dựng một tính năng tìm kiếm \"thông minh\" và hiệu suất cao cho các Board trong một ứng dụng MERN Stack, tương tự như chức năng tìm kiếm của Trello. Mục tiêu chính bao gồm:\n\n*   **Front-end:** Tích hợp một ô tìm kiếm tự động hoàn thành (AutoComplete) vào thanh ứng dụng (AppBar) để người dùng có thể tìm kiếm và truy cập nhanh vào các Board cụ thể.\n*   **Tối ưu hóa hiệu suất:** Áp dụng kỹ thuật \"debounce\" để ngăn chặn việc gửi yêu cầu API liên tục mỗi khi người dùng gõ phím, giúp giảm tải cho máy chủ và cải thiện trải nghiệm người dùng.\n*   **Back-end:** Xây dựng logic API để xử lý các truy vấn tìm kiếm, sử dụng biểu thức chính quy (Regular Expressions - Regex) trong MongoDB để tìm kiếm linh hoạt, không phân biệt chữ hoa/thường và có hỗ trợ dấu tiếng Việt.\n\n## 2. Kiến thức chi tiết\n\n### 2.1. Front-end: AutoComplete Search Board với Material-UI\n\nĐể xây dựng giao diện tìm kiếm, chúng ta sử dụng component `Autocomplete` từ thư viện Material-UI. Đây là một component mạnh mẽ giúp tạo ra một ô nhập liệu được cải tiến với một bảng các tùy chọn gợi ý.\n\n#### Các thuộc tính (props) quan trọng của `Autocomplete`:\n\n*   `options`: Một mảng chứa các dữ liệu sẽ được hiển thị dưới dạng gợi ý (ví dụ: danh sách các boards).\n*   `renderInput`: Một hàm trả về một component `TextField` (hoặc một ô nhập liệu tùy chỉnh) để hiển thị ô tìm kiếm.\n*   `onInputChange`: Một hàm được gọi mỗi khi giá trị trong ô nhập liệu thay đổi. Đây là nơi chúng ta sẽ kích hoạt logic debounce.\n*   `onChange`: Một hàm được gọi khi người dùng chọn một mục từ danh sách gợi ý.\n*   `getOptionLabel`: Một hàm để định dạng cách hiển thị tên của mỗi mục trong danh sách gợi ý.\n\n#### Code mẫu: Tích hợp `Autocomplete`\n\n```jsx\nimport React, { useState, useCallback } from 'react';\nimport TextField from '@mui/material/TextField';\nimport Autocomplete from '@mui/material/Autocomplete';\nimport { debounce } from 'lodash';\n\n// Giả sử bạn có một custom hook `useDebounce` hoặc dùng trực tiếp lodash\n\nconst SearchBoard = () => {\n  const [searchValue, setSearchValue] = useState('');\n  const [options, setOptions] = useState([]); // Kết quả tìm kiếm từ API\n\n  // Hàm gọi API để tìm kiếm boards\n  const fetchBoards = async (searchQuery) => {\n    // Gọi API của bạn tại đây với searchQuery\n    // const results = await boardApi.search(searchQuery);\n    // setOptions(results);\n  };\n\n  // Sử dụng debounce của lodash để tạo một phiên bản trì hoãn của fetchBoards\n  const debouncedFetchBoards = useCallback(debounce(fetchBoards, 500), []);\n\n  const handleInputChange = (event, newInputValue) => {\n    setSearchValue(newInputValue);\n    debouncedFetchBoards(newInputValue);\n  };\n\n  return (\n    <Autocomplete\n      freeSolo\n      options={options}\n      getOptionLabel={(option) => option.title}\n      onInputChange={handleInputChange}\n      renderInput={(params) => (\n        <TextField\n          {...params}\n          label=\"Search Board...\"\n          variant=\"outlined\"\n          size=\"small\"\n        />\n      )}\n    />\n  );\n};\n\nexport default SearchBoard;\n```\n\n### 2.2. Tối ưu hóa: Kỹ thuật Debounce\n\n**Debounce** là một kỹ thuật lập trình dùng để giới hạn tần suất thực thi của một hàm. Trong ngữ cảnh của chúng ta, thay vì gọi API mỗi khi người dùng gõ một ký tự, chúng ta sẽ đợi cho đến khi người dùng ngừng gõ trong một khoảng thời gian nhất định (ví dụ: 500ms) rồi mới gửi yêu cầu API.\n\n*   **Lợi ích:**\n    *   Giảm đáng kể số lượng yêu cầu API không cần thiết.\n    *   Giảm tải cho máy chủ Back-end.\n    *   Cải thiện hiệu suất phía client và trải nghiệm người dùng.\n\n*   **Cách triển khai:**\n    *   **Sử dụng thư viện Lodash:** Lodash cung cấp một hàm `debounce` rất dễ sử dụng và mạnh mẽ.\n    *   **Custom Hook `useDebounce`:** Bạn cũng có thể tự tạo một custom hook trong React để đóng gói logic debounce, giúp tái sử dụng dễ dàng hơn.\n\nTrong ví dụ trên, chúng ta đã sử dụng `debounce` từ `lodash` kết hợp với `useCallback` để đảm bảo hàm `debouncedFetchBoards` không bị tạo lại một cách không cần thiết sau mỗi lần render.\n\n### 2.3. Back-end: QueryFilters và Regex trong MongoDB\n\nPhía Back-end, chúng ta cần một API endpoint để nhận chuỗi tìm kiếm từ Front-end và truy vấn cơ sở dữ liệu MongoDB.\n\n#### API Endpoint (Node.js & Express)\n\n```javascript\n// Trong file router của bạn\nrouter.get('/search', async (req, res) => {\n  try {\n    const { q: searchQuery } = req.query;\n    if (!searchQuery) {\n      return res.status(200).json([]);\n    }\n\n    // Sử dụng biểu thức chính quy để tìm kiếm\n    // 'i' flag để không phân biệt chữ hoa/thường\n    const searchRegex = new RegExp(searchQuery, 'i');\n\n    const results = await BoardModel.find({\n      title: { $regex: searchRegex }\n    }).limit(10); // Giới hạn số lượng kết quả trả về\n\n    res.status(200).json(results);\n  } catch (error) {\n    res.status(500).json({ error: 'Internal Server Error' });\n  }\n});\n```\n\n#### Toàn tử `$regex` trong MongoDB\n\nToán tử `$regex` cho phép tìm kiếm các chuỗi dựa trên một mẫu biểu thức chính quy. Đây là công cụ cốt lõi để xây dựng tính năng tìm kiếm linh hoạt.\n\n*   **Cú pháp:** `{ <field>: { $regex: /pattern/, $options: '<options>' } }` hoặc `{ <field>: { $regex: 'pattern', $options: '<options>' } }`.\n*   **Option quan trọng:**\n    *   `i`: Không phân biệt chữ hoa/thường (case-insensitivity).\n\n*   **Xử lý tiếng Việt có dấu:** Mặc dù `$regex` với cờ `i` hoạt động tốt cho tiếng Anh, việc tìm kiếm tiếng Việt (ví dụ: gõ \"quan\" ra \"quản\") đòi hỏi các kỹ thuật phức tạp hơn như:\n    1.  **Text-indexing và `$text` operator:** Đây là cách tiếp cận được khuyến nghị của MongoDB cho tìm kiếm văn bản đầy đủ. Nó hỗ trợ nhiều ngôn ngữ, bao gồm cả việc bỏ qua dấu (diacritic insensitive).\n    2.  **Chuẩn hóa chuỗi:** Trước khi lưu và tìm kiếm, bạn có thể tạo một trường mới trong document đã được loại bỏ dấu và chuyển thành chữ thường. Sau đó, thực hiện tìm kiếm trên trường đã được chuẩn hóa này.\n\n## 3. Các bước thực hành\n\n1.  **Cài đặt Lodash:** `npm install lodash` hoặc `yarn add lodash`.\n2.  **Tạo component `SearchBoard.jsx`:** Viết code Front-end như trong ví dụ, tích hợp `Autocomplete` của Material-UI.\n3.  **Thêm component vào AppBar:** Đặt component `SearchBoard` vào vị trí mong muốn trong thanh AppBar của bạn.\n4.  **Tạo API Endpoint:** Xây dựng một route mới trong ứng dụng Express để xử lý yêu cầu GET tới `/api/boards/search` (hoặc một đường dẫn tương tự).\n5.  **Viết logic truy vấn:** Trong controller của API, sử dụng `BoardModel` và toán tử `$regex` để tìm kiếm các board dựa trên query `q`.\n6.  **Kết nối Front-end và Back-end:** Đảm bảo hàm `fetchBoards` trong component `SearchBoard` gọi đúng API endpoint bạn vừa tạo.\n7.  **Kiểm tra:** Chạy ứng dụng và thử gõ vào ô tìm kiếm. Kiểm tra xem các yêu cầu API có được \"debounce\" đúng cách không (sử dụng Network tab trong DevTools) và kết quả tìm kiếm có được hiển thị chính xác không.\n\n## 4. Lưu ý quan trọng\n\n*   **Bảo mật:** Luôn xác thực và phân quyền các yêu cầu API. Trong trường hợp này, chỉ những người dùng đã đăng nhập mới có thể tìm kiếm các board mà họ có quyền truy cập.\n*   **Chỉ mục (Indexing):** Để tăng tốc độ truy vấn `$regex`, đặc biệt với các tập dữ liệu lớn, hãy xem xét việc tạo chỉ mục trên trường văn bản mà bạn đang tìm kiếm (ví dụ: trường `title`).\n*   **Trải nghiệm người dùng:** Cân nhắc hiển thị một chỉ báo tải (loading indicator) trong khi đang chờ kết quả từ API để người dùng biết hệ thống đang xử lý.\n*   **Xử lý lỗi:** Triển khai xử lý lỗi ở cả Front-end và Back-end để ứng dụng hoạt động ổn định khi có sự cố xảy ra (ví dụ: API không phản hồi).\n\n## 5. Tài liệu tham khảo\n\n1.  [Material-UI Autocomplete Component](https://mui.com/material-ui/react-autocomplete/)\n2.  [Lodash Debounce Documentation](https://lodash.com/docs/4.17.15#debounce)\n3.  [MongoDB $regex Operator Documentation](https://www.mongodb.com/docs/manual/reference/operator/query/regex/)\n4.  [GeeksforGeeks: Debouncing in JavaScript](https.geeksforgeeks.org/debouncing-in-javascript/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của việc sử dụng kỹ thuật \"debounce\" trong tính năng tìm kiếm là gì?",
+        "options": [
+          "Để gửi yêu cầu API mỗi khi người dùng gõ một ký tự.",
+          "Để giảm tải cho máy chủ và cải thiện trải nghiệm người dùng bằng cách trì hoãn việc gửi API.",
+          "Để tìm kiếm không phân biệt chữ hoa/thường.",
+          "Để tăng tốc độ hiển thị kết quả tìm kiếm ngay lập tức."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Debounce đợi người dùng ngừng gõ trong một khoảng thời gian nhất định rồi mới gửi yêu cầu, giúp giảm số lượng API call không cần thiết."
+      },
+      {
+        "question": "Trong Material-UI, thuộc tính nào của component `Autocomplete` được sử dụng để định nghĩa nội dung của ô nhập liệu tìm kiếm?",
+        "options": [
+          "options",
+          "onChange",
+          "renderInput",
+          "getOptionLabel"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`renderInput` là một hàm trả về một `TextField` hoặc một component nhập liệu tùy chỉnh để người dùng gõ vào."
+      },
+      {
+        "question": "Toán tử nào trong MongoDB được sử dụng để thực hiện tìm kiếm dựa trên biểu thức chính quy (Regular Expressions)?",
+        "options": [
+          "$search",
+          "$regex",
+          "$find",
+          "$match"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Toán tử `$regex` cho phép tìm kiếm các chuỗi dựa trên một mẫu biểu thức chính quy, rất hữu ích cho việc tìm kiếm linh hoạt."
+      },
+      {
+        "question": "Cờ (flag) 'i' trong toán tử `$regex` của MongoDB có tác dụng gì?",
+        "options": [
+          "Tìm kiếm chính xác (case-sensitive).",
+          "Tìm kiếm toàn bộ từ.",
+          "Tìm kiếm không phân biệt chữ hoa/thường (case-insensitive).",
+          "Bỏ qua các ký tự đặc biệt."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cờ 'i' là một option quan trọng, giúp việc tìm kiếm trở nên linh hoạt hơn bằng cách không phân biệt chữ hoa và chữ thường."
+      },
+      {
+        "question": "Đâu là cách tiếp cận được MongoDB khuyến nghị để xử lý tìm kiếm tiếng Việt có dấu một cách hiệu quả?",
+        "options": [
+          "Sử dụng `$regex` với cờ 'i'.",
+          "Chuẩn hóa chuỗi bằng cách loại bỏ dấu trước khi tìm kiếm.",
+          "Sử dụng Text-indexing và toán tử `$text`.",
+          "Tạo một API riêng chỉ để xử lý tiếng Việt."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Text-indexing và toán tử `$text` được tối ưu hóa cho tìm kiếm văn bản đầy đủ, hỗ trợ nhiều ngôn ngữ và có khả năng bỏ qua dấu (diacritic insensitive)."
+      },
+      {
+        "question": "Hàm `onInputChange` trong `Autocomplete` thường được dùng để làm gì trong ngữ cảnh tìm kiếm với debounce?",
+        "options": [
+          "Để chuyển hướng người dùng đến trang chi tiết của mục được chọn.",
+          "Để xóa nội dung ô tìm kiếm sau khi chọn một mục.",
+          "Để cập nhật state chứa giá trị tìm kiếm và kích hoạt hàm debounce.",
+          "Để định dạng cách hiển thị của các mục trong danh sách gợi ý."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`onInputChange` được gọi mỗi khi giá trị nhập thay đổi, đây là nơi lý tưởng để cập nhật state và gọi hàm đã được debounce để thực hiện tìm kiếm."
+      },
+      {
+        "question": "Tại sao cần sử dụng `useCallback` của React khi kết hợp với `debounce` của Lodash?",
+        "options": [
+          "Để thực thi hàm debounce ngay lập tức.",
+          "Để ngăn chặn việc tạo lại hàm debounce một cách không cần thiết sau mỗi lần component render lại.",
+          "Để bỏ qua việc debounce hoàn toàn.",
+          "Để làm cho component render nhanh hơn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`useCallback` sẽ ghi nhớ (memoize) hàm debounce, đảm bảo rằng nó không bị tạo lại mỗi lần render, giúp duy trì trạng thái và bộ đếm thời gian của debounce một cách chính xác."
+      },
+      {
+        "question": "Trong đoạn code back-end ví dụ, `limit(10)` có chức năng gì?",
+        "options": [
+          "Yêu cầu người dùng nhập ít nhất 10 ký tự.",
+          "Giới hạn thời gian tìm kiếm là 10 giây.",
+          "Chỉ tìm kiếm trong 10 board đầu tiên của cơ sở dữ liệu.",
+          "Giới hạn số lượng kết quả tìm kiếm trả về cho client là 10."
+        ],
+        "correctAnswer": 3,
+        "explanation": "`limit()` là một phương thức của MongoDB query, dùng để giới hạn số lượng documents được trả về, giúp giảm lượng dữ liệu truyền tải và tăng hiệu suất."
+      },
+      {
+        "question": "Nếu không có `searchQuery` được gửi lên, API back-end nên trả về kết quả gì theo như ví dụ?",
+        "options": [
+          "Một lỗi 404 Not Found.",
+          "Một lỗi 400 Bad Request.",
+          "Toàn bộ danh sách các board.",
+          "Một mảng rỗng với status 200 OK."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Việc trả về một mảng rỗng khi không có query là một cách xử lý hợp lý, cho front-end biết rằng không có kết quả nào phù hợp với một chuỗi tìm kiếm rỗng."
+      },
+      {
+        "question": "Việc tạo chỉ mục (indexing) trên trường `title` trong MongoDB mang lại lợi ích gì cho tính năng tìm kiếm?",
+        "options": [
+          "Làm cho việc ghi dữ liệu mới chậm lại.",
+          "Tăng tốc độ truy vấn tìm kiếm, đặc biệt với các tập dữ liệu lớn.",
+          "Cho phép tìm kiếm có phân biệt chữ hoa/thường.",
+          "Giảm dung lượng lưu trữ của cơ sở dữ liệu."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Chỉ mục hoạt động giống như mục lục của một cuốn sách, giúp MongoDB xác định vị trí của dữ liệu cần tìm một cách nhanh chóng mà không cần phải quét toàn bộ collection."
+      },
+      {
+        "question": "Thuộc tính `freeSolo` trong component `Autocomplete` của Material-UI cho phép điều gì?",
+        "options": [
+          "Chỉ cho phép người dùng chọn các tùy chọn có sẵn trong danh sách.",
+          "Cho phép người dùng nhập một giá trị tùy ý không có trong danh sách tùy chọn.",
+          "Tự động chọn tùy chọn đầu tiên trong danh sách.",
+          "Vô hiệu hóa ô nhập liệu."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi `freeSolo` được bật, `Autocomplete` hoạt động giống như một `TextField` thông thường, cho phép người dùng nhập bất kỳ văn bản nào, ngay cả khi nó không khớp với bất kỳ tùy chọn nào."
+      },
+      {
+        "question": "Trong ví dụ front-end, tại sao `options` được khởi tạo là một mảng rỗng (`useState([])`)?",
+        "options": [
+          "Để ngăn `Autocomplete` hiển thị lỗi.",
+          "Bởi vì ban đầu, chưa có tìm kiếm nào được thực hiện và không có gợi ý nào để hiển thị.",
+          "Để tiết kiệm bộ nhớ.",
+          "Đây là giá trị mặc định bắt buộc của Material-UI."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`options` lưu trữ kết quả tìm kiếm từ API. Khi component được tải lần đầu, chưa có tìm kiếm nào diễn ra, vì vậy danh sách gợi ý là rỗng."
+      },
+      {
+        "question": "Giải pháp nào sau đây KHÔNG được đề cập như một cách để xử lý tìm kiếm tiếng Việt có dấu?",
+        "options": [
+          "Sử dụng Text-indexing và toán tử `$text`.",
+          "Chuẩn hóa chuỗi bằng cách loại bỏ dấu và chuyển thành chữ thường.",
+          "Mua một thư viện của bên thứ ba chuyên về tìm kiếm tiếng Việt.",
+          "Sử dụng `$regex` (mặc dù được lưu ý là có hạn chế)."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề cập đến việc sử dụng Text-indexing, chuẩn hóa chuỗi, và `$regex` như các phương pháp tiếp cận, nhưng không đề cập đến việc mua thư viện của bên thứ ba."
+      },
+      {
+        "question": "Tại sao việc hiển thị một chỉ báo tải (loading indicator) lại quan trọng cho trải nghiệm người dùng?",
+        "options": [
+          "Để làm chậm ứng dụng.",
+          "Để cung cấp phản hồi trực quan cho người dùng rằng hệ thống đang xử lý yêu cầu của họ.",
+          "Để đáp ứng yêu cầu của thư viện Material-UI.",
+          "Để tăng số lượng yêu cầu API được gửi đi."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một chỉ báo tải cho người dùng biết rằng hành động của họ (ví dụ: gõ tìm kiếm) đã được ghi nhận và ứng dụng đang làm việc để lấy kết quả, giúp giảm sự không chắc chắn và cải thiện sự hài lòng."
+      },
+      {
+        "question": "Hành động nào nên được thực hiện để bảo mật API tìm kiếm?",
+        "options": [
+          "Để API mở cho tất cả mọi người truy cập.",
+          "Chỉ cho phép các yêu cầu từ một địa chỉ IP cụ thể.",
+          "Xác thực và phân quyền để đảm bảo người dùng chỉ có thể tìm kiếm các board họ có quyền truy cập.",
+          "Mã hóa chuỗi tìm kiếm trên front-end."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bảo mật là tối quan trọng. API phải kiểm tra xem người dùng đã đăng nhập hay chưa (xác thực) và có quyền xem các board đó không (phân quyền) trước khi trả về kết quả."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo Component Tìm Kiếm Cơ Bản",
+        "description": "Tạo một component React tên là `SimpleSearch` sử dụng `TextField` của Material-UI để người dùng có thể nhập vào một chuỗi tìm kiếm. Component này chỉ cần hiển thị ô nhập liệu.",
+        "starterCode": "import React from 'react';\nimport TextField from '@mui/material/TextField';\n\nconst SimpleSearch = () => {\n  // Code của bạn ở đây\n  return (\n    <TextField\n      label=\"Search...\"\n      variant=\"outlined\"\n      size=\"small\"\n    />\n  );\n};\n\nexport default SimpleSearch;",
+        "solution": "import React, { useState } from 'react';\nimport TextField from '@mui/material/TextField';\n\nconst SimpleSearch = () => {\n  const [searchValue, setSearchValue] = useState('');\n\n  const handleInputChange = (event) => {\n    setSearchValue(event.target.value);\n  };\n\n  return (\n    <TextField\n      label=\"Search...\"\n      variant=\"outlined\"\n      size=\"small\"\n      value={searchValue}\n      onChange={handleInputChange}\n    />\n  );\n};\n\nexport default SimpleSearch;",
+        "testCases": "1. Component render ra một ô `TextField`.\n2. Khi người dùng gõ vào ô, state `searchValue` được cập nhật chính xác."
+      },
+      {
+        "title": "Xây dựng API Endpoint tìm kiếm cơ bản",
+        "description": "Sử dụng Node.js và Express, hãy tạo một API endpoint GET tại `/search` để nhận một query parameter `q`. Nếu `q` tồn tại, API sẽ trả về một mảng JSON chứa các board có `title` khớp với `q` (không phân biệt hoa/thường). Sử dụng `$regex` trong MongoDB.",
+        "starterCode": "router.get('/search', async (req, res) => {\n  try {\n    const { q: searchQuery } = req.query;\n    // Code của bạn ở đây\n\n  } catch (error) {\n    res.status(500).json({ error: 'Internal Server Error' });\n  }\n});",
+        "solution": "router.get('/search', async (req, res) => {\n  try {\n    const { q: searchQuery } = req.query;\n    if (!searchQuery) {\n      return res.status(200).json([]);\n    }\n\n    const searchRegex = new RegExp(searchQuery, 'i');\n\n    const results = await BoardModel.find({\n      title: { $regex: searchRegex }\n    }).limit(10);\n\n    res.status(200).json(results);\n  } catch (error) {\n    res.status(500).json({ error: 'Internal Server Error' });\n  }\n});",
+        "testCases": "1. Gửi request GET đến `/search` không có `q` sẽ trả về mảng rỗng và status 200.\n2. Gửi request GET đến `/search?q=test` sẽ trả về các board có title chứa \"test\" (không phân biệt hoa/thường)."
+      },
+      {
+        "title": "Tích hợp Debounce vào Component Tìm Kiếm",
+        "description": "Cập nhật component `SimpleSearch` từ bài tập trước. Sử dụng hàm `debounce` từ thư viện `lodash` để trì hoãn việc gọi một hàm `console.log` 500ms sau khi người dùng ngừng gõ.",
+        "starterCode": "import React, { useState, useCallback } from 'react';\nimport TextField from '@mui/material/TextField';\nimport { debounce } from 'lodash';\n\nconst DebouncedSearch = () => {\n  const [searchValue, setSearchValue] = useState('');\n\n  const logSearchValue = (value) => {\n    console.log('Searching for:', value);\n  };\n\n  // Tạo hàm debounced ở đây\n  const debouncedLog = useCallback(debounce(logSearchValue, 500), []);\n\n  const handleInputChange = (event) => {\n    const { value } = event.target;\n    setSearchValue(value);\n    // Gọi hàm debounced ở đây\n  };\n\n  return (\n    <TextField\n      label=\"Debounced Search...\"\n      variant=\"outlined\"\n      size=\"small\"\n      value={searchValue}\n      onChange={handleInputChange}\n    />\n  );\n};\n\nexport default DebouncedSearch;",
+        "solution": "import React, { useState, useCallback } from 'react';\nimport TextField from '@mui/material/TextField';\nimport { debounce } from 'lodash';\n\nconst DebouncedSearch = () => {\n  const [searchValue, setSearchValue] = useState('');\n\n  const logSearchValue = (value) => {\n    console.log('Searching for:', value);\n  };\n\n  const debouncedLog = useCallback(debounce(logSearchValue, 500), []);\n\n  const handleInputChange = (event) => {\n    const { value } = event.target;\n    setSearchValue(value);\n    debouncedLog(value);\n  };\n\n  return (\n    <TextField\n      label=\"Debounced Search...\"\n      variant=\"outlined\"\n      size=\"small\"\n      value={searchValue}\n      onChange={handleInputChange}\n    />\n  );\n};\n\nexport default DebouncedSearch;",
+        "testCases": "1. Gõ 'hello' vào ô input. `console.log` không được gọi ngay lập tức.\n2. Đợi 500ms sau khi ngừng gõ. `console.log('Searching for:', 'hello')` được hiển thị trong console.\n3. Gõ nhanh 'hello world' và dừng lại. `console.log` chỉ được gọi một lần cho 'hello world'."
+      },
+      {
+        "title": "Hoàn thiện Component Autocomplete với API",
+        "description": "Xây dựng một component `AutocompleteSearch` hoàn chỉnh. Component này sẽ sử dụng `Autocomplete` của Material-UI, gọi một API giả (sử dụng `setTimeout` để mô phỏng) với debounce để lấy danh sách gợi ý và hiển thị chúng.",
+        "starterCode": "import React, { useState, useCallback } from 'react';\nimport TextField from '@mui/material/TextField';\nimport Autocomplete from '@mui/material/Autocomplete';\nimport { debounce } from 'lodash';\n\n// API giả\nconst fakeBoardApi = (query) => {\n  return new Promise(resolve => {\n    setTimeout(() => {\n      const allBoards = [{ title: 'Project A' }, { title: 'Project B' }, { title: 'Another Board' }];\n      const filtered = allBoards.filter(b => b.title.toLowerCase().includes(query.toLowerCase()));\n      resolve(filtered);\n    }, 300);\n  });\n};\n\nconst AutocompleteSearch = () => {\n  const [options, setOptions] = useState([]);\n\n  const fetchBoards = async (searchQuery) => {\n    if (searchQuery) {\n      const results = await fakeBoardApi(searchQuery);\n      setOptions(results);\n    } else {\n      setOptions([]);\n    }\n  };\n\n  const debouncedFetch = useCallback(debounce(fetchBoards, 500), []);\n\n  const handleInputChange = (event, newInputValue) => {\n    debouncedFetch(newInputValue);\n  };\n\n  return (\n    <Autocomplete\n      freeSolo\n      options={options}\n      getOptionLabel={(option) => option.title || ''}\n      onInputChange={handleInputChange}\n      renderInput={(params) => (\n        <TextField {...params} label=\"Search Boards...\" />\n      )}\n    />\n  );\n};\n\nexport default AutocompleteSearch;",
+        "solution": "import React, { useState, useCallback } from 'react';\nimport TextField from '@mui/material/TextField';\nimport Autocomplete from '@mui/material/Autocomplete';\nimport { debounce } from 'lodash';\n\nconst fakeBoardApi = (query) => {\n  return new Promise(resolve => {\n    setTimeout(() => {\n      const allBoards = [{ title: 'Project A' }, { title: 'Project B' }, { title: 'Another Board' }];\n      if (!query) return resolve([]);\n      const filtered = allBoards.filter(b => b.title.toLowerCase().includes(query.toLowerCase()));\n      resolve(filtered);\n    }, 300);\n  });\n};\n\nconst AutocompleteSearch = () => {\n  const [options, setOptions] = useState([]);\n\n  const fetchBoards = async (searchQuery) => {\n    const results = await fakeBoardApi(searchQuery);\n    setOptions(results);\n  };\n\n  const debouncedFetch = useCallback(debounce(fetchBoards, 500), []);\n\n  const handleInputChange = (event, newInputValue) => {\n    debouncedFetch(newInputValue);\n  };\n\n  return (\n    <Autocomplete\n      freeSolo\n      options={options}\n      getOptionLabel={(option) => option.title || ''}\n      onInputChange={handleInputChange}\n      renderInput={(params) => (\n        <TextField {...params} label=\"Search Boards...\" variant=\"outlined\" size=\"small\" />\n      )}\n    />\n  );\n};\n\nexport default AutocompleteSearch;",
+        "testCases": "1. Component render ra một ô Autocomplete.\n2. Gõ 'proj' vào ô tìm kiếm. Sau khoảng 800ms (300ms API + 500ms debounce), danh sách gợi ý hiện ra với 'Project A' và 'Project B'.\n3. Xóa nội dung ô tìm kiếm. Danh sách gợi ý biến mất."
+      },
+      {
+        "title": "Xử lý lỗi và trạng thái tải cho API Backend",
+        "description": "Cập nhật API endpoint `/search` từ bài tập trước. Thêm khối `try...catch` để xử lý lỗi và trả về status 500 nếu có lỗi xảy ra. Đồng thời, hãy đảm bảo API trả về mảng rỗng nếu không có `searchQuery`.",
+        "starterCode": "router.get('/search', async (req, res) => {\n  // Thêm khối try...catch và xử lý trường hợp không có searchQuery\n  const { q: searchQuery } = req.query;\n  const searchRegex = new RegExp(searchQuery, 'i');\n  const results = await BoardModel.find({ title: { $regex: searchRegex } });\n  res.status(200).json(results);\n});",
+        "solution": "router.get('/search', async (req, res) => {\n  try {\n    const { q: searchQuery } = req.query;\n    if (!searchQuery) {\n      return res.status(200).json([]);\n    }\n\n    const searchRegex = new RegExp(searchQuery, 'i');\n\n    const results = await BoardModel.find({\n      title: { $regex: searchRegex }\n    }).limit(10);\n\n    res.status(200).json(results);\n  } catch (error) {\n    // Ghi lại lỗi để debug\n    console.error('Search API Error:', error);\n    res.status(500).json({ error: 'Internal Server Error' });\n  }\n});",
+        "testCases": "1. Gửi request GET đến `/search` không có `q`, nhận về `[]` và status 200.\n2. Gửi request GET đến `/search?q=test`, nhận về kết quả và status 200.\n3. (Mô phỏng lỗi) Nếu `BoardModel.find` ném ra một lỗi, API sẽ trả về `{ error: 'Internal Server Error' }` và status 500."
+      }
+    ]
+  }
+}

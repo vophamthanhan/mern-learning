@@ -1,0 +1,213 @@
+{
+  "id": 102,
+  "title": "BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\n\n## MỤC TIÊU BÀI HỌC\n\nVideo này là một phần của series MERN Stack Pro, tập trung vào hai phần chính:\n\n1.  **Tích hợp Cloudinary**: Hướng dẫn cách upload file (cụ thể là ảnh đại diện của người dùng) từ client-side (ReactJS) lên server (NodeJS), sau đó tải file lên dịch vụ lưu trữ đám mây Cloudinary.\n2.  **Xây dựng trang Board List**: Hoàn thiện giao diện và tích hợp API cho trang hiển thị danh sách các \"board\" mà người dùng đã tạo hoặc được mời tham gia.\n\nSau khi hoàn thành bài học này, học viên sẽ có khả năng:\n\n*   Hiểu và triển khai quy trình upload file trong một ứng dụng MERN stack.\n*   Sử dụng thành thạo thư viện `multer` để xử lý file upload phía server.\n*   Tích hợp dịch vụ Cloudinary để lưu trữ và quản lý file media một cách hiệu quả.\n*   Xây dựng giao diện người dùng động, gọi API để lấy và hiển thị dữ liệu từ server.\n*   Áp dụng các kiến thức đã học để hoàn thiện một tính năng hoàn chỉnh trong dự án Trello clone.\n\n## KIẾN THỨC CHI TIẾT\n\nDựa trên tiêu đề và bối cảnh của khóa học, nội dung video có thể bao gồm các kiến thức sau:\n\n### 1. Upload File với Multer và Cloudinary\n\nĐây là một quy trình gồm nhiều bước, phối hợp giữa cả frontend và backend.\n\n#### a. Luồng hoạt động (Flow)\n\n1.  **Frontend (React)**: Người dùng chọn một file (ví dụ: ảnh avatar) thông qua một thẻ `<input type=\"file\">`.\n2.  **Frontend (React)**: Ứng dụng client tạo một đối tượng `FormData` và đính kèm file đã chọn vào đó.\n3.  **Frontend (React)**: Sử dụng `axios` (hoặc `fetch`), gửi yêu cầu `POST` hoặc `PUT` đến một API endpoint trên server, với `FormData` làm body của request.\n4.  **Backend (Node.js/Express.js)**: Endpoint này sẽ được bảo vệ bởi một middleware. Middleware này sử dụng `multer` để xử lý request có kiểu `multipart/form-data`.\n5.  **Backend (Node.js/Express.js)**: `Multer` sẽ parse file từ request và lưu trữ tạm thời (trong bộ nhớ hoặc trên đĩa).\n6.  **Backend (Node.js/Express.js)**: Controller của Express sẽ nhận thông tin file từ `multer` (thông qua `req.file`).\n7.  **Backend (Node.js/Express.js)**: Controller sử dụng Cloudinary SDK để upload file (dưới dạng buffer hoặc đường dẫn file tạm) lên dịch vụ Cloudinary.\n8.  **Backend (Node.js/Express.js)**: Cloudinary trả về thông tin của file đã upload, quan trọng nhất là `secure_url` (URL an toàn để truy cập file).\n9.  **Backend (Node.js/Express.js)**: Controller cập nhật lại thông tin user trong database (ví dụ: trường `avatar`) với `secure_url` nhận được từ Cloudinary.\n10. **Backend (Node.js/Express.js)**: Server trả về response cho client, thông báo upload thành công cùng với dữ liệu user đã được cập nhật.\n11. **Frontend (React)**: Client nhận response và cập nhật lại UI (ví dụ: hiển thị ảnh avatar mới).\n\n#### b. Cài đặt phía Backend (Node.js)\n\n**Cài đặt các thư viện cần thiết:**\n\n```bash\nnpm install cloudinary multer\n```\n\n**Cấu hình Cloudinary:**\n\nBạn cần tạo một file cấu hình (ví dụ: `config/cloudinary.js`) để khởi tạo Cloudinary SDK với thông tin API keys từ tài khoản Cloudinary của bạn. Các key này nên được lưu trong file `.env`.\n\n```javascript\n// config/cloudinary.js\nconst cloudinary = require('cloudinary').v2;\n\ncloudinary.config({\n  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,\n  api_key: process.env.CLOUDINARY_API_KEY,\n  api_secret: process.env.CLOUDINARY_API_SECRET\n});\n\nmodule.exports = cloudinary;\n```\n\n**Cấu hình Multer:**\n\n`Multer` cần được cấu hình để chỉ định cách nó xử lý file. Trong trường hợp này, chúng ta có thể chỉ cần lưu file vào bộ nhớ (`memoryStorage`) vì file sẽ được chuyển tiếp ngay đến Cloudinary.\n\n```javascript\n// middlewares/uploadMiddleware.js\nconst multer = require('multer');\n\nconst storage = multer.memoryStorage();\n\nconst upload = multer({\n  storage: storage,\n  limits: {\n    fileSize: 1024 * 1024 * 5 // Giới hạn file 5MB\n  },\n  fileFilter: (req, file, cb) => {\n    if (file.mimetype.startsWith('image/')) {\n      cb(null, true);\n    } else {\n      cb(new Error('Chỉ cho phép upload ảnh!'), false);\n    }\n  }\n});\n\nmodule.exports = upload;\n```\n\n**Tạo Route và Controller:**\n\n```javascript\n// routes/userRoute.js\nconst express = require('express');\nconst router = express.Router();\nconst userController = require('../controllers/userController');\nconst upload = require('../middlewares/uploadMiddleware');\nconst authMiddleware = require('../middlewares/authMiddleware');\n\n// Endpoint để upload avatar\nrouter.put(\n  '/update-avatar',\n  authMiddleware, // Middleware xác thực người dùng\n  upload.single('avatar'), // Middleware xử lý upload 1 file có field name là 'avatar'\n  userController.updateAvatar\n);\n\nmodule.exports = router;\n\n// controllers/userController.js\nconst User = require('../models/userModel');\nconst cloudinary = require('../config/cloudinary');\n\nexports.updateAvatar = async (req, res) => {\n  try {\n    if (!req.file) {\n      return res.status(400).json({ message: 'Vui lòng chọn một file ảnh.' });\n    }\n\n    // Upload file lên Cloudinary\n    // Do dùng memoryStorage, file buffer nằm trong req.file.buffer\n    // Cần chuyển buffer thành data URI scheme để Cloudinary có thể xử lý\n    const b64 = Buffer.from(req.file.buffer).toString('base64');\n    let dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;\n\n    const result = await cloudinary.uploader.upload(dataURI, {\n      folder: 'trello-avatars',\n      // Có thể thêm các tùy chọn khác như crop, resize...\n    });\n\n    // Cập nhật lại user trong DB\n    const updatedUser = await User.findByIdAndUpdate(\n      req.user._id, // Lấy từ authMiddleware\n      { avatar: result.secure_url },\n      { new: true }\n    ).select('-password');\n\n    res.status(200).json(updatedUser);\n  } catch (error) {\n    console.error(error);\n    res.status(500).json({ message: 'Lỗi server' });\n  }\n};\n```\n\n### 2. Ghép Giao Diện Trang Board List\n\nPhần này tập trung vào việc lấy danh sách các board từ API và hiển thị chúng trên giao diện React.\n\n#### a. Backend: API lấy danh sách Boards\n\nCần có một API endpoint (ví dụ `GET /api/boards`) trả về danh sách các board mà người dùng hiện tại có quyền truy cập.\n\n```javascript\n// controllers/boardController.js\nexports.getUserBoards = async (req, res) => {\n  try {\n    const userBoards = await Board.find({\n      '_id': { $in: req.user.boards } // Giả sử model User có một mảng boards chứa ID\n    }).sort({ createdAt: -1 });\n\n    res.status(200).json(userBoards);\n  } catch (error) {\n    res.status(500).json({ message: 'Lỗi server' });\n  }\n};\n```\n\n#### b. Frontend: Component trang Board List (React)\n\nComponent này sẽ gọi API khi được mount, lưu kết quả vào state và render ra danh sách.\n\n```jsx\n// pages/BoardListPage.jsx\nimport React, { useState, useEffect } from 'react';\nimport { Link } from 'react-router-dom';\nimport { api } from '../api'; // Một file cấu hình axios instance\n\nconst BoardListPage = () => {\n  const [boards, setBoards] = useState([]);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(null);\n\n  useEffect(() => {\n    const fetchBoards = async () => {\n      try {\n        setLoading(true);\n        const response = await api.get('/boards');\n        setBoards(response.data);\n        setError(null);\n      } catch (err) {\n        setError('Không thể tải danh sách board.');\n        console.error(err);\n      } finally {\n        setLoading(false);\n      }\n    };\n\n    fetchBoards();\n  }, []);\n\n  if (loading) return <div>Đang tải...</div>;\n  if (error) return <div>{error}</div>;\n\n  return (\n    <div>\n      <h1>Danh sách Board của bạn</h1>\n      <div style={{ display: 'flex', flexWrap: 'wrap' }}>\n        {boards.map(board => (\n          <Link key={board._id} to={`/board/${board._id}`} style={{ textDecoration: 'none' }}>\n            <div style={{ \n              border: '1px solid #ccc', \n              borderRadius: '5px', \n              padding: '20px', \n              margin: '10px', \n              width: '200px' \n            }}>\n              <h3>{board.title}</h3>\n              <p>{board.description}</p>\n            </div>\n          </Link>\n        ))}\n        {/* Có thể thêm component để tạo board mới ở đây */}\n      </div>\n    </div>\n  );\n};\n\nexport default BoardListPage;\n```\n\n## CÁC BƯỚC THỰC HÀNH\n\n1.  **Chuẩn bị**: Đăng ký tài khoản Cloudinary và lấy API Keys. Thêm các keys này vào file `.env` của dự án backend.\n2.  **Backend**: \n    *   Cài đặt `cloudinary` và `multer`.\n    *   Tạo file cấu hình cho Cloudinary.\n    *   Tạo middleware `upload.js` để cấu hình `multer`.\n    *   Tạo route `PUT /api/users/update-avatar`.\n    *   Viết logic cho controller `updateAvatar` để xử lý việc upload file lên Cloudinary và cập nhật database.\n3.  **Frontend**: \n    *   Trong trang cài đặt người dùng (User Settings), tạo một form chứa `<input type=\"file\">`.\n    *   Viết hàm xử lý sự kiện `onChange` của input để lấy file người dùng chọn.\n    *   Khi người dùng nhấn nút \"Lưu\", tạo `FormData`, append file vào và gọi API `PUT /api/users/update-avatar`.\n    *   Xử lý kết quả trả về và cập nhật UI.\n4.  **Tích hợp Board List**: \n    *   **Backend**: Đảm bảo bạn đã có API `GET /api/boards` hoạt động, trả về danh sách board của user đã đăng nhập.\n    *   **Frontend**: Tạo component `BoardListPage.jsx`.\n    *   Sử dụng `useEffect` để gọi API khi component được render lần đầu.\n    *   Lưu danh sách board vào state và dùng hàm `map` để hiển thị.\n    *   Sử dụng `react-router-dom` để mỗi board là một link dẫn đến trang chi tiết của board đó.\n\n## LƯU Ý QUAN TRỌNG\n\n*   **Bảo mật**: Luôn luôn bảo vệ các API endpoint bằng middleware xác thực để đảm bảo chỉ người dùng đã đăng nhập mới có thể thực hiện các hành động.\n*   **Xử lý lỗi**: Cần xử lý lỗi ở cả frontend và backend. Ví dụ: file quá lớn, định dạng file không hợp lệ, lỗi mạng, lỗi từ Cloudinary...\n*   **Tối ưu hóa**: Với ảnh, Cloudinary cung cấp rất nhiều tính năng biến đổi (transformation) mạnh mẽ. Bạn có thể yêu cầu Cloudinary tự động resize, crop, nén ảnh... ngay khi upload để tối ưu tốc độ tải trang. Hãy tận dụng chúng bằng cách truyền thêm tham số vào hàm `cloudinary.uploader.upload`.\n*   **Trải nghiệm người dùng (UX)**: Khi đang upload file, hãy hiển thị một chỉ báo loading (spinner, progress bar) để người dùng biết hệ thống đang xử lý.\n*   **Data URI vs. File Path**: Ví dụ trên sử dụng Data URI scheme. Một cách khác là cấu hình `multer` để lưu file tạm vào một thư mục trên server (`diskStorage`), sau đó truyền đường dẫn file đó cho Cloudinary. Cách này hiệu quả hơn với các file lớn, tránh việc load toàn bộ file vào bộ nhớ server.\n\n## TÀI LIỆU THAM KHẢO\n\n1.  [Cloudinary Node.js SDK Documentation](https://cloudinary.com/documentation/node_integration)\n2.  [Multer NPM Package](https://www.npmjs.com/package/multer)\n3.  [MDN Web Docs: FormData](https://developer.mozilla.org/en-US/docs/Web/API/FormData)\n4.  [TrungQuanDev Blog](https://trungquandev.com/)\n5.  [Source Code MERN Stack Pro trên GitHub (nếu có)](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", khái niệm cơ bản được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến khái niệm cơ bản",
+          "Phương án B liên quan đến khái niệm cơ bản",
+          "Phương án C liên quan đến khái niệm cơ bản",
+          "Phương án D liên quan đến khái niệm cơ bản"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về khái niệm cơ bản."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", cú pháp được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cú pháp",
+          "Phương án B liên quan đến cú pháp",
+          "Phương án C liên quan đến cú pháp",
+          "Phương án D liên quan đến cú pháp"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cú pháp."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", cách sử dụng được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cách sử dụng",
+          "Phương án B liên quan đến cách sử dụng",
+          "Phương án C liên quan đến cách sử dụng",
+          "Phương án D liên quan đến cách sử dụng"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cách sử dụng."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", ưu điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ưu điểm",
+          "Phương án B liên quan đến ưu điểm",
+          "Phương án C liên quan đến ưu điểm",
+          "Phương án D liên quan đến ưu điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ưu điểm."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", nhược điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến nhược điểm",
+          "Phương án B liên quan đến nhược điểm",
+          "Phương án C liên quan đến nhược điểm",
+          "Phương án D liên quan đến nhược điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về nhược điểm."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", so sánh được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến so sánh",
+          "Phương án B liên quan đến so sánh",
+          "Phương án C liên quan đến so sánh",
+          "Phương án D liên quan đến so sánh"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về so sánh."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", ứng dụng thực tế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ứng dụng thực tế",
+          "Phương án B liên quan đến ứng dụng thực tế",
+          "Phương án C liên quan đến ứng dụng thực tế",
+          "Phương án D liên quan đến ứng dụng thực tế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ứng dụng thực tế."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", best practices được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến best practices",
+          "Phương án B liên quan đến best practices",
+          "Phương án C liên quan đến best practices",
+          "Phương án D liên quan đến best practices"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về best practices."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", cấu hình được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cấu hình",
+          "Phương án B liên quan đến cấu hình",
+          "Phương án C liên quan đến cấu hình",
+          "Phương án D liên quan đến cấu hình"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cấu hình."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", xử lý lỗi được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến xử lý lỗi",
+          "Phương án B liên quan đến xử lý lỗi",
+          "Phương án C liên quan đến xử lý lỗi",
+          "Phương án D liên quan đến xử lý lỗi"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về xử lý lỗi."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", tối ưu hóa được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến tối ưu hóa",
+          "Phương án B liên quan đến tối ưu hóa",
+          "Phương án C liên quan đến tối ưu hóa",
+          "Phương án D liên quan đến tối ưu hóa"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về tối ưu hóa."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", bảo mật được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến bảo mật",
+          "Phương án B liên quan đến bảo mật",
+          "Phương án C liên quan đến bảo mật",
+          "Phương án D liên quan đến bảo mật"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về bảo mật."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", kiến trúc được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến kiến trúc",
+          "Phương án B liên quan đến kiến trúc",
+          "Phương án C liên quan đến kiến trúc",
+          "Phương án D liên quan đến kiến trúc"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về kiến trúc."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", thiết kế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến thiết kế",
+          "Phương án B liên quan đến thiết kế",
+          "Phương án C liên quan đến thiết kế",
+          "Phương án D liên quan đến thiết kế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về thiết kế."
+      },
+      {
+        "question": "Trong bài \"BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST\", triển khai được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến triển khai",
+          "Phương án B liên quan đến triển khai",
+          "Phương án C liên quan đến triển khai",
+          "Phương án D liên quan đến triển khai"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về triển khai."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài tập 1: Thực hành BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 2: Thực hành BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 3: Thực hành BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 4: Thực hành BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 5: Thực hành BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      }
+    ]
+  }
+}

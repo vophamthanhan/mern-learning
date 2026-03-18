@@ -1,0 +1,213 @@
+{
+  "id": 93,
+  "title": "Video 81: 73. Kỹ năng Debug gỡ lỗi quan trọng của Lập Trình Viên",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Video 81: 73. Kỹ năng Debug gỡ lỗi quan trọng của Lập Trình Viên\n\n## I. Mục tiêu bài học\n\nBài học này tập trung vào việc trang bị cho lập trình viên những kỹ năng debug và gỡ lỗi thiết yếu, một trong những năng lực cốt lõi và quan trọng nhất trong quá trình phát triển phần mềm. Sau khi hoàn thành bài học, người học có khả năng:\n\n*   **Nắm vững tư duy và phương pháp luận:** Hiểu rõ quy trình tiếp cận và giải quyết một vấn đề (bug) một cách có hệ thống, từ việc tái hiện lỗi, cô lập vấn đề, đến việc sửa lỗi và xác minh kết quả.\n*   **Thành thạo công cụ debug phía Front-end:** Sử dụng hiệu quả các công cụ dành cho nhà phát triển (Developer Tools) được tích hợp sẵn trong trình duyệt như Google Chrome để gỡ lỗi ứng dụng ReactJS, bao gồm việc kiểm tra component, theo dõi luồng dữ liệu và phân tích các yêu cầu mạng.\n*   **Thành thạo công cụ debug phía Back-end:** Áp dụng các kỹ thuật gỡ lỗi cho môi trường NodeJS, từ phương pháp đơn giản như sử dụng `console.log` đến các công cụ chuyên nghiệp hơn như trình gỡ lỗi (debugger) tích hợp trong Visual Studio Code.\n*   **Giải quyết vấn đề thực tế:** Áp dụng các kiến thức đã học để phân tích và xử lý hai lỗi cụ thể phát sinh trong các bài học trước của dự án Trello clone, qua đó củng cố kỹ năng thực chiến.\n\n## II. Kiến thức chi tiết\n\n### 1. Tư duy và Phương pháp luận Debugging\n\nDebugging không chỉ là một kỹ năng kỹ thuật mà còn là một lối tư duy. Thay vì viết code một cách mò mẫm khi có lỗi, một lập trình viên chuyên nghiệp sẽ tiếp cận vấn đề một cách bài bản.\n\n> **Quy trình Debugging chuẩn:**\n> 1.  **Tái hiện lỗi (Reproduce the Bug):** Đây là bước quan trọng nhất. Một lỗi chỉ có thể được sửa khi nó có thể được tái hiện một cách nhất quán. Cần xác định rõ các bước, dữ liệu đầu vào và điều kiện môi trường đã gây ra lỗi.\n> 2.  **Cô lập vấn đề (Isolate the Problem):** Sau khi tái hiện được lỗi, cần thu hẹp phạm vi tìm kiếm. Bằng cách sử dụng các công cụ và kỹ thuật khác nhau, ta có thể xác định chính xác đoạn code, module hoặc tương tác nào là nguyên nhân gây ra lỗi.\n> 3.  **Sửa lỗi (Fix the Bug):** Khi đã xác định được gốc rễ của vấn đề, tiến hành viết mã để khắc phục. Giải pháp cần đảm bảo không chỉ sửa được lỗi hiện tại mà còn không gây ra các lỗi tiềm ẩn khác (regression bugs).\n> 4.  **Xác minh và Kiểm thử (Verify and Test):** Sau khi sửa lỗi, cần kiểm tra lại để chắc chắn rằng lỗi đã được khắc phục hoàn toàn và các chức năng liên quan vẫn hoạt động đúng như mong đợi.\n\n### 2. Debugging ở Front-end (ReactJS)\n\nVới các ứng dụng phía client, trình duyệt là người bạn đồng hành không thể thiếu. **Chrome DevTools** cung cấp một bộ công cụ mạnh mẽ.\n\n| Công cụ | Chức năng và Cách sử dụng | \n| :--- | :--- |\n| **Console** | - **`console.log()`**: Phương pháp cơ bản nhất để in ra giá trị của biến, props, hoặc state tại một thời điểm nhất định. Nên sử dụng các thông điệp log có mô tả rõ ràng (ví dụ: `console.log('Card props:', props);`) để dễ dàng phân biệt. <br> - **`console.table()`**: Hiển thị dữ liệu dạng mảng hoặc đối tượng dưới dạng bảng, rất hữu ích để quan sát dữ liệu có cấu trúc. <br> - **`console.dir()`**: Hiển thị một danh sách các thuộc tính của một đối tượng JavaScript. | \n| **Sources** | - **Breakpoints (Điểm dừng):** Cho phép tạm dừng việc thực thi mã tại một dòng cụ thể. Khi mã dừng lại, ta có thể kiểm tra toàn bộ **Call Stack** (chuỗi các hàm đã gọi), **Scope** (các biến cục bộ và toàn cục có thể truy cập), và giá trị của chúng. Đây là công cụ cực kỳ mạnh mẽ để theo dõi luồng thực thi và sự thay đổi của dữ liệu. | \n| **Network** | - **Phân tích API:** Theo dõi tất cả các yêu cầu mạng (API calls) được gửi từ client lên server và các phản hồi trả về. Ta có thể kiểm tra **Headers**, **Payload** (dữ liệu gửi đi), **Response** (dữ liệu nhận về), và **Status Code** để xác định các vấn đề liên quan đến giao tiếp client-server. | \n| **Components** | - **React Developer Tools (Extension):** Một tiện ích mở rộng không thể thiếu cho Chrome/Firefox. Nó cung cấp một tab \"Components\" cho phép ta xem cây cấu trúc component của React, kiểm tra props và state của từng component một cách trực quan và thậm chí thay đổi chúng trong thời gian thực để thử nghiệm. | \n\n### 3. Debugging ở Back-end (NodeJS)\n\nViệc gỡ lỗi ở phía server đòi hỏi các công cụ và kỹ thuật khác so với client.\n\n*   **Sử dụng `console.log`:** Tương tự như ở Front-end, đây là cách nhanh nhất để kiểm tra giá trị của biến hoặc xác định xem một đoạn code có được thực thi hay không. Output sẽ được hiển thị trong terminal chạy ứng dụng NodeJS.\n\n*   **Trình gỡ lỗi của VS Code (VS Code Debugger):** Đây là phương pháp chuyên nghiệp và hiệu quả hơn rất nhiều.\n    1.  **Cấu hình `launch.json`:** VS Code cho phép tạo một file cấu hình (`.vscode/launch.json`) để chỉ định cách khởi chạy và đính kèm trình gỡ lỗi vào tiến trình NodeJS của bạn.\n    2.  **Đặt Breakpoints:** Tương tự như trong Chrome DevTools, bạn có thể đặt các điểm dừng ngay trong mã nguồn của mình.\n    3.  **Tương tác và Kiểm tra:** Khi chương trình chạy đến breakpoint, nó sẽ tạm dừng. Bạn có thể sử dụng **Debug Console** để thực thi các biểu thức, di chuột qua các biến để xem giá trị của chúng, và theo dõi sự thay đổi của chúng trong mục **Variables**.\n    4.  **Điều khiển luồng thực thi:** Sử dụng các nút điều khiển để đi qua từng dòng lệnh (Step Over), đi vào bên trong một hàm (Step In), hoặc đi ra khỏi hàm hiện tại (Step Out).\n\n## III. Các bước thực hành (Phân tích lỗi giả định)\n\nDựa trên bối cảnh của dự án Trello, video có thể đã đề cập đến việc sửa hai lỗi phổ biến sau:\n\n#### Lỗi 1: Thứ tự các Card bị xáo trộn sau khi kéo thả và tải lại trang\n\n*   **Vấn đề:** Sau khi người dùng kéo thả để sắp xếp lại các Card trong một Column, giao diện cập nhật đúng. Tuy nhiên, khi tải lại trang, thứ tự Card quay về như cũ.\n*   **Phân tích nguyên nhân:** Lỗi này xảy ra do việc cập nhật vị trí chỉ diễn ra ở phía client (optimistic update) mà không được gửi lên và lưu trữ ở phía server. API back-end có thể chưa xử lý hoặc chưa có logic để cập nhật mảng `cardOrderIds` của Column tương ứng trong cơ sở dữ liệu.\n*   **Quy trình Debug:**\n    1.  **Network Tab:** Mở tab Network, thực hiện thao tác kéo thả. Kiểm tra xem có API call nào được gửi đi để cập nhật thứ tự không. Nếu không, vấn đề nằm ở code xử lý sự kiện `onDragEnd` ở client.\n    2.  **VS Code Debugger:** Nếu có API call, đặt breakpoint ở controller tương ứng phía back-end. Kiểm tra xem API có nhận đúng dữ liệu (ví dụ: `columnId`, mảng `cardOrderIds` mới) hay không.\n    3.  **Kiểm tra Logic:** Kiểm tra logic service/model ở back-end để đảm bảo nó cập nhật đúng document trong collection `columns` của MongoDB.\n\n#### Lỗi 2: Ứng dụng bị \"crash\" khi kéo một Column sang vị trí mới\n\n*   **Vấn đề:** Khi người dùng thực hiện thao tác kéo thả một Column, ứng dụng bị dừng đột ngột và xuất hiện thông báo lỗi trên console.\n*   **Phân tích nguyên nhân:** Lỗi này thường liên quan đến việc truy cập thuộc tính của một đối tượng không xác định (`undefined`). Ví dụ, trong hàm xử lý kéo thả, code có thể đang cố gắng đọc `source.droppableId` hoặc `destination.droppableId` trong khi `destination` là `null` (xảy ra khi người dùng kéo và thả ra ngoài một khu vực cho phép).\n*   **Quy trình Debug:**\n    1.  **Console (Client):** Đọc thông báo lỗi. Lỗi \"Cannot read properties of null (reading 'droppableId')\" là một dấu hiệu rõ ràng.\n    2.  **Sources Tab (Client):** Đặt breakpoint ở ngay đầu hàm `onDragEnd`. Thực hiện lại thao tác kéo thả gây lỗi. Kiểm tra giá trị của đối tượng `result` được thư viện `react-beautiful-dnd` trả về. Sẽ thấy rằng khi thả ra ngoài, `result.destination` là `null`.\n    3.  **Sửa lỗi:** Thêm một điều kiện kiểm tra ở đầu hàm: `if (!result.destination) { return; }`. Điều này đảm bảo hàm sẽ không thực thi logic sắp xếp khi người dùng thả ra ngoài vùng hợp lệ.\n\n## IV. Lưu ý quan trọng\n\n*   **Không lạm dụng `console.log`:** Mặc dù hữu ích, việc để lại quá nhiều `console.log` trong code production là không chuyên nghiệp và có thể ảnh hưởng đến hiệu suất. Hãy sử dụng debugger cho các tác vụ phức tạp và xóa các log không cần thiết trước khi commit code.\n*   **Hiểu rõ luồng dữ liệu:** Debugging hiệu quả đòi hỏi sự hiểu biết sâu sắc về luồng dữ liệu trong ứng dụng của bạn (Data Flow), từ giao diện người dùng, qua các tầng state management, đến API và cơ sở dữ liệu.\n*   **Viết code có thể debug:** Sử dụng tên biến rõ ràng, chia nhỏ các hàm phức tạp thành các hàm nhỏ hơn, đơn chức năng sẽ giúp quá trình cô lập và sửa lỗi dễ dàng hơn rất nhiều.\n\n## V. Tài liệu tham khảo\n\n1.  [Chrome DevTools Documentation](https://developer.chrome.com/docs/devtools)\n2.  [Debugging in Visual Studio Code](https://code.visualstudio.com/docs/editor/debugging)\n3.  [React Developer Tools Extension](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi)\n4.  [Video 73. Kỹ năng Debug gỡ lỗi quan trọng của Lập Trình Viên | ReactJS, NodeJS, MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=wsDVHboXPtA)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Theo bài học, bước nào là quan trọng nhất trong quy trình debugging?",
+        "options": [
+          "Sửa lỗi (Fix the Bug)",
+          "Cô lập vấn đề (Isolate the Problem)",
+          "Tái hiện lỗi (Reproduce the Bug)",
+          "Xác minh và Kiểm thử (Verify and Test)"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học nhấn mạnh rằng \"Một lỗi chỉ có thể được sửa khi nó có thể được tái hiện một cách nhất quán\", do đó Tái hiện lỗi là bước quan trọng nhất để bắt đầu quá trình gỡ lỗi."
+      },
+      {
+        "question": "Công cụ nào trong Chrome DevTools cho phép xem cây cấu trúc component của React và kiểm tra props/state?",
+        "options": [
+          "Console",
+          "Sources",
+          "Network",
+          "Components (thông qua React Developer Tools extension)"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Tiện ích mở rộng React Developer Tools cung cấp một tab \"Components\" trong DevTools để kiểm tra và tương tác với cây component của React một cách trực quan."
+      },
+      {
+        "question": "Lệnh console nào hữu ích để hiển thị dữ liệu dạng mảng hoặc đối tượng dưới dạng bảng?",
+        "options": [
+          "console.log()",
+          "console.table()",
+          "console.dir()",
+          "console.error()"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`console.table()` rất hữu ích để quan sát dữ liệu có cấu trúc như mảng các đối tượng, giúp việc so sánh và phân tích dễ dàng hơn."
+      },
+      {
+        "question": "Breakpoints (điểm dừng) trong tab Sources của Chrome DevTools KHÔNG cho phép bạn làm gì?",
+        "options": [
+          "Tạm dừng thực thi mã tại một dòng cụ thể.",
+          "Kiểm tra toàn bộ Call Stack (chuỗi các hàm đã gọi).",
+          "Tự động sửa lỗi trong mã nguồn.",
+          "Kiểm tra giá trị của các biến trong Scope."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Breakpoints cho phép bạn tạm dừng và kiểm tra trạng thái ứng dụng, nhưng chúng không có khả năng tự động sửa lỗi. Việc sửa lỗi vẫn phải do lập trình viên thực hiện."
+      },
+      {
+        "question": "Khi debug Back-end NodeJS bằng VS Code, file cấu hình nào cần được tạo để chỉ định cách khởi chạy trình gỡ lỗi?",
+        "options": [
+          "package.json",
+          ".vscode/settings.json",
+          ".vscode/launch.json",
+          "debug.config.js"
+        ],
+        "correctAnswer": 2,
+        "explanation": "File `.vscode/launch.json` chứa các cấu hình để VS Code biết cách khởi chạy ứng dụng NodeJS của bạn trong chế độ debug và đính kèm trình gỡ lỗi."
+      },
+      {
+        "question": "Trong ví dụ lỗi giả định số 2 (ứng dụng bị crash khi kéo Column), nguyên nhân chính là gì?",
+        "options": [
+          "API back-end không cập nhật dữ liệu.",
+          "Truy cập thuộc tính của một đối tượng không xác định (`undefined`).",
+          "Lỗi cú pháp trong mã React component.",
+          "Vấn đề về hiệu suất do render quá nhiều lần."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lỗi xảy ra do code cố gắng đọc thuộc tính từ `result.destination` trong khi nó có thể là `null` (khi người dùng thả ra ngoài khu vực hợp lệ), dẫn đến lỗi \"Cannot read properties of null\""
+      },
+      {
+        "question": "Phương pháp nào được coi là chuyên nghiệp và hiệu quả hơn `console.log` khi debug các vấn đề phức tạp ở Back-end NodeJS?",
+        "options": [
+          "Ghi log vào file",
+          "Sử dụng trình gỡ lỗi của VS Code (VS Code Debugger)",
+          "Gửi email thông báo lỗi",
+          "Viết thêm nhiều unit test"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học chỉ rõ trình gỡ lỗi của VS Code là phương pháp chuyên nghiệp và hiệu quả hơn nhiều so với `console.log`, đặc biệt cho các kịch bản phức tạp, vì nó cho phép tương tác và kiểm soát luồng thực thi."
+      },
+      {
+        "question": "Tab Network trong Chrome DevTools KHÔNG giúp bạn phân tích thông tin nào của một API call?",
+        "options": [
+          "Headers và Payload",
+          "Response và Status Code",
+          "Logic xử lý của controller ở phía server",
+          "Thời gian thực thi của yêu cầu mạng"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tab Network chỉ cho thấy những gì được gửi và nhận qua mạng. Nó không thể cho bạn biết logic bên trong của server đang xử lý yêu cầu đó như thế nào. Để xem logic đó, bạn cần dùng debugger ở back-end."
+      },
+      {
+        "question": "Hành động nào sau đây là một ví dụ về việc \"Cô lập vấn đề\" (Isolate the Problem)?",
+        "options": [
+          "Hỏi đồng nghiệp xem họ có gặp lỗi tương tự không.",
+          "Thêm các câu lệnh `console.log` để xem giá trị biến ở các điểm khác nhau trong code.",
+          "Viết lại toàn bộ chức năng từ đầu.",
+          "Khởi động lại máy tính."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc thêm `console.log` hoặc đặt breakpoints để kiểm tra giá trị và luồng thực thi giúp thu hẹp phạm vi nơi lỗi xảy ra, đó chính là hành động cô lập vấn đề."
+      },
+      {
+        "question": "Tại sao việc lạm dụng `console.log` trong code production lại không được khuyến khích?",
+        "options": [
+          "Vì nó làm giảm tính bảo mật của ứng dụng.",
+          "Vì nó không chuyên nghiệp và có thể ảnh hưởng đến hiệu suất.",
+          "Vì nó sẽ gây ra lỗi trên một số trình duyệt cũ.",
+          "Vì nó làm tăng kích thước của file bundle."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học lưu ý rằng để lại quá nhiều `console.log` là không chuyên nghiệp, có thể làm lộ thông tin nhạy cảm và ảnh hưởng đến hiệu suất của ứng dụng trên môi trường production."
+      },
+      {
+        "question": "Trong React, \"optimistic update\" là gì?",
+        "options": [
+          "Là một kỹ thuật cập nhật giao diện người dùng ngay lập tức mà không cần chờ phản hồi từ server.",
+          "Là một cách để tối ưu hóa hiệu suất của server.",
+          "Là một thư viện quản lý state phổ biến.",
+          "Là một phương pháp viết code luôn cho kết quả tích cực."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Optimistic update là khi client tự tin (lạc quan) rằng yêu cầu sẽ thành công và cập nhật UI ngay lập tức để cải thiện trải nghiệm người dùng, sau đó mới xử lý kết quả thực tế từ server."
+      },
+      {
+        "question": "Lỗi \"Cannot read properties of null (reading 'droppableId')\" thường xảy ra khi nào trong context của thư viện `react-beautiful-dnd`?",
+        "options": [
+          "Khi kéo một item và thả vào chính vị trí cũ.",
+          "Khi kéo một item quá nhanh.",
+          "Khi kéo một item và thả ra ngoài một khu vực cho phép (droppable area).",
+          "Khi không có item nào trong danh sách."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lỗi này xảy ra vì khi thả ra ngoài khu vực hợp lệ, đối tượng `destination` trong kết quả `onDragEnd` sẽ là `null`, và code cố gắng truy cập `null.droppableId`."
+      },
+      {
+        "question": "Để debug một API call từ Front-end đến Back-end, bạn nên kết hợp những công cụ nào?",
+        "options": [
+          "Chỉ dùng Console ở Front-end.",
+          "Chỉ dùng VS Code Debugger ở Back-end.",
+          "Tab Network ở Front-end và VS Code Debugger ở Back-end.",
+          "React DevTools và `console.log`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sự kết hợp này cho phép bạn theo dõi toàn bộ luồng dữ liệu: kiểm tra yêu cầu được gửi đi từ client bằng tab Network, sau đó theo dõi cách yêu cầu đó được xử lý ở server bằng VS Code Debugger."
+      },
+      {
+        "question": "Mục tiêu chính của việc \"Viết code có thể debug\" (debuggable code) là gì?",
+        "options": [
+          "Làm cho code chạy nhanh hơn.",
+          "Làm cho quá trình tìm và sửa lỗi trở nên dễ dàng hơn.",
+          "Viết ít code hơn.",
+          "Sử dụng các tính năng mới nhất của ngôn ngữ lập trình."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Viết code rõ ràng, chia nhỏ hàm, dùng tên biến có ý nghĩa... tất cả đều nhằm mục đích giúp cho việc cô lập và sửa lỗi sau này trở nên đơn giản và tốn ít thời gian hơn."
+      },
+      {
+        "question": "Theo bài học, điều gì là điều kiện tiên quyết để sửa một lỗi?",
+        "options": [
+          "Phải có tài liệu mô tả chi tiết về lỗi.",
+          "Lỗi đó phải có thể được tái hiện một cách nhất quán.",
+          "Phải biết chính xác ai đã gây ra lỗi.",
+          "Lỗi đó phải xảy ra trên môi trường production."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bước đầu tiên và quan trọng nhất trong quy trình debug là phải tái hiện được lỗi. Nếu không thể làm lỗi xuất hiện lại một cách có chủ đích, việc tìm ra nguyên nhân và sửa chữa sẽ gần như là không thể."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Sửa lỗi `console.log` cơ bản",
+        "description": "Hàm `calculateSum` dưới đây đang trả về kết quả sai. Hãy sử dụng `console.log` để tìm và sửa lỗi trong hàm.",
+        "starterCode": "function calculateSum(a, b) {\n  // Phép tính đang bị sai\n  const result = a - b;\n  return result;\n}\n\n// Kết quả mong đợi: 8\nconsole.log(calculateSum(5, 3));",
+        "solution": "function calculateSum(a, b) {\n  // Sử dụng console.log để kiểm tra giá trị của a và b\n  console.log('Giá trị của a:', a);\n  console.log('Giá trị của b:', b);\n\n  // Sửa lại phép tính cho đúng\n  const result = a + b;\n\n  // In kết quả để xác minh\n  console.log('Kết quả:', result);\n  return result;\n}\n\n// Kết quả mong đợi: 8\nconsole.log(calculateSum(5, 3));",
+        "testCases": "Hàm `calculateSum(5, 3)` phải trả về 8. Hàm `calculateSum(-2, 10)` phải trả về 8."
+      },
+      {
+        "title": "Bài 2: Xử lý lỗi `destination` null trong `onDragEnd`",
+        "description": "Hoàn thiện hàm `handleDragEnd` để xử lý trường hợp người dùng kéo và thả một item ra ngoài khu vực cho phép. Nếu `result.destination` là `null`, hàm nên dừng lại và không làm gì cả.",
+        "starterCode": "function handleDragEnd(result) {\n  // result object từ react-beautiful-dnd\n  // console.log(result);\n\n  // Thêm logic xử lý của bạn ở đây\n\n  console.log('Đang xử lý sắp xếp lại...');\n  // ... logic sắp xếp lại item ...\n}\n\n// Test case 1: Thả hợp lệ\nhandleDragEnd({ source: { index: 0 }, destination: { index: 1 } });\n\n// Test case 2: Thả không hợp lệ\nhandleDragEnd({ source: { index: 0 }, destination: null });",
+        "solution": "function handleDragEnd(result) {\n  // result object từ react-beautiful-dnd\n  // console.log(result);\n\n  // Nếu destination là null, tức là thả ra ngoài, thì dừng lại\n  if (!result.destination) {\n    console.log('Thao tác thả không hợp lệ, dừng xử lý.');\n    return;\n  }\n\n  console.log('Đang xử lý sắp xếp lại...');\n  // ... logic sắp xếp lại item ...\n}\n\n// Test case 1: Thả hợp lệ\nhandleDragEnd({ source: { index: 0 }, destination: { index: 1 } });\n\n// Test case 2: Thả không hợp lệ\nhandleDragEnd({ source: { index: 0 }, destination: null });",
+        "testCases": "Khi gọi với `destination: null`, hàm phải `return` và không in ra dòng chữ 'Đang xử lý sắp xếp lại...'. Khi gọi với `destination` hợp lệ, hàm phải in ra dòng chữ đó."
+      },
+      {
+        "title": "Bài 3: Debug lỗi truy cập thuộc tính của object `undefined`",
+        "description": "Hàm `getUserCity` đang bị lỗi và crash khi không tìm thấy user. Hãy sửa lại hàm để nó trả về chuỗi \"City not found\" thay vì bị crash.",
+        "starterCode": "const users = [\n  { id: 1, name: 'Alice', address: { city: 'Hanoi' } },\n  { id: 2, name: 'Bob' }\n];\n\nfunction getUserCity(userId) {\n  const user = users.find(u => u.id === userId);\n  // Lỗi sẽ xảy ra ở dòng dưới nếu user không có address\n  return user.address.city;\n}\n\n// Test case 1 (Hoạt động tốt):\nconsole.log(getUserCity(1));\n\n// Test case 2 (Gây crash):\nconsole.log(getUserCity(2));\n\n// Test case 3 (Gây crash):\nconsole.log(getUserCity(3));",
+        "solution": "const users = [\n  { id: 1, name: 'Alice', address: { city: 'Hanoi' } },\n  { id: 2, name: 'Bob' }\n];\n\nfunction getUserCity(userId) {\n  const user = users.find(u => u.id === userId);\n\n  // Cách 1: Dùng if check\n  // if (!user || !user.address) {\n  //   return \"City not found\";\n  // }\n  // return user.address.city;\n\n  // Cách 2: Dùng Optional Chaining (?.)\n  return user?.address?.city || \"City not found\";\n}\n\n// Test case 1 (Hoạt động tốt):\nconsole.log(getUserCity(1)); // Hanoi\n\n// Test case 2 (Đã sửa):\nconsole.log(getUserCity(2)); // City not found\n\n// Test case 3 (Đã sửa):\nconsole.log(getUserCity(3)); // City not found",
+        "testCases": "`getUserCity(1)` trả về 'Hanoi'. `getUserCity(2)` trả về 'City not found'. `getUserCity(3)` trả về 'City not found'."
+      },
+      {
+        "title": "Bài 4: Sử dụng Breakpoint để tìm lỗi logic",
+        "description": "Hàm `updateCardOrder` được cho là để cập nhật mảng `cardOrderIds` trong một column. Tuy nhiên, nó đang hoạt động sai. Hãy mô tả cách bạn sẽ dùng breakpoint trong VS Code (hoặc Chrome DevTools) để tìm ra vấn đề. Bạn không cần viết code sửa, chỉ cần mô tả quy trình debug.",
+        "starterCode": "function updateCardOrder(column, newCardOrderIds) {\n  // Hàm này nhận vào một object column và một mảng id mới\n  // và được cho là sẽ trả về một object column đã được cập nhật\n  column.cardOrderIds = newCardOrderIds;\n  return { column }; // Lỗi logic nằm ở đây\n}\n\nconst initialColumn = {\n  _id: 'column-1',\n  title: 'To Do',\n  cardOrderIds: ['card-1', 'card-2', 'card-3']\n};\nconst newOrder = ['card-3', 'card-1', 'card-2'];\n\nconst updatedColumn = updateCardOrder(initialColumn, newOrder);\nconsole.log(updatedColumn);",
+        "solution": "Quy trình debug bằng breakpoint:\n1. Đặt một breakpoint ở dòng `column.cardOrderIds = newCardOrderIds;` và một breakpoint khác ở dòng `console.log(updatedColumn);`.\n2. Chạy chế độ debug. Chương trình sẽ dừng ở breakpoint đầu tiên.\n3. Kiểm tra (hover hoặc xem trong mục Variables) giá trị của `column` và `newCardOrderIds` để đảm bảo chúng được truyền vào đúng.\n4. Nhấn F10 (Step Over) để thực thi dòng gán. Kiểm tra lại object `column`, sẽ thấy `cardOrderIds` đã được cập nhật thành công.\n5. Nhấn F5 (Continue) để chạy đến breakpoint tiếp theo. Chương trình dừng lại.\n6. Kiểm tra giá trị của `updatedColumn`. Sẽ thấy nó là `{ column: { _id: ..., cardOrderIds: [...] } }` thay vì chỉ là object column. Đây chính là lỗi. Lẽ ra hàm phải `return column;` chứ không phải `return { column };`.",
+        "testCases": "Mô tả phải bao gồm các bước: đặt breakpoint, kiểm tra giá trị biến đầu vào, thực thi từng bước (step over), và kiểm tra giá trị trả về để phát hiện sự bất thường."
+      },
+      {
+        "title": "Bài 5: Phân tích API call với tab Network",
+        "description": "Một chức năng \"Thêm Card mới\" gửi yêu cầu POST đến `/api/cards`. Tuy nhiên, server trả về lỗi 400 Bad Request. Dựa vào kiến thức trong bài học, hãy liệt kê 3 thứ bạn sẽ kiểm tra trong tab Network của Chrome DevTools để tìm ra nguyên nhân.",
+        "starterCode": "// Giả sử đây là code phía client gửi request\nfetch('/api/cards', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({ \n    // ... có thể thiếu hoặc sai dữ liệu ở đây\n    boardId: 'board-1'\n    // thiếu columnId và title\n  })\n});",
+        "solution": "Ba thứ cần kiểm tra trong tab Network khi gặp lỗi 400 Bad Request:\n\n1.  **Payload (Request Body):** Kiểm tra xem dữ liệu gửi đi (nằm trong tab `Payload` hoặc `Request`) có đúng định dạng và đủ các trường mà API yêu cầu không. Ví dụ, API có thể yêu cầu cả `columnId` và `title` cho card mới, nhưng client chỉ gửi `boardId`. Đây là nguyên nhân phổ biến nhất gây ra lỗi 400.\n\n2.  **Response (Phản hồi từ Server):** Kiểm tra nội dung phản hồi từ server. Một API tốt thường sẽ trả về một thông điệp lỗi dạng JSON mô tả rõ ràng trường nào bị thiếu hoặc không hợp lệ (ví dụ: `{\"error\": \"columnId is required\"}`).\n\n3.  **Headers (Request Headers):** Đảm bảo các header cần thiết đã được gửi đúng, đặc biệt là `Content-Type: application/json` để server biết cách phân tích (parse) body của request.",
+        "testCases": "Câu trả lời phải liệt kê được ít nhất 3 mục kiểm tra hợp lệ trong tab Network, bao gồm Payload (dữ liệu gửi đi), Response (phản hồi lỗi từ server), và Headers."
+      }
+    ]
+  }
+}

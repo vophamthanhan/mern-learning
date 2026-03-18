@@ -1,0 +1,213 @@
+{
+  "id": 86,
+  "title": "Bài 71: Hoàn Thiện Tích Hợp Kéo Thả Card với API (Part 1)",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# Bài 71: Hoàn Thiện Tích Hợp Kéo Thả Card với API (Part 1)\n\n## Mục tiêu bài học\n\nVideo này tập trung vào việc tích hợp chức năng kéo thả (drag and drop) các \"Card\" trong một ứng dụng quản lý công việc (Trello-like) với phía backend. Cụ thể, mục tiêu là khi người dùng kéo và thả một Card từ cột này sang cột khác, hoặc thay đổi vị trí của nó trong cùng một cột, ứng dụng sẽ gọi đến một API để cập nhật lại trạng thái và vị trí mới của Card đó trong cơ sở dữ liệu (MongoDB).\n\nPhần 1 của loạt bài này sẽ đặt nền móng cho việc tích hợp, có thể sẽ tập trung vào phía Frontend (ReactJS) và cách chuẩn bị để gọi API.\n\n## Kiến thức chi tiết được trình bày trong video\n\n### 1. Tổng quan về Luồng hoạt động\n\nKhi người dùng thực hiện thao tác kéo thả một Card, luồng xử lý sẽ như sau:\n\n1.  **Frontend (ReactJS):** Thư viện `dnd-kit` (hoặc một thư viện tương tự) sẽ bắt sự kiện `onDragEnd`.\n2.  **Frontend (ReactJS):** Trong hàm xử lý sự kiện `onDragEnd`, chúng ta sẽ lấy được thông tin quan trọng như `active` (Card đang được kéo) và `over` (nơi Card được thả).\n3.  **Frontend (ReactJS):** Dựa vào thông tin trên, chúng ta xác định được Card đã được di chuyển đến cột mới nào và ở vị trí nào.\n4.  **Frontend (ReactJS):** Chuẩn bị dữ liệu cần thiết và gọi một API request (ví dụ: `PATCH /api/v1/cards/:cardId`) lên backend để thông báo về sự thay đổi này.\n5.  **Backend (NodeJS & Express):** API endpoint tiếp nhận request, xử lý logic để cập nhật thông tin của Card trong cơ sở dữ liệu MongoDB.\n6.  **Backend (NodeJS & Express):** Phản hồi lại cho Frontend để xác nhận việc cập nhật đã thành công hay thất bại.\n\n### 2. Xử lý ở phía Frontend (ReactJS)\n\nPhần lớn nội dung của video này có thể sẽ xoay quanh việc xử lý ở Frontend.\n\n#### a. Cấu trúc lại hàm `onDragEnd`\n\nHàm `onDragEnd` là nơi trung tâm của logic kéo thả. Chúng ta cần phải cấu trúc lại nó để xử lý các trường hợp khác nhau:\n\n*   **Kéo Card ra khỏi vị trí ban đầu:** Cần xác định được `active` và `over` có tồn tại không.\n*   **Kéo và thả ở cùng một vị trí:** Không làm gì cả.\n*   **Kéo và thả trong cùng một cột:** Cần cập nhật lại thứ tự của các Card trong cột đó.\n*   **Kéo và thả sang một cột khác:** Đây là trường hợp phức tạp nhất. Chúng ta cần:\n    *   Lấy `oldColumn` từ `active`.\n    *   Lấy `newColumn` từ `over`.\n    *   Cập nhật lại mảng `cardOrderIds` (hoặc tương tự) của cả hai cột `oldColumn` và `newColumn`.\n    *   Cập nhật lại `columnId` của Card được di chuyển.\n\n#### b. Cập nhật giao diện người dùng một cách lạc quan (Optimistic UI Update)\n\nĐể mang lại trải nghiệm người dùng tốt nhất, chúng ta nên cập nhật giao diện ngay lập tức sau khi người dùng thả Card, mà không cần chờ phản hồi từ API. Đây được gọi là \"Optimistic UI Update\".\n\n*   **Ưu điểm:** Giao diện mượt mà, người dùng có cảm giác thao tác được thực hiện ngay lập tức.\n*   **Nhược điểm:** Cần xử lý trường hợp nếu API call bị lỗi. Khi đó, chúng ta phải \"rollback\" lại thay đổi trên UI về trạng thái ban đầu.\n\n```javascript\n// Ví dụ về cách xử lý onDragEnd với optimistic update\n\nconst handleDragEnd = (event) => {\n  const { active, over } = event;\n\n  if (!over) return;\n\n  // Nếu kéo thả ở cùng vị trí cũ thì không làm gì\n  if (active.id === over.id) return;\n\n  // Lấy thông tin cột cũ và cột mới\n  const oldColumn = findColumnByCardId(active.id);\n  const newColumn = findColumnByCardId(over.id);\n\n  if (oldColumn.id !== newColumn.id) {\n    // Xử lý kéo thả khác cột\n    // 1. Cập nhật UI ngay lập tức (Optimistic Update)\n    const nextState = ... // Logic để di chuyển card sang cột mới trên state\n    setBoard(nextState);\n\n    // 2. Gọi API để cập nhật backend\n    moveCardToDifferentColumnAPI({\n      cardId: active.id,\n      newColumnId: newColumn.id,\n      // ... các thông tin khác\n    }).catch(() => {\n      // 3. Nếu API lỗi, rollback lại state của board\n      setBoard(originalBoardState);\n    });\n  }\n};\n```\n\n### 3. Chuẩn bị cho việc gọi API\n\nVideo sẽ hướng dẫn cách tạo một service hoặc một hàm riêng để xử lý việc gọi API.\n\n```javascript\n// services/cardService.js\n\nimport axios from 'axios';\nimport { API_ROOT } from '~/utils/constants';\n\n// Hàm gọi API để di chuyển card sang cột khác\nexport const moveCardToDifferentColumnAPI = async (data) => {\n  const response = await axios.patch(`${API_ROOT}/v1/cards/move-to-different-column`, data);\n  return response.data;\n};\n```\n\n## Các bước thực hành\n\n1.  **Phân tích lại hàm `onDragEnd`:** Xem xét lại logic hiện tại và xác định những điểm cần thay đổi để tích hợp API.\n2.  **Xác định dữ liệu cần gửi lên API:** Khi di chuyển một Card, backend cần những thông tin gì? Ví dụ: `cardId`, `sourceColumnId`, `destinationColumnId`, `newCardOrderIds`...\n3.  **Triển khai Optimistic UI Update:** Viết code để cập nhật state của board trong React ngay sau khi thả Card.\n4.  **Tạo hàm gọi API:** Viết một hàm bất đồng bộ (async/await) sử dụng `axios` hoặc `fetch` để gửi request `PATCH` hoặc `PUT` lên backend.\n5.  **Tích hợp hàm gọi API vào `onDragEnd`:** Đặt lời gọi API sau khi đã cập nhật UI.\n6.  **(Optional) Xử lý Rollback:** Thêm khối `try...catch` để bắt lỗi từ API và khôi phục lại trạng thái giao diện nếu cần.\n\n## Lưu ý quan trọng\n\n*   **Tính nhất quán dữ liệu:** Optimistic UI rất tốt cho trải nghiệm người dùng, nhưng phải đảm bảo rằng dữ liệu giữa Frontend và Backend luôn nhất quán. Việc xử lý lỗi và rollback là cực kỳ quan trọng.\n*   **Loại API Endpoint:** Sử dụng phương thức `PATCH` là phù hợp nhất cho việc cập nhật một phần tài nguyên (cụ thể là vị trí của Card).\n*   **Cấu trúc dữ liệu ở Backend:** Backend cần được thiết kế để có thể cập nhật thứ tự của các Card một cách hiệu quả. Thường thì mỗi `Column` sẽ có một mảng `cardOrderIds` để lưu thứ tự các Card mà nó chứa.\n*   **Phần 1:** Vì đây là phần 1, có thể video sẽ chưa đi sâu vào việc viết code cho phía Backend mà chỉ tập trung vào việc chuẩn bị và gọi API từ Frontend.\n\n## Tài liệu tham khảo\n\n*   **dnd-kit:** [https://dndkit.com/](https://dndkit.com/)\n*   **Axios:** [https://axios-http.com/](https://axios-http.com/)\n*   **React Docs (Handling Events):** [https://react.dev/learn/responding-to-events](https://react.dev/learn/responding-to-events)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của việc tích hợp API khi kéo thả Card là gì?",
+        "options": [
+          "A. Để giao diện người dùng trông đẹp hơn với hiệu ứng chuyển động.",
+          "B. Để cập nhật trạng thái và vị trí mới của Card vào cơ sở dữ liệu phía backend.",
+          "C. Để tăng tốc độ tải trang của ứng dụng.",
+          "D. Để thay thế hoàn toàn thư viện dnd-kit."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mục tiêu chính là đồng bộ hóa thay đổi vị trí của Card trên giao diện người dùng với cơ sở dữ liệu ở backend, đảm bảo dữ liệu luôn nhất quán."
+      },
+      {
+        "question": "Khái niệm \"Optimistic UI Update\" có nghĩa là gì?",
+        "options": [
+          "A. Chỉ cập nhật giao diện sau khi nhận được phản hồi thành công từ API.",
+          "B. Cập nhật giao diện người dùng ngay lập tức sau thao tác của người dùng, không cần chờ phản hồi API.",
+          "C. Gửi yêu cầu API một cách lạc quan, hi vọng rằng nó sẽ không bao giờ thất bại.",
+          "D. Luôn hiển thị một thông báo thành công cho người dùng, bất kể kết quả API."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Optimistic UI Update là một kỹ thuật cập nhật UI ngay lập tức để cải thiện trải nghiệm người dùng, giả định rằng lời gọi API sẽ thành công. Việc xử lý lỗi (rollback) là một phần quan trọng của kỹ thuật này."
+      },
+      {
+        "question": "Trong sự kiện `onDragEnd` của thư viện `dnd-kit`, đối tượng `active` và `over` đại diện cho điều gì?",
+        "options": [
+          "A. `active` là cột bắt đầu, `over` là cột kết thúc.",
+          "B. `active` là Card đang được kéo, `over` là khu vực (cột hoặc Card khác) mà Card được thả vào.",
+          "C. `active` là người dùng hiện tại, `over` là toàn bộ bảng làm việc.",
+          "D. `active` là vị trí ban đầu của chuột, `over` là vị trí cuối cùng của chuột."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thư viện dnd-kit cung cấp thông tin về phần tử đang được kéo (`active`) và phần tử hoặc khu vực mà nó được thả lên (`over`) để xử lý logic di chuyển."
+      },
+      {
+        "question": "Phương thức HTTP nào được coi là phù hợp nhất để cập nhật vị trí của một Card đã tồn tại?",
+        "options": [
+          "A. POST",
+          "B. GET",
+          "C. PATCH",
+          "D. DELETE"
+        ],
+        "correctAnswer": 2,
+        "explanation": "PATCH là phương thức phù hợp nhất vì chúng ta chỉ cập nhật một phần thông tin của tài nguyên Card (cụ thể là `columnId` và thứ tự), không phải thay thế toàn bộ tài nguyên như PUT."
+      },
+      {
+        "question": "Khi sử dụng Optimistic UI Update, nếu lời gọi API thất bại, hành động cần thiết tiếp theo là gì?",
+        "options": [
+          "A. Thử lại lời gọi API vô thời hạn.",
+          "B. Không làm gì cả, giữ nguyên trạng thái UI đã cập nhật.",
+          "C. Hiển thị một thông báo lỗi và yêu cầu người dùng tải lại trang.",
+          "D. \"Rollback\" - khôi phục lại trạng thái của giao diện người dùng về trạng thái trước khi có sự thay đổi."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Để đảm bảo tính nhất quán dữ liệu, nếu API thất bại, UI phải được đưa về trạng thái ban đầu (trước khi thực hiện thao tác) để phản ánh đúng trạng thái dữ liệu trên server."
+      },
+      {
+        "question": "Trường hợp nào sau đây KHÔNG cần thực hiện bất kỳ hành động cập nhật nào trong hàm `handleDragEnd`?",
+        "options": [
+          "A. Kéo Card sang một cột khác.",
+          "B. Kéo Card và thả ở cùng một vị trí ban đầu.",
+          "C. Thay đổi thứ tự Card trong cùng một cột.",
+          "D. Kéo Card đầu tiên trong cột xuống vị trí cuối cùng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu Card được kéo và thả lại đúng vị trí cũ của nó (`active.id === over.id`), không có sự thay đổi nào về dữ liệu, do đó không cần xử lý hay gọi API."
+      },
+      {
+        "question": "Trong luồng xử lý kéo thả Card, phía Frontend (ReactJS) KHÔNG chịu trách nhiệm cho việc nào sau đây?",
+        "options": [
+          "A. Bắt sự kiện `onDragEnd`.",
+          "B. Cập nhật giao diện người dùng một cách lạc quan.",
+          "C. Gọi API request lên backend để thông báo thay đổi.",
+          "D. Xử lý logic để cập nhật thông tin Card trong cơ sở dữ liệu MongoDB."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Việc cập nhật dữ liệu trực tiếp trong cơ sở dữ liệu (MongoDB) là trách nhiệm của phía Backend (NodeJS/Express), sau khi nhận được yêu cầu từ Frontend."
+      },
+      {
+        "question": "Tại sao việc cập nhật mảng `cardOrderIds` ở cả hai cột (cũ và mới) lại quan trọng khi di chuyển Card giữa các cột?",
+        "options": [
+          "A. Để thay đổi màu sắc của các cột.",
+          "B. Để duy trì và cập nhật đúng thứ tự hiển thị của các Card trong cả hai cột bị ảnh hưởng.",
+          "C. Để xóa Card khỏi cột cũ.",
+          "D. Đây là yêu cầu của thư viện `axios`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mảng `cardOrderIds` quyết định thứ tự hiển thị của Card. Khi di chuyển Card, cần xóa ID của nó khỏi mảng của cột cũ và thêm vào mảng của cột mới ở đúng vị trí."
+      },
+      {
+        "question": "Thư viện `axios` được sử dụng trong bối cảnh bài học để làm gì?",
+        "options": [
+          "A. Để tạo hiệu ứng kéo thả.",
+          "B. Để quản lý trạng thái (state) của ứng dụng React.",
+          "C. Để thực hiện các HTTP request từ trình duyệt đến API server.",
+          "D. Để định kiểu (styling) cho các Card và Column."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Axios là một thư viện phổ biến dựa trên Promise để thực hiện các yêu cầu HTTP, giúp Frontend giao tiếp với các API của Backend một cách dễ dàng."
+      },
+      {
+        "question": "Ưu điểm lớn nhất của việc áp dụng \"Optimistic UI Update\" là gì?",
+        "options": [
+          "A. Giảm tải cho máy chủ backend.",
+          "B. Đảm bảo dữ liệu luôn chính xác 100%.",
+          "C. Cải thiện trải nghiệm người dùng, tạo cảm giác giao diện mượt mà và phản hồi ngay lập tức.",
+          "D. Giúp code phía frontend đơn giản hơn."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Ưu điểm chính là về trải nghiệm người dùng (UX). Người dùng thấy kết quả hành động của mình ngay lập tức mà không phải chờ đợi, làm cho ứng dụng có cảm giác nhanh và nhạy hơn."
+      },
+      {
+        "question": "Dữ liệu nào sau đây là quan trọng nhất cần gửi lên API khi di chuyển một Card sang cột khác?",
+        "options": [
+          "A. ID của Card được di chuyển, ID của cột mới, và mảng thứ tự Card mới của cả cột cũ và cột mới.",
+          "B. Chỉ cần ID của Card được di chuyển.",
+          "C. Tên của người dùng thực hiện thao tác.",
+          "D. Màu sắc của Card được di chuyển."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Backend cần biết Card nào đã di chuyển, nó di chuyển đến cột nào, và thứ tự mới của các Card trong các cột bị ảnh hưởng để cập nhật chính xác vào cơ sở dữ liệu."
+      },
+      {
+        "question": "Trong cấu trúc dữ liệu ở Backend, tại sao mỗi `Column` thường có một mảng `cardOrderIds`?",
+        "options": [
+          "A. Để lưu trữ nội dung chi tiết của mỗi Card.",
+          "B. Để giới hạn số lượng Card trong một cột.",
+          "C. Để lưu trữ và duy trì thứ tự của các Card mà nó chứa.",
+          "D. Để lưu lịch sử thay đổi của cột."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mảng `cardOrderIds` là một cách hiệu quả để lưu trữ thông tin về thứ tự các Card. Khi cần hiển thị, chỉ cần dựa vào mảng này để sắp xếp các đối tượng Card tương ứng."
+      },
+      {
+        "question": "Hành động \"di chuyển Card trong cùng một cột\" và \"di chuyển Card sang cột khác\" khác nhau cơ bản ở điểm nào trong logic xử lý ở Frontend?",
+        "options": [
+          "A. Không có gì khác biệt.",
+          "B. Di chuyển cùng cột chỉ cập nhật `cardOrderIds` của một cột, trong khi di chuyển khác cột phải cập nhật `cardOrderIds` của hai cột và `columnId` của Card.",
+          "C. Di chuyển cùng cột không cần gọi API, trong khi di chuyển khác cột thì có.",
+          "D. Di chuyển cùng cột dùng phương thức POST, di chuyển khác cột dùng PATCH."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Di chuyển khác cột là trường hợp phức tạp hơn, đòi hỏi phải thay đổi dữ liệu của hai cột (cũ và mới) và cả chính Card được di chuyển (cập nhật `columnId`)."
+      },
+      {
+        "question": "Tại sao cần kiểm tra `if (!over) return;` ở đầu hàm `handleDragEnd`?",
+        "options": [
+          "A. Để đảm bảo người dùng đã đăng nhập.",
+          "B. Để xử lý trường hợp người dùng kéo Card ra ngoài một khu vực không thể thả được (droppable area).",
+          "C. Để kiểm tra xem Card có nội dung hay không.",
+          "D. Để đảm bảo `active` và `over` không phải là một."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu người dùng kéo một Card và thả nó ở một vị trí không hợp lệ (không nằm trong một cột nào), đối tượng `over` sẽ là `null`. Việc kiểm tra này để dừng hàm và tránh gây ra lỗi."
+      },
+      {
+        "question": "Trong ví dụ `moveCardToDifferentColumnAPI`, việc sử dụng `async/await` mang lại lợi ích gì?",
+        "options": [
+          "A. Giúp code chạy nhanh hơn.",
+          "B. Giúp viết code xử lý bất đồng bộ (như gọi API) một cách rõ ràng và dễ đọc hơn, tương tự như code đồng bộ.",
+          "C. Đây là cách duy nhất để gọi API trong JavaScript.",
+          "D. Giúp giảm kích thước của ứng dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`async/await` là cú pháp cho phép viết code bất đồng bộ theo cách tuần tự, dễ hiểu, tránh được \"callback hell\" hoặc chuỗi `.then()` phức tạp khi làm việc với Promises."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cấu trúc hàm handleDragEnd cơ bản",
+        "description": "Hoàn thiện hàm `handleDragEnd` để xử lý hai trường hợp cơ bản nhất: (1) khi Card được thả ra ngoài một vùng hợp lệ và (2) khi Card được thả lại đúng vị trí cũ. Trong cả hai trường hợp, hàm sẽ không thực hiện gì cả.",
+        "starterCode": "const handleDragEnd = (event) => {\n  const { active, over } = event;\n\n  // Viết code của bạn ở đây\n\n\n  console.log('Hành động hợp lệ, tiếp tục xử lý...');\n};",
+        "solution": "const handleDragEnd = (event) => {\n  const { active, over } = event;\n\n  // Trường hợp 1: Thả ra ngoài vùng hợp lệ\n  if (!over) return;\n\n  // Trường hợp 2: Thả lại đúng vị trí cũ\n  if (active.id === over.id) return;\n\n  console.log('Hành động hợp lệ, tiếp tục xử lý...');\n};",
+        "testCases": "1. Gọi `handleDragEnd({ active: { id: 'card-1' }, over: null })` -> Hàm sẽ `return` và không in ra console.\n2. Gọi `handleDragEnd({ active: { id: 'card-1' }, over: { id: 'card-1' } })` -> Hàm sẽ `return` và không in ra console.\n3. Gọi `handleDragEnd({ active: { id: 'card-1' }, over: { id: 'card-2' } })` -> Sẽ in ra 'Hành động hợp lệ, tiếp tục xử lý...'."
+      },
+      {
+        "title": "Bài 2: Tạo hàm gọi API với Axios",
+        "description": "Viết một hàm bất đồng bộ có tên `updateCardPositionAPI` sử dụng `axios` để gửi yêu cầu `PATCH` đến một endpoint. Hàm này nhận một đối tượng `data` và gửi nó làm body của request.",
+        "starterCode": "import axios from 'axios';\nconst API_ROOT = 'https://api.trello.com';\n\n// Viết hàm updateCardPositionAPI của bạn ở đây\n\n",
+        "solution": "import axios from 'axios';\nconst API_ROOT = 'https://api.trello.com';\n\nconst updateCardPositionAPI = async (data) => {\n  const response = await axios.patch(`${API_ROOT}/v1/cards/update-position`, data);\n  return response.data;\n};",
+        "testCases": "1. Hàm phải là một hàm `async`.\n2. Hàm phải sử dụng `axios.patch`.\n3. URL của request phải là `https://api.trello.com/v1/cards/update-position`.\n4. Dữ liệu truyền vào (`data`) phải được gửi đi trong body của request.\n5. Hàm phải trả về `response.data`."
+      },
+      {
+        "title": "Bài 3: Cập nhật UI lạc quan (Optimistic Update) - Cùng cột",
+        "description": "Cho một state board, một `activeCard` và một `overCard` trong cùng một cột. Viết đoạn code để cập nhật lại mảng `cardOrderIds` của cột đó một cách lạc quan (không gọi API).",
+        "starterCode": "const board = {\n  columns: [{\n    id: 'column-1',\n    cardOrderIds: ['card-1', 'card-2', 'card-3', 'card-4']\n  }]\n};\nconst activeCardId = 'card-2';\nconst overCardId = 'card-4';\n\n// Logic cập nhật UI lạc quan\n// ...\n\n// console.log(updatedColumn.cardOrderIds);",
+        "solution": "const board = {\n  columns: [{\n    id: 'column-1',\n    cardOrderIds: ['card-1', 'card-2', 'card-3', 'card-4']\n  }]\n};\nconst activeCardId = 'card-2';\nconst overCardId = 'card-4';\n\n// Logic cập nhật UI lạc quan\nconst columnToUpdate = board.columns[0];\nconst oldIndex = columnToUpdate.cardOrderIds.indexOf(activeCardId);\nconst newIndex = columnToUpdate.cardOrderIds.indexOf(overCardId);\n\n// Xóa card ở vị trí cũ và chèn vào vị trí mới\nconst [movedCard] = columnToUpdate.cardOrderIds.splice(oldIndex, 1);\ncolumnToUpdate.cardOrderIds.splice(newIndex, 0, movedCard);\n\n// console.log(columnToUpdate.cardOrderIds); // Kết quả mong đợi: ['card-1', 'card-3', 'card-4', 'card-2'] hoặc tương tự tùy logic chèn",
+        "testCases": "Sau khi chạy, mảng `cardOrderIds` của `column-1` phải được cập nhật chính xác, di chuyển `card-2` đến vị trí của `card-4`."
+      },
+      {
+        "title": "Bài 4: Cập nhật UI lạc quan (Optimistic Update) - Khác cột",
+        "description": "Viết logic để thực hiện Optimistic UI Update khi một Card được kéo từ `oldColumn` sang `newColumn`. Cập nhật cả `cardOrderIds` của hai cột và `columnId` của chính Card đó trên state.",
+        "starterCode": "let boardState = {\n  cards: [{ id: 'card-2', columnId: 'col-1' }],\n  columns: [\n    { id: 'col-1', cardOrderIds: ['card-1', 'card-2'] },\n    { id: 'col-2', cardOrderIds: ['card-3'] }\n  ]\n};\nconst activeCardId = 'card-2';\nconst overColumnId = 'col-2';\nconst overCardId = 'card-3'; // Thả card-2 vào vị trí của card-3\n\n// Logic cập nhật UI lạc quan\n// ...\n\n// console.log(boardState);",
+        "solution": "let boardState = {\n  cards: [{ id: 'card-2', columnId: 'col-1' }],\n  columns: [\n    { id: 'col-1', cardOrderIds: ['card-1', 'card-2'] },\n    { id: 'col-2', cardOrderIds: ['card-3'] }\n  ]\n};\nconst activeCardId = 'card-2';\nconst overColumnId = 'col-2';\nconst overCardId = 'card-3';\n\n// Logic cập nhật UI lạc quan\nconst oldColumn = boardState.columns.find(c => c.cardOrderIds.includes(activeCardId));\nconst newColumn = boardState.columns.find(c => c.id === overColumnId);\n\n// 1. Cập nhật cardOrderIds của cột cũ\noldColumn.cardOrderIds = oldColumn.cardOrderIds.filter(id => id !== activeCardId);\n\n// 2. Cập nhật cardOrderIds của cột mới\nconst newIndex = newColumn.cardOrderIds.indexOf(overCardId);\nnewColumn.cardOrderIds.splice(newIndex, 0, activeCardId);\n\n// 3. Cập nhật columnId của card\nconst movedCard = boardState.cards.find(c => c.id === activeCardId);\nmovedCard.columnId = overColumnId;\n\n// console.log(boardState);",
+        "testCases": "1. `card-2` phải bị xóa khỏi `cardOrderIds` của `col-1`.\n2. `card-2` phải được thêm vào `cardOrderIds` của `col-2`.\n3. `columnId` của `card-2` trong mảng `cards` phải được cập nhật thành `col-2`."
+      },
+      {
+        "title": "Bài 5: Hoàn thiện `handleDragEnd` với Rollback",
+        "description": "Hoàn thiện hàm `handleDragEnd` bằng cách tích hợp lời gọi API và xử lý rollback. Giả sử bạn đã có hàm `moveCardToDifferentColumnAPI` và state ban đầu. Nếu API call thất bại, hãy khôi phục `board` về trạng thái ban đầu.",
+        "starterCode": "const handleDragEnd = (event) => {\n  // ... giả sử đã lấy được active, over và xác định đây là trường hợp kéo khác cột\n\n  const originalBoard = JSON.parse(JSON.stringify(board)); // Lưu state ban đầu\n  let updatedBoard = { ... }; // Thực hiện optimistic update ở đây\n  setBoard(updatedBoard);\n\n  // Gọi API và xử lý rollback\n  // Viết code của bạn ở đây\n};",
+        "solution": "const handleDragEnd = (event) => {\n  // ... giả sử đã lấy được active, over và xác định đây là trường hợp kéo khác cột\n\n  const originalBoard = JSON.parse(JSON.stringify(board)); // Lưu state ban đầu\n  \n  // Thực hiện optimistic update\n  let updatedBoard = { ...board }; // Logic di chuyển card trên updatedBoard\n  setBoard(updatedBoard);\n\n  // Gọi API và xử lý rollback\n  const apiData = { cardId: active.id, newColumnId: newColumn.id, ... };\n  moveCardToDifferentColumnAPI(apiData).catch(() => {\n    // Nếu API lỗi, rollback lại state của board\n    setBoard(originalBoard);\n    // Có thể thêm thông báo lỗi cho người dùng ở đây\n  });\n};",
+        "testCases": "1. Hàm phải gọi `setBoard(updatedBoard)` ngay sau khi tính toán state mới.\n2. Hàm phải gọi `moveCardToDifferentColumnAPI`.\n3. Lời gọi API phải có một khối `.catch()`.\n4. Bên trong khối `.catch()`, hàm phải gọi `setBoard(originalBoard)` để thực hiện rollback."
+      }
+    ]
+  }
+}

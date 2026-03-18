@@ -1,0 +1,213 @@
+{
+  "id": 42,
+  "title": "Bài 24: Code thanh Trello Board Bar thực tế với ReactJS & Material UI",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài 24: Code thanh Trello Board Bar thực tế với ReactJS & Material UI\n\n## Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tập trung vào việc xây dựng giao diện cho thanh \"Board Bar\" trong một ứng dụng Trello clone. Đây là thanh công cụ nằm ngay dưới thanh AppBar chính, chứa các thông tin và chức năng quan trọng liên quan trực tiếp đến board hiện tại, chẳng hạn như tên board, bộ lọc, và danh sách thành viên.\n\n## Kiến thức chi tiết được trình bày trong video\n\nVideo tập trung vào việc sử dụng các component từ thư viện Material-UI để xây dựng một giao diện Board Bar hoàn chỉnh và đẹp mắt. Các kiến thức chính bao gồm:\n\n### 1. Cấu trúc layout với `Box` và Flexbox\n\n- **`Box` component**: Được sử dụng như một container chính cho toàn bộ Board Bar. `Box` là một component đa dụng của Material-UI, cho phép chúng ta dễ dàng áp dụng các thuộc tính CSS.\n- **Flexbox**: Toàn bộ layout của Board Bar được xây dựng dựa trên Flexbox. Chúng ta sẽ sử dụng các thuộc tính `display: 'flex'`, `alignItems: 'center'`, và `justifyContent: 'space-between'` để sắp xếp các phần tử con một cách linh hoạt.\n\n### 2. Sử dụng các component của Material-UI\n\n- **`Chip`**: Dùng để hiển thị các thông tin như tên board, chế độ xem (public/private). `Chip` là một component nhỏ gọn, rất phù hợp để hiển thị các thẻ thông tin.\n- **`Avatar` và `AvatarGroup`**: Để hiển thị danh sách các thành viên đang tham gia vào board. `AvatarGroup` là một component tiện lợi, tự động sắp xếp và nhóm các `Avatar` lại với nhau khi số lượng thành viên vượt quá giới hạn hiển thị.\n- **`Tooltip`**: Khi người dùng di chuột qua một avatar, `Tooltip` sẽ hiển thị tên đầy đủ của thành viên đó. Đây là một cách để cung cấp thêm thông tin mà không làm rối giao diện.\n- **`Button`**: Dùng cho chức năng \"Invite\" (Mời), cho phép người dùng mời thêm thành viên mới vào board.\n\n### 3. Styling với `sx` prop\n\n- **`sx` prop**: Đây là một cách tiếp cận hiện đại và mạnh mẽ để tùy chỉnh style cho các component của Material-UI. Thay vì viết CSS riêng, chúng ta có thể truyền một object chứa các thuộc tính CSS trực tiếp vào `sx` prop. Điều này giúp code gọn gàng và dễ quản lý hơn.\n\n### Code mẫu\n\n```jsx\nimport Box from '@mui/material/Box';\nimport Chip from '@mui/material/Chip';\nimport Avatar from '@mui/material/Avatar';\nimport AvatarGroup from '@mui/material/AvatarGroup';\nimport Tooltip from '@mui/material/Tooltip';\nimport Button from '@mui/material/Button';\n\nfunction BoardBar() {\n  return (\n    <Box sx={{\n      width: '100%',\n      height: (theme) => theme.trello.boardBarHeight,\n      display: 'flex',\n      alignItems: 'center',\n      justifyContent: 'space-between',\n      gap: 2,\n      px: 2,\n      borderTop: '1px solid #00bfa5'\n    }}>\n      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>\n        <Chip label=\"TrungQuanDev MERN Stack\" />\n        <Chip label=\"Public/Private\" />\n        <Chip label=\"Add to Drive\" />\n      </Box>\n\n      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>\n        <Button variant=\"outlined\">Invite</Button>\n        <AvatarGroup max={4}>\n          <Tooltip title=\"TrungQuanDev\">\n            <Avatar alt=\"TrungQuanDev\" src=\"https://trungquandev.com/avatar.jpg\" />\n          </Tooltip>\n          {/* Thêm các Avatar khác ở đây */}\n        </AvatarGroup>\n      </Box>\n    </Box>\n  );\n}\n\nexport default BoardBar;\n```\n\n## Các bước thực hành\n\n1.  **Tạo component `BoardBar.jsx`**: Tạo một file mới trong thư mục components của bạn.\n2.  **Import các component cần thiết**: Import `Box`, `Chip`, `Avatar`, `AvatarGroup`, `Tooltip`, và `Button` từ `@mui/material`.\n3.  **Xây dựng cấu trúc layout**: Sử dụng `Box` làm container chính và áp dụng `display: 'flex'`.\n4.  **Thêm các `Chip` thông tin**: Thêm các `Chip` để hiển thị tên board và các thông tin khác.\n5.  **Hiển thị danh sách thành viên**: Sử dụng `AvatarGroup` và `Avatar` để hiển thị danh sách thành viên. Bọc mỗi `Avatar` trong một `Tooltip` để hiển thị tên khi hover.\n6.  **Thêm nút \"Invite\"**: Thêm một `Button` để thực hiện chức năng mời thành viên.\n7.  **Tích hợp vào `Board` component**: Import và sử dụng `BoardBar` component trong component `Board` chính của bạn.\n\n## Lưu ý quan trọng\n\n- **Tùy chỉnh theme**: Chiều cao của Board Bar (`boardBarHeight`) được lấy từ theme của Material-UI. Đây là một good practice để quản lý các giá trị hằng số trong ứng dụng của bạn.\n- **Responsive**: Mặc dù video không tập trung sâu vào responsive, bạn nên cân nhắc cách hiển thị của Board Bar trên các thiết bị có kích thước màn hình khác nhau.\n- **Dữ liệu động**: Trong thực tế, dữ liệu cho Board Bar (tên board, danh sách thành viên, ...) sẽ được lấy từ API. Hãy chuẩn bị cấu trúc component để có thể dễ dàng tích hợp với dữ liệu động sau này.\n\n## Tài liệu tham khảo\n\n- **Video bài học**: [24. Code thanh Trello Board Bar thực tế | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=EoQeBDIOsj0)\n- **Material-UI Documentation**: [https://mui.com/](https://mui.com/)\n- **Blog của tác giả**: [https://trungquandev.com/](https://trungquandev.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Component nào của Material-UI được sử dụng như một container chính cho toàn bộ Board Bar trong bài học?",
+        "options": [
+          "Container",
+          "Box",
+          "Grid",
+          "Paper"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Box là một component đa dụng của Material-UI, cho phép dễ dàng áp dụng các thuộc tính CSS và được sử dụng làm container chính cho Board Bar."
+      },
+      {
+        "question": "Thuộc tính CSS nào được sử dụng để sắp xếp các phần tử con trong Board Bar một cách linh hoạt?",
+        "options": [
+          "display: grid",
+          "display: flex",
+          "display: block",
+          "display: inline-block"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Toàn bộ layout của Board Bar được xây dựng dựa trên Flexbox, sử dụng `display: 'flex'` để sắp xếp các phần tử con."
+      },
+      {
+        "question": "Component nào được dùng để hiển thị các thông tin như tên board hoặc chế độ xem (public/private)?",
+        "options": [
+          "Button",
+          "Card",
+          "Chip",
+          "Alert"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Chip là một component nhỏ gọn, rất phù hợp để hiển thị các thẻ thông tin như tên board."
+      },
+      {
+        "question": "Để hiển thị danh sách các thành viên tham gia board, cặp component nào được sử dụng?",
+        "options": [
+          "List và ListItem",
+          "Grid và GridItem",
+          "Avatar và AvatarGroup",
+          "Card và CardContent"
+        ],
+        "correctAnswer": 2,
+        "explanation": "AvatarGroup tự động sắp xếp và nhóm các Avatar lại với nhau, rất tiện lợi để hiển thị danh sách thành viên."
+      },
+      {
+        "question": "Component `Tooltip` có chức năng gì trong Board Bar?",
+        "options": [
+          "Hiển thị thông báo lỗi",
+          "Hiển thị tên đầy đủ của thành viên khi di chuột qua avatar",
+          "Mở một menu con",
+          "Hiển thị một hộp thoại xác nhận"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tooltip được sử dụng để cung cấp thêm thông tin (như tên đầy đủ) mà không làm rối giao diện khi người dùng tương tác với một phần tử."
+      },
+      {
+        "question": "Prop nào được sử dụng để tùy chỉnh style cho các component Material-UI một cách hiện đại và mạnh mẽ?",
+        "options": [
+          "style",
+          "className",
+          "css",
+          "sx"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Prop `sx` cho phép truyền một object chứa các thuộc tính CSS trực tiếp vào component, giúp code gọn gàng và dễ quản lý hơn."
+      },
+      {
+        "question": "Trong code mẫu, thuộc tính `justifyContent: 'space-between'` có tác dụng gì?",
+        "options": [
+          "Căn giữa các phần tử con theo chiều ngang",
+          "Tạo khoảng trống đều nhau giữa các phần tử con",
+          "Căn các phần tử con về bên trái",
+          "Căn các phần tử con về bên phải"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`justifyContent: 'space-between'` được dùng trong Flexbox để tạo ra khoảng trống giữa các phần tử, đẩy phần tử đầu và cuối ra hai cạnh của container."
+      },
+      {
+        "question": "Làm thế nào để lấy giá trị chiều cao của Board Bar từ theme trong Material-UI?",
+        "options": [
+          "height: 'theme.boardBarHeight'",
+          "height: (theme) => theme.trello.boardBarHeight",
+          "height: trello.boardBarHeight",
+          "height: theme.spacing(8)"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bằng cách truyền một hàm vào `sx` prop, chúng ta có thể truy cập vào đối tượng theme và sử dụng các giá trị đã được định nghĩa sẵn."
+      },
+      {
+        "question": "Component `AvatarGroup` có thuộc tính `max` để làm gì?",
+        "options": [
+          "Giới hạn số lượng avatar tối đa có thể thêm vào",
+          "Quy định kích thước tối đa của mỗi avatar",
+          "Giới hạn số lượng avatar được hiển thị, các avatar còn lại sẽ được nhóm lại",
+          "Thiết lập số lượng thành viên tối đa trong board"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `max` của `AvatarGroup` rất hữu ích để quản lý giao diện khi có nhiều avatar, nó sẽ hiển thị số lượng avatar chỉ định và nhóm phần còn lại vào một avatar số."
+      },
+      {
+        "question": "Trong thực tế, dữ liệu cho Board Bar (tên board, thành viên) nên được lấy từ đâu?",
+        "options": [
+          "Hard-code trực tiếp trong component",
+          "Từ một file JSON tĩnh trong project",
+          "Từ API của backend",
+          "Từ `localStorage` của trình duyệt"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để ứng dụng có tính động và thực tế, dữ liệu nên được lấy từ một API, cho phép cập nhật và quản lý thông tin một cách linh hoạt."
+      },
+      {
+        "question": "Thuộc tính `px: 2` trong `sx` prop tương đương với thuộc tính CSS nào?",
+        "options": [
+          "padding: 2px",
+          "padding-left: 2rem và padding-right: 2rem",
+          "padding-left và padding-right theo giá trị của theme.spacing(2)",
+          "margin-left: 2px và margin-right: 2px"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`px` là một viết tắt trong `sx` prop của MUI cho `padding-left` và `padding-right`. Giá trị `2` sẽ được nhân với giá trị `theme.spacing` (mặc định là 8px), tức là `16px`."
+      },
+      {
+        "question": "Mục đích chính của việc bọc `Avatar` trong `Tooltip` là gì?",
+        "options": [
+          "Để thêm hiệu ứng animation cho Avatar",
+          "Để làm cho Avatar có thể click được",
+          "Để hiển thị thông tin bổ sung khi người dùng hover vào Avatar",
+          "Để thay đổi màu sắc của Avatar khi hover"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tooltip là một cách hiệu quả để cung cấp thông tin chi tiết (contextual information) mà không chiếm không gian trên giao diện chính."
+      },
+      {
+        "question": "Component `Button` với `variant=\"outlined\"` sẽ có giao diện như thế nào?",
+        "options": [
+          "Nút không có viền, chỉ có chữ",
+          "Nút có màu nền nổi bật",
+          "Nút có viền xung quanh và không có màu nền",
+          "Nút có dạng icon"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`variant=\"outlined\"` là một trong ba variant chính của Button trong Material-UI, tạo ra một nút với đường viền rõ ràng."
+      },
+      {
+        "question": "Thuộc tính `gap: 2` trong `sx` prop có tác dụng gì khi `display` là `flex`?",
+        "options": [
+          "Tạo khoảng cách 2px giữa các phần tử con",
+          "Tạo khoảng cách giữa các phần tử con, giá trị được tính từ theme.spacing(2)",
+          "Tạo padding 2rem cho container",
+          "Tạo margin 2% cho các phần tử con"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thuộc tính `gap` là một cách hiện đại trong CSS (và được hỗ trợ bởi `sx` prop) để tạo khoảng trống giữa các flex items hoặc grid items một cách dễ dàng."
+      },
+      {
+        "question": "Đâu là một \"good practice\" khi quản lý các giá trị hằng số như `boardBarHeight`?",
+        "options": [
+          "Để các giá trị magic number trực tiếp trong code",
+          "Định nghĩa chúng trong một file CSS riêng",
+          "Tập trung chúng vào đối tượng theme của Material-UI",
+          "Lưu chúng trong state của component"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc tập trung các hằng số vào theme giúp quản lý nhất quán, dễ dàng thay đổi và tái sử dụng trong toàn bộ ứng dụng."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo một Box container đơn giản",
+        "description": "Sử dụng component `Box` của Material-UI để tạo một container có chiều rộng 100%, chiều cao 60px và có đường viền dưới màu xám.",
+        "starterCode": "import Box from '@mui/material/Box';\n\nfunction SimpleBox() {\n  return (\n    // Your code here\n    <Box>\n      Hello World\n    </Box>\n  );\n}\n\nexport default SimpleBox;",
+        "solution": "import Box from '@mui/material/Box';\n\nfunction SimpleBox() {\n  return (\n    <Box sx={{\n      width: '100%',\n      height: '60px',\n      borderBottom: '1px solid #ccc',\n      padding: 2\n    }}>\n      Hello World\n    </Box>\n  );\n}\n\nexport default SimpleBox;",
+        "testCases": "Component render ra một thẻ div. Thẻ div có style width: 100%, height: 60px, và border-bottom: 1px solid #ccc."
+      },
+      {
+        "title": "Sắp xếp các Chip bằng Flexbox",
+        "description": "Tạo một `Box` hoạt động như một flex container. Bên trong, đặt 3 component `Chip` với các nhãn khác nhau. Sử dụng `sx` prop để căn các Chip ở giữa theo chiều dọc và tạo khoảng cách giữa chúng.",
+        "starterCode": "import Box from '@mui/material/Box';\nimport Chip from '@mui/material/Chip';\n\nfunction ChipContainer() {\n  return (\n    <Box sx={{ border: '1px solid grey', p: 2 }}>\n      <Chip label=\"React\" />\n      <Chip label=\"Material-UI\" />\n      <Chip label=\"Flexbox\" />\n    </Box>\n  );\n}\n\nexport default ChipContainer;",
+        "solution": "import Box from '@mui/material/Box';\nimport Chip from '@mui/material/Chip';\n\nfunction ChipContainer() {\n  return (\n    <Box sx={{\n      display: 'flex',\n      alignItems: 'center',\n      gap: 1,\n      border: '1px solid grey',\n      p: 2\n    }}>\n      <Chip label=\"React\" />\n      <Chip label=\"Material-UI\" />\n      <Chip label=\"Flexbox\" />\n    </Box>\n  );\n}\n\nexport default ChipContainer;",
+        "testCases": "Container `Box` phải có `display: flex` và `alignItems: center`. Giữa các `Chip` phải có khoảng cách."
+      },
+      {
+        "title": "Tạo một nhóm Avatar với Tooltip",
+        "description": "Sử dụng `AvatarGroup` để hiển thị một nhóm các `Avatar`. Giới hạn hiển thị tối đa 2 `Avatar`. Với mỗi `Avatar`, hãy bọc nó trong một `Tooltip` để hiển thị tên tương ứng khi người dùng di chuột qua.",
+        "starterCode": "import Avatar from '@mui/material/Avatar';\nimport AvatarGroup from '@mui/material/AvatarGroup';\nimport Tooltip from '@mui/material/Tooltip';\n\nfunction MemberList() {\n  return (\n    // Your code here\n    <p>Implement the AvatarGroup here</p>\n  );\n}\n\nexport default MemberList;",
+        "solution": "import Avatar from '@mui/material/Avatar';\nimport AvatarGroup from '@mui/material/AvatarGroup';\nimport Tooltip from '@mui/material/Tooltip';\n\nfunction MemberList() {\n  return (\n    <AvatarGroup max={2}>\n      <Tooltip title=\"Alice\">\n        <Avatar alt=\"Alice\" src=\"/static/images/avatar/1.jpg\" />\n      </Tooltip>\n      <Tooltip title=\"Bob\">\n        <Avatar alt=\"Bob\" src=\"/static/images/avatar/2.jpg\" />\n      </Tooltip>\n      <Tooltip title=\"Charlie\">\n        <Avatar alt=\"Charlie\" src=\"/static/images/avatar/3.jpg\" />\n      </Tooltip>\n    </AvatarGroup>\n  );\n}\n\nexport default MemberList;",
+        "testCases": "Component phải render `AvatarGroup` với `max={2}`. Phải có 3 `Avatar` bên trong, mỗi cái được bọc bởi một `Tooltip` có `title` tương ứng. Giao diện chỉ hiển thị 2 avatar và một avatar `+1`."
+      },
+      {
+        "title": "Xây dựng một thanh chức năng đơn giản",
+        "description": "Tạo một component `Box` sử dụng flexbox với `justifyContent: 'space-between'`. Bên trái, đặt một `Chip` cho tên. Bên phải, đặt một `Button` với variant `outlined` và nhãn \"Invite\".",
+        "starterCode": "import Box from '@mui/material/Box';\nimport Chip from '@mui/material/Chip';\nimport Button from '@mui/material/Button';\n\nfunction ActionBar() {\n  return (\n    // Your code here\n    <Box>\n      {/* Left side */}\n      {/* Right side */}\n    </Box>\n  );\n}\n\nexport default ActionBar;",
+        "solution": "import Box from '@mui/material/Box';\nimport Chip from '@mui/material/Chip';\nimport Button from '@mui/material/Button';\n\nfunction ActionBar() {\n  return (\n    <Box sx={{\n      display: 'flex',\n      alignItems: 'center',\n      justifyContent: 'space-between',\n      p: 2,\n      border: '1px solid lightblue'\n    }}>\n      <Chip label=\"My Project Board\" />\n      <Button variant=\"outlined\">Invite</Button>\n    </Box>\n  );\n}\n\nexport default ActionBar;",
+        "testCases": "Container `Box` phải có `display: flex` và `justifyContent: space-between`. Phải có một `Chip` và một `Button` được render. `Button` phải có `variant=\"outlined\"`."
+      },
+      {
+        "title": "Hoàn thiện BoardBar Component",
+        "description": "Tái tạo lại component `BoardBar` từ bài học. Component phải có hai nhóm phần tử ở hai bên. Nhóm bên trái chứa 3 `Chip`. Nhóm bên phải chứa một `Button` \"Invite\" và một `AvatarGroup` với 3 thành viên (hiển thị tối đa 4).",
+        "starterCode": "import Box from '@mui/material/Box';\nimport Chip from '@mui/material/Chip';\nimport Avatar from '@mui/material/Avatar';\nimport AvatarGroup from '@mui/material/AvatarGroup';\nimport Tooltip from '@mui/material/Tooltip';\nimport Button from '@mui/material/Button';\n\nfunction BoardBar() {\n  return (\n    // Your code here, reconstruct the BoardBar from the lesson\n    <Box>Rebuild the BoardBar here</Box>\n  );\n}\n\nexport default BoardBar;",
+        "solution": "import Box from '@mui/material/Box';\nimport Chip from '@mui/material/Chip';\nimport Avatar from '@mui/material/Avatar';\nimport AvatarGroup from '@mui/material/AvatarGroup';\nimport Tooltip from '@mui/material/Tooltip';\nimport Button from '@mui/material/Button';\n\nfunction BoardBar() {\n  return (\n    <Box sx={{\n      width: '100%',\n      height: '58px',\n      display: 'flex',\n      alignItems: 'center',\n      justifyContent: 'space-between',\n      gap: 2,\n      px: 2,\n      borderTop: '1px solid #00bfa5'\n    }}>\n      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>\n        <Chip label=\"TrungQuanDev MERN Stack\" />\n        <Chip label=\"Public/Private\" />\n        <Chip label=\"Add to Drive\" />\n      </Box>\n\n      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>\n        <Button variant=\"outlined\">Invite</Button>\n        <AvatarGroup max={4}>\n          <Tooltip title=\"TrungQuanDev\">\n            <Avatar alt=\"TrungQuanDev\" src=\"https://trungquandev.com/avatar.jpg\" />\n          </Tooltip>\n          <Tooltip title=\"User One\">\n            <Avatar alt=\"User One\" src=\"/static/images/avatar/1.jpg\" />\n          </Tooltip>\n          <Tooltip title=\"User Two\">\n            <Avatar alt=\"User Two\" src=\"/static/images/avatar/2.jpg\" />\n          </Tooltip>\n        </AvatarGroup>\n      </Box>\n    </Box>\n  );\n}\n\nexport default BoardBar;",
+        "testCases": "Component phải có cấu trúc layout chính với `justifyContent: space-between`. Phải có một `Box` con bên trái chứa 3 `Chip`. Phải có một `Box` con bên phải chứa 1 `Button` và 1 `AvatarGroup`. `AvatarGroup` phải chứa 3 `Avatar` được bọc trong `Tooltip`."
+      }
+    ]
+  }
+}

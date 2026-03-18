@@ -1,0 +1,213 @@
+{
+  "id": 46,
+  "title": "Tổng hợp kiến thức: Video 28 - Tạo Mock Data và Thuật Toán Sắp Xếp",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Tổng hợp kiến thức: Video 28 - Tạo Mock Data và Thuật Toán Sắp Xếp\n\n## 1. Tiêu đề bài học\n\n28. Tạo Mock Data, áp dụng Thuật Toán sắp xếp mảng dựa trên một mảng khác | ReactJS + Material UI\n\n## 2. Mục tiêu bài học\n\nVideo này tập trung vào hai mục tiêu chính, giúp lập trình viên Frontend có thể làm việc hiệu quả hơn trong các dự án thực tế:\n\n*   **Hiểu và áp dụng Mock Data:** Nắm vững khái niệm và cách tạo dữ liệu giả (mock data) để xây dựng giao diện người dùng (UI) mà không cần chờ đợi API từ phía backend. Điều này thúc đẩy quá trình phát triển song song và giảm thiểu sự phụ thuộc.\n*   **Nắm vững thuật toán sắp xếp:** Học và triển khai một thuật toán quan trọng: sắp xếp một mảng các đối tượng (array of objects) dựa trên thứ tự của một mảng định sẵn khác. Đây là một kỹ thuật phổ biến trong việc hiển thị dữ liệu theo một trật tự tùy chỉnh.\n\n## 3. Kiến thức chi tiết\n\n### 3.1. Mock Data\n\n> **Mock Data** là dữ liệu giả, được tạo ra để mô phỏng cấu trúc và nội dung của dữ liệu thật sẽ được trả về từ API của backend. Việc sử dụng mock data mang lại nhiều lợi ích trong quá trình phát triển phần mềm.\n\n*   **Tầm quan trọng:**\n    *   **Phát triển song song:** Cho phép đội ngũ Frontend và Backend làm việc đồng thời. Frontend có thể tiến hành xây dựng giao diện hoàn chỉnh với mock data trong khi Backend đang trong quá trình thiết kế và triển khai API.\n    *   **Chủ động và linh hoạt:** Giảm thời gian chờ đợi, giúp lập trình viên Frontend chủ động trong công việc, dễ dàng thử nghiệm các trường hợp dữ liệu khác nhau (dữ liệu rỗng, dữ liệu rất dài, các trường hợp đặc biệt...).\n    *   **Kiểm thử dễ dàng:** Tạo điều kiện thuận lợi cho việc viết unit test và integration test cho các component mà không cần một hệ thống backend hoàn chỉnh.\n\n*   **Cách triển khai trong video:**\n    *   Dữ liệu giả được tạo trong một file riêng biệt: `src/apis/mock-data.js`.\n    *   Cấu trúc dữ liệu mô phỏng một \"board\" trong Trello, bao gồm các thông tin chính:\n\n| Thuộc tính         | Kiểu dữ liệu | Mô tả                                                                  |\n| ----------------- | ------------ | ---------------------------------------------------------------------- |\n| `_id`             | `String`     | Định danh duy nhất của board.                                          |\n| `title`           | `String`     | Tiêu đề của board.                                                     |\n| `description`     | `String`     | Mô tả chi tiết về board.                                               |\n| `columnOrderIds`  | `Array`      | Mảng chứa các `_id` của các cột, xác định thứ tự hiển thị của chúng.    |\n| `columns`         | `Array`      | Mảng chứa các đối tượng (object) cột.                                  |\n\n    *   Mỗi đối tượng \"column\" trong mảng `columns` lại có cấu trúc riêng, bao gồm `_id`, `title`, `cardOrderIds`, và mảng `cards`.\n\n### 3.2. Thuật toán sắp xếp mảng dựa trên một mảng khác\n\nĐây là trọng tâm của bài học, giải quyết một bài toán rất thực tế: làm thế nào để hiển thị các cột (columns) và các thẻ (cards) theo đúng thứ tự đã được định nghĩa trước trong `columnOrderIds` và `cardOrderIds`?\n\n*   **Bài toán:** Cho một mảng dữ liệu gốc (ví dụ: `board.columns`) và một mảng thứ tự (ví dụ: `board.columnOrderIds`), cần phải sắp xếp lại mảng dữ liệu gốc theo đúng trật tự của mảng thứ tự.\n\n*   **Hàm `mapOrder`:**\n\n    ```javascript\n    /**\n     * @param {Array} originalArray - Mảng gốc cần được sắp xếp.\n     * @param {Array} orderArray - Mảng chứa thứ tự mong muốn.\n     * @param {string} key - Tên thuộc tính (key) trong các object của originalArray dùng để so khớp với các phần tử trong orderArray.\n     * @returns {Array} - Mảng mới đã được sắp xếp.\n     */\n    export const mapOrder = (originalArray, orderArray, key) => {\n      if (!originalArray || !orderArray || !key) return []\n\n      // Tạo một bản sao của mảng gốc để không làm thay đổi mảng ban đầu.\n      const clonedArray = [...originalArray]\n\n      // Sử dụng hàm sort() của JavaScript với một hàm so sánh tùy chỉnh.\n      const orderedArray = clonedArray.sort((a, b) => {\n        // Tìm vị trí (index) của mỗi phần tử trong mảng thứ tự.\n        return orderArray.indexOf(a[key]) - orderArray.indexOf(b[key])\n      })\n\n      return orderedArray\n    }\n    ```\n\n*   **Giải thích chi tiết thuật toán:**\n    1.  Hàm `sort()` của JavaScript sẽ lặp qua các cặp phần tử (`a`, `b`) trong mảng `clonedArray`.\n    2.  `orderArray.indexOf(a[key])` sẽ trả về chỉ số (vị trí) của giá trị `a[key]` (ví dụ: `column-id-1`) trong mảng `orderArray`.\n    3.  Phép trừ `orderArray.indexOf(a[key]) - orderArray.indexOf(b[key])` sẽ quyết định thứ tự của `a` và `b`:\n        *   **Kết quả là số âm:** `a` có `index` nhỏ hơn `b` trong `orderArray`, vì vậy `a` sẽ được xếp đứng **trước** `b`.\n        *   **Kết quả là số dương:** `a` có `index` lớn hơn `b` trong `orderArray`, vì vậy `a` sẽ được xếp đứng **sau** `b`.\n        *   **Kết quả là 0:** `a` và `b` có cùng `index` (trường hợp hiếm gặp nếu `id` là duy nhất) hoặc không tồn tại trong `orderArray`, vị trí tương đối của chúng sẽ được giữ nguyên.\n    4.  Sau khi lặp qua tất cả các cặp, mảng `clonedArray` sẽ được sắp xếp lại hoàn toàn theo đúng thứ tự của `orderArray`.\n\n## 4. Các bước thực hành\n\n1.  **Tạo Mock Data:** Trong thư mục `src/apis/`, tạo file `mock-data.js` và định nghĩa đối tượng `mockData` với cấu trúc như đã phân tích ở trên.\n2.  **Tạo Utility Function:** Trong thư mục `src/utils/`, tạo file `sorts.js` và viết hàm `mapOrder`.\n3.  **Áp dụng vào Component:**\n    *   Mở file component chính, ví dụ `src/pages/Boards/_id.jsx`.\n    *   Import `mockData` từ `src/apis/mock-data.js`.\n    *   Import hàm `mapOrder` từ `src/utils/sorts.js`.\n    *   Trong component, gọi hàm `mapOrder` để sắp xếp dữ liệu cột trước khi render:\n        ```jsx\n        import { mockData } from '~/apis/mock-data'\n        import { mapOrder } from '~/utils/sorts'\n\n        function Board() {\n          const orderedColumns = mapOrder(mockData?.board?.columns, mockData?.board?.columnOrderIds, '_id')\n\n          // ... render a list of columns using the 'orderedColumns' array\n        }\n        ```\n4.  **Render giao diện:** Dùng hàm `map()` để lặp qua mảng `orderedColumns` đã được sắp xếp và render ra các component cột tương ứng.\n\n## 5. Lưu ý quan trọng\n\n*   **Tính bất biến (Immutability):** Luôn tạo một bản sao của mảng gốc (`const clonedArray = [...originalArray]`) trước khi thực hiện `sort()`. Hàm `sort()` trong JavaScript sẽ thay đổi trực tiếp mảng ban đầu (mutate array), việc này có thể gây ra các lỗi không mong muốn (side effects) trong ứng dụng React.\n*   **Hiệu năng của `indexOf`:** Trong các ứng dụng với dữ liệu cực lớn, việc sử dụng `indexOf` lặp đi lặp lại trong hàm `sort` có thể ảnh hưởng đến hiệu năng (độ phức tạp O(n*log(n)) * O(m), với n là độ dài mảng gốc, m là độ dài mảng thứ tự). Trong trường hợp đó, có thể tối ưu bằng cách tạo một Map để lưu trữ vị trí của các phần tử trong `orderArray` trước, giúp giảm độ phức tạp của việc tra cứu vị trí xuống O(1).\n\n## 6. Tài liệu tham khảo\n\n1.  [Video 28 trên YouTube](https://www.youtube.com/watch?v=4Hy9FsfQX10&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=32)\n2.  [Source code trên GitHub](https://github.com/trungquandev/vite-trello-web-base-project)\n3.  [Tài liệu về Array.prototype.sort() - MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục đích chính của việc sử dụng Mock Data trong phát triển Frontend là gì?",
+        "options": [
+          "Để tăng tốc độ của ứng dụng.",
+          "Để xây dựng giao diện người dùng (UI) mà không cần chờ API từ backend.",
+          "Để bảo mật dữ liệu người dùng.",
+          "Để thay thế hoàn toàn vai trò của backend."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mock Data cho phép Frontend và Backend làm việc song song, giúp Frontend chủ động xây dựng UI mà không bị phụ thuộc vào tiến độ của Backend."
+      },
+      {
+        "question": "Trong video hướng dẫn, file mock data được đặt ở đâu?",
+        "options": [
+          "src/components/mock-data.js",
+          "src/apis/mock-data.js",
+          "src/utils/data.js",
+          "public/data/mock.js"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Theo nội dung bài học, dữ liệu giả được tạo trong một file riêng biệt tại `src/apis/mock-data.js` để mô phỏng API."
+      },
+      {
+        "question": "Thuộc tính nào trong mock data của đối tượng `board` dùng để xác định thứ tự hiển thị của các cột?",
+        "options": [
+          "columns",
+          "order",
+          "columnOrderIds",
+          "boardOrder"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`columnOrderIds` là một mảng chứa các `_id` của các cột, quyết định thứ tự chính xác mà chúng sẽ được hiển thị."
+      },
+      {
+        "question": "Hàm `mapOrder` được tạo ra để giải quyết bài toán cụ thể nào?",
+        "options": [
+          "Sắp xếp một mảng các số theo thứ tự tăng dần.",
+          "Tìm kiếm một phần tử trong một mảng đối tượng.",
+          "Sắp xếp một mảng đối tượng dựa trên thứ tự của một mảng khác.",
+          "Gộp hai mảng đối tượng lại với nhau."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hàm `mapOrder` được thiết kế đặc biệt để sắp xếp một mảng (ví dụ: mảng `columns`) theo một mảng thứ tự cho trước (ví dụ: `columnOrderIds`)."
+      },
+      {
+        "question": "Dòng code `const clonedArray = [...originalArray]` trong hàm `mapOrder` có tác dụng gì?",
+        "options": [
+          "Lọc ra các phần tử không hợp lệ trong mảng gốc.",
+          "Gộp `originalArray` với một mảng khác.",
+          "Tạo một bản sao của mảng gốc để tránh thay đổi (mutate) mảng ban đầu.",
+          "Đảo ngược thứ tự các phần tử của mảng gốc."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đây là một bước quan trọng để đảm bảo tính bất biến (immutability). Hàm `sort()` của JavaScript sẽ thay đổi trực tiếp mảng ban đầu, việc tạo bản sao sẽ ngăn chặn các side effects không mong muốn trong React."
+      },
+      {
+        "question": "Trong hàm so sánh của `Array.prototype.sort()`, khi `orderArray.indexOf(a[key]) - orderArray.indexOf(b[key])` trả về một số âm, điều gì sẽ xảy ra?",
+        "options": [
+          "Phần tử `a` sẽ được xếp sau phần tử `b`.",
+          "Phần tử `a` sẽ được xếp trước phần tử `b`.",
+          "Thứ tự của `a` và `b` sẽ được giữ nguyên.",
+          "Hàm sẽ báo lỗi."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Kết quả âm cho thấy `a` có chỉ số (index) nhỏ hơn `b` trong mảng thứ tự, do đó nó nên được xếp đứng trước."
+      },
+      {
+        "question": "Tại sao việc sử dụng `indexOf` trong hàm `sort` có thể ảnh hưởng đến hiệu năng với dữ liệu lớn?",
+        "options": [
+          "Vì `indexOf` không được hỗ trợ trên tất cả các trình duyệt.",
+          "Vì `indexOf` làm thay đổi mảng ban đầu.",
+          "Vì việc lặp lại `indexOf` trong `sort` có độ phức tạp tính toán cao.",
+          "Vì `indexOf` chỉ hoạt động với mảng số."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Với dữ liệu lớn, việc gọi `indexOf` nhiều lần bên trong vòng lặp của `sort` có thể làm giảm hiệu năng. Độ phức tạp có thể lên tới O(n*log(n)) * O(m)."
+      },
+      {
+        "question": "Phương pháp nào được đề xuất để tối ưu hiệu năng của hàm `mapOrder` khi làm việc với tập dữ liệu rất lớn?",
+        "options": [
+          "Sử dụng vòng lặp `for` thay cho `sort`.",
+          "Tạo một đối tượng Map để lưu trữ vị trí các phần tử của `orderArray` trước khi sắp xếp.",
+          "Sử dụng `Promise.all` để xử lý song song.",
+          "Chuyển toàn bộ logic sắp xếp về phía backend."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tạo một Map để tra cứu vị trí (index) sẽ giảm độ phức tạp của việc tìm kiếm từ O(m) xuống O(1), giúp cải thiện đáng kể hiệu năng tổng thể của thuật toán sắp xếp."
+      },
+      {
+        "question": "Lợi ích nào KHÔNG phải là lợi ích chính của việc sử dụng Mock Data?",
+        "options": [
+          "Cho phép phát triển song song giữa Frontend và Backend.",
+          "Giúp Frontend chủ động thử nghiệm các trường hợp dữ liệu khác nhau.",
+          "Tăng cường bảo mật cho ứng dụng ở môi trường production.",
+          "Tạo điều kiện thuận lợi cho việc viết unit test cho component."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mock Data là dữ liệu giả dùng trong môi trường phát triển và kiểm thử, nó không liên quan trực tiếp đến việc tăng cường bảo mật cho ứng dụng khi đã triển khai."
+      },
+      {
+        "question": "Trong hàm `mapOrder`, tham số `key` có vai trò gì?",
+        "options": [
+          "Là khóa API để truy cập dữ liệu.",
+          "Là tên thuộc tính trong các đối tượng của `originalArray` dùng để so khớp với `orderArray`.",
+          "Là một giá trị bí mật để mã hóa dữ liệu.",
+          "Là chỉ số bắt đầu của mảng `orderArray`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tham số `key` chỉ định thuộc tính nào của các đối tượng trong mảng gốc (ví dụ: `_id`) sẽ được sử dụng để tìm vị trí tương ứng trong mảng thứ tự."
+      },
+      {
+        "question": "Hàm `Array.prototype.sort()` của JavaScript hoạt động như thế nào nếu không có hàm so sánh (compare function) được cung cấp?",
+        "options": [
+          "Nó sẽ sắp xếp các phần tử theo thứ tự bảng chữ cái.",
+          "Nó sẽ không làm gì cả.",
+          "Nó sẽ báo lỗi.",
+          "Nó sẽ chuyển các phần tử thành chuỗi và sắp xếp dựa trên giá trị Unicode."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Nếu không có hàm so sánh, các phần tử sẽ được chuyển đổi thành chuỗi và so sánh theo thứ tự điểm mã Unicode. Điều này có thể dẫn đến kết quả không mong muốn, ví dụ `\\'10\\'` đứng trước `\\'2\\'`."
+      },
+      {
+        "question": "Trong cấu trúc mock data được mô tả, `cardOrderIds` nằm trong đối tượng nào?",
+        "options": [
+          "Trong đối tượng `board`.",
+          "Trong mỗi đối tượng `column`.",
+          "Trong mỗi đối tượng `card`.",
+          "Là một file riêng biệt."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mỗi đối tượng `column` chứa một mảng `cardOrderIds` để xác định thứ tự của các thẻ (cards) bên trong cột đó."
+      },
+      {
+        "question": "Điều gì sẽ xảy ra nếu `originalArray` hoặc `orderArray` là `null` hoặc `undefined` khi gọi hàm `mapOrder`?",
+        "options": [
+          "Hàm sẽ trả về một mảng rỗng `[]`.",
+          "Hàm sẽ báo lỗi `TypeError`.",
+          "Hàm sẽ trả về `undefined`.",
+          "Hàm sẽ trả về mảng `originalArray` chưa được sắp xếp."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Dòng code `if (!originalArray || !orderArray || !key) return []` ở đầu hàm `mapOrder` xử lý trường hợp này để tránh lỗi và đảm bảo hàm luôn trả về một mảng."
+      },
+      {
+        "question": "Việc import `mockData` và `mapOrder` vào component `Boards/_id.jsx` thể hiện điều gì?",
+        "options": [
+          "Việc sử dụng lại logic và dữ liệu trong ứng dụng.",
+          "Việc tạo ra các component độc lập.",
+          "Việc tối ưu hóa hiệu năng.",
+          "Việc định nghĩa kiểu dữ liệu."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Việc import và sử dụng các hàm tiện ích (`mapOrder`) và dữ liệu giả (`mockData`) là một ví dụ điển hình của việc tái sử dụng code, giúp mã nguồn sạch sẽ và dễ bảo trì hơn."
+      },
+      {
+        "question": "Hành động nào sau đây mô tả đúng nhất bước \"Render giao diện\" trong phần thực hành?",
+        "options": [
+          "Gọi API để lấy dữ liệu thật.",
+          "Viết CSS để tạo kiểu cho các cột.",
+          "Sử dụng hàm `map()` để lặp qua mảng đã sắp xếp và hiển thị các component tương ứng.",
+          "Tạo file `sorts.js`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sau khi đã có mảng `orderedColumns` được sắp xếp đúng thứ tự, bước tiếp theo là dùng hàm `map()` của JavaScript để duyệt qua mảng này và render ra các component cột trên giao diện."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo dữ liệu Mock cho danh sách người dùng",
+        "description": "Tạo một file `mock-users.js` và export một mảng chứa 3 đối tượng người dùng. Mỗi đối tượng phải có các thuộc tính: `id` (number), `name` (string), và `email` (string).",
+        "starterCode": "// Bắt đầu code của bạn trong file mock-users.js\n",
+        "solution": "export const mockUsers = [\n  {\n    id: 1,\n    name: 'Alice',\n    email: 'alice@example.com'\n  },\n  {\n    id: 2,\n    name: 'Bob',\n    email: 'bob@example.com'\n  },\n  {\n    id: 3,\n    name: 'Charlie',\n    email: 'charlie@example.com'\n  }\n];",
+        "testCases": "Kiểm tra file `mock-users.js` có export một mảng tên `mockUsers` chứa 3 đối tượng hợp lệ hay không."
+      },
+      {
+        "title": "Sắp xếp mảng số nguyên đơn giản",
+        "description": "Cho một mảng số nguyên và một mảng thứ tự. Viết một hàm `sortNumbers(numbers, order)` sử dụng logic tương tự `mapOrder` để sắp xếp mảng số nguyên theo mảng thứ tự.",
+        "starterCode": "const numbers = [10, 30, 20, 50, 40];\nconst order = [3, 1, 4, 0, 2]; // Sắp xếp theo index của mảng numbers\n\nfunction sortNumbers(numbers, order) {\n  // Code của bạn ở đây\n}\n\n// Kết quả mong muốn: [40, 20, 50, 10, 30] (dựa trên index)",
+        "solution": "function sortNumbers(numbers, order) {\n  const temp = [];\n  for (let i = 0; i < order.length; i++) {\n    temp[order[i]] = numbers[i];\n  }\n  const orderedNumbers = [];\n  for (let i = 0; i < temp.length; i++) {\n    orderedNumbers.push(temp[i]);\n  }\n  // Cách giải khác đơn giản hơn: return order.map(i => numbers[i]);\n  // Tuy nhiên cách trên không hoàn toàn giống mapOrder, cách giải đúng logic mapOrder:\n  const clonedNumbers = [...numbers];\n  clonedNumbers.sort((a, b) => order.indexOf(numbers.indexOf(a)) - order.indexOf(numbers.indexOf(b)));\n  return clonedNumbers;\n}",
+        "testCases": "Hàm `sortNumbers` phải trả về một mảng mới đã được sắp xếp đúng thứ tự mà không làm thay đổi mảng `numbers` ban đầu."
+      },
+      {
+        "title": "Hoàn thiện hàm `mapOrder`",
+        "description": "Hoàn thiện hàm `mapOrder` bên dưới để nó có thể sắp xếp một mảng các đối tượng sản phẩm (`products`) dựa trên thứ tự ID trong mảng `productIdOrder`.",
+        "starterCode": "const products = [\n  { id: 'prod-3', name: 'Laptop' },\n  { id: 'prod-1', name: 'Mouse' },\n  { id: 'prod-2', name: 'Keyboard' }\n];\nconst productIdOrder = ['prod-1', 'prod-2', 'prod-3'];\n\nfunction mapOrder(originalArray, orderArray, key) {\n  // Code của bạn ở đây\n}\n\nconst orderedProducts = mapOrder(products, productIdOrder, 'id');\nconsole.log(orderedProducts);",
+        "solution": "function mapOrder(originalArray, orderArray, key) {\n  if (!originalArray || !orderArray || !key) return [];\n  const clonedArray = [...originalArray];\n  clonedArray.sort((a, b) => {\n    return orderArray.indexOf(a[key]) - orderArray.indexOf(b[key]);\n  });\n  return clonedArray;\n}",
+        "testCases": "Khi chạy, `orderedProducts` phải là một mảng có thứ tự: Mouse, Keyboard, Laptop. Mảng `products` ban đầu không bị thay đổi."
+      },
+      {
+        "title": "Sắp xếp các cột và các thẻ trong board",
+        "description": "Sử dụng hàm `mapOrder` đã hoàn thiện, viết một hàm `processBoard(board)` nhận vào một đối tượng `board` và trả về một board mới với `columns` và `cards` (trong mỗi column) đã được sắp xếp theo đúng `columnOrderIds` và `cardOrderIds`.",
+        "starterCode": "const board = {\n  _id: 'board-1',\n  columnOrderIds: ['col-2', 'col-1'],\n  columns: [\n    { _id: 'col-1', cardOrderIds: ['card-2', 'card-1'], cards: [{_id: 'card-1'}, {_id: 'card-2'}] },\n    { _id: 'col-2', cardOrderIds: ['card-3'], cards: [{_id: 'card-3'}] }\n  ]\n};\n\n// Import hoặc dán hàm mapOrder ở đây\n\nfunction processBoard(board) {\n  // Code của bạn ở đây\n}\n\nconst processedBoard = processBoard(board);\nconsole.log(processedBoard);",
+        "solution": "function mapOrder(originalArray, orderArray, key) { /* ... implementation from previous exercise ... */ }\n\nfunction processBoard(board) {\n  const orderedColumns = mapOrder(board.columns, board.columnOrderIds, '_id');\n  const processedColumns = orderedColumns.map(column => {\n    const orderedCards = mapOrder(column.cards, column.cardOrderIds, '_id');\n    return { ...column, cards: orderedCards };\n  });\n  return { ...board, columns: processedColumns };\n}",
+        "testCases": "Kết quả `processedBoard` phải có `columns` theo thứ tự `col-2`, `col-1`. Trong `col-1`, `cards` phải theo thứ tự `card-2`, `card-1`."
+      },
+      {
+        "title": "Tối ưu hàm `mapOrder` với Map",
+        "description": "Viết lại hàm `mapOrder` với tên mới là `optimizedMapOrder` để cải thiện hiệu năng bằng cách sử dụng một đối tượng `Map` để lưu trữ vị trí của các phần tử trong `orderArray`. Điều này giúp giảm độ phức tạp của việc tra cứu.",
+        "starterCode": "function optimizedMapOrder(originalArray, orderArray, key) {\n  // Code của bạn ở đây\n}",
+        "solution": "function optimizedMapOrder(originalArray, orderArray, key) {\n  if (!originalArray || !orderArray || !key) return [];\n\n  const orderMap = new Map();\n  orderArray.forEach((item, index) => {\n    orderMap.set(item, index);\n  });\n\n  const clonedArray = [...originalArray];\n  clonedArray.sort((a, b) => {\n    return orderMap.get(a[key]) - orderMap.get(b[key]);\n  });\n\n  return clonedArray;\n}",
+        "testCases": "Hàm `optimizedMapOrder` phải cho ra kết quả sắp xếp giống hệt như hàm `mapOrder` gốc, nhưng có hiệu năng tốt hơn trên lý thuyết với dữ liệu lớn."
+      }
+    ]
+  }
+}

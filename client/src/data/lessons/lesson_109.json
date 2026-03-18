@@ -1,0 +1,213 @@
+{
+  "id": 109,
+  "title": "Deploy miễn phí NodeJS Back-end APIs lên Render",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# Deploy miễn phí NodeJS Back-end APIs lên Render\n\n## Mục tiêu bài học\n\nBài học này hướng dẫn chi tiết cách deploy một ứng dụng NodeJS back-end (APIs) lên nền tảng Render một cách hoàn toàn miễn phí. Sau khi hoàn thành bài học, người học có thể tự mình triển khai các dự án back-end của mình lên môi trường internet, sẵn sàng để kết nối với ứng dụng front-end.\n\n## Kiến thức chi tiết\n\n### Giới thiệu về Render\n\nRender là một nền tảng đám mây (PaaS - Platform as a Service) giúp các nhà phát triển xây dựng và chạy các ứng dụng của họ một cách dễ dàng. Render cung cấp một giải pháp thay thế hiện đại cho các dịch vụ như Heroku, với các tính năng nổi bật như:\n\n*   **Miễn phí:** Cung cấp gói miễn phí cho các dịch vụ web, cơ sở dữ liệu PostgreSQL, Redis và các cron job.\n*   **Tự động hóa:** Tự động build và deploy từ kho chứa Git (GitHub, GitLab).\n*   **Bảo mật:** Cung cấp chứng chỉ TLS/SSL miễn phí và tự động gia hạn.\n*   **Mở rộng:** Dễ dàng nâng cấp lên các gói trả phí khi ứng dụng phát triển.\n\n### So sánh với Heroku\n\n| Tính năng | Render (Free Tier) | Heroku (Free Tier - đã ngừng) |\n| :--- | :--- | :--- |\n| **Dịch vụ Web** | Có, tự động sleep sau 15 phút không hoạt động | Đã ngừng cung cấp |\n| **Cơ sở dữ liệu** | PostgreSQL miễn phí | Đã ngừng cung cấp |\n| **Giới hạn** | Giới hạn về CPU và RAM | Giới hạn về dyno hours |\n| **Khởi động lại** | Tự động khởi động lại khi có request mới | Cần khởi động lại thủ công |\n\n### Chuẩn bị trước khi Deploy\n\nĐể deploy thành công một dự án NodeJS lên Render, bạn cần chuẩn bị:\n\n1.  **Mã nguồn dự án:** Một dự án NodeJS hoàn chỉnh, đã có thể chạy ổn định ở môi trường local.\n2.  **Kho chứa Git:** Mã nguồn dự án phải được đẩy lên một kho chứa Git công khai hoặc riêng tư trên GitHub hoặc GitLab.\n3.  **Cấu hình `package.json`:**\n    *   `scripts`: Cần có ít nhất một script `start` để Render biết cách khởi động ứng dụng của bạn. Nếu có bước build (ví dụ: sử dụng Babel hoặc TypeScript), bạn cũng cần script `build`.\n    *   `engines`: Khai báo phiên bản Node.js mà dự án của bạn sử dụng để đảm bảo tính tương thích trên môi trường của Render.\n\n```json\n// Ví dụ trong file package.json\n{\n  \"name\": \"my-nodejs-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"src/index.js\",\n  \"scripts\": {\n    \"start\": \"node src/index.js\",\n    \"build\": \"babel src --out-dir build\", // Ví dụ nếu dùng Babel\n    \"dev\": \"nodemon src/index.js\"\n  },\n  \"engines\": {\n    \"node\": \"18.x\"\n  }\n}\n```\n\n## Các bước thực hành\n\n1.  **Đăng ký tài khoản Render:** Truy cập [https://dashboard.render.com/](https://dashboard.render.com/) và đăng ký một tài khoản mới bằng GitHub, GitLab, hoặc email.\n\n2.  **Tạo một Web Service mới:**\n    *   Trên trang Dashboard, chọn **New +** > **Web Service**.\n    *   Kết nối với tài khoản GitHub/GitLab của bạn và chọn kho chứa của dự án NodeJS cần deploy.\n\n3.  **Cấu hình dịch vụ:**\n    *   **Name:** Đặt tên cho dịch vụ của bạn (ví dụ: `my-trello-api`). Tên này sẽ là một phần của URL công khai.\n    *   **Region:** Chọn khu vực máy chủ (ví dụ: `Singapore` để có tốc độ tốt hơn cho người dùng Việt Nam).\n    *   **Branch:** Chọn nhánh bạn muốn deploy (thường là `main` hoặc `master`).\n    *   **Build Command:** Lệnh để cài đặt dependencies và build code. Thường là `yarn` hoặc `npm install` (Render tự động chạy lệnh này). Nếu có bước build riêng, bạn cần thêm vào, ví dụ: `yarn; yarn build`.\n    *   **Start Command:** Lệnh để khởi động ứng dụng. Ví dụ: `yarn start` hoặc `node build/index.js`.\n    *   **Plan:** Chọn gói `Free`.\n\n4.  **Thêm biến môi trường (Environment Variables):**\n    *   Trong phần **Advanced**, chọn **Add Environment Variable**.\n    *   Thêm các biến môi trường cần thiết cho ứng dụng của bạn, ví dụ:\n        *   `DATABASE_URI`: Chuỗi kết nối tới MongoDB Atlas.\n        *   `PORT`: Render sẽ tự động cung cấp biến này, nhưng bạn cần đảm bảo code của mình sử dụng `process.env.PORT`.\n        *   `JWT_SECRET`, `CLOUDINARY_NAME`,... và các biến bí mật khác.\n\n5.  **Deploy:**\n    *   Nhấn nút **Create Web Service**.\n    *   Render sẽ bắt đầu quá trình build và deploy. Bạn có thể theo dõi log trực tiếp trong tab **Events**.\n    *   Khi deploy thành công, bạn sẽ thấy trạng thái \"Live\" và nhận được một URL công khai có dạng `https://your-service-name.onrender.com`.\n\n6.  **Kiểm tra:**\n    *   Sử dụng một công cụ như Postman hoặc trình duyệt để gửi request đến các endpoint của API trên URL vừa được cung cấp để đảm bảo mọi thứ hoạt động chính xác.\n\n## Lưu ý quan trọng\n\n*   **Giấc ngủ của Free Tier:** Dịch vụ miễn phí trên Render sẽ tự động \"ngủ\" (sleep) sau 15 phút không có request. Request đầu tiên sau khi ngủ sẽ mất một vài giây để \"đánh thức\" dịch vụ. Đây là một điểm cần lưu ý khi trải nghiệm ứng dụng.\n*   **CORS:** Khi gọi API từ một domain khác (ví dụ: từ ứng dụng React trên Vercel), bạn cần cấu hình CORS (Cross-Origin Resource Sharing) trong ứng dụng NodeJS của mình để cho phép các request đó.\n*   **Phiên bản Node.js:** Luôn khai báo phiên bản Node.js trong `package.json` để tránh các lỗi không tương thích.\n*   **Bảo mật:** Tuyệt đối không hard-code các thông tin nhạy cảm như chuỗi kết nối database, API keys vào trong code. Luôn sử dụng biến môi trường.\n\n## Tài liệu tham khảo\n\n1.  [Video 75. Deploy miễn phí NodeJS Back-end APIs lên Render | ReactJS, NodeJS, MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=mjU6bT3JgHw&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=84)\n2.  [Render Documentation](https://render.com/docs)\n3.  [TrungQuanDev Blog](https://trungquandev.com/)\n4.  [MERN Stack Pro GitHub Repository](https://github.com/trungquandev/mern-stack-pro-series)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Render là gì?",
+        "options": [
+          "Một nền tảng cơ sở dữ liệu đám mây",
+          "Một nền tảng đám mây (PaaS) để xây dựng và chạy ứng dụng",
+          "Một thư viện JavaScript cho front-end",
+          "Một công cụ để quản lý kho chứa Git"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Render là một nền tảng đám mây (PaaS - Platform as a Service) giúp các nhà phát triển xây dựng và chạy các ứng dụng của họ một cách dễ dàng, tương tự như Heroku."
+      },
+      {
+        "question": "Tính năng nào sau đây KHÔNG phải là của Render Free Tier?",
+        "options": [
+          "Cung cấp dịch vụ web miễn phí",
+          "Cung cấp cơ sở dữ liệu PostgreSQL miễn phí",
+          "Tự động build và deploy từ Git",
+          "Không bao giờ sleep"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Dịch vụ miễn phí trên Render sẽ tự động \"ngủ\" (sleep) sau 15 phút không có request. Đây là một đặc điểm của Free Tier."
+      },
+      {
+        "question": "Để deploy một dự án NodeJS lên Render, bạn cần cấu hình file `package.json` như thế nào?",
+        "options": [
+          "Chỉ cần có script `test`",
+          "Phải có script `start` và khai báo `engines` cho phiên bản Node.js",
+          "Không cần cấu hình gì đặc biệt",
+          "Phải có script `deploy`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cần có ít nhất một script `start` để Render biết cách khởi động ứng dụng và nên khai báo `engines` để đảm bảo tính tương thích môi trường Node.js."
+      },
+      {
+        "question": "Lệnh `Build Command` trên Render thường được dùng để làm gì?",
+        "options": [
+          "Chỉ để khởi động server",
+          "Để cài đặt dependencies và build code nếu cần (ví dụ: `npm install` hoặc `yarn; yarn build`)",
+          "Để chạy test cho ứng dụng",
+          "Để kết nối với cơ sở dữ liệu"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Build Command dùng để thực thi các lệnh cần thiết để chuẩn bị cho ứng dụng chạy, bao gồm cài đặt các gói phụ thuộc và biên dịch mã nguồn nếu có."
+      },
+      {
+        "question": "Biến môi trường `PORT` trên Render có đặc điểm gì?",
+        "options": [
+          "Phải được người dùng tự định nghĩa và không thay đổi",
+          "Render tự động cung cấp và ứng dụng cần sử dụng `process.env.PORT`",
+          "Luôn có giá trị là 3000",
+          "Chỉ cần thiết cho môi trường local"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Render sẽ tự động gán một cổng cho ứng dụng của bạn và đưa nó vào biến môi trường `PORT`. Code của bạn phải đọc giá trị này để khởi động server đúng cách."
+      },
+      {
+        "question": "Tại sao cần cấu hình CORS trong ứng dụng NodeJS khi deploy?",
+        "options": [
+          "Để tăng tốc độ phản hồi của API",
+          "Để cho phép các request từ một domain khác (ví dụ: ứng dụng front-end trên Vercel)",
+          "Để mã hóa dữ liệu truyền đi",
+          "Để ứng dụng tự động khởi động lại"
+        ],
+        "correctAnswer": 1,
+        "explanation": "CORS (Cross-Origin Resource Sharing) là một cơ chế cho phép các tài nguyên được yêu cầu từ một domain khác. Nếu không có CORS, trình duyệt sẽ chặn request từ front-end đến API của bạn."
+      },
+      {
+        "question": "So với Heroku (gói miễn phí đã ngừng), ưu điểm của Render Free Tier là gì?",
+        "options": [
+          "Cung cấp PostgreSQL miễn phí",
+          "Ứng dụng không bao giờ bị sleep",
+          "Không có giới hạn về CPU và RAM",
+          "Hỗ trợ nhiều ngôn ngữ lập trình hơn"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Theo bảng so sánh trong bài học, Render Free Tier vẫn tiếp tục cung cấp cơ sở dữ liệu PostgreSQL miễn phí, trong khi Heroku đã ngừng dịch vụ này ở gói miễn phí."
+      },
+      {
+        "question": "Thông tin nhạy cảm như `DATABASE_URI` nên được lưu trữ ở đâu khi deploy lên Render?",
+        "options": [
+          "Hard-code trực tiếp trong file `index.js`",
+          "Trong một file `config.json` và commit lên Git",
+          "Sử dụng biến môi trường (Environment Variables) của Render",
+          "Lưu trong `package.json`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tuyệt đối không hard-code thông tin nhạy cảm. Luôn sử dụng biến môi trường để bảo mật và linh hoạt trong các môi trường khác nhau."
+      },
+      {
+        "question": "Khi deploy thành công trên Render, bạn sẽ nhận được gì?",
+        "options": [
+          "Một địa chỉ IP tĩnh",
+          "Một file log chi tiết",
+          "Một URL công khai có dạng `https://your-service-name.onrender.com`",
+          "Một email xác nhận"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sau khi quá trình build và deploy hoàn tất, Render sẽ cung cấp một URL công khai để bạn có thể truy cập vào ứng dụng của mình."
+      },
+      {
+        "question": "Hiện tượng \"sleep\" của Render Free Tier có nghĩa là gì?",
+        "options": [
+          "Ứng dụng sẽ bị xóa sau 15 phút",
+          "Ứng dụng tạm dừng sau 15 phút không hoạt động và cần thời gian để khởi động lại ở request tiếp theo",
+          "Ứng dụng sẽ tự động restart sau mỗi 15 phút",
+          "Băng thông bị giới hạn sau 15 phút"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Dịch vụ miễn phí sẽ \"ngủ\" để tiết kiệm tài nguyên. Request đầu tiên sau khi ngủ sẽ \"đánh thức\" dịch vụ, gây ra một chút độ trễ."
+      },
+      {
+        "question": "Mục đích của việc khai báo `engines` trong `package.json` là gì?",
+        "options": [
+          "Để chỉ định công cụ tìm kiếm cho dự án",
+          "Để đảm bảo tính tương thích về phiên bản Node.js giữa môi trường local và Render",
+          "Để tăng hiệu suất của ứng dụng",
+          "Để cài đặt các gói phụ thuộc"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khai báo `engines` giúp Render biết chính xác phiên bản Node.js mà dự án của bạn yêu cầu, tránh các lỗi không tương thích có thể xảy ra."
+      },
+      {
+        "question": "Làm thế nào để theo dõi quá trình build và deploy trên Render?",
+        "options": [
+          "Kiểm tra email",
+          "Xem log trong tab `Events` trên dashboard của Render",
+          "Chạy lệnh `render logs` ở local",
+          "Render không cung cấp tính năng này"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tab `Events` trên giao diện của Render cung cấp log trực tiếp, cho phép bạn theo dõi từng bước của quá trình build và deploy."
+      },
+      {
+        "question": "Nếu ứng dụng của bạn sử dụng TypeScript, `Build Command` có thể là gì?",
+        "options": [
+          "`node src/index.ts`",
+          "`npm install`",
+          "`npm install && tsc`",
+          "`npm start`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Với TypeScript, bạn cần biên dịch code từ .ts sang .js. Do đó, `Build Command` sẽ bao gồm cả việc cài đặt dependencies (`npm install`) và biên dịch (`tsc`)."
+      },
+      {
+        "question": "Bạn nên chọn `Region` nào khi deploy trên Render để phục vụ người dùng Việt Nam tốt nhất?",
+        "options": [
+          "US East (N. Virginia)",
+          "EU Central (Frankfurt)",
+          "Singapore",
+          "US West (Oregon)"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Chọn khu vực máy chủ gần với người dùng cuối sẽ giảm độ trễ. Singapore là lựa chọn tốt nhất trong danh sách cho người dùng tại Việt Nam."
+      },
+      {
+        "question": "Lệnh `Start Command` trên Render dùng để làm gì?",
+        "options": [
+          "Cài đặt các gói npm",
+          "Chạy unit test",
+          "Khởi động ứng dụng của bạn sau khi build xong (ví dụ: `node build/index.js`)",
+          "Commit code lên Git"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`Start Command` là lệnh cuối cùng được thực thi để chạy ứng dụng của bạn, sau khi `Build Command` đã hoàn tất thành công."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Cấu hình `package.json` cho Render",
+        "description": "Chỉnh sửa file `package.json` để thêm script `start` và khai báo `engines` cho Node.js phiên bản 18.x, chuẩn bị cho việc deploy lên Render.",
+        "starterCode": "{\n  \"name\": \"my-render-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"index.js\",\n  \"scripts\": {\n    \"test\": \"echo \\\"Error: no test specified\\\" && exit 1\"\n  }\n}",
+        "solution": "{\n  \"name\": \"my-render-api\",\n  \"version\": \"1.0.0\",\n  \"main\": \"index.js\",\n  \"scripts\": {\n    \"test\": \"echo \\\"Error: no test specified\\\" && exit 1\",\n    \"start\": \"node index.js\"\n  },\n  \"engines\": {\n    \"node\": \"18.x\"\n  }\n}",
+        "testCases": "Kiểm tra file `package.json` sau khi chỉnh sửa có chứa `scripts.start` với giá trị `node index.js` và `engines.node` với giá trị `18.x`."
+      },
+      {
+        "title": "Sử dụng `process.env.PORT`",
+        "description": "Viết một server Express đơn giản lắng nghe trên cổng được cung cấp bởi biến môi trường của Render, hoặc cổng 8080 nếu chạy ở local.",
+        "starterCode": "const express = require('express');\nconst app = express();\n\n// Your code here\n\napp.get('/', (req, res) => {\n  res.send('Hello Render!');\n});",
+        "solution": "const express = require('express');\nconst app = express();\n\nconst PORT = process.env.PORT || 8080;\n\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});\n\napp.get('/', (req, res) => {\n  res.send('Hello Render!');\n});",
+        "testCases": "Chạy server. Nếu biến môi trường PORT được đặt, server phải chạy trên cổng đó. Nếu không, nó phải chạy trên cổng 8080."
+      },
+      {
+        "title": "Cấu hình CORS cơ bản",
+        "description": "Thêm middleware `cors` vào ứng dụng Express để cho phép tất cả các request từ các nguồn khác (cross-origin).",
+        "starterCode": "const express = require('express');\nconst app = express();\n\n// Your code here to import and use cors\n\napp.get('/api/data', (req, res) => {\n  res.json({ message: 'This is a CORS-enabled response' });\n});\n\nconst PORT = process.env.PORT || 8080;\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});",
+        "solution": "const express = require('express');\nconst cors = require('cors');\nconst app = express();\n\n// Use cors middleware\napp.use(cors());\n\napp.get('/api/data', (req, res) => {\n  res.json({ message: 'This is a CORS-enabled response' });\n});\n\nconst PORT = process.env.PORT || 8080;\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});",
+        "testCases": "Gửi một request từ một trang HTML trên một domain khác (ví dụ: file://) đến endpoint `/api/data`. Request phải thành công và không bị chặn bởi chính sách CORS."
+      },
+      {
+        "title": "Đọc biến môi trường cho Database",
+        "description": "Viết một đoạn code mô phỏng việc kết nối tới cơ sở dữ liệu MongoDB bằng cách sử dụng chuỗi kết nối từ biến môi trường `DATABASE_URI`.",
+        "starterCode": "// Giả sử bạn đã cài đặt mongoose: npm install mongoose\nconst mongoose = require('mongoose');\n\n// Your code here to get the URI and connect",
+        "solution": "// Giả sử bạn đã cài đặt mongoose: npm install mongoose\nconst mongoose = require('mongoose');\n\nconst DATABASE_URI = process.env.DATABASE_URI;\n\nif (!DATABASE_URI) {\n  console.error('DATABASE_URI is not defined in environment variables');\n  process.exit(1);\n}\n\nmongoose.connect(DATABASE_URI)\n  .then(() => console.log('Connected to MongoDB successfully!'))\n  .catch(err => console.error('Failed to connect to MongoDB', err));",
+        "testCases": "Chạy code với biến môi trường `DATABASE_URI` được thiết lập. Log phải hiển thị thông báo kết nối thành công. Nếu không có biến môi trường, nó phải log lỗi và thoát."
+      },
+      {
+        "title": "Hoàn thiện Server cho Deploy",
+        "description": "Tạo một server Express hoàn chỉnh, bao gồm: sử dụng cổng từ biến môi trường, kích hoạt CORS, và có một endpoint API đơn giản. Đây là một cấu trúc sẵn sàng để deploy.",
+        "starterCode": "// Import necessary libraries\n\n// Create express app\n\n// Use middlewares\n\n// Define a simple API endpoint\n\n// Start the server",
+        "solution": "const express = require('express');\nconst cors = require('cors');\n\nconst app = express();\n\n// Middlewares\napp.use(cors());\napp.use(express.json()); // Middleware to parse JSON bodies\n\n// API Endpoint\napp.get('/api/status', (req, res) => {\n  res.status(200).json({ status: 'Server is up and running' });\n});\n\n// Start the server\nconst PORT = process.env.PORT || 8080;\napp.listen(PORT, () => {\n  console.log(`Server listening on port ${PORT}`);\n});",
+        "testCases": "Deploy server này lên Render. Sau khi deploy thành công, truy cập vào URL công khai với đường dẫn `/api/status`. Phải nhận được một JSON response với `{ \"status\": \"Server is up and running\" }`."
+      }
+    ]
+  }
+}

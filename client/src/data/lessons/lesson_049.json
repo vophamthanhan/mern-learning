@@ -1,0 +1,213 @@
+{
+  "id": 49,
+  "title": "Bài học 31: Đọc hiểu Code thư viện Dnd-kit nâng cao (Quan Trọng)",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# Bài học 31: Đọc hiểu Code thư viện Dnd-kit nâng cao (Quan Trọng)\n\n## Mục tiêu bài học\n\nVideo này là một phần quan trọng trong series MERN Stack Pro, tập trung vào việc giúp lập trình viên hiểu sâu hơn về cách hoạt động của thư viện `dnd-kit`, một công cụ mạnh mẽ để xây dựng tính năng kéo thả (drag and drop) trong các ứng dụng React. Mục tiêu chính là không chỉ sử dụng thư viện một cách máy móc theo tài liệu, mà là thực sự \"đọc hiểu\" và phân tích mã nguồn của nó. Qua đó, người học có thể tùy chỉnh, mở rộng và gỡ lỗi các tính năng kéo thả một cách hiệu quả và chuyên sâu hơn, đặc biệt là trong một dự án phức tạp như Trello clone.\n\n## Kiến thức chi tiết\n\nVideo tập trung vào việc phân tích và \"reverse-engineer\" (dịch ngược) mã nguồn của `dnd-kit` để hiểu cách nó được xây dựng và hoạt động. Tác giả, TrungQuanDev, nhấn mạnh tầm quan trọng của việc này để trở thành một lập trình viên chuyên nghiệp, có khả năng làm chủ công nghệ thay vì chỉ làm theo hướng dẫn.\n\n### 1. Tại sao cần đọc hiểu mã nguồn thư viện?\n\n*   **Làm chủ công nghệ:** Hiểu rõ \"behind the scenes\" giúp bạn không bị phụ thuộc vào tài liệu. Bạn có thể tự tin tùy chỉnh và mở rộng thư viện theo nhu cầu riêng của dự án.\n*   **Gỡ lỗi hiệu quả:** Khi gặp lỗi, đặc biệt là những lỗi phức tạp không có trong tài liệu, việc hiểu cấu trúc mã nguồn sẽ giúp bạn xác định nguyên nhân và tìm ra giải pháp nhanh chóng hơn.\n*   **Nâng cao tư duy lập trình:** Đọc mã nguồn của các dự án lớn, được viết bởi các lập trình viên giỏi, là một cách tuyệt vời để học hỏi các cấu trúc, giải thuật và phương pháp lập trình tốt nhất.\n*   **Tự tin khi phỏng vấn:** Khả năng phân tích và hiểu sâu về một công nghệ là một điểm cộng rất lớn trong mắt nhà tuyển dụng.\n\n### 2. Phân tích cấu trúc của `dnd-kit`\n\nVideo hướng dẫn cách clone mã nguồn của `dnd-kit` từ GitHub và phân tích cấu trúc thư mục. Một số điểm chính được đề cập:\n\n*   **Monorepo:** `dnd-kit` sử dụng kiến trúc monorepo, chứa nhiều packages khác nhau trong cùng một repository. Điều này giúp quản lý và phát triển các module liên quan một cách đồng bộ.\n*   **Các packages chính:**\n    *   `@dnd-kit/core`: Chứa đựng logic cốt lõi của việc kéo thả, các sensor (cảm biến) để phát hiện hành vi người dùng (chuột, chạm), và các thuật toán phát hiện va chạm.\n    *   `@dnd-kit/sortable`: Cung cấp các component và hook để dễ dàng xây dựng các danh sách có thể sắp xếp (sortable lists).\n    *   `@dnd-kit/dom`: Chứa các tiện ích liên quan đến DOM.\n*   **Storybook:** Dự án sử dụng Storybook để phát triển và demo các component một cách độc lập. Đây là một công cụ hữu ích để khám phá các tính năng của thư viện.\n\n### 3. Code mẫu và giải thích\n\nVideo không đi sâu vào việc viết code mới từ đầu, mà tập trung vào việc đọc và giải thích code có sẵn trong Storybook của `dnd-kit`. Tác giả mở một ví dụ về danh sách có thể sắp xếp và phân tích cách nó hoạt động:\n\n*   **`DndContext`:** Là component cha bao bọc toàn bộ khu vực có thể kéo thả. Nó cung cấp context cho tất cả các component con.\n*   **`SortableContext`:** Cung cấp context dành riêng cho việc sắp xếp, quản lý danh sách các item có thể sắp xếp.\n*   **`useSortable`:** Là một hook quan trọng, cung cấp các thuộc tính và sự kiện cần thiết để một phần tử có thể được kéo thả và sắp xếp. Nó trả về:\n    *   `attributes`: Các thuộc tính để gắn vào phần tử DOM.\n    *   `listeners`: Các sự kiện để lắng nghe hành vi kéo của người dùng.\n    *   `setNodeRef`: Một hàm để tham chiếu đến node DOM của phần tử.\n    *   `transform`, `transition`: Các thuộc tính CSS để tạo hiệu ứng di chuyển mượt mà.\n\n## Các bước thực hành\n\n1.  **Clone repository của `dnd-kit`:**\n    ```bash\n    git clone https://github.com/clauderic/dnd-kit.git\n    ```\n2.  **Cài đặt dependencies:**\n    *   Lưu ý: `dnd-kit` sử dụng `yarn` và `yarn workspaces`. Cần đảm bảo đã cài đặt `yarn`.\n    *   Chạy lệnh `yarn install` ở thư mục gốc của dự án.\n3.  **Khám phá Storybook:**\n    *   Chạy lệnh `yarn start` hoặc `yarn storybook` (tùy theo cấu hình trong `package.json`) để khởi động Storybook.\n    *   Duyệt qua các ví dụ (stories) khác nhau để xem các tính năng của thư viện trong hành động.\n4.  **Phân tích mã nguồn:**\n    *   Chọn một ví dụ bạn quan tâm trong Storybook.\n    *   Tìm đến file mã nguồn tương ứng trong thư mục `packages`.\n    *   Đọc và phân tích cách các component, hook và context của `dnd-kit` được sử dụng để tạo ra tính năng đó.\n    *   Sử dụng các công cụ debug của trình duyệt để đặt breakpoint và theo dõi luồng dữ liệu.\n\n## Lưu ý quan trọng\n\n*   **Phiên bản Node.js:** Một số người dùng trong phần bình luận đã gặp lỗi khi cài đặt với phiên bản Node.js cũ. Đảm bảo bạn đang sử dụng phiên bản Node.js >= 16.\n*   **Sử dụng `yarn`:** Dự án được thiết lập để hoạt động với `yarn`. Việc sử dụng `npm install` có thể gây ra lỗi do không hỗ trợ `workspaces` một cách tương thích.\n*   **Đừng nản lòng:** Đọc hiểu mã nguồn của một thư viện lớn có thể rất khó khăn và \"ngợp\" lúc đầu. Hãy kiên nhẫn, bắt đầu từ những ví dụ đơn giản và dần dần đi sâu vào các phần phức tạp hơn.\n\n## Tài liệu tham khảo\n\n1.  [YouTube Video: 31. Đọc hiểu Code thư viện Dnd-kit nâng cao (Quan Trọng)](https://www.youtube.com/watch?v=gypSUPiEYv0&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=35)\n2.  [GitHub - clauderic/dnd-kit: The modern toolkit for building drag and drop interfaces](https.github.com/clauderic/dnd-kit)\n3.  [dnd-kit Official Documentation](https://dndkit.com/)\n4.  [Storybook: UI component explorer for frontend developers](https://storybook.js.org/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của việc đọc hiểu mã nguồn thư viện `dnd-kit` được nhấn mạnh trong bài học là gì?",
+        "options": [
+          "Chỉ để sử dụng thư viện theo tài liệu có sẵn.",
+          "Để có thể tự tin tùy chỉnh, mở rộng và gỡ lỗi thư viện một cách chuyên sâu.",
+          "Để tìm ra các lỗi bảo mật trong thư viện.",
+          "Để sao chép và tạo ra một thư viện tương tự."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nhấn mạnh việc đọc hiểu mã nguồn giúp lập trình viên làm chủ công nghệ, có khả năng tùy chỉnh, mở rộng và gỡ lỗi hiệu quả thay vì chỉ làm theo hướng dẫn một cách máy móc."
+      },
+      {
+        "question": "Theo bài học, lợi ích của việc hiểu rõ \"behind the scenes\" của một thư viện là gì?",
+        "options": [
+          "Không cần đọc tài liệu của thư viện nữa.",
+          "Có thể viết code nhanh hơn.",
+          "Không bị phụ thuộc vào tài liệu và có thể tự tin tùy chỉnh theo nhu cầu dự án.",
+          "Dễ dàng tìm được việc làm hơn."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc hiểu sâu về cách hoạt động của thư viện giúp lập trình viên không bị phụ thuộc vào tài liệu, từ đó có thể tùy chỉnh và mở rộng thư viện một cách linh hoạt."
+      },
+      {
+        "question": "Thư viện `dnd-kit` sử dụng kiến trúc gì để quản lý các packages?",
+        "options": [
+          "Microservices",
+          "Monolith",
+          "Monorepo",
+          "Serverless"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`dnd-kit` sử dụng kiến trúc monorepo, cho phép quản lý nhiều packages liên quan trong cùng một repository, giúp phát triển và đồng bộ hóa dễ dàng hơn."
+      },
+      {
+        "question": "Package nào trong `dnd-kit` chứa đựng logic cốt lõi của việc kéo thả và các sensor?",
+        "options": [
+          "`@dnd-kit/sortable`",
+          "`@dnd-kit/core`",
+          "`@dnd-kit/dom`",
+          "`@dnd-kit/utilities`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Package `@dnd-kit/core` là nơi chứa logic cốt lõi, bao gồm các sensor để phát hiện hành vi người dùng và các thuật toán xử lý va chạm."
+      },
+      {
+        "question": "Component nào trong `dnd-kit` được dùng để bao bọc toàn bộ khu vực có thể kéo thả?",
+        "options": [
+          "`SortableContext`",
+          "`DragOverlay`",
+          "`DndContext`",
+          "`Droppable`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`DndContext` là component cha, cung cấp context cần thiết cho tất cả các thành phần con bên trong khu vực có chức năng kéo thả."
+      },
+      {
+        "question": "Hook `useSortable` trong `@dnd-kit/sortable` trả về những gì?",
+        "options": [
+          "Chỉ có `attributes` và `listeners`.",
+          "Chỉ có `transform` và `transition`.",
+          "`attributes`, `listeners`, `setNodeRef`, `transform`, `transition`.",
+          "Một state để quản lý trạng thái kéo thả."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hook `useSortable` trả về một object chứa nhiều thuộc tính và hàm cần thiết để một phần tử có thể được kéo thả, bao gồm `attributes`, `listeners`, `setNodeRef`, `transform`, và `transition`."
+      },
+      {
+        "question": "Công cụ nào được `dnd-kit` sử dụng để phát triển và demo các component một cách độc lập?",
+        "options": [
+          "Jest",
+          "Cypress",
+          "Storybook",
+          "Webpack"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Dự án `dnd-kit` sử dụng Storybook, một công cụ mạnh mẽ để xây dựng, demo và kiểm thử các UI component một cách biệt lập."
+      },
+      {
+        "question": "Lệnh nào được dùng để cài đặt các dependencies cho project `dnd-kit` sau khi clone về?",
+        "options": [
+          "`npm install`",
+          "`yarn install`",
+          "`pnpm install`",
+          "`bower install`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học lưu ý rằng `dnd-kit` sử dụng `yarn` và `yarn workspaces`, vì vậy cần phải dùng lệnh `yarn install` để cài đặt dependencies một cách chính xác."
+      },
+      {
+        "question": "Tại sao việc sử dụng `npm install` có thể gây lỗi trong dự án `dnd-kit`?",
+        "options": [
+          "Vì `npm` đã lỗi thời.",
+          "Vì `dnd-kit` không tương thích với `npm`.",
+          "Vì `npm` không hỗ trợ `workspaces` một cách tương thích như `yarn`.",
+          "Vì file `package.json` bị lỗi."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lý do chính là `dnd-kit` được cấu trúc như một monorepo sử dụng `yarn workspaces`. `npm` cũng có workspaces nhưng có thể không hoàn toàn tương thích, dẫn đến lỗi khi cài đặt."
+      },
+      {
+        "question": "Mục đích của `SortableContext` là gì?",
+        "options": [
+          "Cung cấp context chung cho việc kéo thả.",
+          "Quản lý trạng thái của các item có thể sắp xếp và cung cấp context cho chúng.",
+          "Để phát hiện va chạm giữa các đối tượng.",
+          "Để tạo hiệu ứng animation khi kéo thả."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`SortableContext` được thiết kế riêng cho việc xây dựng danh sách có thể sắp xếp, nó quản lý danh sách các ID của item và cung cấp context cho hook `useSortable`."
+      },
+      {
+        "question": "Thuộc tính `transform` và `transition` do hook `useSortable` trả về được dùng để làm gì?",
+        "options": [
+          "Để thay đổi logic kéo thả.",
+          "Để thay đổi dữ liệu của item.",
+          "Để áp dụng các thuộc tính CSS tạo hiệu ứng di chuyển mượt mà.",
+          "Để xác định vị trí của con trỏ chuột."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Các thuộc tính `transform` và `transition` được dùng để áp dụng vào style của component, giúp tạo ra hiệu ứng di chuyển và sắp xếp mượt mà về mặt hình ảnh."
+      },
+      {
+        "question": "Theo bài học, phiên bản Node.js tối thiểu được khuyến nghị để tránh lỗi khi cài đặt `dnd-kit` là bao nhiêu?",
+        "options": [
+          "Node.js >= 12",
+          "Node.js >= 14",
+          "Node.js >= 16",
+          "Bất kỳ phiên bản nào cũng được."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Một số người dùng đã báo cáo lỗi khi sử dụng phiên bản Node.js cũ. Bài học khuyến nghị sử dụng phiên bản Node.js từ 16 trở lên để đảm bảo tương thích."
+      },
+      {
+        "question": "Hàm `setNodeRef` từ hook `useSortable` có chức năng gì?",
+        "options": [
+          "Thiết lập giá trị cho node.",
+          "Tham chiếu đến node DOM của phần tử có thể kéo thả.",
+          "Xóa một node khỏi DOM.",
+          "Sao chép một node DOM."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`setNodeRef` là một hàm callback ref, được sử dụng để `dnd-kit` có thể lấy được tham chiếu đến phần tử DOM thực tế, phục vụ cho việc tính toán vị trí và va chạm."
+      },
+      {
+        "question": "Đâu là bước đầu tiên được gợi ý để thực hành đọc hiểu code `dnd-kit`?",
+        "options": [
+          "Viết một ứng dụng mới sử dụng `dnd-kit`.",
+          "Clone repository của `dnd-kit` từ GitHub.",
+          "Đọc toàn bộ tài liệu của `dnd-kit`.",
+          "Xem các video hướng dẫn khác."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học hướng dẫn bước đầu tiên là clone mã nguồn của `dnd-kit` về máy để có thể trực tiếp phân tích cấu trúc và mã nguồn của dự án."
+      },
+      {
+        "question": "Tại sao việc đọc code của các lập trình viên giỏi trong các dự án lớn lại hữu ích?",
+        "options": [
+          "Để tìm ra lỗi sai của họ.",
+          "Để sao chép y hệt phong cách code.",
+          "Để học hỏi các cấu trúc, giải thuật và phương pháp lập trình tốt.",
+          "Để chứng tỏ mình giỏi hơn họ."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đọc mã nguồn của các dự án chất lượng là một cách hiệu quả để nâng cao tư duy lập trình, học hỏi các best practices, cấu trúc và giải thuật tiên tiến từ những người có kinh nghiệm."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cài đặt DndContext cơ bản",
+        "description": "Hãy tạo một component React đơn giản, trong đó sử dụng `DndContext` để bao bọc một vùng div. Đây là bước đầu tiên để thiết lập môi trường cho tính năng kéo thả.",
+        "starterCode": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\n\nfunction App() {\n  function handleDragEnd(event) {\n    console.log('Drag end event:', event);\n  }\n\n  return (\n    // Bọc component của bạn trong DndContext ở đây\n    <div style={{ padding: '20px' }}>\n      <div style={{ border: '1px solid black', padding: '20px', minHeight: '100px' }}>\n        Vùng có thể kéo thả\n      </div>\n    </div>\n  );\n}\n\nexport default App;",
+        "solution": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\n\nfunction App() {\n  function handleDragEnd(event) {\n    console.log('Drag end event:', event);\n  }\n\n  return (\n    <DndContext onDragEnd={handleDragEnd}>\n      <div style={{ padding: '20px' }}>\n        <div style={{ border: '1px solid black', padding: '20px', minHeight: '100px' }}>\n          Vùng có thể kéo thả\n        </div>\n      </div>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "testCases": "Component render mà không có lỗi. Prop `onDragEnd` được truyền vào `DndContext`. Khi một hành động kéo thả (giả lập) kết thúc, hàm `handleDragEnd` được gọi."
+      },
+      {
+        "title": "Bài 2: Tạo một phần tử có thể kéo (Draggable)",
+        "description": "Sử dụng hook `useDraggable` từ `@dnd-kit/core` để làm cho một thẻ div có thể được kéo đi. Gắn các `attributes` và `listeners` cần thiết vào div đó.",
+        "starterCode": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\nimport { useDraggable } from '@dnd-kit/core';\n\nfunction Draggable() {\n  // Sử dụng hook useDraggable ở đây\n\n  return (\n    <div style={{ padding: '10px', border: '2px solid blue', width: '100px', touchAction: 'none' }}>\n      Kéo tôi đi!\n    </div>\n  );\n}\n\nfunction App() {\n  return (\n    <DndContext>\n      <Draggable />\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "solution": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\nimport { useDraggable } from '@dnd-kit/core';\n\nfunction Draggable() {\n  const {attributes, listeners, setNodeRef, transform} = useDraggable({\n    id: 'draggable',\n  });\n  const style = transform ? {\n    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,\n  } : undefined;\n\n  return (\n    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>\n      <div style={{ padding: '10px', border: '2px solid blue', width: '100px', touchAction: 'none' }}>\n        Kéo tôi đi!\n      </div>\n    </div>\n  );\n}\n\nfunction App() {\n  return (\n    <DndContext>\n      <Draggable />\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "testCases": "Component `Draggable` render đúng. Khi người dùng kéo vào div, nó sẽ di chuyển theo con trỏ chuột. Các thuộc tính `ref`, `style`, `listeners`, `attributes` được gắn chính xác."
+      },
+      {
+        "title": "Bài 3: Tạo một vùng có thể thả (Droppable)",
+        "description": "Sử dụng hook `useDroppable` từ `@dnd-kit/core` để tạo một vùng mà phần tử `Draggable` từ bài 2 có thể được thả vào. Thay đổi màu nền của vùng thả khi có một phần tử đang được kéo trên nó.",
+        "starterCode": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\nimport { useDraggable, useDroppable } from '@dnd-kit/core';\n\n// ... (Code Draggable component từ bài 2) ...\n\nfunction Droppable(props) {\n  // Sử dụng hook useDroppable ở đây\n\n  const style = {\n    border: '2px dashed green',\n    minHeight: '200px',\n    padding: '20px',\n    marginTop: '20px'\n  };\n\n  return (\n    <div style={style}>\n      {props.children}\n    </div>\n  );\n}\n\nfunction App() {\n  // ... (logic xử lý onDragEnd) ...\n  return (\n    <DndContext>\n      <Draggable />\n      <Droppable />\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "solution": "import React, {useState} from 'react';\nimport { DndContext } from '@dnd-kit/core';\nimport { useDraggable, useDroppable } from '@dnd-kit/core';\n\nfunction Draggable() {\n  const {attributes, listeners, setNodeRef, transform} = useDraggable({ id: 'draggable' });\n  const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;\n  return (\n    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>\n      <div style={{ padding: '10px', border: '2px solid blue', width: '100px', touchAction: 'none' }}>Kéo tôi đi!</div>\n    </div>\n  );\n}\n\nfunction Droppable(props) {\n  const {isOver, setNodeRef} = useDroppable({\n    id: 'droppable',\n  });\n  const style = {\n    border: '2px dashed green',\n    minHeight: '200px',\n    padding: '20px',\n    marginTop: '20px',\n    backgroundColor: isOver ? 'lightgreen' : undefined,\n  };\n\n  return (\n    <div ref={setNodeRef} style={style}>\n      {props.children}\n    </div>\n  );\n}\n\nfunction App() {\n  const [parent, setParent] = useState(null);\n  function handleDragEnd({over}) {\n    setParent(over ? over.id : null);\n  }\n  return (\n    <DndContext onDragEnd={handleDragEnd}>\n      {!parent ? <Draggable /> : null}\n      <Droppable>\n        {parent ? <Draggable /> : 'Thả vào đây'}\n      </Droppable>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "testCases": "Component `Droppable` render đúng. Khi kéo `Draggable` qua `Droppable`, màu nền của `Droppable` thay đổi. Khi thả `Draggable` vào `Droppable`, `Draggable` sẽ nằm trong `Droppable`."
+      },
+      {
+        "title": "Bài 4: Thiết lập một danh sách có thể sắp xếp (Sortable List)",
+        "description": "Sử dụng `SortableContext` và hook `useSortable` để tạo một danh sách các mục có thể được sắp xếp lại bằng cách kéo thả.",
+        "starterCode": "import React, {useState} from 'react';\nimport { DndContext, closestCenter } from '@dnd-kit/core';\nimport { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction SortableItem(props) {\n  // Sử dụng hook useSortable ở đây\n\n  const style = {\n    padding: '10px',\n    border: '1px solid #ccc',\n    marginBottom: '5px',\n    backgroundColor: 'white',\n    touchAction: 'none'\n  };\n\n  return (\n    <div style={style}>\n      {props.id}\n    </div>\n  );\n}\n\nfunction App() {\n  const [items, setItems] = useState(['Item 1', 'Item 2', 'Item 3']);\n  // ... (logic handleDragEnd để cập nhật thứ tự) ...\n\n  return (\n    <DndContext>\n      <SortableContext items={items}>\n        {items.map(id => <SortableItem key={id} id={id} />)}\n      </SortableContext>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "solution": "import React, {useState} from 'react';\nimport { DndContext, closestCenter } from '@dnd-kit/core';\nimport { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction SortableItem(props) {\n  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({id: props.id});\n\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n    padding: '10px',\n    border: '1px solid #ccc',\n    marginBottom: '5px',\n    backgroundColor: 'white',\n    touchAction: 'none'\n  };\n\n  return (\n    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>\n      {props.id}\n    </div>\n  );\n}\n\nfunction App() {\n  const [items, setItems] = useState(['Item 1', 'Item 2', 'Item 3']);\n\n  function handleDragEnd(event) {\n    const {active, over} = event;\n    if (active.id !== over.id) {\n      setItems((items) => {\n        const oldIndex = items.indexOf(active.id);\n        const newIndex = items.indexOf(over.id);\n        return arrayMove(items, oldIndex, newIndex);\n      });\n    }\n  }\n\n  return (\n    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>\n      <SortableContext items={items} strategy={verticalListSortingStrategy}>\n        {items.map(id => <SortableItem key={id} id={id} />)}\n      </SortableContext>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "testCases": "Danh sách 3 mục được render. Người dùng có thể kéo một mục và thả vào vị trí của mục khác. Thứ tự của các mục trong state `items` được cập nhật chính xác sau khi thả."
+      },
+      {
+        "title": "Bài 5: Đọc hiểu và tùy chỉnh hook `useSortable`",
+        "description": "Nhiệm vụ của bạn là đọc mã nguồn (giả định) của hook `useSortable`. Dựa vào kiến thức từ bài học, hãy giải thích chức năng của các thuộc tính `attributes`, `listeners`, `transform` và `transition` mà hook này trả về trong một comment ngay trong code.",
+        "starterCode": "import { useSortable } from '@dnd-kit/sortable';\n\nfunction MySortableComponent({ id }) {\n  const {\n    attributes,\n    listeners,\n    setNodeRef,\n    transform,\n    transition,\n  } = useSortable({ id });\n\n  // Thêm comment giải thích chức năng của 4 thuộc tính dưới đây\n\n  // attributes: ...\n\n  // listeners: ...\n\n  // transform: ...\n\n  // transition: ...\n\n  const style = {\n    transform: `...` // Sử dụng transform và transition ở đây\n  };\n\n  return (\n    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>\n      {id}\n    </div>\n  );\n}\n",
+        "solution": "import { useSortable } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction MySortableComponent({ id }) {\n  const {\n    attributes,\n    listeners,\n    setNodeRef,\n    transform,\n    transition,\n  } = useSortable({ id });\n\n  // attributes: Đây là một object chứa các thuộc tính ARIA accessibility (như role, aria-roledescription) và các thuộc tính khác (như tabIndex) để làm cho phần tử có thể focus và tương tác được bằng bàn phím, tuân thủ các tiêu chuẩn về trợ năng.\n\n  // listeners: Đây là một object chứa các event listeners (như onMouseDown, onKeyDown, onTouchStart). Chúng cần được spread (...) vào phần tử DOM để `dnd-kit` có thể lắng nghe các hành động của người dùng (click, nhấn phím, chạm) để bắt đầu quá trình kéo.\n\n  // transform: Một object chứa các giá trị x, y, scaleX, scaleY. Nó đại diện cho sự thay đổi vị trí của phần tử khi nó được kéo hoặc khi các phần tử khác sắp xếp lại. Nó được dùng để tính toán giá trị cho thuộc tính CSS `transform`, tạo hiệu ứng di chuyển mượt mà thay vì thay đổi vị trí đột ngột.\n\n  // transition: Một chuỗi CSS (ví dụ: 'transform 250ms ease'). Nó được dùng cho thuộc tính CSS `transition` để định nghĩa hiệu ứng chuyển động khi phần tử thay đổi vị trí (do `transform` thay đổi), giúp animation trở nên mượt mà hơn.\n\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n  };\n\n  return (\n    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>\n      {id}\n    </div>\n  );\n}\n",
+        "testCases": "Các comment giải thích phải chính xác và rõ ràng. Giải thích đúng chức năng của `attributes` (accessibility, keyboard interaction), `listeners` (bắt sự kiện để bắt đầu kéo), `transform` (thay đổi vị trí), và `transition` (hiệu ứng chuyển động mượt mà)."
+      }
+    ]
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "id": 9,
+  "title": "Bài học 5: What is Semantic Versioning? Important Notes on Project Code Base",
+  "category": "react-basics",
+  "categoryName": "React Cơ bản",
+  "content": "# Bài học 5: What is Semantic Versioning? Important Notes on Project Code Base\n\n## Mục tiêu bài học\n\n- Hiểu rõ khái niệm và tầm quan trọng của Semantic Versioning (SemVer) trong phát triển phần mềm.\n- Nắm vững cách đọc và sử dụng các phiên bản của một package trong `package.json`.\n- Biết cách áp dụng SemVer để quản lý các dependencies một cách hiệu quả và tránh các xung đột không đáng có.\n- Nhận thức được những lưu ý quan trọng liên quan đến codebase của dự án để đảm bảo tính ổn định và dễ dàng bảo trì.\n\n## Kiến thức chi tiết\n\n### 1. Semantic Versioning (SemVer) là gì?\n\nSemantic Versioning (phiên bản ngữ nghĩa) là một quy ước đặt tên phiên bản cho các gói phần mềm, được cộng đồng lập trình viên chấp nhận rộng rãi. Nó cung cấp một bộ quy tắc và yêu cầu rõ ràng về cách gán và tăng số phiên bản. Mục đích chính của SemVer là giúp các lập trình viên hiểu được mức độ thay đổi trong một phiên bản mới mà không cần phải đọc toàn bộ mã nguồn.\n\nCấu trúc của một phiên bản theo SemVer bao gồm ba phần chính, được phân tách bởi dấu chấm:\n\n**MAJOR.MINOR.PATCH**\n\n- **MAJOR (Chính):** Con số này sẽ tăng lên khi có những thay đổi **không tương thích ngược (breaking changes)** trong API. Ví dụ, nếu một hàm được đổi tên, xóa bỏ hoặc thay đổi cách hoạt động hoàn toàn, phiên bản MAJOR sẽ được cập nhật. Khi cập nhật một package có phiên bản MAJOR thay đổi, bạn cần phải xem xét và sửa đổi lại code của mình để tương thích với phiên bản mới.\n\n- **MINOR (Phụ):** Con số này sẽ tăng lên khi có những **tính năng mới được thêm vào nhưng vẫn đảm bảo tương thích ngược (backward-compatible)**. Điều này có nghĩa là bạn có thể cập nhật package lên phiên bản MINOR mới mà không cần phải thay đổi bất kỳ dòng code nào hiện có.\n\n- **PATCH (Bản vá):** Con số này sẽ tăng lên khi có những **bản sửa lỗi (bug fixes) và vẫn đảm bảo tương thích ngược**. Đây là những thay đổi nhỏ, không ảnh hưởng đến API và chỉ nhằm mục đích sửa các lỗi còn tồn tại trong phiên bản trước đó.\n\nNgoài ra, có thể có thêm các nhãn cho phiên bản pre-release (ví dụ: `1.0.0-alpha`, `1.0.0-beta`) hoặc metadata cho build (ví dụ: `1.0.0+20130313144700`).\n\n### 2. Các ký hiệu trong `package.json`\n\nKhi làm việc với các dự án Node.js, bạn sẽ thường xuyên thấy các ký hiệu đặc biệt đi kèm với số phiên bản trong file `package.json`. Những ký hiệu này cho `npm` hoặc `yarn` biết cách xử lý việc cập nhật các package.\n\n- **`^` (Dấu mũ - Caret):** Đây là ký hiệu phổ biến nhất. Nó cho phép `npm` cập nhật các phiên bản **PATCH** và **MINOR** mới nhất, nhưng không cập nhật phiên bản **MAJOR**. Ví dụ, nếu phiên bản được chỉ định là `^1.2.3`, `npm` có thể cài đặt bất kỳ phiên bản nào từ `1.2.3` cho đến dưới `2.0.0` (ví dụ: `1.3.0`, `1.2.4`).\n\n- **`~` (Dấu ngã - Tilde):** Ký hiệu này cho phép `npm` cập nhật các phiên bản **PATCH** mới nhất. Ví dụ, nếu phiên bản được chỉ định là `~1.2.3`, `npm` có thể cài đặt bất kỳ phiên bản nào từ `1.2.3` cho đến dưới `1.3.0` (ví dụ: `1.2.4`, `1.2.5`).\n\n- **Không có ký hiệu:** Nếu bạn chỉ định một phiên bản cụ thể (ví dụ: `1.2.3`), `npm` sẽ luôn cài đặt chính xác phiên bản đó.\n\n- **`*` (Dấu hoa thị - Asterisk):** Ký hiệu này cho phép `npm` cài đặt phiên bản mới nhất của package. Việc sử dụng ký hiệu này không được khuyến khích vì nó có thể dẫn đến việc cài đặt các phiên bản có breaking changes mà bạn không lường trước được.\n\n### 3. Tầm quan trọng của `package-lock.json`\n\nFile `package-lock.json` (hoặc `yarn.lock`) được tạo ra tự động khi bạn chạy `npm install`. Nó ghi lại phiên bản chính xác của tất cả các package (bao gồm cả các dependencies của dependencies) đã được cài đặt. Điều này đảm bảo rằng mọi lập trình viên trong cùng một dự án sẽ có cùng một môi trường dependencies, tránh được các lỗi phát sinh do sự khác biệt về phiên bản.\n\n## Các bước thực hành\n\n1.  **Khởi tạo dự án:** Mở terminal và chạy lệnh `npm init -y` để tạo một dự án Node.js mới.\n2.  **Cài đặt package:** Chạy lệnh `npm install express` để cài đặt package `express`. Mở file `package.json` và quan sát phiên bản của `express` (ví dụ: `^4.17.1`).\n3.  **Kiểm tra `package-lock.json`:** Mở file `package-lock.json` và tìm đến phần `express`. Bạn sẽ thấy phiên bản chính xác đã được cài đặt.\n4.  **Thử nghiệm với các ký hiệu:** Thay đổi ký hiệu `^` thành `~` trong `package.json`, sau đó xóa thư mục `node_modules` và file `package-lock.json`. Chạy lại `npm install` và quan sát sự khác biệt.\n\n## Lưu ý quan trọng\n\n- **Luôn commit `package-lock.json`:** Đây là một file quan trọng và cần được đưa vào version control (Git) để đảm bảo tính nhất quán cho cả team.\n- **Hiểu rõ về dependencies:** Trước khi cập nhật một package, hãy đọc changelog để biết những thay đổi trong phiên bản mới.\n- **Sử dụng `npm ci`:** Khi triển khai dự án trên server hoặc trong môi trường CI/CD, hãy sử dụng `npm ci` thay vì `npm install`. Lệnh này sẽ cài đặt các package dựa trên `package-lock.json`, đảm bảo môi trường production giống hệt với môi trường development.\n\n## Tài liệu tham khảo\n\n- [Video 5. What is Semantic Versioning? Important Notes on Project Code Base](https://www.youtube.com/watch?v=VIDEO_9&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=9)\n- [Trang chủ Semantic Versioning](https://semver.org/)\n- [Tài liệu về `package.json` của npm](https://docs.npmjs.com/cli/v7/configuring-npm/package-json)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Semantic Versioning (SemVer) bao gồm mấy thành phần chính?",
+        "options": [
+          "2 thành phần: MAJOR.MINOR",
+          "3 thành phần: MAJOR.MINOR.PATCH",
+          "4 thành phần: MAJOR.MINOR.PATCH.BUILD",
+          "1 thành phần: VERSION"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cấu trúc của một phiên bản theo SemVer bao gồm ba phần chính là MAJOR, MINOR, và PATCH, được phân tách bởi dấu chấm."
+      },
+      {
+        "question": "Trong SemVer, khi nào bạn nên tăng phiên bản MAJOR?",
+        "options": [
+          "Khi thêm một tính năng mới nhưng vẫn tương thích ngược.",
+          "Khi sửa một lỗi nhỏ.",
+          "Khi có những thay đổi không tương thích ngược (breaking changes).",
+          "Khi tối ưu hóa hiệu năng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phiên bản MAJOR chỉ được tăng lên khi có những thay đổi trong API mà không còn tương thích với các phiên bản trước đó."
+      },
+      {
+        "question": "Ký hiệu `^` (Caret) trước một phiên bản trong `package.json` (ví dụ: `^1.2.3`) có ý nghĩa gì?",
+        "options": [
+          "Chỉ cho phép cập nhật phiên bản PATCH.",
+          "Cho phép cập nhật phiên bản PATCH và MINOR.",
+          "Không cho phép bất kỳ cập nhật nào.",
+          "Cho phép cập nhật lên cả phiên bản MAJOR mới nhất."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Dấu `^` cho phép `npm` cập nhật các phiên bản PATCH và MINOR mới nhất, nhưng không cập nhật phiên bản MAJOR để tránh breaking changes."
+      },
+      {
+        "question": "Mục đích chính của file `package-lock.json` là gì?",
+        "options": [
+          "Liệt kê các script có thể chạy với npm.",
+          "Ghi lại phiên bản chính xác của tất cả các package đã được cài đặt để đảm bảo tính nhất quán.",
+          "Chứa thông tin meta về dự án như tên và tác giả.",
+          "Để định cấu hình các quy tắc cho linter."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`package-lock.json` ghi lại cây phụ thuộc chính xác đã được tạo, đảm bảo mọi lập trình viên trong team có cùng một môi trường."
+      },
+      {
+        "question": "Bạn nên sử dụng lệnh nào để cài đặt dependencies trong môi trường CI/CD để đảm bảo cài đặt chính xác như trong `package-lock.json`?",
+        "options": [
+          "npm install",
+          "npm update",
+          "npm upgrade",
+          "npm ci"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`npm ci` (Clean Install) được thiết kế cho môi trường tự động hóa. Nó cài đặt các package dựa trên `package-lock.json` và nhanh hơn `npm install` trong trường hợp này."
+      },
+      {
+        "question": "Nếu một package có phiên bản `~2.4.1`, lệnh `npm install` có thể cập nhật lên phiên bản nào sau đây?",
+        "options": [
+          "2.5.0",
+          "3.0.0",
+          "2.4.5",
+          "2.3.9"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Dấu `~` (Tilde) chỉ cho phép cập nhật phiên bản PATCH. Do đó, nó có thể cập nhật từ `2.4.1` lên các phiên bản dưới `2.5.0`."
+      },
+      {
+        "question": "Việc tăng phiên bản MINOR (ví dụ: từ 3.1.0 lên 3.2.0) có nghĩa là gì?",
+        "options": [
+          "Một lỗi đã được sửa.",
+          "Một thay đổi lớn làm hỏng tính tương thích ngược đã được thực hiện.",
+          "Một tính năng mới đã được thêm vào và vẫn tương thích ngược.",
+          "Không có gì thay đổi, chỉ là đánh số lại."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phiên bản MINOR được tăng khi có tính năng mới được thêm vào nhưng vẫn đảm bảo tương thích ngược (backward-compatible)."
+      },
+      {
+        "question": "Tại sao việc sử dụng `*` cho phiên bản package trong `package.json` không được khuyến khích?",
+        "options": [
+          "Vì nó chỉ cài đặt các phiên bản beta.",
+          "Vì nó có thể vô tình cài đặt một phiên bản MAJOR mới có chứa breaking changes.",
+          "Vì nó làm cho `npm install` chạy chậm hơn.",
+          "Vì nó không cho phép cài đặt các bản vá lỗi."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Dấu `*` sẽ cài đặt phiên bản mới nhất hiện có, có thể bao gồm cả các bản cập nhật MAJOR, dẫn đến nguy cơ code bị lỗi do không tương thích."
+      },
+      {
+        "question": "Bạn vừa sửa một lỗi bảo mật nghiêm trọng trong code của mình mà không làm thay đổi API. Theo SemVer, bạn nên tăng phiên bản nào?",
+        "options": [
+          "MAJOR",
+          "MINOR",
+          "PATCH",
+          "Tạo một nhánh mới"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Các bản sửa lỗi (bug fixes) mà vẫn đảm bảo tương thích ngược nên được phát hành bằng cách tăng phiên bản PATCH."
+      },
+      {
+        "question": "File nào cần được commit vào Git để đảm bảo sự nhất quán về dependencies cho cả nhóm phát triển?",
+        "options": [
+          "Chỉ `package.json`",
+          "Thư mục `node_modules`",
+          "Cả `package.json` và `package-lock.json`",
+          "Chỉ `package-lock.json`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cả `package.json` (để định nghĩa các dependencies chính) và `package-lock.json` (để khóa các phiên bản) đều phải được commit."
+      },
+      {
+        "question": "Nếu bạn xóa thư mục `node_modules` và file `package-lock.json`, sau đó chạy `npm install`, điều gì sẽ xảy ra?",
+        "options": [
+          "npm sẽ báo lỗi và không cài đặt gì cả.",
+          "npm sẽ cài đặt các package dựa trên phiên bản trong `package.json` và tạo lại file `package-lock.json`.",
+          "npm sẽ chỉ cài đặt lại các package từ cache.",
+          "npm sẽ khôi phục lại file `package-lock.json` từ Git."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi không có `package-lock.json`, `npm install` sẽ dựa vào `package.json` để xác định và cài đặt các phiên bản package, sau đó tạo ra một file `package-lock.json` mới."
+      },
+      {
+        "question": "Một \"breaking change\" trong SemVer là gì?",
+        "options": [
+          "Một thay đổi làm tăng hiệu suất ứng dụng.",
+          "Một thay đổi trong API khiến code hiện tại không còn hoạt động nếu không sửa đổi.",
+          "Một tính năng mới được thêm vào.",
+          "Một bản vá lỗi cho phiên bản hiện tại."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Breaking change là một thay đổi không tương thích ngược, yêu cầu người dùng phải sửa đổi code của họ khi cập nhật."
+      },
+      {
+        "question": "Trong `package.json`, nếu phiên bản của một package được ghi là `\"1.2.3\"` (không có ký hiệu nào), điều gì sẽ xảy ra khi chạy `npm install`?",
+        "options": [
+          "npm sẽ cài đặt phiên bản `1.2.3` và không bao giờ tự động cập nhật.",
+          "npm sẽ cập nhật lên phiên bản PATCH mới nhất.",
+          "npm sẽ cập nhật lên phiên bản MINOR mới nhất.",
+          "npm sẽ tìm phiên bản mới nhất của package đó."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Khi một phiên bản được chỉ định chính xác mà không có ký hiệu `^` hoặc `~`, npm sẽ luôn cài đặt chính xác phiên bản đó."
+      },
+      {
+        "question": "Bạn muốn thêm một tính năng mới vào thư viện của mình. Tính năng này không làm ảnh hưởng đến các API hiện có. Phiên bản hiện tại là `2.5.8`. Phiên bản tiếp theo nên là gì?",
+        "options": [
+          "3.0.0",
+          "2.6.0",
+          "2.5.9",
+          "2.5.8-beta.1"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thêm tính năng mới mà vẫn tương thích ngược là một bản cập nhật MINOR, do đó phiên bản sẽ tăng từ `2.5.8` lên `2.6.0`."
+      },
+      {
+        "question": "Lệnh `npm init -y` dùng để làm gì?",
+        "options": [
+          "Cài đặt tất cả các dependencies.",
+          "Tạo file `package.json` với các giá trị mặc định mà không cần hỏi.",
+          "Cập nhật các package lên phiên bản mới nhất.",
+          "Xóa thư mục `node_modules`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lệnh `npm init` dùng để khởi tạo một dự án Node.js và tạo file `package.json`. Flag `-y` (hoặc `--yes`) sẽ tự động chấp nhận các giá trị mặc định."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Khởi tạo dự án và cài đặt Express",
+        "description": "Sử dụng npm để khởi tạo một dự án Node.js mới và cài đặt package `express`.",
+        "starterCode": "// Viết các lệnh terminal cần thiết vào đây, mỗi lệnh một dòng",
+        "solution": "npm init -y\nnpm install express",
+        "testCases": "Sau khi chạy, kiểm tra sự tồn tại của file `package.json` và thư mục `node_modules`. File `package.json` phải có `express` trong mục `dependencies`."
+      },
+      {
+        "title": "Bài 2: Cài đặt phiên bản package cụ thể",
+        "description": "Cài đặt chính xác phiên bản `16.8.0` của package `react`.",
+        "starterCode": "// Viết lệnh terminal cần thiết",
+        "solution": "npm install react@16.8.0",
+        "testCases": "Kiểm tra file `package.json` và `package-lock.json` để chắc chắn rằng phiên bản của `react` được cài đặt chính xác là `16.8.0`."
+      },
+      {
+        "title": "Bài 3: Cập nhật package với Tilde (~)",
+        "description": "Chỉnh sửa file `package.json` để phiên bản của `lodash` là `~4.17.15`. Sau đó, xóa `node_modules` và `package-lock.json`, rồi chạy lại lệnh cài đặt để xem phiên bản nào của `lodash` được cài đặt.",
+        "starterCode": "{\n  \"name\": \"my-project\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"lodash\": \"~4.17.15\"\n  }\n}\n\n// 1. Xóa node_modules và package-lock.json\n// 2. Chạy lệnh cài đặt",
+        "solution": "rm -rf node_modules package-lock.json\nnpm install",
+        "testCases": "Kiểm tra phiên bản `lodash` trong file `package-lock.json` mới được tạo. Phiên bản phải lớn hơn hoặc bằng `4.17.15` nhưng nhỏ hơn `4.18.0`."
+      },
+      {
+        "title": "Bài 4: Cập nhật package với Caret (^)",
+        "description": "Chỉnh sửa file `package.json` để phiên bản của `axios` là `^0.21.0`. Sau đó, xóa `node_modules` và `package-lock.json`, rồi chạy lại lệnh cài đặt để xem phiên bản nào của `axios` được cài đặt.",
+        "starterCode": "{\n  \"name\": \"my-project\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"axios\": \"^0.21.0\"\n  }\n}\n\n// 1. Xóa node_modules và package-lock.json\n// 2. Chạy lệnh cài đặt",
+        "solution": "rm -rf node_modules package-lock.json\nnpm install",
+        "testCases": "Kiểm tra phiên bản `axios` trong file `package-lock.json` mới được tạo. Phiên bản phải lớn hơn hoặc bằng `0.21.0` nhưng nhỏ hơn `1.0.0`."
+      },
+      {
+        "title": "Bài 5: Sử dụng npm ci",
+        "description": "Giả sử bạn có một dự án với `package.json` và `package-lock.json` đã tồn tại. Bạn cần viết lệnh để cài đặt các dependencies một cách nhanh chóng và chính xác tuyệt đối dựa trên file lock. Đây là lệnh thường dùng trong các hệ thống CI/CD.",
+        "starterCode": "// Viết lệnh terminal phù hợp để cài đặt dependencies từ file lock.",
+        "solution": "npm ci",
+        "testCases": "Lệnh này sẽ xóa `node_modules` nếu nó tồn tại và cài đặt lại toàn bộ dependencies dựa trên `package-lock.json`. Quá trình cài đặt phải thành công và nhanh hơn `npm install` nếu `node_modules` đã có từ trước."
+      }
+    ]
+  }
+}

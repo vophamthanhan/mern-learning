@@ -1,0 +1,213 @@
+{
+  "id": 100,
+  "title": "Bài học 94: Khởi tạo và áp dụng Axios Interceptors, viết API Register User",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Bài học 94: Khởi tạo và áp dụng Axios Interceptors, viết API Register User\n\n## Mục tiêu bài học\n\nVideo này là \"Buổi 5\" trong loạt video nâng cao của khóa học MERN Stack Pro, tập trung vào việc tích hợp Front-end và Back-end. Mục tiêu chính của bài học này bao gồm:\n\n1.  **Hiểu và áp dụng Axios Interceptors:** Nắm vững khái niệm Interceptors trong Axios, tại sao chúng quan trọng và cách để tạo một `custom instance` của Axios để quản lý các request và response một cách tập trung trong dự án.\n2.  **Xây dựng API Đăng ký Người dùng (Register User):** Học cách viết một API hoàn chỉnh cho chức năng đăng ký, bao gồm validation, mã hóa mật khẩu và lưu trữ người dùng vào cơ sở dữ liệu.\n3.  **Thực hành các kỹ năng Back-end quan trọng:** Vận dụng các thư viện và kỹ thuật phổ biến trong phát triển Back-end với NodeJS & ExpressJS như `bcrypt.js` để mã hóa mật khẩu, `uuid` để tạo token, và `lodash` để xử lý object.\n4.  **Nâng cao tư duy lập trình chuyên nghiệp:** Học hỏi các kinh nghiệm và quy trình chuẩn hóa khi làm việc với API trong một dự án thực tế, chuẩn bị hành trang vững chắc cho sự nghiệp.\n\n---\n\n## Kiến thức chi tiết\n\n### 1. Axios Interceptors\n\n#### a. Interceptors là gì?\n\n**Axios Interceptors** cho phép bạn can thiệp vào quá trình gửi `request` hoặc nhận `response` trước khi chúng được xử lý bởi `then` hoặc `catch`. Đây là một tính năng cực kỳ mạnh mẽ, giúp xử lý các tác vụ chung một cách tập trung và hiệu quả.\n\nCó hai loại interceptors:\n\n*   **Request Interceptor:** Được kích hoạt trước khi một request được gửi đi. Các trường hợp sử dụng phổ biến:\n    *   Tự động đính kèm `access token` vào header `Authorization` cho các request cần xác thực.\n    *   Thêm các header chung cho tất cả request.\n    *   Hiển thị loading spinner trước khi request bắt đầu.\n    *   Log lại thông tin request để debug.\n*   **Response Interceptor:** Được kích hoạt trước khi `promise` của response được giải quyết. Các trường hợp sử dụng phổ biến:\n    *   Xử lý lỗi tập trung (ví dụ: lỗi 401, 403, 500) và thực hiện các hành động tương ứng như `logout` người dùng hoặc hiển thị thông báo lỗi chung.\n    *   Tự động làm mới `access token` khi nó hết hạn bằng `refresh token`.\n    *   Chuyển đổi, định dạng lại dữ liệu trả về từ API.\n    *   Ẩn loading spinner sau khi request hoàn thành.\n\n#### b. Tạo Custom Axios Instance\n\nTrong một dự án lớn, thay vì sử dụng Axios trực tiếp (`axios.get`, `axios.post`), chúng ta nên tạo một \"instance\" riêng. Điều này cho phép chúng ta cấu hình một cách tập trung các thiết lập chung như `baseURL`, `timeout`, `headers` và đặc biệt là `interceptors` cho tất cả các API call trong ứng dụng.\n\n**Code mẫu (tạo custom instance và áp dụng interceptors):**\n\n```javascript\n// src/utils/authorizedAxios.js\nimport axios from 'axios';\n\n// Tạo một instance của Axios\nconst authorizedAxios = axios.create({\n  baseURL: 'https://api.yourproject.com',\n  timeout: 10000, // 10 giây\n  headers: {\n    'Content-Type': 'application/json'\n  }\n});\n\n// Request Interceptor\nauthorizedAxios.interceptors.request.use(\n  config => {\n    // Lấy access token từ local storage hoặc Redux store\n    const accessToken = localStorage.getItem('accessToken');\n\n    // Nếu có token, đính kèm vào header Authorization\n    if (accessToken) {\n      config.headers['Authorization'] = `Bearer ${accessToken}`;\n    }\n\n    return config;\n  },\n  error => {\n    // Xử lý lỗi của request\n    return Promise.reject(error);\n  }\n);\n\n// Response Interceptor\nauthorizedAxios.interceptors.response.use(\n  response => {\n    // Bất kỳ mã trạng thái nào nằm trong phạm vi 2xx đều khiến hàm này được kích hoạt\n    // Xử lý dữ liệu response\n    return response.data; // Thường chỉ trả về phần data của response\n  },\n  error => {\n    // Bất kỳ mã trạng thái nào nằm ngoài phạm vi 2xx đều khiến hàm này được kích hoạt\n    // Xử lý lỗi response một cách tập trung\n    if (error.response && error.response.status === 401) {\n      // Xử lý lỗi không được xác thực, ví dụ: redirect về trang login\n      window.location.href = '/login';\n    }\n    return Promise.reject(error);\n  }\n);\n\nexport default authorizedAxios;\n```\n\n### 2. Xây dựng API Đăng ký Người dùng (Register User)\n\nQuy trình xây dựng API đăng ký bao gồm các bước chính sau:\n\n#### a. Định nghĩa Route\n\nĐầu tiên, chúng ta cần định nghĩa một route mới trong Express để xử lý request đăng ký, thường là một `POST` request.\n\n```javascript\n// src/routes/v1/userRoute.js\nimport express from 'express';\nimport { userController } from '~/controllers/userController';\nimport { userValidation } from '~/validations/userValidation';\n\nconst router = express.Router();\n\nrouter.route('/register')\n  .post(userValidation.register, userController.register);\n\nexport const userRoute = router;\n```\n\n#### b. Tầng Validation\n\nLuôn phải xác thực dữ liệu đầu vào từ client. Chúng ta sử dụng thư viện `Joi` để định nghĩa các quy tắc cho `email`, `password`...\n\n```javascript\n// src/validations/userValidation.js\nimport Joi from 'joi';\n\nconst register = async (req, res, next) => {\n  const userSchema = Joi.object({\n    email: Joi.string().email().required(),\n    password: Joi.string().min(6).required(),\n    displayName: Joi.string().min(3).max(50).required()\n  });\n\n  try {\n    await userSchema.validateAsync(req.body, { abortEarly: false });\n    next();\n  } catch (error) {\n    // Xử lý lỗi validation\n    res.status(400).json({ errors: error.details.map(i => i.message) });\n  }\n};\n\nexport const userValidation = { register };\n```\n\n#### c. Tầng Controller và Service\n\nController nhận request, gọi đến Service để xử lý logic nghiệp vụ.\n\n```javascript\n// src/controllers/userController.js\nimport { userService } from '~/services/userService';\n\nconst register = async (req, res, next) => {\n  try {\n    const newUser = await userService.register(req.body);\n    res.status(201).json(newUser);\n  } catch (error) {\n    next(error);\n  }\n};\n\nexport const userController = { register };\n```\n\nService sẽ chứa toàn bộ logic chính:\n\n1.  Kiểm tra xem email đã tồn tại trong database chưa.\n2.  Mã hóa mật khẩu của người dùng.\n3.  Tạo một user mới và lưu vào database.\n4.  (Tùy chọn) Tạo token xác thực và gửi email.\n5.  Trả về dữ liệu người dùng đã được tạo (loại bỏ mật khẩu).\n\n```javascript\n// src/services/userService.js\nimport { userModel } from '~/models/userModel';\nimport bcrypt from 'bcryptjs';\nimport _ from 'lodash';\n\nconst register = async (userData) => {\n  // 1. Kiểm tra email tồn tại\n  const existingUser = await userModel.findOneByEmail(userData.email);\n  if (existingUser) {\n    throw new Error('Email already exists');\n  }\n\n  // 2. Mã hóa mật khẩu\n  const salt = await bcrypt.genSalt(10);\n  const hashedPassword = await bcrypt.hash(userData.password, salt);\n\n  // 3. Tạo user mới\n  const newUser = await userModel.createNew({\n    ...userData,\n    password: hashedPassword\n  });\n\n  // 4. Trả về dữ liệu (sử dụng lodash.pick để chỉ lấy các trường cần thiết)\n  return _.pick(newUser, ['_id', 'email', 'displayName', 'createdAt']);\n};\n\nexport const userService = { register };\n```\n\n#### d. Tầng Model\n\nModel tương tác trực tiếp với cơ sở dữ liệu (MongoDB).\n\n```javascript\n// src/models/userModel.js\nimport Joi from 'joi';\nimport { GET_DB } from '~/config/mongodb';\n\nconst USER_COLLECTION_NAME = 'users';\nconst USER_COLLECTION_SCHEMA = Joi.object({\n  email: Joi.string().email().required(),\n  password: Joi.string().required(),\n  displayName: Joi.string().required(),\n  createdAt: Joi.date().timestamp('javascript').default(Date.now),\n  // ... các trường khác\n});\n\nconst createNew = async (data) => {\n  try {\n    const validData = await USER_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false });\n    return await GET_DB().collection(USER_COLLECTION_NAME).insertOne(validData);\n  } catch (error) { throw new Error(error) }\n}\n\nconst findOneByEmail = async (email) => {\n  try {\n    return await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email });\n  } catch (error) { throw new Error(error) }\n}\n\nexport const userModel = { createNew, findOneByEmail };\n```\n\n---\n\n## Các bước thực hành\n\n1.  **Cấu trúc lại thư mục phía Front-end:** Tạo một thư mục `apis` hoặc `services` để chứa các file liên quan đến việc gọi API.\n2.  **Tạo Custom Axios Instance:** Tạo file `authorizedAxios.js` trong thư mục `utils`, cấu hình `baseURL` và các `interceptors` như trong ví dụ trên.\n3.  **Xây dựng API `POST /v1/users/register` ở phía Back-end:**\n    *   Tạo `userRoute.js`.\n    *   Tạo `userValidation.js` với schema xác thực cho `email`, `password`, `displayName`.\n    *   Tạo `userController.js` với hàm `register`.\n    *   Tạo `userService.js` để xử lý logic nghiệp vụ: kiểm tra email, hash password bằng `bcryptjs`, lưu user.\n    *   Tạo `userModel.js` để định nghĩa schema và tương tác với collection `users` trong MongoDB.\n4.  **Tích hợp API vào Front-end:**\n    *   Tạo một hàm `registerAPI` trong thư mục `apis`.\n    *   Trong hàm này, sử dụng `authorizedAxios` đã tạo để gọi đến endpoint `/users/register` với phương thức `POST`.\n    *   Gọi hàm `registerAPI` này từ component form đăng ký của bạn khi người dùng submit.\n\n---\n\n## Lưu ý quan trọng\n\n*   **Bảo mật mật khẩu:** Tuyệt đối không bao giờ lưu mật khẩu dưới dạng văn bản thuần (plain text). Luôn sử dụng các thuật toán hashing mạnh như `bcrypt`.\n*   **Xử lý lỗi:** Xây dựng cơ chế xử lý lỗi nhất quán ở cả Front-end (dùng interceptor) và Back-end (dùng middleware xử lý lỗi tập trung) để cung cấp trải nghiệm người dùng tốt hơn và dễ dàng debug.\n*   **Biến môi trường:** Luôn sử dụng biến môi trường (`.env`) để lưu các thông tin nhạy cảm như chuỗi kết nối database, secret key...\n*   **Phân tách logic:** Việc phân chia code thành các tầng (Route, Validation, Controller, Service, Model) giúp dự án trở nên có cấu trúc, dễ bảo trì và mở rộng.\n*   **Lodash `pick`:** Sử dụng `_.pick` là một cách hay để đảm bảo API chỉ trả về những dữ liệu cần thiết cho client, tránh lộ lọt các thông tin nhạy cảm (như password hash).\n\n---\n\n## Tài liệu tham khảo\n\n*   **Axios Interceptors:** [https://axios-http.com/docs/interceptors](https://axios-http.com/docs/interceptors)\n*   **Bcrypt.js:** [https://www.npmjs.com/package/bcryptjs](https://www.npmjs.com/package/bcryptjs)\n*   **UUID:** [https://www.npmjs.com/package/uuid](https://www.npmjs.com/package/uuid)\n*   **Lodash:** [https://lodash.com/docs/4.17.15](https://lodash.com/docs/4.17.15)\n*   **Joi (Validation):** [https://joi.dev/](https://joi.dev/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Axios Interceptors cho phép bạn làm gì?",
+        "options": [
+          "Can thiệp vào quá trình gửi request hoặc nhận response.",
+          "Chỉ can thiệp vào quá trình gửi request.",
+          "Chỉ can thiệp vào quá trình nhận response.",
+          "Thay đổi trực tiếp mã nguồn của thư viện Axios."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Axios Interceptors cho phép bạn can thiệp vào cả hai quá trình: gửi request và nhận response, trước khi chúng được xử lý bởi then hoặc catch."
+      },
+      {
+        "question": "Đâu là một trường hợp sử dụng phổ biến cho Request Interceptor?",
+        "options": [
+          "Tự động đính kèm access token vào header Authorization.",
+          "Xử lý lỗi 401 và redirect người dùng về trang login.",
+          "Định dạng lại dữ liệu trả về từ API.",
+          "Ẩn loading spinner sau khi request hoàn thành."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Request Interceptor được kích hoạt trước khi request được gửi đi, nên nó là nơi lý tưởng để đính kèm access token hoặc các header chung khác."
+      },
+      {
+        "question": "Tại sao nên tạo một Custom Axios Instance thay vì sử dụng Axios trực tiếp?",
+        "options": [
+          "Để cấu hình tập trung các thiết lập chung như baseURL, timeout, và interceptors.",
+          "Để tăng tốc độ gửi request lên gấp đôi.",
+          "Vì phiên bản Axios mới nhất yêu cầu phải tạo instance.",
+          "Để giảm kích thước của bundle size trong dự án Front-end."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Tạo một custom instance cho phép chúng ta quản lý cấu hình chung cho tất cả các API call một cách tập trung, giúp code sạch sẽ và dễ bảo trì hơn."
+      },
+      {
+        "question": "Trong Response Interceptor, bạn thường xử lý các lỗi có status code nằm ngoài phạm vi nào?",
+        "options": [
+          "Ngoài phạm vi 2xx.",
+          "Ngoài phạm vi 3xx.",
+          "Ngoài phạm vi 4xx.",
+          "Ngoài phạm vi 5xx."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Bất kỳ mã trạng thái nào nằm ngoài phạm vi 2xx (mã thành công) đều khiến hàm xử lý lỗi của response interceptor được kích hoạt."
+      },
+      {
+        "question": "Thư viện nào thường được sử dụng để mã hóa mật khẩu trong các ứng dụng NodeJS?",
+        "options": [
+          "bcrypt.js",
+          "crypto.js",
+          "jsonwebtoken",
+          "uuid"
+        ],
+        "correctAnswer": 0,
+        "explanation": "bcrypt.js là thư viện phổ biến và an toàn để hashing mật khẩu, giúp bảo vệ thông tin người dùng."
+      },
+      {
+        "question": "Tầng nào trong kiến trúc Back-end chịu trách nhiệm xác thực dữ liệu đầu vào từ client?",
+        "options": [
+          "Validation",
+          "Controller",
+          "Service",
+          "Model"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Tầng Validation, thường sử dụng các thư viện như Joi, có nhiệm vụ đảm bảo dữ liệu nhận được từ client là hợp lệ trước khi xử lý."
+      },
+      {
+        "question": "Hàm `bcrypt.hash(password, salt)` trả về kết quả gì?",
+        "options": [
+          "Một chuỗi mật khẩu đã được mã hóa (hashed password).",
+          "Một giá trị boolean cho biết mật khẩu có hợp lệ không.",
+          "Một object chứa thông tin về thuật toán mã hóa.",
+          "Một chuỗi salt mới."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Hàm `bcrypt.hash` nhận vào mật khẩu thuần và salt, sau đó trả về một chuỗi mật khẩu đã được mã hóa không thể đảo ngược."
+      },
+      {
+        "question": "Trong tầng Service của API đăng ký, logic nào nên được thực hiện ĐẦU TIÊN?",
+        "options": [
+          "Kiểm tra xem email đã tồn tại trong database chưa.",
+          "Mã hóa mật khẩu của người dùng.",
+          "Tạo một user mới và lưu vào database.",
+          "Tạo access token cho người dùng."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Việc kiểm tra sự tồn tại của email ngay từ đầu giúp tránh thực hiện các thao tác tốn kém như mã hóa mật khẩu một cách không cần thiết."
+      },
+      {
+        "question": "Thư viện `Joi` được sử dụng để làm gì trong dự án?",
+        "options": [
+          "Định nghĩa schema và xác thực dữ liệu.",
+          "Tương tác với cơ sở dữ liệu MongoDB.",
+          "Tạo ra các ID duy nhất.",
+          "Xử lý và thao tác với các object và array."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Joi là một thư viện mạnh mẽ dùng để xác thực dữ liệu, đảm bảo rằng dữ liệu đầu vào tuân thủ các quy tắc đã được định nghĩa."
+      },
+      {
+        "question": "Tại sao nên sử dụng `lodash.pick` trước khi trả về dữ liệu người dùng cho client?",
+        "options": [
+          "Để tránh lộ lọt các thông tin nhạy cảm như password hash.",
+          "Để tăng tốc độ phản hồi của API.",
+          "Để chuyển đổi dữ liệu sang định dạng JSON.",
+          "Để đảm bảo dữ liệu không bị thay đổi ở client."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Sử dụng `_.pick` là một best practice để chỉ chọn và trả về những trường dữ liệu cần thiết, tránh vô tình gửi các thông tin nhạy cảm (như mật khẩu đã mã hóa) về cho client."
+      },
+      {
+        "question": "Trong đoạn code `axios.create({...})`, `baseURL` có tác dụng gì?",
+        "options": [
+          "Định nghĩa một tiền tố URL sẽ được tự động thêm vào tất cả các request.",
+          "Chỉ định URL của trang web đang sử dụng Axios.",
+          "Đặt URL mặc định cho các request `GET`.",
+          "Là URL của server chứa mã nguồn Axios."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`baseURL` giúp rút ngắn các URL khi gọi API, vì nó sẽ được tự động gắn vào phía trước các đường dẫn tương đối (ví dụ: `/users/register`)."
+      },
+      {
+        "question": "Trong `userValidation.js`, thuộc tính `abortEarly: false` của Joi có ý nghĩa gì?",
+        "options": [
+          "Trả về tất cả các lỗi validation thay vì dừng lại ở lỗi đầu tiên.",
+          "Không cho phép dừng quá trình validation giữa chừng.",
+          "Bỏ qua tất cả các lỗi và cho phép request đi tiếp.",
+          "Chỉ xác thực các trường đầu tiên trong schema."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Khi `abortEarly` được đặt là `false`, Joi sẽ kiểm tra tất cả các quy tắc và trả về một danh sách đầy đủ các lỗi validation, thay vì dừng ngay khi phát hiện lỗi đầu tiên."
+      },
+      {
+        "question": "Tầng nào trong kiến trúc Back-end chịu trách nhiệm tương tác trực tiếp với cơ sở dữ liệu?",
+        "options": [
+          "Model",
+          "Controller",
+          "Service",
+          "Route"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Tầng Model là lớp trừu tượng hóa việc truy cập dữ liệu, chứa các hàm để thực hiện các thao tác CRUD (Create, Read, Update, Delete) với cơ sở dữ liệu."
+      },
+      {
+        "question": "Mục đích chính của việc phân chia code thành các tầng (Route, Validation, Controller, Service, Model) là gì?",
+        "options": [
+          "Giúp dự án có cấu trúc, dễ bảo trì và mở rộng.",
+          "Để làm cho code chạy nhanh hơn.",
+          "Là yêu cầu bắt buộc của framework ExpressJS.",
+          "Để tăng tính bảo mật cho ứng dụng."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Phân tách logic (Separation of Concerns) giúp code trở nên rõ ràng, mỗi tầng có một nhiệm vụ riêng biệt, làm cho việc bảo trì, gỡ lỗi và phát triển các tính năng mới trở nên dễ dàng hơn."
+      },
+      {
+        "question": "Khi một response interceptor xử lý lỗi 401 (Unauthorized), hành động phổ biến nhất là gì?",
+        "options": [
+          "Chuyển hướng người dùng đến trang đăng nhập.",
+          "Thử gửi lại request một lần nữa.",
+          "Hiển thị một thông báo lỗi 500 (Internal Server Error).",
+          "Làm mới (refresh) trang hiện tại."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Lỗi 401 thường có nghĩa là người dùng không được xác thực hoặc token đã hết hạn. Do đó, hành động hợp lý là chuyển hướng họ về trang đăng nhập để xác thực lại."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo Custom Axios Instance",
+        "description": "Hãy tạo một file mới và viết code để tạo một custom instance của Axios với `baseURL` là 'https://api.example.com' và `timeout` là 5000ms.",
+        "starterCode": "import axios from 'axios';\n\n// Your code here\n\nexport default myAxiosInstance;",
+        "solution": "import axios from 'axios';\n\nconst myAxiosInstance = axios.create({\n  baseURL: 'https://api.example.com',\n  timeout: 5000\n});\n\nexport default myAxiosInstance;",
+        "testCases": "Kiểm tra xem `myAxiosInstance` có phải là một instance của Axios không, và các thuộc tính `baseURL` và `timeout` có được thiết lập chính xác không."
+      },
+      {
+        "title": "Thêm Request Interceptor để gửi Token",
+        "description": "Dựa trên instance đã tạo ở bài 1, hãy thêm một request interceptor. Interceptor này sẽ kiểm tra xem có 'jwt_token' trong `localStorage` không. Nếu có, nó sẽ đính kèm token đó vào header `Authorization` dưới dạng 'Bearer [token]'.",
+        "starterCode": "import axios from 'axios';\n\nconst myAxiosInstance = axios.create({\n  baseURL: 'https://api.example.com',\n  timeout: 5000\n});\n\n// Your code here\n\nexport default myAxiosInstance;",
+        "solution": "import axios from 'axios';\n\nconst myAxiosInstance = axios.create({\n  baseURL: 'https://api.example.com',\n  timeout: 5000\n});\n\nmyAxiosInstance.interceptors.request.use(\n  config => {\n    const token = localStorage.getItem('jwt_token');\n    if (token) {\n      config.headers['Authorization'] = `Bearer ${token}`;\n    }\n    return config;\n  },\n  error => {\n    return Promise.reject(error);\n  }\n);\n\nexport default myAxiosInstance;",
+        "testCases": "Mock `localStorage` để có giá trị 'jwt_token'. Gọi một request bằng instance. Kiểm tra xem header `Authorization` trong request config có chứa đúng chuỗi 'Bearer [token]' không."
+      },
+      {
+        "title": "Viết Schema Validation với Joi",
+        "description": "Viết một hàm validation sử dụng Joi để xác thực một object `req.body` cho API đăng ký. Các yêu cầu: `email` phải là email hợp lệ, `password` phải có ít nhất 8 ký tự, và `username` phải là chuỗi, không được rỗng.",
+        "starterCode": "import Joi from 'joi';\n\nconst registerValidation = async (req, res, next) => {\n  const schema = Joi.object({\n    // Your schema definition here\n  });\n\n  try {\n    await schema.validateAsync(req.body, { abortEarly: false });\n    next();\n  } catch (error) {\n    res.status(400).json({ errors: error.details.map(i => i.message) });\n  }\n};",
+        "solution": "import Joi from 'joi';\n\nconst registerValidation = async (req, res, next) => {\n  const schema = Joi.object({\n    email: Joi.string().email().required(),\n    password: Joi.string().min(8).required(),\n    username: Joi.string().required()\n  });\n\n  try {\n    await schema.validateAsync(req.body, { abortEarly: false });\n    next();\n  } catch (error) {\n    res.status(400).json({ errors: error.details.map(i => i.message) });\n  }\n};",
+        "testCases": "Gọi hàm với các object `req.body` khác nhau: một cái hợp lệ, một cái thiếu email, một cái có password quá ngắn. Kiểm tra xem hàm có gọi `next()` cho trường hợp hợp lệ và trả về lỗi 400 cho các trường hợp không hợp lệ không."
+      },
+      {
+        "title": "Hoàn thiện Logic Service Đăng ký",
+        "description": "Viết một hàm `registerService` nhận vào `userData`. Hàm này sẽ thực hiện hai việc: 1. Giả lập kiểm tra email đã tồn tại (nếu email là 'test@test.com' thì throw Error). 2. Mã hóa mật khẩu bằng `bcryptjs` với salt round là 10. Cuối cùng, trả về một object mới chứa email và mật khẩu đã mã hóa.",
+        "starterCode": "import bcrypt from 'bcryptjs';\n\nconst registerService = async (userData) => {\n  // Your code here\n};",
+        "solution": "import bcrypt from 'bcryptjs';\n\nconst registerService = async (userData) => {\n  if (userData.email === 'test@test.com') {\n    throw new Error('Email already exists');\n  }\n\n  const salt = await bcrypt.genSalt(10);\n  const hashedPassword = await bcrypt.hash(userData.password, salt);\n\n  return {\n    email: userData.email,\n    password: hashedPassword\n  };\n};",
+        "testCases": "1. Gọi hàm với email 'test@test.com' và kiểm tra xem nó có throw Error không. 2. Gọi hàm với email khác, sau đó dùng `bcrypt.compare` để so sánh mật khẩu gốc và mật khẩu đã mã hóa trong kết quả trả về."
+      },
+      {
+        "title": "Tạo Route Đăng ký Hoàn chỉnh",
+        "description": "Sử dụng Express, hãy tạo một route `POST /register`. Route này sẽ sử dụng một middleware validation (giả lập) và một controller. Controller sẽ gọi một service (giả lập) để tạo người dùng và trả về status 201 cùng với dữ liệu người dùng mới (chỉ có id và email).",
+        "starterCode": "import express from 'express';\nconst router = express.Router();\n\nconst validationMiddleware = (req, res, next) => { console.log('Validated!'); next(); };\nconst registerService = async (data) => ({ id: 1, email: data.email });\n\n// Your code here\n\nexport default router;",
+        "solution": "import express from 'express';\nconst router = express.Router();\n\nconst validationMiddleware = (req, res, next) => { console.log('Validated!'); next(); };\nconst registerService = async (data) => ({ id: 1, email: data.email });\n\nconst registerController = async (req, res) => {\n  try {\n    const newUser = await registerService(req.body);\n    res.status(201).json(newUser);\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n};\n\nrouter.post('/register', validationMiddleware, registerController);\n\nexport default router;",
+        "testCases": "Sử dụng một thư viện test API như `supertest`. Gửi một request POST đến `/register` với một body giả lập. Kiểm tra xem response status có phải là 201 không và body của response có chứa đúng object `{ id: 1, email: ... }` không."
+      }
+    ]
+  }
+}

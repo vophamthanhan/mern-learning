@@ -1,0 +1,213 @@
+{
+  "id": 75,
+  "title": "Bài học 58: Hoàn thành API Create - Tạo mới bản ghi vào Database",
+  "category": "mongodb",
+  "categoryName": "MongoDB & Database",
+  "content": "# Bài học 58: Hoàn thành API Create - Tạo mới bản ghi vào Database\n\n## Mục tiêu bài học\n\n- Hoàn thiện API cho chức năng tạo mới (Create) một bản ghi trong cơ sở dữ liệu MongoDB.\n- Hiểu rõ luồng xử lý dữ liệu từ client-side, qua các tầng validation, controller, service và model để lưu vào database.\n- Áp dụng các kiến thức đã học về Joi để validate dữ liệu, Express để xử lý routing và Mongoose để tương tác với MongoDB.\n\n## Kiến thức chi tiết\n\n### 1. Luồng xử lý của API Create\n\nLuồng xử lý của một API Create trong kiến trúc MERN stack thường bao gồm các bước sau:\n\n1.  **Client-side (ReactJS):** Người dùng nhập dữ liệu vào form và nhấn nút \"Create\". Dữ liệu được gửi đi dưới dạng một HTTP POST request đến server.\n2.  **Server-side (NodeJS & Express):**\n    *   **Router:** Tiếp nhận request, xác định endpoint và chuyển đến controller tương ứng.\n    *   **Controller:** Gọi đến service để xử lý logic. Dữ liệu từ request body được truyền vào service.\n    *   **Validation (Joi):** Service sẽ gọi đến tầng validation để kiểm tra tính hợp lệ của dữ liệu. Nếu dữ liệu không hợp lệ, một lỗi sẽ được trả về.\n    *   **Service:** Sau khi dữ liệu đã hợp lệ, service sẽ gọi đến model để thực hiện thao tác ghi vào database.\n    *   **Model (Mongoose):** Tương tác trực tiếp với MongoDB, thực hiện lệnh `insertOne()` hoặc `create()` để tạo mới một bản ghi.\n3.  **Response:** Server trả về một response cho client, thông báo về kết quả của thao tác (thành công hoặc thất bại).\n\n### 2. Code mẫu\n\n**Controller (`boardController.js`):**\n\n```javascript\nimport { StatusCodes } from 'http-status-codes'\nimport { boardService } from '~/services/boardService'\n\nconst createNew = async (req, res, next) => {\n  try {\n    // Dữ liệu từ request body\n    const createdBoard = await boardService.createNew(req.body)\n\n    // Trả về kết quả cho client\n    res.status(StatusCodes.CREATED).json(createdBoard)\n  } catch (error) { next(error) }\n}\n\nexport const boardController = {\n  createNew\n}\n```\n\n**Service (`boardService.js`):**\n\n```javascript\nimport { slugify } from '~/utils/formatters'\nimport { boardModel } from '~/models/boardModel'\n\nconst createNew = async (reqBody) => {\n  try {\n    const newBoard = {\n      ...reqBody,\n      slug: slugify(reqBody.title)\n    }\n    // Gọi đến model để tạo mới bản ghi\n    const createdBoard = await boardModel.createNew(newBoard)\n\n    // Lấy bản ghi vừa tạo\n    const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)\n\n    // Trả về kết quả\n    return getNewBoard\n  } catch (error) { throw error }\n}\n\nexport const boardService = {\n  createNew\n}\n```\n\n**Model (`boardModel.js`):**\n\n```javascript\nimport Joi from 'joi'\nimport { GET_DB } from '~/config/mongodb'\nimport { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'\n\nconst BOARD_COLLECTION_NAME = 'boards'\nconst BOARD_COLLECTION_SCHEMA = Joi.object({\n  title: Joi.string().required().min(3).max(50).trim().strict(),\n  slug: Joi.string().required().min(3).trim().strict(),\n  description: Joi.string().required().min(3).max(256).trim().strict(),\n  columnOrderIds: Joi.array().items(\n    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)\n  ).default([]),\n  createdAt: Joi.date().timestamp('javascript').default(Date.now),\n  updatedAt: Joi.date().timestamp('javascript').default(null),\n  _destroy: Joi.boolean().default(false)\n})\n\nconst validateBeforeCreate = async (data) => {\n  return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })\n}\n\nconst createNew = async (data) => {\n  try {\n    const validData = await validateBeforeCreate(data)\n    return await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData)\n  } catch (error) { throw new Error(error) }\n}\n\nconst findOneById = async (id) => {\n  try {\n    return await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })\n  } catch (error) { throw new Error(error) }\n}\n\nexport const boardModel = {\n  BOARD_COLLECTION_NAME,\n  BOARD_COLLECTION_SCHEMA,\n  createNew,\n  findOneById\n}\n```\n\n## Các bước thực hành\n\n1.  **Tạo file `boardController.js`, `boardService.js`, `boardModel.js`:** Nếu chưa có, hãy tạo các file này trong các thư mục tương ứng (`controllers`, `services`, `models`).\n2.  **Viết code cho Model:** Định nghĩa schema và các hàm tương tác với database.\n3.  **Viết code cho Service:** Xử lý logic nghiệp vụ, gọi đến model.\n4.  **Viết code cho Controller:** Tiếp nhận request, gọi đến service và trả về response.\n5.  **Cập nhật Router:** Thêm một route mới để xử lý API Create.\n6.  **Kiểm thử bằng Postman:** Gửi một POST request đến endpoint vừa tạo với dữ liệu hợp lệ để kiểm tra chức năng.\n\n## Lưu ý quan trọng\n\n- **Validate dữ liệu:** Luôn luôn validate dữ liệu ở cả tầng validation (Joi) và tầng model (Mongoose schema) để đảm bảo tính toàn vẹn của dữ liệu.\n- **Xử lý lỗi:** Sử dụng `try...catch` và middleware xử lý lỗi để bắt và xử lý các lỗi có thể xảy ra trong quá trình thực thi.\n- **Tách biệt các tầng:** Giữ cho các tầng (controller, service, model) có trách nhiệm rõ ràng và không bị lẫn lộn logic.\n- **Sử dụng `slugify`:** Tạo slug từ title để tạo ra các URL thân thiện với SEO.\n\n## Tài liệu tham khảo\n\n- [TrungQuanDev Blog](https://trungquandev.com/)\n- [TrungQuanDev GitHub](https://github.com/trungquandev)\n- [Mongoose Documentation](https://mongoosejs.com/docs/guide.html)\n- [Joi Documentation](https://joi.dev/api/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Luồng xử lý của một API Create trong kiến trúc MERN stack bắt đầu từ đâu?",
+        "options": [
+          "A. Server-side (NodeJS & Express)",
+          "B. Client-side (ReactJS)",
+          "C. Model (Mongoose)",
+          "D. Database (MongoDB)"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Luồng xử lý bắt đầu từ Client-side, nơi người dùng nhập dữ liệu và gửi request. Dữ liệu sau đó được gửi đến server để xử lý."
+      },
+      {
+        "question": "Trong file `boardController.js`, hàm `createNew` có nhiệm vụ chính là gì?",
+        "options": [
+          "A. Validate dữ liệu đầu vào bằng Joi.",
+          "B. Tương tác trực tiếp với cơ sở dữ liệu để tạo bản ghi.",
+          "C. Tiếp nhận request, gọi đến service để xử lý logic và trả về response.",
+          "D. Tạo slug cho title."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Controller đóng vai trò điều phối, nhận request từ router, gọi service để thực hiện các tác vụ logic nghiệp vụ, và cuối cùng gửi response lại cho client."
+      },
+      {
+        "question": "Tầng nào chịu trách nhiệm xử lý logic nghiệp vụ chính, ví dụ như tạo slug và gọi đến model?",
+        "options": [
+          "A. Controller",
+          "B. Model",
+          "C. Router",
+          "D. Service"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Tầng Service là nơi chứa logic nghiệp vụ của ứng dụng. Nó nhận dữ liệu từ Controller, xử lý, và sau đó gọi đến Model để tương tác với database."
+      },
+      {
+        "question": "Trong `boardModel.js`, hàm `createNew` thực hiện hành động gì ngay sau khi validate dữ liệu thành công?",
+        "options": [
+          "A. Gọi hàm `findOneById` để kiểm tra bản ghi.",
+          "B. Trả về dữ liệu đã được validate.",
+          "C. Gọi hàm `insertOne` để thêm dữ liệu vào collection trong MongoDB.",
+          "D. Tạo một slug mới."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sau khi `validateBeforeCreate` thành công, hàm `createNew` trong model sẽ sử dụng `insertOne` để ghi `validData` vào collection trong database."
+      },
+      {
+        "question": "Thư viện `Joi` được sử dụng để làm gì trong model `boardModel.js`?",
+        "options": [
+          "A. Định nghĩa cấu trúc (schema) và các quy tắc validate cho dữ liệu.",
+          "B. Kết nối đến cơ sở dữ liệu MongoDB.",
+          "C. Xử lý các request HTTP.",
+          "D. Tạo các slug thân thiện với SEO."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Joi là một thư viện mạnh mẽ dùng để validate dữ liệu dựa trên một schema được định nghĩa trước, đảm bảo dữ liệu đầu vào tuân thủ đúng định dạng và quy tắc."
+      },
+      {
+        "question": "Đoạn code `res.status(StatusCodes.CREATED).json(createdBoard)` trong controller có ý nghĩa gì?",
+        "options": [
+          "A. Báo lỗi server và trả về lỗi.",
+          "B. Trả về mã trạng thái 201 (CREATED) và dữ liệu bản ghi vừa tạo cho client.",
+          "C. Chuyển hướng người dùng đến một trang khác.",
+          "D. Cập nhật một bản ghi đã có trong database."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`StatusCodes.CREATED` tương ứng với mã trạng thái HTTP 201, báo hiệu rằng một tài nguyên đã được tạo thành công. Dữ liệu của tài nguyên đó (`createdBoard`) được gửi kèm trong body của response."
+      },
+      {
+        "question": "Tại sao cần phải gọi `boardModel.findOneById` sau khi đã `createdBoard.insertedId` trong service?",
+        "options": [
+          "A. Để xóa bản ghi vừa tạo.",
+          "B. Để cập nhật lại slug.",
+          "C. Để lấy toàn bộ dữ liệu của bản ghi vừa được tạo và trả về cho controller.",
+          "D. Để validate lại dữ liệu."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Kết quả từ `insertOne` chỉ trả về `insertedId` và một vài thông tin khác. Để có được toàn bộ object bản ghi (bao gồm cả các giá trị default như `createdAt`), cần phải thực hiện một truy vấn `findOneById`."
+      },
+      {
+        "question": "Hàm `slugify` trong `boardService.js` có mục đích gì?",
+        "options": [
+          "A. Mã hóa mật khẩu người dùng.",
+          "B. Chuyển đổi chuỗi tiêu đề (title) thành một chuỗi URL thân thiện (slug).",
+          "C. Validate định dạng email.",
+          "D. Nén dữ liệu trước khi gửi về client."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hàm `slugify` giúp tạo ra các URL dễ đọc, thân thiện với người dùng và các công cụ tìm kiếm (SEO) bằng cách chuyển đổi chuỗi có dấu, khoảng trắng và ký tự đặc biệt thành một chuỗi hợp lệ cho URL."
+      },
+      {
+        "question": "Trong schema của Joi, `Joi.date().timestamp('javascript').default(Date.now)` có tác dụng gì?",
+        "options": [
+          "A. Yêu cầu trường dữ liệu phải là một chuỗi.",
+          "B. Đặt giá trị mặc định là `null`.",
+          "C. Yêu cầu trường dữ liệu phải là một số nguyên.",
+          "D. Đặt giá trị mặc định cho trường là thời gian hiện tại dưới dạng timestamp."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Trường này định nghĩa một kiểu dữ liệu ngày tháng. `timestamp('javascript')` chỉ định rằng nó sẽ được lưu dưới dạng mili giây (Unix timestamp), và `default(Date.now)` sẽ tự động gán giá trị là thời gian hiện tại nếu không có giá trị nào được cung cấp."
+      },
+      {
+        "question": "Tùy chọn `{ abortEarly: false }` trong hàm `validateAsync` của Joi có ý nghĩa gì?",
+        "options": [
+          "A. Dừng việc validate ngay khi phát hiện lỗi đầu tiên.",
+          "B. Bỏ qua việc validate và luôn trả về thành công.",
+          "C. Trả về tất cả các lỗi validation tìm thấy, thay vì chỉ dừng lại ở lỗi đầu tiên.",
+          "D. Chỉ validate các trường có trong schema."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi `abortEarly` được đặt là `false`, Joi sẽ tiếp tục kiểm tra tất cả các quy tắc validation và trả về một danh sách đầy đủ các lỗi, giúp người dùng hoặc developer có cái nhìn tổng quan về tất cả các vấn đề dữ liệu cùng một lúc."
+      },
+      {
+        "question": "Tại sao việc tách biệt các tầng (controller, service, model) lại quan trọng?",
+        "options": [
+          "A. Để làm cho code khó đọc hơn.",
+          "B. Để tăng số lượng file trong dự án.",
+          "C. Để giúp code dễ bảo trì, dễ mở rộng và mỗi tầng có một trách nhiệm rõ ràng.",
+          "D. Để giảm hiệu năng của ứng dụng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Kiến trúc phân tầng (Layered Architecture) giúp phân chia trách nhiệm rõ ràng: Controller xử lý I/O, Service xử lý logic nghiệp vụ, và Model xử lý tương tác dữ liệu. Điều này làm cho code trở nên module hóa, dễ đọc, dễ kiểm thử và dễ bảo trì hơn."
+      },
+      {
+        "question": "Lệnh `await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData)` thuộc tầng nào?",
+        "options": [
+          "A. Controller",
+          "B. Service",
+          "C. Model",
+          "D. View"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đây là lệnh tương tác trực tiếp với cơ sở dữ liệu MongoDB để chèn một tài liệu mới. Nhiệm vụ này thuộc về tầng Model, nơi chịu trách nhiệm cho tất cả các thao tác truy cập dữ liệu."
+      },
+      {
+        "question": "Nếu dữ liệu gửi lên từ client không hợp lệ theo schema của Joi, điều gì sẽ xảy ra?",
+        "options": [
+          "A. Dữ liệu vẫn được lưu vào database.",
+          "B. Hàm `validateBeforeCreate` sẽ ném ra một lỗi (throw an error).",
+          "C. Server sẽ tự động sửa lỗi và lưu lại.",
+          "D. Client sẽ tự động tải lại trang."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hàm `validateAsync` của Joi sẽ ném ra một exception nếu dữ liệu không khớp với schema. Exception này sẽ được bắt bởi block `try...catch` và được xử lý một cách phù hợp, thường là trả về lỗi cho client."
+      },
+      {
+        "question": "`OBJECT_ID_RULE` và `OBJECT_ID_RULE_MESSAGE` được sử dụng để làm gì?",
+        "options": [
+          "A. Để validate một chuỗi có phải là một ObjectId hợp lệ của MongoDB hay không.",
+          "B. Để tạo một ID mới cho bản ghi.",
+          "C. Để định dạng ngày tháng.",
+          "D. Để mã hóa dữ liệu."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đây là các hằng số được sử dụng trong schema của Joi để đảm bảo rằng các chuỗi được cho là ID của document khác (ví dụ trong `columnOrderIds`) thực sự có định dạng của một `ObjectId` hợp lệ trong MongoDB."
+      },
+      {
+        "question": "Trong `boardService.js`, tại sao `newBoard` được tạo ra bằng cách kết hợp `...reqBody` và `slug`?",
+        "options": [
+          "A. Để loại bỏ các trường không cần thiết từ `reqBody`.",
+          "B. Để đảm bảo `reqBody` không bị thay đổi trực tiếp (immutability) và để thêm trường `slug` được tạo ra vào object mới.",
+          "C. Để mã hóa toàn bộ `reqBody`.",
+          "D. Để đổi tên tất cả các trường trong `reqBody`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc sử dụng toán tử spread (`...`) tạo ra một bản sao nông của `reqBody`, sau đó thêm hoặc ghi đè trường `slug`. Điều này giúp tránh thay đổi trực tiếp đối tượng `reqBody` gốc và thêm các trường dữ liệu được xử lý ở tầng service."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Hoàn thiện Schema Joi",
+        "description": "Trong file `boardModel.js`, schema Joi đang thiếu một trường `type` để phân loại board (ví dụ: 'public' hoặc 'private'). Hãy thêm quy tắc validate cho trường `type` này. Trường `type` phải là một chuỗi, chỉ chấp nhận giá trị là 'public' hoặc 'private', và có giá trị mặc định là 'public'.",
+        "starterCode": "const BOARD_COLLECTION_SCHEMA = Joi.object({\n  title: Joi.string().required().min(3).max(50).trim().strict(),\n  slug: Joi.string().required().min(3).trim().strict(),\n  description: Joi.string().required().min(3).max(256).trim().strict(),\n  // Thêm trường 'type' vào đây\n  columnOrderIds: Joi.array().items(\n    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)\n  ).default([]),\n  createdAt: Joi.date().timestamp('javascript').default(Date.now),\n  updatedAt: Joi.date().timestamp('javascript').default(null),\n  _destroy: Joi.boolean().default(false)\n})",
+        "solution": "const BOARD_COLLECTION_SCHEMA = Joi.object({\n  title: Joi.string().required().min(3).max(50).trim().strict(),\n  slug: Joi.string().required().min(3).trim().strict(),\n  description: Joi.string().required().min(3).max(256).trim().strict(),\n  type: Joi.string().valid('public', 'private').required().default('public'),\n  columnOrderIds: Joi.array().items(\n    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)\n  ).default([]),\n  createdAt: Joi.date().timestamp('javascript').default(Date.now),\n  updatedAt: Joi.date().timestamp('javascript').default(null),\n  _destroy: Joi.boolean().default(false)\n})",
+        "testCases": "1. Gửi dữ liệu với `type` là 'public' -> Thành công.\n2. Gửi dữ liệu với `type` là 'private' -> Thành công.\n3. Gửi dữ liệu với `type` là 'test' -> Thất bại (lỗi validation).\n4. Gửi dữ liệu không có `type` -> Thành công, `type` được tự động gán là 'public'."
+      },
+      {
+        "title": "Bài 2: Viết hàm Controller `createNew`",
+        "description": "Hoàn thiện hàm `createNew` trong file `boardController.js`. Hàm này cần nhận `req`, `res`, `next` làm tham số, gọi đến hàm `boardService.createNew` với `req.body`, và trả về kết quả với status code 201 (CREATED). Đừng quên bọc logic trong `try...catch` và gọi `next(error)` nếu có lỗi.",
+        "starterCode": "import { StatusCodes } from 'http-status-codes'\nimport { boardService } from '~/services/boardService'\n\nconst createNew = async (req, res, next) => {\n  // Viết code của bạn ở đây\n}\n\nexport const boardController = {\n  createNew\n}",
+        "solution": "import { StatusCodes } from 'http-status-codes'\nimport { boardService } from '~/services/boardService'\n\nconst createNew = async (req, res, next) => {\n  try {\n    const createdBoard = await boardService.createNew(req.body)\n    res.status(StatusCodes.CREATED).json(createdBoard)\n  } catch (error) {\n    next(error)\n  }\n}\n\nexport const boardController = {\n  createNew\n}",
+        "testCases": "1. Mock `boardService.createNew` trả về một object board. Kiểm tra `res.status` có được gọi với `StatusCodes.CREATED` không.\n2. Kiểm tra `res.json` có được gọi với object board đã mock không.\n3. Mock `boardService.createNew` ném ra một lỗi. Kiểm tra `next` có được gọi với lỗi đó không."
+      },
+      {
+        "title": "Bài 3: Viết hàm Service `createNew`",
+        "description": "Hoàn thiện hàm `createNew` trong `boardService.js`. Hàm này nhận `reqBody` làm tham số, tạo một object `newBoard` bằng cách thêm trường `slug` (sử dụng hàm `slugify` đã cho) vào `reqBody`, sau đó gọi `boardModel.createNew` để lưu vào DB. Cuối cùng, gọi `boardModel.findOneById` để lấy bản ghi đầy đủ và trả về.",
+        "starterCode": "import { slugify } from '~/utils/formatters'\nimport { boardModel } from '~/models/boardModel'\n\nconst createNew = async (reqBody) => {\n  try {\n    // Viết code của bạn ở đây\n  } catch (error) { throw error }\n}\n\nexport const boardService = {\n  createNew\n}",
+        "solution": "import { slugify } from '~/utils/formatters'\nimport { boardModel } from '~/models/boardModel'\n\nconst createNew = async (reqBody) => {\n  try {\n    const newBoard = {\n      ...reqBody,\n      slug: slugify(reqBody.title)\n    }\n    const createdBoard = await boardModel.createNew(newBoard)\n    const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)\n    return getNewBoard\n  } catch (error) { throw error }\n}",
+        "testCases": "1. Truyền vào `reqBody` với `title` là 'Test Board'. Kiểm tra `boardModel.createNew` có được gọi với object chứa `slug` là 'test-board' không.\n2. Mock `boardModel.createNew` trả về `{ insertedId: 'some-id' }`. Kiểm tra `boardModel.findOneById` có được gọi với `'some-id'` không.\n3. Mock `boardModel.findOneById` trả về một object board. Kiểm tra hàm `createNew` có trả về đúng object board đó không."
+      },
+      {
+        "title": "Bài 4: Viết hàm Model `createNew`",
+        "description": "Hoàn thiện hàm `createNew` trong `boardModel.js`. Hàm này nhận `data` làm tham số, đầu tiên gọi hàm `validateBeforeCreate` để kiểm tra dữ liệu. Nếu hợp lệ, nó sẽ dùng `GET_DB().collection(...).insertOne()` để chèn dữ liệu vào collection `boards`. Cuối cùng, trả về kết quả từ `insertOne`.",
+        "starterCode": "const createNew = async (data) => {\n  try {\n    // Viết code của bạn ở đây\n  } catch (error) { throw new Error(error) }\n}",
+        "solution": "const createNew = async (data) => {\n  try {\n    const validData = await validateBeforeCreate(data);\n    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData);\n    return result;\n  } catch (error) { throw new Error(error) }\n}",
+        "testCases": "1. Truyền dữ liệu hợp lệ. Kiểm tra `validateBeforeCreate` được gọi.\n2. Kiểm tra `insertOne` được gọi với dữ liệu đã được validate.\n3. Truyền dữ liệu không hợp lệ. Kiểm tra hàm có ném ra lỗi từ `validateBeforeCreate` không và `insertOne` không được gọi."
+      },
+      {
+        "title": "Bài 5: Hoàn thiện API cho Collection mới",
+        "description": "Tạo một API Create hoàn chỉnh cho một collection mới tên là `cards`. Bạn cần tạo schema Joi cho `cards` (gồm `title` (string, required), `boardId` (ObjectId, required)), sau đó viết hàm `createNew` trong `cardModel.js` và `cardService.js` (service không cần xử lý gì đặc biệt, chỉ gọi model).",
+        "starterCode": "// cardModel.js\nconst CARD_COLLECTION_SCHEMA = Joi.object({\n  //...schema của bạn\n});\n//...hàm validate và createNew\n\n// cardService.js\nconst createNew = async (reqBody) => {\n  //...gọi model\n}",
+        "solution": "// cardModel.js\nimport Joi from 'joi'\nimport { GET_DB } from '~/config/mongodb'\nimport { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'\n\nconst CARD_COLLECTION_NAME = 'cards'\nconst CARD_COLLECTION_SCHEMA = Joi.object({\n  boardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),\n  title: Joi.string().required().min(3).max(50).trim().strict(),\n  createdAt: Joi.date().timestamp('javascript').default(Date.now),\n  _destroy: Joi.boolean().default(false)\n})\n\nconst validateBeforeCreate = async (data) => {\n  return await CARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })\n}\n\nconst createNew = async (data) => {\n  try {\n    const validData = await validateBeforeCreate(data)\n    // Chuyển đổi boardId từ string sang ObjectId\n    const newCardData = {\n      ...validData,\n      boardId: new ObjectId(validData.boardId)\n    }\n    return await GET_DB().collection(CARD_COLLECTION_NAME).insertOne(newCardData)\n  } catch (error) { throw new Error(error) }\n}\n\n// cardService.js\nimport { cardModel } from '~/models/cardModel'\n\nconst createNew = async (reqBody) => {\n  try {\n    const result = await cardModel.createNew(reqBody)\n    return result\n  } catch (error) { throw error }\n}",
+        "testCases": "1. Gửi request tạo card với `title` và `boardId` hợp lệ -> Thành công.\n2. Gửi request thiếu `boardId` -> Thất bại (lỗi validation).\n3. Gửi request với `boardId` không đúng định dạng ObjectId -> Thất bại (lỗi validation)."
+      }
+    ]
+  }
+}

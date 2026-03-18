@@ -1,0 +1,213 @@
+{
+  "id": 69,
+  "title": "53. Code tầng Controller: Điều hướng dữ liệu",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# 53. Code tầng Controller: Điều hướng dữ liệu\n\n## Mục tiêu bài học\n\nVideo này tập trung vào việc xây dựng và triển khai tầng Controller trong kiến trúc Model-View-Controller (MVC) cho một ứng dụng back-end sử dụng Node.js và MongoDB. Mục tiêu chính là giúp người xem hiểu rõ vai trò của Controller, cách nó nhận yêu cầu từ client, tương tác với tầng Service (hoặc trực tiếp với Model) để xử lý logic nghiệp vụ và cuối cùng là trả về phản hồi phù hợp.\n\n## Kiến thức chi tiết\n\nTrong kiến trúc MVC, **Controller** đóng vai trò trung gian, nhận các yêu cầu HTTP (HTTP requests) từ phía client (ví dụ: trình duyệt web, ứng dụng di động). Nhiệm vụ của nó không phải là xử lý logic nghiệp vụ phức tạp, mà là điều hướng (route) các yêu cầu đó đến đúng nơi xử lý (thường là tầng **Service**) và sau đó định dạng dữ liệu trả về cho client.\n\n### Vai trò của Tầng Controller\n\n- **Tiếp nhận yêu cầu:** Lắng nghe các yêu cầu từ client trên các endpoint (URL) đã được định nghĩa trong tầng Route.\n- **Xác thực dữ liệu đầu vào (Validation):** Kiểm tra sơ bộ tính hợp lệ của dữ liệu được gửi lên từ client (ví dụ: kiểm tra xem email có đúng định dạng không, mật khẩu có đủ mạnh không). Trong các dự án lớn, phần này thường được tách ra một tầng riêng gọi là Validation.\n- **Điều hướng nghiệp vụ:** Gọi đến các hàm xử lý logic ở tầng Service tương ứng với yêu cầu. Controller không nên chứa logic nghiệp vụ.\n- **Xử lý bất đồng bộ:** Sử dụng `async/await` để xử lý các tác vụ bất đồng bộ như truy vấn cơ sở dữ liệu một cách hiệu quả, tránh block luồng chính của Node.js.\n- **Trả về phản hồi:** Gửi lại phản hồi (HTTP response) cho client. Phản hồi này có thể là dữ liệu ở định dạng JSON, một trang HTML, hoặc một mã trạng thái (status code) thông báo kết quả xử lý (ví dụ: 200 OK, 201 Created, 400 Bad Request, 404 Not Found, 500 Internal Server Error).\n\n### Code mẫu: Cấu trúc một hàm Controller\n\nDưới đây là một ví dụ về cách triển khai một hàm trong controller để tạo mới một bản ghi (ví dụ: một `board` trong ứng dụng quản lý công việc).\n\n```javascript\n// src/controllers/boardController.js\n\nimport { StatusCodes } from 'http-status-codes'\n\n// Giả sử có một tầng Service đã được tạo\nimport { boardService } from '~/services/boardService'\n\nconst createNew = async (req, res, next) => {\n  try {\n    // Dữ liệu board mới được gửi từ client trong req.body\n    const createdBoard = await boardService.createNew(req.body)\n\n    // Trả về client với status code 201 (Created) và dữ liệu board vừa tạo\n    res.status(StatusCodes.CREATED).json(createdBoard)\n  } catch (error) {\n    // Nếu có lỗi, chuyển tiếp lỗi đến middleware xử lý lỗi tập trung\n    next(error)\n  }\n}\n\nexport const boardController = {\n  createNew\n}\n```\n\n**Giải thích chi tiết:**\n\n- **`async (req, res, next)`**: Mọi hàm controller xử lý yêu cầu trong Express đều nhận 3 tham số chính:\n    - `req` (request): Đối tượng chứa thông tin về yêu cầu của client (URL, method, headers, body, params, query...).\n    - `res` (response): Đối tượng dùng để gửi phản hồi về cho client.\n    - `next`: Một hàm callback dùng để chuyển quyền điều khiển cho middleware tiếp theo trong chuỗi xử lý. Nó rất quan trọng trong việc xử lý lỗi.\n- **`try...catch`**: Bọc toàn bộ logic trong khối `try...catch` là một thực hành tốt để bắt các lỗi xảy ra trong quá trình xử lý bất đồng bộ. Khi có lỗi, chúng ta gọi `next(error)` để đẩy lỗi về một middleware xử lý lỗi tập trung, giúp mã nguồn sạch sẽ và dễ quản lý hơn.\n- **`boardService.createNew(req.body)`**: Controller gọi đến hàm `createNew` của `boardService` và truyền vào `req.body` (dữ liệu mà client gửi lên). Controller không cần biết `createNew` làm gì bên trong, nó chỉ cần biết rằng hàm này sẽ trả về một `Promise` chứa board đã được tạo.\n- **`res.status(StatusCodes.CREATED).json(createdBoard)`**: Nếu mọi thứ thành công, controller sẽ dùng đối tượng `res` để gửi phản hồi:\n    - `res.status(StatusCodes.CREATED)`: Thiết lập mã trạng thái HTTP là `201` (Created), một chuẩn RESTful API cho việc tạo mới tài nguyên thành công. Việc sử dụng thư viện `http-status-codes` giúp mã nguồn dễ đọc và tường minh hơn là dùng các con số \"ma thuật\" (magic numbers) như `201`.\n    - `.json(createdBoard)`: Gửi dữ liệu `createdBoard` về cho client dưới dạng JSON.\n\n## Các bước thực hành\n\n1.  **Tạo file Controller:** Tạo một file mới, ví dụ `src/controllers/boardController.js`.\n2.  **Import các module cần thiết:** Import `StatusCodes` và `boardService`.\n3.  **Viết hàm `createNew`:** Triển khai hàm controller như ví dụ trên, đảm bảo sử dụng `async/await` và `try...catch`.\n4.  **Export Controller:** Export đối tượng chứa các hàm controller để có thể sử dụng ở tầng Route.\n5.  **Kết nối với Route:** Trong file `src/routes/v1/boardRoute.js`, import `boardController` và sử dụng nó trong định nghĩa route:\n\n    ```javascript\n    // src/routes/v1/boardRoute.js\n    import express from 'express'\n    import { boardController } from '~/controllers/boardController'\n\n    const Router = express.Router()\n\n    Router.route('/')\n      .post(boardController.createNew)\n\n    export const boardRoute = Router\n    ```\n\n## Lưu ý quan trọng\n\n- **Không chứa logic nghiệp vụ:** Controller chỉ nên làm nhiệm vụ điều hướng. Mọi logic phức tạp như tính toán, tương tác sâu với cơ sở dữ liệu nên được đặt ở tầng Service.\n- **Xử lý lỗi tập trung:** Thay vì xử lý lỗi ngay tại controller bằng `res.status(...).send(...)`, hãy sử dụng `next(error)` để đưa lỗi về một middleware xử lý lỗi chung. Điều này giúp tránh lặp lại code và quản lý lỗi nhất quán.\n- **Sử dụng mã trạng thái HTTP phù hợp:** Trả về các status code chính xác theo ngữ cảnh của yêu cầu (ví dụ: `200` cho GET thành công, `201` cho POST thành công, `204` cho DELETE thành công, `400` cho dữ liệu không hợp lệ, `404` cho không tìm thấy tài nguyên).\n- **Nhất quán trong cấu trúc phản hồi:** Luôn trả về dữ liệu cho client theo một cấu trúc JSON nhất quán để phía front-end dễ dàng xử lý.\n\n## Tài liệu tham khảo\n\n1.  [Express.js routing](https://expressjs.com/en/guide/routing.html)\n2.  [MDN Web Docs: HTTP response status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)\n3.  [TrungQuanDev Blog](https://trungquandev.com/)\n4.  [Video 53. Code tầng Controller: Điều hướng dữ liệu | NodeJS + MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=Xc2-vcJlwWo)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Vai trò chính của tầng Controller trong kiến trúc MVC là gì?",
+        "options": [
+          "Thực thi logic nghiệp vụ phức tạp và tương tác trực tiếp với cơ sở dữ liệu.",
+          "Tiếp nhận yêu cầu từ client, điều hướng đến tầng Service và trả về phản hồi.",
+          "Định nghĩa cấu trúc dữ liệu (schema) cho các đối tượng trong ứng dụng.",
+          "Hiển thị giao diện người dùng và xử lý các tương tác của người dùng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Controller đóng vai trò trung gian, nhận yêu cầu, gọi đến Service để xử lý nghiệp vụ và định dạng dữ liệu trả về cho client. Nó không nên chứa logic nghiệp vụ."
+      },
+      {
+        "question": "Trong một hàm controller của Express.js, tham số `next` được sử dụng để làm gì?",
+        "options": [
+          "Để gửi phản hồi JSON về cho client.",
+          "Để truy cập vào các tham số trên URL (URL params).",
+          "Để chuyển quyền điều khiển cho middleware tiếp theo, đặc biệt là trong xử lý lỗi.",
+          "Để kết thúc chu kỳ yêu cầu-phản hồi ngay lập tức."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hàm `next` được dùng để chuyển quyền điều khiển cho middleware xử lý tiếp theo trong chuỗi. Nó rất quan trọng để tạo ra một cơ chế xử lý lỗi tập trung."
+      },
+      {
+        "question": "Tại sao nên sử dụng khối `try...catch` bên trong một hàm controller bất đồng bộ?",
+        "options": [
+          "Để mã nguồn trông chuyên nghiệp hơn.",
+          "Để bắt các lỗi xảy ra trong quá trình xử lý (ví dụ: lỗi từ tầng Service hoặc CSDL) và chuyển chúng đến middleware xử lý lỗi.",
+          "Để xác thực dữ liệu đầu vào từ `req.body`.",
+          "Để tăng hiệu năng của ứng dụng bằng cách bỏ qua các lỗi nhỏ."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khối `try...catch` là cách hiệu quả để bắt các lỗi runtime trong các hàm `async`. Khi bắt được lỗi, ta có thể dùng `next(error)` để xử lý một cách nhất quán."
+      },
+      {
+        "question": "Để lấy dữ liệu được gửi từ client trong body của một yêu cầu POST, bạn sẽ sử dụng đối tượng nào?",
+        "options": [
+          "req.params",
+          "req.query",
+          "req.body",
+          "res.body"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`req.body` chứa cặp key-value của dữ liệu được gửi trong phần thân của yêu cầu, thường được sử dụng trong các phương thức POST hoặc PUT."
+      },
+      {
+        "question": "Theo chuẩn RESTful API, mã trạng thái HTTP nào là phù hợp nhất để trả về khi tạo mới một tài nguyên thành công?",
+        "options": [
+          "200 OK",
+          "201 Created",
+          "204 No Content",
+          "400 Bad Request"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mã trạng thái `201 Created` chỉ ra rằng yêu cầu đã thành công và một tài nguyên mới đã được tạo ra như một kết quả."
+      },
+      {
+        "question": "Việc sử dụng thư viện `http-status-codes` mang lại lợi ích gì?",
+        "options": [
+          "Giúp ứng dụng chạy nhanh hơn.",
+          "Tự động xử lý tất cả các lỗi HTTP.",
+          "Làm cho mã nguồn trở nên tường minh và dễ đọc hơn bằng cách sử dụng các hằng số có tên thay vì các con số \"ma thuật\" (magic numbers).",
+          "Thêm một lớp bảo mật cho các phản hồi HTTP."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng `StatusCodes.CREATED` thay vì `201` giúp mã nguồn dễ hiểu và dễ bảo trì hơn, tránh nhầm lẫn về ý nghĩa của các con số."
+      },
+      {
+        "question": "Logic nghiệp vụ (business logic) nên được đặt ở đâu trong kiến trúc được đề cập trong bài học?",
+        "options": [
+          "Trong tầng Route",
+          "Trong tầng Controller",
+          "Trong tầng Service",
+          "Trực tiếp trong file server chính"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Controller chỉ nên làm nhiệm vụ điều hướng. Mọi logic nghiệp vụ phức tạp nên được đặt ở tầng Service để đảm bảo nguyên tắc phân tách trách nhiệm (Separation of Concerns)."
+      },
+      {
+        "question": "Đoạn code `Router.route('/').post(boardController.createNew)` trong tầng Route có ý nghĩa gì?",
+        "options": [
+          "Thực thi hàm `createNew` ngay khi server khởi động.",
+          "Định nghĩa rằng khi có một yêu cầu GET đến URL gốc (`/`), hàm `createNew` sẽ được gọi.",
+          "Định nghĩa rằng khi có một yêu cầu POST đến URL gốc (`/`), hàm `createNew` của `boardController` sẽ được gọi để xử lý.",
+          "Tạo một route mới có tên là `boardController`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đoạn code này kết nối một endpoint (phương thức POST tại đường dẫn `/`) với một hàm xử lý cụ thể trong controller, hoàn thành luồng điều hướng yêu cầu."
+      },
+      {
+        "question": "Hành động nào sau đây KHÔNG phải là trách nhiệm của tầng Controller?",
+        "options": [
+          "Tiếp nhận yêu cầu HTTP.",
+          "Gọi đến các hàm ở tầng Service.",
+          "Thực hiện các truy vấn trực tiếp đến cơ sở dữ liệu.",
+          "Trả về phản hồi HTTP với mã trạng thái và dữ liệu phù hợp."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tương tác sâu với cơ sở dữ liệu là một phần của logic nghiệp vụ hoặc truy cập dữ liệu, nên được đặt ở tầng Service hoặc Model/Repository, không phải ở Controller."
+      },
+      {
+        "question": "Trong hàm `createNew` mẫu, `await boardService.createNew(req.body)` có ý nghĩa gì?",
+        "options": [
+          "Controller đang tự mình tạo một board mới và lưu vào cơ sở dữ liệu.",
+          "Controller đang ủy quyền việc tạo board mới cho tầng Service và chờ kết quả trả về.",
+          "Controller đang kiểm tra xem `req.body` có hợp lệ hay không.",
+          "Controller đang tạo một route mới cho service."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Controller gọi hàm `createNew` từ `boardService`, truyền dữ liệu cần thiết (`req.body`) và dùng `await` để chờ cho đến khi xử lý ở tầng Service hoàn tất và trả về kết quả."
+      },
+      {
+        "question": "Khi một lỗi xảy ra trong `try` block của controller, cách xử lý lỗi tốt nhất được đề xuất là gì?",
+        "options": [
+          "Trả về `res.status(500).send('Internal Server Error')` ngay trong `catch` block.",
+          "Ghi lỗi ra console và bỏ qua nó.",
+          "Gọi `next(error)` để chuyển lỗi đến một middleware xử lý lỗi tập trung.",
+          "Khởi động lại server."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng `next(error)` cho phép bạn tập trung logic xử lý lỗi vào một nơi duy nhất, giúp mã nguồn sạch sẽ, nhất quán và dễ quản lý hơn."
+      },
+      {
+        "question": "Các tham số `req`, `res`, `next` trong một controller của Express là viết tắt của gì?",
+        "options": [
+          "Request, Result, Node",
+          "Response, Request, Next",
+          "Request, Response, Next",
+          "Require, Resolve, Null"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`req` là đối tượng Request, `res` là đối tượng Response, và `next` là hàm callback để chuyển sang middleware tiếp theo. Đây là các tham số cơ bản của mọi middleware trong Express."
+      },
+      {
+        "question": "Mục đích của việc sử dụng `async/await` trong các hàm controller là gì?",
+        "options": [
+          "Để thực thi code một cách đồng bộ và tuần tự.",
+          "Để làm cho code khó đọc hơn.",
+          "Để xử lý các tác vụ bất đồng bộ (như gọi service, truy vấn CSDL) một cách gọn gàng và dễ đọc hơn so với việc dùng Promise chaining (.then/.catch).",
+          "Đây là yêu cầu bắt buộc của Express cho mọi controller."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`async/await` là cú pháp giúp xử lý các hoạt động bất đồng bộ một cách hiệu quả, tránh \"callback hell\" và giúp code trông giống như code đồng bộ, dễ theo dõi hơn."
+      },
+      {
+        "question": "Phát biểu nào sau đây là ĐÚNG về vai trò của Controller?",
+        "options": [
+          "Controller nên chứa càng nhiều logic càng tốt để giảm tải cho Service.",
+          "Controller là nơi duy nhất được phép tương tác với cơ sở dữ liệu.",
+          "Controller chỉ nên là một lớp mỏng, làm nhiệm vụ điều phối và xác thực cơ bản.",
+          "Controller chịu trách nhiệm render các file HTML."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Một controller tốt nên \"gầy\" (thin), tức là chỉ chứa rất ít logic. Nhiệm vụ chính của nó là điều phối luồng dữ liệu giữa client và các lớp xử lý nghiệp vụ."
+      },
+      {
+        "question": "Lệnh `res.json(data)` trong Express làm gì?",
+        "options": [
+          "Chỉ thiết lập header `Content-Type` thành `application/json`.",
+          "Chuyển đổi một chuỗi JSON thành một đối tượng JavaScript.",
+          "Gửi phản hồi HTTP với header `Content-Type` là `application/json` và body là chuỗi JSON được chuyển đổi từ đối tượng `data`.",
+          "Lưu đối tượng `data` vào một file JSON trên server."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`res.json()` là một hàm tiện ích của Express, nó tự động thực hiện cả việc thiết lập header `Content-Type` và chuyển đổi đối tượng JavaScript thành chuỗi JSON trước khi gửi về client."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Controller Chào mừng",
+        "description": "Tạo một hàm controller đơn giản tên là `sayHello` chỉ có nhiệm vụ trả về một đối tượng JSON `{ message: 'Welcome to the API!' }` với mã trạng thái 200 OK.",
+        "starterCode": "import { StatusCodes } from 'http-status-codes'\n\nexport const welcomeController = {\n  sayHello: (req, res, next) => {\n    // Code của bạn ở đây\n  }\n}",
+        "solution": "import { StatusCodes } from 'http-status-codes'\n\nexport const welcomeController = {\n  sayHello: (req, res, next) => {\n    try {\n      res.status(StatusCodes.OK).json({ message: 'Welcome to the API!' })\n    } catch (error) {\n      next(error)\n    }\n  }\n}",
+        "testCases": "Khi gọi đến endpoint sử dụng controller này, client phải nhận được mã trạng thái 200 và body là `{\"message\":\"Welcome to the API!\"}`."
+      },
+      {
+        "title": "Bài 2: Controller Phản hồi Dữ liệu",
+        "description": "Viết một hàm controller `echoData` nhận dữ liệu từ `req.body` và trả về chính dữ liệu đó cho client trong một đối tượng có key là `data`. Ví dụ, nếu client gửi `{ \"name\": \"John\" }`, controller sẽ trả về `{ \"data\": { \"name\": \"John\" } }` với mã trạng thái 200 OK.",
+        "starterCode": "import { StatusCodes } from 'http-status-codes'\n\nexport const dataController = {\n  echoData: async (req, res, next) => {\n    // Code của bạn ở đây\n  }\n}",
+        "solution": "import { StatusCodes } from 'http-status-codes'\n\nexport const dataController = {\n  echoData: async (req, res, next) => {\n    try {\n      res.status(StatusCodes.OK).json({ data: req.body })\n    } catch (error) {\n      next(error)\n    }\n  }\n}",
+        "testCases": "Gửi một yêu cầu POST với body là `{\"id\": 123, \"content\": \"Test\"}`. Phản hồi phải có mã trạng thái 200 và body là `{\"data\":{\"id\":123,\"content\":\"Test\"}}`."
+      },
+      {
+        "title": "Bài 3: Controller với Xử lý Lỗi",
+        "description": "Tạo một hàm controller `createUser` gọi đến một hàm giả lập `userService.create(userData)`. Nếu `userData` trong `req.body` không có trường `email`, hàm `userService.create` sẽ throw một lỗi. Controller của bạn phải bắt được lỗi này và chuyển nó đến middleware xử lý lỗi bằng `next()`.",
+        "starterCode": "import { StatusCodes } from 'http-status-codes'\n\n// Giả lập service\nconst userService = {\n  create: (userData) => {\n    if (!userData.email) {\n      throw new Error('Email is required')\n    }\n    return { id: Date.now(), ...userData }\n  }\n}\n\nexport const userController = {\n  createUser: async (req, res, next) => {\n    // Code của bạn ở đây\n  }\n}",
+        "solution": "import { StatusCodes } from 'http-status-codes'\n\nconst userService = {\n  create: (userData) => {\n    if (!userData.email) {\n      throw new Error('Email is required')\n    }\n    return { id: Date.now(), ...userData }\n  }\n}\n\nexport const userController = {\n  createUser: async (req, res, next) => {\n    try {\n      const newUser = userService.create(req.body)\n      res.status(StatusCodes.CREATED).json(newUser)\n    } catch (error) {\n      next(error)\n    }\n  }\n}",
+        "testCases": "1. Gửi POST request với `{\"name\": \"Test\"}` (thiếu email), middleware lỗi phải được kích hoạt. 2. Gửi POST request với `{\"name\": \"Test\", \"email\": \"test@example.com\"}`, phải nhận được status 201 và thông tin user."
+      },
+      {
+        "title": "Bài 4: Controller Lấy Dữ liệu theo ID",
+        "description": "Viết hàm controller `getProductById` để lấy thông tin sản phẩm. ID sản phẩm được truyền qua URL (ví dụ: `/products/123`). Controller sẽ lấy ID từ `req.params`, gọi đến một hàm giả lập `productService.getById(id)` và trả về dữ liệu sản phẩm với mã trạng thái 200. Nếu không tìm thấy, service sẽ trả về `null`, và controller cần trả về mã 404 Not Found.",
+        "starterCode": "import { StatusCodes } from 'http-status-codes'\n\n// Giả lập service\nconst productService = {\n  getById: (id) => {\n    if (id === '123') return { id: '123', name: 'Laptop' }\n    return null\n  }\n}\n\nexport const productController = {\n  getProductById: async (req, res, next) => {\n    // Code của bạn ở đây\n  }\n}",
+        "solution": "import { StatusCodes } from 'http-status-codes'\n\nconst productService = {\n  getById: (id) => {\n    if (id === '123') return { id: '123', name: 'Laptop' }\n    return null\n  }\n}\n\nexport const productController = {\n  getProductById: async (req, res, next) => {\n    try {\n      const productId = req.params.id\n      const product = productService.getById(productId)\n\n      if (!product) {\n        res.status(StatusCodes.NOT_FOUND).json({ message: 'Product not found' })\n        return\n      }\n\n      res.status(StatusCodes.OK).json(product)\n    } catch (error) {\n      next(error)\n    }\n  }\n}",
+        "testCases": "1. Gọi GET `/products/123`, nhận status 200 và data `{ id: '123', name: 'Laptop' }`. 2. Gọi GET `/products/456`, nhận status 404 và message `Product not found`."
+      },
+      {
+        "title": "Bài 5: Tích hợp Controller Hoàn chỉnh",
+        "description": "Viết một hàm controller `updatePost` để cập nhật một bài viết. Nó nhận `id` từ `req.params` và dữ liệu cập nhật từ `req.body`. Controller sẽ gọi đến `postService.update(id, data)`, một hàm bất đồng bộ giả lập. Controller phải xử lý cả trường hợp thành công (trả về dữ liệu đã cập nhật với status 200) và trường hợp lỗi (chuyển lỗi cho middleware).",
+        "starterCode": "import { StatusCodes } from 'http-status-codes'\n\n// Giả lập service bất đồng bộ\nconst postService = {\n  update: async (id, data) => {\n    if (!id) throw new Error('Post ID is required')\n    // Giả lập độ trễ mạng\n    await new Promise(resolve => setTimeout(resolve, 100))\n    return { id, ...data, updatedAt: new Date() }\n  }\n}\n\nexport const postController = {\n  updatePost: async (req, res, next) => {\n    // Code của bạn ở đây\n  }\n}",
+        "solution": "import { StatusCodes } from 'http-status-codes'\n\nconst postService = {\n  update: async (id, data) => {\n    if (!id) throw new Error('Post ID is required')\n    await new Promise(resolve => setTimeout(resolve, 100))\n    return { id, ...data, updatedAt: new Date() }\n  }\n}\n\nexport const postController = {\n  updatePost: async (req, res, next) => {\n    try {\n      const { id } = req.params\n      const updatedData = req.body\n      const result = await postService.update(id, updatedData)\n      res.status(StatusCodes.OK).json(result)\n    } catch (error) {\n      next(error)\n    }\n  }\n}",
+        "testCases": "Gửi một yêu cầu PUT đến `/posts/abc-123` với body `{\"title\": \"New Title\"}`. Phản hồi phải có status 200 và body chứa `{ id: 'abc-123', title: 'New Title', ... }`."
+      }
+    ]
+  }
+}

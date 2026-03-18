@@ -1,0 +1,213 @@
+{
+  "id": 10,
+  "title": "Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# 🏅 Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\n\n## 🎯 Mục tiêu bài học\n\nBài học này tập trung vào việc tích hợp dịch vụ email của bên thứ ba (cụ thể là Brevo) vào một ứng dụng Node.js để xử lý các tác vụ quan trọng trong luồng xác thực người dùng. Sau khi hoàn thành bài học, học viên sẽ có khả năng:\n\n*   Hiểu rõ khái niệm và tầm quan trọng của Mail Service trong các ứng dụng web hiện đại.\n*   Tích hợp thành công Brevo (trước đây là Sendinblue) vào một dự án Node.js để gửi email.\n*   Xây dựng hoàn chỉnh luồng đăng ký (Register) và xác thực tài khoản (Verify Account) qua email.\n*   Áp dụng các kỹ thuật bảo mật và thực tiễn tốt nhất khi xử lý thông tin người dùng và token xác thực.\n\n---\n\n## 📚 Kiến thức chi tiết\n\n### 1. Giới thiệu về Mail Service\n\nTrong các ứng dụng web, việc gửi email là một chức năng không thể thiếu, phục vụ cho nhiều mục đích như:\n\n*   **Xác thực tài khoản:** Gửi email chứa link kích hoạt sau khi người dùng đăng ký.\n*   **Khôi phục mật khẩu:** Gửi email chứa link để người dùng đặt lại mật khẩu đã quên.\n*   **Thông báo:** Gửi các thông báo quan trọng về hoạt động tài khoản, đơn hàng, cập nhật dịch vụ...\n*   **Marketing:** Gửi email quảng cáo, bản tin cho người dùng.\n\nThay vì tự xây dựng một hệ thống máy chủ email (Mail Server) phức tạp, tốn kém và khó bảo trì, việc sử dụng các **Dịch vụ Gửi Email (Mail Service)** của bên thứ ba là một giải pháp hiệu quả và phổ biến. Các dịch vụ này cung cấp API mạnh mẽ, dễ tích hợp, đảm bảo tỷ lệ gửi email thành công cao và cung cấp các công cụ quản lý, thống kê chi tiết.\n\n**Brevo (trước đây là Sendinblue)** là một trong những nhà cung cấp dịch vụ email marketing và transactional email hàng đầu, nổi bật với gói miễn phí cho phép gửi tới 300 email mỗi ngày, rất phù hợp cho các dự án vừa và nhỏ hoặc trong giai đoạn phát triển.\n\n### 2. Tích hợp Brevo với Node.js\n\nĐể gửi email từ ứng dụng Node.js qua Brevo, chúng ta thường sử dụng thư viện `nodemailer`, một module phổ biến để làm việc với email trong Node.js, kết hợp với thông tin SMTP của Brevo.\n\n**Cài đặt `nodemailer`:**\n\n```bash\nnpm install nodemailer\n```\n\n**Cấu hình `nodemailer` với Brevo SMTP:**\n\nĐầu tiên, bạn cần lấy thông tin **SMTP & API** từ tài khoản Brevo của mình (thường trong mục `Settings -> Senders & IP`).\n\nSau đó, tạo một module để cấu hình và gửi email:\n\n```javascript\n// utils/email.js\nconst nodemailer = require('nodemailer');\n\nconst sendEmail = async (to, subject, htmlContent) => {\n  const transporter = nodemailer.createTransport({\n    host: process.env.BREVO_SMTP_HOST, // Lấy từ tài khoản Brevo\n    port: process.env.BREVO_SMTP_PORT, // Lấy từ tài khoản Brevo\n    secure: false, // true for 465, false for other ports\n    auth: {\n      user: process.env.BREVO_SMTP_USER, // Lấy từ tài khoản Brevo\n      pass: process.env.BREVO_SMTP_PASSWORD, // SMTP Key lấy từ tài khoản Brevo\n    },\n  });\n\n  const mailOptions = {\n    from: '\"Your App Name\" <your-email@example.com>', // Địa chỉ email người gửi\n    to: to, // Địa chỉ email người nhận\n    subject: subject, // Tiêu đề email\n    html: htmlContent, // Nội dung email dạng HTML\n  };\n\n  try {\n    await transporter.sendMail(mailOptions);\n    console.log('Email sent successfully!');\n  } catch (error) {\n    console.error('Error sending email:', error);\n    throw new Error('Could not send email');\n  }\n};\n\nmodule.exports = sendEmail;\n```\n\n### 3. Xây dựng Luồng Đăng ký và Xác thực Tài khoản\n\nLuồng hoạt động cơ bản như sau:\n\n1.  **Người dùng đăng ký:** Người dùng điền thông tin (email, password...) và gửi lên server.\n2.  **Server xử lý:**\n    *   Lưu thông tin người dùng vào database với trạng thái `isVerified: false`.\n    *   Tạo một token xác thực duy nhất (thường là một chuỗi ngẫu nhiên) và lưu nó cùng với thời gian hết hạn, gắn với tài khoản người dùng.\n    *   Sử dụng dịch vụ email đã cấu hình để gửi một email đến người dùng, chứa một đường link xác thực có gắn token này.\n3.  **Người dùng xác thực:** Người dùng mở email và nhấp vào đường link xác thực.\n4.  **Server xác thực:**\n    *   Server nhận yêu cầu từ link, trích xuất token.\n    *   Tìm kiếm người dùng trong database có token tương ứng và token chưa hết hạn.\n    *   Nếu tìm thấy, cập nhật trạng thái tài khoản thành `isVerified: true` và xóa token.\n    *   Thông báo cho người dùng biết tài khoản đã được xác thực thành công.\n\n**Code mẫu (Controller xử lý đăng ký):**\n\n```javascript\n// controllers/authController.js\nconst User = require('../models/userModel');\nconst sendEmail = require('../utils/email');\nconst crypto = require('crypto');\n\nexports.register = async (req, res) => {\n  try {\n    const { email, password, name } = req.body;\n\n    // 1. Kiểm tra xem email đã tồn tại chưa\n    const existingUser = await User.findOne({ email });\n    if (existingUser) {\n      return res.status(400).json({ message: 'Email already exists.' });\n    }\n\n    // 2. Tạo người dùng mới\n    const newUser = new User({ name, email, password });\n\n    // 3. Tạo token xác thực\n    const verificationToken = crypto.randomBytes(32).toString('hex');\n    newUser.verificationToken = crypto\n      .createHash('sha256')\n      .update(verificationToken)\n      .digest('hex');\n    newUser.verificationTokenExpires = Date.now() + 10 * 60 * 1000; // Token hết hạn sau 10 phút\n\n    await newUser.save();\n\n    // 4. Gửi email xác thực\n    const verificationURL = `${req.protocol}://${req.get(\n      'host'\n    )}/api/v1/users/verify/${verificationToken}`;\n    const message = `Cảm ơn bạn đã đăng ký. Vui lòng nhấp vào liên kết sau để xác thực tài khoản của bạn (liên kết có hiệu lực trong 10 phút): ${verificationURL}`;\n\n    await sendEmail(\n      newUser.email,\n      'Xác thực tài khoản của bạn',\n      `<p>${message}</p>`\n    );\n\n    res.status(201).json({\n      status: 'success',\n      message: 'Registration successful! Please check your email to verify your account.',\n    });\n\n  } catch (error) {\n    // Xóa người dùng nếu có lỗi xảy ra để họ có thể thử lại\n    await User.findOneAndDelete({ email: req.body.email });\n    res.status(500).json({ message: 'Something went wrong.', error });\n  }\n};\n```\n\n---\n\n## 🛠 Các bước thực hành\n\n1.  **Đăng ký tài khoản Brevo:** Truy cập [Brevo](https://www.brevo.com) và tạo một tài khoản miễn phí.\n2.  **Lấy thông tin SMTP:** Đăng nhập vào Brevo, đi tới mục `SMTP & API` và lấy các thông tin `Host`, `Port`, `Login`, và tạo một `SMTP Key` (đây sẽ là mật khẩu).\n3.  **Cấu hình biến môi trường:** Lưu các thông tin SMTP của Brevo vào file `.env` của dự án Node.js.\n4.  **Cài đặt `nodemailer`:** Chạy lệnh `npm install nodemailer`.\n5.  **Tạo module gửi email:** Tạo file `utils/email.js` và viết hàm `sendEmail` như hướng dẫn ở trên.\n6.  **Cập nhật User Model:** Thêm các trường `isVerified`, `verificationToken`, `verificationTokenExpires` vào schema của User.\n7.  **Xây dựng API Endpoint cho Đăng ký:** Tạo route và controller function để xử lý việc đăng ký, tạo token và gửi email xác thực.\n8.  **Xây dựng API Endpoint cho Xác thực:** Tạo route và controller function để xử lý việc xác thực token từ link người dùng nhấp vào.\n9.  **Kiểm tra:** Sử dụng Postman hoặc công cụ tương tự để kiểm tra luồng đăng ký và xác thực.\n\n---\n\n## ⚠️ Lưu ý quan trọng\n\n*   **Bảo mật SMTP Key:** Tuyệt đối không hard-code (viết trực tiếp) SMTP Key và các thông tin nhạy cảm khác trong code. Luôn sử dụng biến môi trường (`.env` file) để lưu trữ.\n*   **Xử lý lỗi:** Luồng gửi email có thể thất bại. Cần có cơ chế xử lý lỗi (try-catch) và có thể cung cấp cho người dùng tùy chọn gửi lại email xác thực.\n*   **Token:**\n    *   Nên mã hóa (hash) token trước khi lưu vào database để tăng cường bảo mật.\n    *   Token phải có thời gian hết hạn để tránh bị lạm dụng.\n    *   Sau khi xác thực thành công, token nên được xóa hoặc vô hiệu hóa.\n*   **Email Templates:** Để chuyên nghiệp hơn, bạn nên tạo các mẫu email (HTML templates) đẹp mắt thay vì chỉ gửi text đơn thuần. Các thư viện như `pug` hoặc `ejs` có thể giúp bạn làm điều này.\n*   **Rate Limiting:** Áp dụng cơ chế giới hạn số lần yêu cầu (rate limiting) cho các API endpoint đăng ký và gửi lại email để chống spam/tấn công.\n\n---\n\n## 🔗 Tài liệu tham khảo\n\n1.  [Brevo API Documentation](https://developers.brevo.com/docs)\n2.  [Nodemailer - Send emails with Node.js](https://nodemailer.com/)\n3.  [TrungQuanDev GitHub - nodejs-send-email](https://github.com/trungquandev/nodejs-send-email)\n4.  [How to Set up Email Verification using Node.js and React.js? - Medium](https://rajat-m.medium.com/how-to-set-up-email-verification-using-node-js-and-react-js-376e09b371e2)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", khái niệm cơ bản được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến khái niệm cơ bản",
+          "Phương án B liên quan đến khái niệm cơ bản",
+          "Phương án C liên quan đến khái niệm cơ bản",
+          "Phương án D liên quan đến khái niệm cơ bản"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về khái niệm cơ bản."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", cú pháp được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cú pháp",
+          "Phương án B liên quan đến cú pháp",
+          "Phương án C liên quan đến cú pháp",
+          "Phương án D liên quan đến cú pháp"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cú pháp."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", cách sử dụng được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cách sử dụng",
+          "Phương án B liên quan đến cách sử dụng",
+          "Phương án C liên quan đến cách sử dụng",
+          "Phương án D liên quan đến cách sử dụng"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cách sử dụng."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", ưu điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ưu điểm",
+          "Phương án B liên quan đến ưu điểm",
+          "Phương án C liên quan đến ưu điểm",
+          "Phương án D liên quan đến ưu điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ưu điểm."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", nhược điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến nhược điểm",
+          "Phương án B liên quan đến nhược điểm",
+          "Phương án C liên quan đến nhược điểm",
+          "Phương án D liên quan đến nhược điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về nhược điểm."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", so sánh được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến so sánh",
+          "Phương án B liên quan đến so sánh",
+          "Phương án C liên quan đến so sánh",
+          "Phương án D liên quan đến so sánh"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về so sánh."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", ứng dụng thực tế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ứng dụng thực tế",
+          "Phương án B liên quan đến ứng dụng thực tế",
+          "Phương án C liên quan đến ứng dụng thực tế",
+          "Phương án D liên quan đến ứng dụng thực tế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ứng dụng thực tế."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", best practices được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến best practices",
+          "Phương án B liên quan đến best practices",
+          "Phương án C liên quan đến best practices",
+          "Phương án D liên quan đến best practices"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về best practices."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", cấu hình được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cấu hình",
+          "Phương án B liên quan đến cấu hình",
+          "Phương án C liên quan đến cấu hình",
+          "Phương án D liên quan đến cấu hình"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cấu hình."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", xử lý lỗi được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến xử lý lỗi",
+          "Phương án B liên quan đến xử lý lỗi",
+          "Phương án C liên quan đến xử lý lỗi",
+          "Phương án D liên quan đến xử lý lỗi"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về xử lý lỗi."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", tối ưu hóa được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến tối ưu hóa",
+          "Phương án B liên quan đến tối ưu hóa",
+          "Phương án C liên quan đến tối ưu hóa",
+          "Phương án D liên quan đến tối ưu hóa"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về tối ưu hóa."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", bảo mật được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến bảo mật",
+          "Phương án B liên quan đến bảo mật",
+          "Phương án C liên quan đến bảo mật",
+          "Phương án D liên quan đến bảo mật"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về bảo mật."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", kiến trúc được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến kiến trúc",
+          "Phương án B liên quan đến kiến trúc",
+          "Phương án C liên quan đến kiến trúc",
+          "Phương án D liên quan đến kiến trúc"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về kiến trúc."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", thiết kế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến thiết kế",
+          "Phương án B liên quan đến thiết kế",
+          "Phương án C liên quan đến thiết kế",
+          "Phương án D liên quan đến thiết kế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về thiết kế."
+      },
+      {
+        "question": "Trong bài \"Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account\", triển khai được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến triển khai",
+          "Phương án B liên quan đến triển khai",
+          "Phương án C liên quan đến triển khai",
+          "Phương án D liên quan đến triển khai"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về triển khai."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài tập 1: Thực hành Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 2: Thực hành Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 3: Thực hành Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 4: Thực hành Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 5: Thực hành Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      }
+    ]
+  }
+}

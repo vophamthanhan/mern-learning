@@ -1,0 +1,213 @@
+{
+  "id": 92,
+  "title": "Video 80: 72. Hoàn thiện tích hợp kéo thả Card với API (part 2)",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# Video 80: 72. Hoàn thiện tích hợp kéo thả Card với API (part 2)\n\n## I. Mục tiêu bài học\n\nVideo này là phần tiếp theo trong series, tập trung vào việc hoàn thiện tính năng kéo thả (Drag and Drop) thẻ (Card) giữa các cột (Column) khác nhau trong ứng dụng Trello clone. Mục tiêu chính là tích hợp API từ backend để cập nhật và lưu trữ lại trạng thái mới của các thẻ và cột sau khi người dùng thực hiện thao tác kéo thả một thẻ từ cột này sang cột khác.\n\n## II. Kiến thức chi tiết\n\nPhần này xây dựng dựa trên nền tảng của video trước (part 1), vốn đã xử lý việc kéo thả thẻ trong cùng một cột. Video này giải quyết bài toán phức tạp hơn: di chuyển thẻ sang một cột mới.\n\n### 1. Luồng hoạt động tổng quan\n\nKhi người dùng kéo một thẻ từ cột A và thả vào cột B, luồng xử lý sẽ như sau:\n\n1.  **Frontend (ReactJS):** Thư viện `dnd-kit` phát hiện sự kiện `onDragEnd`.\n2.  **Frontend (ReactJS):** Kiểm tra xem thẻ được kéo qua một cột mới hay vẫn ở cột cũ.\n3.  **Frontend (ReactJS):** Nếu là cột mới, cập nhật giao diện người dùng ngay lập tức (Optimistic Update) để tạo cảm giác mượt mà. Giao diện sẽ tạm thời hiển thị thẻ đã được chuyển sang cột mới.\n4.  **Frontend (ReactJS):** Gọi một API tới backend, gửi kèm các thông tin cần thiết như `cardId`, `sourceColumnId` (cột nguồn), `destinationColumnId` (cột đích), và mảng `cardOrderIds` mới của cả hai cột.\n5.  **Backend (NodeJS & ExpressJS):** API nhận yêu cầu, xác thực dữ liệu.\n6.  **Backend (Service/Controller):** Thực thi logic để cập nhật dữ liệu trong database.\n7.  **Backend (Database - MongoDB):** Cập nhật lại trường `columnId` của document `Card` được di chuyển. Đồng thời, xóa `cardId` khỏi mảng `cardOrderIds` của cột nguồn và thêm nó vào mảng `cardOrderIds` của cột đích.\n8.  **Frontend (ReactJS):** Xử lý kết quả trả về từ API. Nếu thành công, giữ nguyên trạng thái giao diện đã cập nhật. Nếu thất bại, khôi phục (revert) giao diện về trạng thái ban đầu trước khi kéo thả để đảm bảo tính nhất quán.\n\n### 2. Frontend (ReactJS & dnd-kit)\n\nPhần xử lý chính ở frontend nằm trong hàm xử lý sự kiện `onDragEnd` của `dnd-kit`.\n\n```javascript\n// Giả định cấu trúc của hàm onDragEnd\nconst handleDragEnd = (event) => {\n  const { active, over } = event;\n\n  // Nếu không có vị trí đích thì không làm gì\n  if (!over) return;\n\n  // Lấy thông tin card đang kéo và cột chứa nó\n  const { id: activeId, data: { current: activeData } } = active;\n  const { id: overId } = over;\n\n  const activeColumn = findColumnByCardId(activeId);\n  const overColumn = findColumnByCardId(overId);\n\n  // Nếu không tìm thấy cột thì không làm gì\n  if (!activeColumn || !overColumn) return;\n\n  // Xử lý kéo thả trong cùng một cột (đã làm ở part 1)\n  if (activeColumn.id === overColumn.id) {\n    // ... logic xử lý kéo thả trong cùng cột\n  } else { // Xử lý kéo thả khác cột\n    // 1. Cập nhật giao diện (Optimistic Update)\n    // ... (code để di chuyển card từ cột này sang cột khác trên UI)\n\n    // 2. Gọi API\n    moveCardToDifferentColumnAPI({\n      cardId: activeId,\n      sourceColumnId: activeColumn.id,\n      destinationColumnId: overColumn.id,\n      // ... gửi thêm mảng cardOrderIds mới của 2 cột\n    });\n  }\n};\n```\n\n**Điểm chính:**\n\n*   **Phân biệt trường hợp:** Logic được rẽ nhánh rõ ràng giữa việc kéo thả trong cùng một cột và kéo thả sang cột khác.\n*   **Optimistic Updates:** Đây là một kỹ thuật quan trọng giúp cải thiện trải nghiệm người dùng. Thay vì chờ API trả về kết quả mới cập nhật UI, chúng ta cập nhật ngay lập tức. Điều này đòi hỏi phải có cơ chế xử lý khi API thất bại.\n*   **API Payload:** Dữ liệu gửi lên cho API phải đầy đủ để backend có thể thực hiện việc cập nhật. Nó bao gồm ID của thẻ, ID cột nguồn, ID cột đích và thứ tự mới của các thẻ trong cả hai cột bị ảnh hưởng.\n\n### 3. Backend (NodeJS, ExpressJS, MongoDB)\n\nBackend cần cung cấp một endpoint, ví dụ `PUT /v1/boards/move-card`, để xử lý yêu cầu di chuyển thẻ.\n\n**Controller:**\n\n```javascript\n// Giả định hàm controller\nconst moveCardToDifferentColumn = async (req, res, next) => {\n  try {\n    const result = await boardService.moveCardToDifferentColumn(req.body);\n    res.status(200).json(result);\n  } catch (error) {\n    next(error);\n  }\n};\n```\n\n**Service:**\n\nĐây là nơi chứa logic nghiệp vụ chính.\n\n```javascript\n// Giả định hàm service\nconst moveCardToDifferentColumn = async (data) => {\n  const { cardId, sourceColumnId, destinationColumnId, sourceCardOrderIds, destinationCardOrderIds } = data;\n\n  // 1. Cập nhật mảng cardOrderIds của cột nguồn (xóa cardId đi)\n  await columnModel.updateOne(\n    { _id: sourceColumnId },\n    { $set: { cardOrderIds: sourceCardOrderIds } }\n  );\n\n  // 2. Cập nhật mảng cardOrderIds của cột đích (thêm cardId vào)\n  await columnModel.updateOne(\n    { _id: destinationColumnId },\n    { $set: { cardOrderIds: destinationCardOrderIds } }\n  );\n\n  // 3. Cập nhật lại trường columnId của card đã di chuyển\n  await cardModel.updateOne(\n    { _id: cardId },\n    { $set: { columnId: destinationColumnId } }\n  );\n\n  return { message: 'Card moved successfully!' };\n};\n```\n\n**Điểm chính:**\n\n*   **Cập nhật nhiều document:** Logic này đòi hỏi phải cập nhật ít nhất 3 document trong MongoDB: 2 cho `Column` (nguồn và đích) và 1 cho `Card`.\n*   **Tính toàn vẹn dữ liệu:** Trong một ứng dụng thực tế ở quy mô lớn, các thao tác cập nhật nhiều document như thế này nên được đặt trong một **transaction** của MongoDB để đảm bảo tính toàn vẹn. Nếu một trong các thao tác thất bại, tất cả các thao tác khác sẽ được rollback, tránh tình trạng dữ liệu không nhất quán.\n\n## III. Các bước thực hành\n\n1.  **Mở rộng `handleDragEnd`:** Trong component React quản lý board, tìm đến hàm `handleDragEnd` và thêm nhánh `else` để xử lý logic khi `activeColumn.id !== overColumn.id`.\n2.  **Viết hàm cập nhật UI:** Tạo một hàm (ví dụ: `moveCardBetweenColumns`) để xử lý việc cập nhật state của board trên frontend. Hàm này sẽ nhận vào các cột và thẻ liên quan, sau đó trả về một state board mới.\n3.  **Tạo API Service ở Frontend:** Viết một hàm bất đồng bộ (`moveCardToDifferentColumnAPI`) sử dụng `axios` hoặc `fetch` để gọi đến endpoint của backend.\n4.  **Tạo Endpoint ở Backend:** Trong file routes của board, định nghĩa một route mới (ví dụ: `router.put('/move-card', boardController.moveCardToDifferentColumn)`).\n5.  **Viết Logic Service ở Backend:** Trong `boardService`, triển khai hàm `moveCardToDifferentColumn` như mô tả ở trên, thực hiện các lệnh cập nhật vào MongoDB.\n6.  **Kiểm thử:** Chạy cả frontend và backend, sau đó thực hiện thao tác kéo thả một thẻ sang cột khác và kiểm tra:\n    *   Giao diện có cập nhật ngay lập tức không?\n    *   Dữ liệu trong MongoDB (các collection `cards` và `columns`) có được cập nhật chính xác không?\n    *   Khi tải lại trang, thẻ có giữ nguyên ở vị trí mới không?\n\n## IV. Lưu ý quan trọng\n\n*   **Transaction trong MongoDB:** Như đã đề cập, đối với các tác vụ cập nhật nhiều document liên quan, việc sử dụng transaction là cực kỳ quan trọng để đảm bảo dữ liệu không bị sai lệch. Video có thể không đề cập sâu về vấn đề này để giữ cho nội dung tập trung, nhưng trong thực tế đây là một yêu cầu bắt buộc.\n*   **Xử lý lỗi:** Cần có cơ chế `try...catch` đầy đủ ở cả frontend và backend. Đặc biệt ở frontend, khi API call thất bại, phải có logic để `revert` lại trạng thái UI về ban đầu.\n*   **Performance:** Với các board có hàng trăm, hàng nghìn thẻ, việc cập nhật và gửi toàn bộ mảng `cardOrderIds` có thể ảnh hưởng đến hiệu năng. Các kỹ thuật tối ưu hơn có thể được xem xét, ví dụ như chỉ gửi những thông tin thay đổi cần thiết.\n\n## V. Tài liệu tham khảo\n\n*   **Video bài học:** [72. Hoàn thiện tích hợp kéo thả Card với API (part 2) | ReactJS, NodeJS, MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=dROhL1SsCI4)\n*   **Thư viện dnd-kit:** [https://dndkit.com/](https://dndkit.com/)\n*   **Tài liệu về MongoDB Transactions:** [https://www.mongodb.com/docs/manual/core/transactions/](https://www.mongodb.com/docs/manual/core/transactions/)\n*   **GitHub của tác giả (tham khảo):** [https://github.com/trungquandev](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Kỹ thuật \"Optimistic Update\" trong bối cảnh kéo thả thẻ giữa các cột có ý nghĩa gì?",
+        "options": [
+          "Chỉ cập nhật giao diện người dùng sau khi nhận được xác nhận thành công từ API.",
+          "Cập nhật giao diện người dùng ngay lập tức để tạo cảm giác mượt mà, trước khi API hoàn tất.",
+          "Gửi yêu cầu API một cách lạc quan, không cần xử lý lỗi.",
+          "Tối ưu hóa tốc độ phản hồi của API bằng cách giảm lượng dữ liệu gửi đi."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Optimistic Update cải thiện trải nghiệm người dùng bằng cách cập nhật UI ngay lập tức, giả định rằng yêu cầu API sẽ thành công. Nếu thất bại, UI sẽ được khôi phục lại trạng thái cũ."
+      },
+      {
+        "question": "Khi kéo một thẻ từ cột A sang cột B, hành động nào sau đây KHÔNG phải là một phần của logic xử lý ở phía backend?",
+        "options": [
+          "Xóa cardId khỏi mảng cardOrderIds của cột A.",
+          "Thêm cardId vào mảng cardOrderIds của cột B.",
+          "Cập nhật trường columnId của thẻ được di chuyển.",
+          "Cập nhật trực tiếp DOM để di chuyển thẻ trên giao diện."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Việc cập nhật DOM là nhiệm vụ của frontend (ReactJS). Backend chỉ chịu trách nhiệm xử lý logic nghiệp vụ và cập nhật dữ liệu trong database."
+      },
+      {
+        "question": "Trong sự kiện `onDragEnd` của `dnd-kit`, làm thế nào để phân biệt giữa việc kéo thẻ trong cùng một cột và kéo sang một cột khác?",
+        "options": [
+          "Dựa vào thuộc tính `event.type`.",
+          "So sánh `active.id` và `over.id`.",
+          "So sánh ID của cột chứa thẻ đang kéo (`active`) và ID của cột chứa khu vực thả (`over`).",
+          "Kiểm tra xem `over` có null hay không."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bằng cách tìm ra cột chứa thẻ `active` và cột chứa `over`, ta có thể so sánh ID của chúng để xác định thẻ có được kéo sang một cột mới hay không."
+      },
+      {
+        "question": "Tại sao việc sử dụng MongoDB Transactions lại quan trọng khi di chuyển một thẻ sang cột khác?",
+        "options": [
+          "Để tăng tốc độ các câu lệnh cập nhật database.",
+          "Để đảm bảo tính toàn vẹn dữ liệu, vì thao tác này yêu cầu cập nhật nhiều document (2 cột và 1 thẻ).",
+          "Để ghi log lại tất cả các thay đổi.",
+          "Đây là yêu cầu bắt buộc của thư viện Mongoose."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Transactions đảm bảo rằng tất cả các thao tác cập nhật (cột nguồn, cột đích, thẻ) đều thành công hoặc tất cả đều thất bại, tránh tình trạng dữ liệu không nhất quán."
+      },
+      {
+        "question": "Payload của API request để di chuyển thẻ sang cột khác nên chứa thông tin gì là cần thiết nhất?",
+        "options": [
+          "Chỉ `cardId` và `destinationColumnId`.",
+          "Tên của thẻ và tên của cột đích.",
+          "`cardId`, `sourceColumnId`, `destinationColumnId`, và thứ tự thẻ mới của các cột bị ảnh hưởng.",
+          "Toàn bộ đối tượng `board` sau khi đã cập nhật ở frontend."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Backend cần biết thẻ nào, di chuyển từ đâu, đến đâu, và thứ tự mới của các thẻ trong cả hai cột để thực hiện cập nhật chính xác trong database."
+      },
+      {
+        "question": "Nếu API call để di chuyển thẻ thất bại, phía frontend cần làm gì?",
+        "options": [
+          "Hiển thị một thông báo lỗi và giữ nguyên giao diện đã cập nhật.",
+          "Tự động thử lại API call sau 5 giây.",
+          "Không làm gì cả, đợi người dùng tải lại trang.",
+          "Khôi phục (revert) giao diện người dùng về trạng thái ban đầu trước khi thao tác kéo thả diễn ra."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Để đảm bảo tính nhất quán giữa giao diện và dữ liệu thực tế, khi API thất bại, giao diện đã được \"cập nhật lạc quan\" phải được trả về trạng thái cũ."
+      },
+      {
+        "question": "Trong kiến trúc Backend, logic nghiệp vụ chính để xử lý việc di chuyển thẻ nên được đặt ở đâu?",
+        "options": [
+          "Trong Controller, ngay trong hàm xử lý request.",
+          "Trong file Routes, bên cạnh việc định nghĩa endpoint.",
+          "Trong tầng Service, được gọi bởi Controller.",
+          "Trong Model, dưới dạng một static method."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tầng Service là nơi lý tưởng để chứa logic nghiệp vụ phức tạp, giúp cho Controller gọn gàng và chỉ tập trung vào việc điều hướng request và response."
+      },
+      {
+        "question": "Lệnh MongoDB nào được sử dụng trong bài học để cập nhật mảng `cardOrderIds` của một cột?",
+        "options": [
+          "`updateOne` với toán tử `$push`.",
+          "`updateOne` với toán tử `$set`.",
+          "`findByIdAndUpdate` với toán tử `$add`.",
+          "`updateMany` với toán tử `$set`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trong logic được mô tả, frontend đã tính toán sẵn mảng `cardOrderIds` mới, vì vậy backend chỉ cần dùng `$set` để ghi đè toàn bộ mảng cũ bằng mảng mới."
+      },
+      {
+        "question": "Đâu là luồng xử lý đúng khi người dùng kéo thả thẻ sang cột mới?",
+        "options": [
+          "Gọi API -> Chờ thành công -> Cập nhật UI.",
+          "Cập nhật UI -> Gọi API -> Xử lý kết quả (thành công/thất bại).",
+          "Gọi API -> Không cần chờ -> Cập nhật UI.",
+          "Cập nhật UI -> Không cần gọi API vì đã có `dnd-kit`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đây chính là luồng xử lý của Optimistic Update: cập nhật UI trước để có trải nghiệm tốt, sau đó mới gọi API và xử lý kết quả trả về."
+      },
+      {
+        "question": "Thao tác nào sau đây KHÔNG xảy ra trong database khi di chuyển thành công một thẻ?",
+        "options": [
+          "Mảng `cardOrderIds` của cột nguồn được cập nhật.",
+          "Trường `columnId` của document `Card` được cập nhật.",
+          "Một document `Card` mới được tạo ra và document cũ bị xóa.",
+          "Mảng `cardOrderIds` của cột đích được cập nhật."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thao tác di chuyển chỉ cập nhật (update) các document hiện có, không tạo mới hay xóa đi document `Card` nào cả."
+      },
+      {
+        "question": "Biến `over` trong hàm `handleDragEnd(event)` của `dnd-kit` đại diện cho điều gì?",
+        "options": [
+          "Phần tử đang được kéo (active draggable).",
+          "Khu vực có thể thả (droppable area) mà phần tử đang được kéo ở trên.",
+          "Tọa độ con trỏ chuột.",
+          "Trạng thái của việc kéo (đang kéo, đã thả)."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`active` đại diện cho mục được kéo, trong khi `over` đại diện cho khu vực mà mục đó được thả vào hoặc đang lướt qua."
+      },
+      {
+        "question": "Mục đích chính của việc cập nhật trường `columnId` trong document `Card` là gì?",
+        "options": [
+          "Để biết thẻ đó thuộc về board nào.",
+          "Để duy trì mối quan hệ chính xác, cho biết thẻ hiện đang thuộc về cột nào.",
+          "Để sắp xếp thứ tự các thẻ trong cột.",
+          "Chỉ là một định danh phụ, không có tác dụng chính."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trường `columnId` trong `Card` là một tham chiếu quan trọng, giúp xác định \"ngôi nhà\" hiện tại của thẻ, rất cần thiết cho việc truy vấn và hiển thị dữ liệu."
+      },
+      {
+        "question": "Trong một ứng dụng có hiệu năng cao, thay vì gửi toàn bộ mảng `cardOrderIds`, ta có thể tối ưu bằng cách nào?",
+        "options": [
+          "Nén dữ liệu trước khi gửi.",
+          "Chỉ gửi những thông tin thay đổi cần thiết (ví dụ: thẻ được di chuyển, vị trí cũ, vị trí mới).",
+          "Sử dụng WebSocket thay vì HTTP request.",
+          "Không có cách nào tối ưu hơn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Gửi một payload nhỏ hơn chỉ chứa thông tin về sự thay đổi sẽ giảm tải cho mạng và máy chủ, đặc biệt với các board có rất nhiều thẻ."
+      },
+      {
+        "question": "Hàm `findColumnByCardId(cardId)` ở frontend có nhiệm vụ gì?",
+        "options": [
+          "Gọi API để tìm cột từ database.",
+          "Tìm kiếm trong state của board ở frontend để trả về đối tượng cột chứa thẻ có `cardId` tương ứng.",
+          "Tạo ra một cột mới nếu không tìm thấy.",
+          "Xóa một cột dựa trên `cardId`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đây là một hàm trợ giúp ở frontend, giúp truy xuất thông tin về cột chứa một thẻ cụ thể từ dữ liệu board đang được lưu trong state của ứng dụng React."
+      },
+      {
+        "question": "Nếu không sử dụng Optimistic Update, trải nghiệm người dùng sẽ bị ảnh hưởng như thế nào?",
+        "options": [
+          "Không có gì thay đổi.",
+          "Ứng dụng sẽ chạy nhanh hơn.",
+          "Người dùng sẽ thấy có một độ trễ (lag) giữa lúc thả thẻ và lúc giao diện được cập nhật.",
+          "Sẽ không thể kéo thả được nữa."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Nếu không có Optimistic Update, UI phải chờ cho đến khi API call hoàn tất. Khoảng thời gian chờ này sẽ tạo ra độ trễ, làm cho thao tác kéo thả có vẻ chậm và không mượt."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Phân biệt loại kéo thả",
+        "description": "Trong hàm `handleDragEnd`, hãy hoàn thành logic để kiểm tra xem thẻ được kéo sang một cột khác hay vẫn ở trong cột cũ. Hàm đã có sẵn `activeColumn` và `overColumn`.",
+        "starterCode": "const handleDragEnd = (event) => {\n  const { active, over } = event;\n  if (!over) return;\n\n  // Giả sử các hàm này đã có và hoạt động đúng\n  const activeColumn = findColumnByCardId(active.id);\n  const overColumn = findColumnByCardId(over.id) || findColumnByItself(over.id); // Xử lý trường hợp thả vào column rỗng\n\n  if (!activeColumn || !overColumn) return;\n\n  // *** VIẾT CODE CỦA BẠN VÀO ĐÂY ***\n  if (activeColumn.id === overColumn.id) {\n    console.log('Kéo thả trong cùng một cột');\n    // Logic xử lý cùng cột sẽ được gọi ở đây\n  } else {\n    console.log('Kéo thả sang cột khác');\n    // Logic xử lý khác cột sẽ được gọi ở đây\n  }\n  // *** KẾT THÚC CODE ***\n};",
+        "solution": "const handleDragEnd = (event) => {\n  const { active, over } = event;\n  if (!over) return;\n\n  const activeColumn = findColumnByCardId(active.id);\n  const overColumn = findColumnByCardId(over.id) || findColumnByItself(over.id);\n\n  if (!activeColumn || !overColumn) return;\n\n  // Logic kiểm tra đơn giản là so sánh ID của hai cột.\n  if (activeColumn.id === overColumn.id) {\n    console.log('Kéo thả trong cùng một cột');\n    // Logic xử lý cùng cột sẽ được gọi ở đây\n  } else {\n    console.log('Kéo thả sang cột khác');\n    // Logic xử lý khác cột sẽ được gọi ở đây\n  }\n};",
+        "testCases": "1. Kéo một thẻ và thả vào cùng cột -> Console log: 'Kéo thả trong cùng một cột'. 2. Kéo một thẻ từ cột A và thả vào cột B -> Console log: 'Kéo thả sang cột khác'."
+      },
+      {
+        "title": "Bài 2: Viết hàm gọi API phía Frontend",
+        "description": "Sử dụng `fetch`, hãy viết một hàm bất đồng bộ `moveCardToDifferentColumnAPI` để gửi yêu cầu `PUT` đến backend nhằm cập nhật việc di chuyển thẻ.",
+        "starterCode": "const moveCardToDifferentColumnAPI = async (data) => {\n  const API_ROOT = 'http://localhost:8017';\n  const endpoint = '/v1/boards/move-card';\n\n  // *** VIẾT CODE CỦA BẠN VÀO ĐÂY ***\n\n  // *** KẾT THÚC CODE ***\n};",
+        "solution": "const moveCardToDifferentColumnAPI = async (data) => {\n  const API_ROOT = 'http://localhost:8017';\n  const endpoint = '/v1/boards/move-card';\n\n  const response = await fetch(`${API_ROOT}${endpoint}`, {\n    method: 'PUT',\n    headers: {\n      'Content-Type': 'application/json'\n    },\n    body: JSON.stringify(data)\n  });\n\n  if (!response.ok) {\n    throw new Error('Failed to move card');\n  }\n\n  return await response.json();\n};",
+        "testCases": "1. Gọi hàm với dữ liệu hợp lệ, mock server trả về status 200 -> Hàm trả về kết quả JSON. 2. Gọi hàm, mock server trả về status 500 -> Hàm ném ra một Error."
+      },
+      {
+        "title": "Bài 3: Hoàn thiện Backend Controller",
+        "description": "Viết nội dung cho hàm controller `moveCardToDifferentColumn`. Hàm này nhận dữ liệu từ `req.body`, gọi đến tầng service, và trả về kết quả cho client.",
+        "starterCode": "// Giả sử boardService đã được import\nconst moveCardToDifferentColumn = async (req, res, next) => {\n  // *** VIẾT CODE CỦA BẠN VÀO ĐÂY ***\n\n  // *** KẾT THÚC CODE ***\n};",
+        "solution": "const moveCardToDifferentColumn = async (req, res, next) => {\n  try {\n    // Dữ liệu cần thiết được lấy từ req.body\n    const result = await boardService.moveCardToDifferentColumn(req.body);\n    \n    // Trả về status 200 và kết quả nếu thành công\n    res.status(200).json(result);\n  } catch (error) {\n    // Chuyển lỗi cho middleware xử lý lỗi tập trung\n    next(error);\n  }\n};",
+        "testCases": "1. Gửi request với body hợp lệ, service chạy thành công -> Response có status 200 và body là kết quả từ service. 2. Gửi request, service ném ra lỗi -> Hàm `next(error)` được gọi."
+      },
+      {
+        "title": "Bài 4: Viết logic Service ở Backend (Không Transaction)",
+        "description": "Hoàn thiện hàm `moveCardToDifferentColumn` ở tầng service. Hàm này thực hiện 3 thao tác cập nhật vào database: cập nhật cột nguồn, cập nhật cột đích, và cập nhật thẻ được di chuyển.",
+        "starterCode": "// Giả sử các model đã được import\nconst moveCardToDifferentColumn = async (data) => {\n  const { \n    cardId, \n    sourceColumnId, \n    destinationColumnId, \n    sourceCardOrderIds, \n    destinationCardOrderIds \n  } = data;\n\n  // *** VIẾT CODE CỦA BẠN VÀO ĐÂY ***\n  // 1. Cập nhật mảng cardOrderIds của cột nguồn\n\n  // 2. Cập nhật mảng cardOrderIds của cột đích\n\n  // 3. Cập nhật lại trường columnId của card đã di chuyển\n\n  return { message: 'Card moved successfully!' };\n};",
+        "solution": "const moveCardToDifferentColumn = async (data) => {\n  const { \n    cardId, \n    sourceColumnId, \n    destinationColumnId, \n    sourceCardOrderIds, \n    destinationCardOrderIds \n  } = data;\n\n  // 1. Cập nhật mảng cardOrderIds của cột nguồn (xóa cardId đi)\n  await columnModel.updateOne(\n    { _id: sourceColumnId },\n    { $set: { cardOrderIds: sourceCardOrderIds } }\n  );\n\n  // 2. Cập nhật mảng cardOrderIds của cột đích (thêm cardId vào)\n  await columnModel.updateOne(\n    { _id: destinationColumnId },\n    { $set: { cardOrderIds: destinationCardOrderIds } }\n  );\n\n  // 3. Cập nhật lại trường columnId của card đã di chuyển\n  await cardModel.updateOne(\n    { _id: cardId },\n    { $set: { columnId: destinationColumnId } }\n  );\n\n  return { message: 'Card moved successfully!' };\n};",
+        "testCases": "1. Chạy hàm với dữ liệu hợp lệ. 2. Kiểm tra database: `cardOrderIds` của cột nguồn không còn chứa `cardId`. 3. `cardOrderIds` của cột đích đã chứa `cardId`. 4. `columnId` của thẻ đã được cập nhật thành `destinationColumnId`."
+      },
+      {
+        "title": "Bài 5: Tái cấu trúc Service với MongoDB Transaction",
+        "description": "Nâng cấp bài 4 bằng cách bọc 3 thao tác cập nhật database vào bên trong một MongoDB Transaction để đảm bảo tính toàn vẹn dữ liệu.",
+        "starterCode": "// Giả sử đã có kết nối đến MongoDB và các model\nconst moveCardToDifferentColumnWithTransaction = async (data) => {\n  // ...lấy data giống bài 4...\n\n  // Bắt đầu một session cho transaction\n  const session = await mongoose.startSession();\n\n  try {\n    // Bắt đầu transaction\n    // *** VIẾT CODE CỦA BẠN VÀO ĐÂY ***\n\n    // Thêm các tùy chọn { session } vào các lệnh update\n\n    // Commit transaction nếu mọi thứ thành công\n\n    return { message: 'Card moved successfully with transaction!' };\n  } catch (error) {\n    // Abort transaction nếu có lỗi\n\n    throw error;\n  } finally {\n    // Kết thúc session\n\n  }\n};",
+        "solution": "const moveCardToDifferentColumnWithTransaction = async (data) => {\n  const { \n    cardId, \n    sourceColumnId, \n    destinationColumnId, \n    sourceCardOrderIds, \n    destinationCardOrderIds \n  } = data;\n\n  const session = await mongoose.startSession();\n\n  try {\n    await session.withTransaction(async () => {\n      await columnModel.updateOne(\n        { _id: sourceColumnId },\n        { $set: { cardOrderIds: sourceCardOrderIds } },\n        { session }\n      );\n\n      await columnModel.updateOne(\n        { _id: destinationColumnId },\n        { $set: { cardOrderIds: destinationCardOrderIds } },\n        { session }\n      );\n\n      await cardModel.updateOne(\n        { _id: cardId },\n        { $set: { columnId: destinationColumnId } },\n        { session }\n      );\n    });\n\n    return { message: 'Card moved successfully with transaction!' };\n  } catch (error) {\n    // `withTransaction` sẽ tự động abort nếu có lỗi, nên ta chỉ cần throw lại lỗi\n    throw error;\n  } finally {\n    await session.endSession();\n  }\n};",
+        "testCases": "1. Chạy hàm. Kiểm tra dữ liệu được cập nhật đúng như bài 4. 2. Chỉnh sửa code để một trong ba lệnh update bị lỗi (ví dụ: sai tên trường). Chạy lại hàm. 3. Kiểm tra database: cả ba collection (2 cột, 1 thẻ) phải ở trạng thái ban đầu, không có thay đổi nào được áp dụng."
+      }
+    ]
+  }
+}

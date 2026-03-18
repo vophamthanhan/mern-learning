@@ -1,0 +1,213 @@
+{
+  "id": 26,
+  "title": "Bài học 14: Hiểu rõ về CSS Style thuần so với MUI SX Prop",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài học 14: Hiểu rõ về CSS Style thuần so với MUI SX Prop\n\n## I. Mục tiêu bài học\n\nVideo này tập trung vào việc phân biệt và hiểu rõ khi nào nên sử dụng CSS style thuần và khi nào nên dùng \"sx prop\" của Material UI (MUI) trong các dự án ReactJS. Mục tiêu chính là giúp lập trình viên, đặc biệt là những người mới làm việc với MUI, có thể đưa ra lựa chọn phù hợp để tối ưu hóa code, tăng hiệu suất và dễ dàng bảo trì.\n\n## II. Kiến thức chi tiết\n\n### 1. CSS Style Thuần\n\nĐây là cách viết CSS truyền thống, sử dụng các file `.css` hoặc các kỹ thuật như CSS-in-JS (không dùng `sx`).\n\n**Ưu điểm:**\n\n*   **Tách biệt:** Giữ cho logic style và component được tách biệt rõ ràng.\n*   **Tái sử dụng cao:** Dễ dàng tạo các class CSS chung và áp dụng cho nhiều component.\n*   **Hiệu suất:** Trong một số trường hợp, trình duyệt có thể tối ưu hóa việc render CSS thuần tốt hơn.\n\n**Nhược điểm:**\n\n*   **Khó quản lý:** Với các dự án lớn, việc quản lý các file CSS, tránh xung đột tên class có thể trở nên phức tạp.\n*   **Dynamic style:** Khó khăn hơn khi muốn thay đổi style dựa trên state hoặc props của component.\n\n**Ví dụ:**\n\n```css\n/* styles.css */\n.my-button {\n  background-color: blue;\n  color: white;\n  padding: 10px 20px;\n}\n```\n\n```jsx\n// MyButton.js\nimport './styles.css';\n\nconst MyButton = () => {\n  return <button className=\"my-button\">Click me</button>;\n};\n```\n\n### 2. MUI `sx` Prop\n\n`sx` là một prop đặc biệt do MUI cung cấp, cho phép bạn viết CSS trực tiếp trong component JSX. Nó là một \"siêu tập hợp\" (superset) của CSS, hỗ trợ các giá trị từ theme của MUI.\n\n**Ưu điểm:**\n\n*   **Nhanh và tiện lợi:** Style ngay tại component mà không cần chuyển file.\n*   **Truy cập theme:** Dễ dàng sử dụng các giá trị đã định nghĩa trong theme (màu sắc, khoảng cách, typography,...) để đảm bảo tính nhất quán.\n*   **Dynamic style:** Rất mạnh mẽ trong việc thay đổi style dựa trên props hoặc state.\n*   **Responsive:** Cú pháp đơn giản để viết responsive design.\n\n**Nhược điểm:**\n\n*   **Trộn lẫn logic:** Có thể làm cho code JSX trở nên dài và khó đọc nếu lạm dụng.\n*   **Khó tái sử dụng:** Style viết bằng `sx` thường chỉ áp dụng cho một instance của component, khó tái sử dụng ở nơi khác nếu không được cấu trúc tốt.\n\n**Ví dụ:**\n\n```jsx\nimport Button from '@mui/material/Button';\n\nconst MyButton = () => {\n  return (\n    <Button\n      sx={{\n        bgcolor: 'primary.main', // Lấy màu từ theme\n        color: 'white',\n        '&:hover': {\n          bgcolor: 'primary.dark',\n        },\n        // Responsive\n        padding: { xs: 1, sm: 2, md: 3 }\n      }}\n    >\n      Click me\n    </Button>\n  );\n};\n```\n\n### 3. Khi nào dùng cái nào?\n\nĐây là phần quan trọng nhất của video. Tác giả đưa ra các tình huống cụ thể:\n\n*   **Dùng `sx` prop khi:**\n    *   Cần style nhanh cho một component đơn lẻ, không có ý định tái sử dụng ở nhiều nơi.\n    *   Style cần thay đổi động dựa trên state hoặc props.\n    *   Cần truy cập các giá trị từ theme của MUI.\n    *   Cần viết các style responsive một cách nhanh chóng.\n    *   Ghi đè một vài thuộc tính nhỏ của component MUI có sẵn.\n\n*   **Dùng CSS thuần (hoặc `styled` API của MUI) khi:**\n    *   Style phức tạp và cần được tái sử dụng ở nhiều nơi trong ứng dụng.\n    *   Muốn giữ cho code JSX của component gọn gàng, tách biệt hoàn toàn phần style.\n    *   Xây dựng một component hoàn toàn mới với cấu trúc và style phức tạp.\n\n## III. Các bước thực hành\n\n1.  **Tạo một component React đơn giản:** Ví dụ một `Card` hoặc `Button`.\n2.  **Style bằng CSS thuần:** Tạo một file `styles.css`, viết style cho component và import vào.\n3.  **Style bằng `sx` prop:** Sử dụng component `Box` hoặc các component khác của MUI và thêm prop `sx` để style.\n4.  **So sánh:** Quan sát sự khác biệt về cú pháp, độ dài code và khả năng quản lý giữa hai cách.\n5.  **Thử nghiệm với dynamic style:** Thêm một state (ví dụ: `isHovered`) và thử thay đổi style của component khi state thay đổi bằng cả hai cách để thấy sự tiện lợi của `sx`.\n\n## IV. Lưu ý quan trọng\n\n*   Không có cách nào là \"tốt nhất\" tuyệt đối. Việc lựa chọn phụ thuộc vào ngữ cảnh và yêu cầu của dự án.\n*   `sx` prop rất mạnh nhưng đừng lạm dụng. Nếu thấy khối `sx` quá lớn, hãy cân nhắc tách ra thành một component riêng bằng `styled()` API của MUI hoặc CSS thuần.\n*   Hiểu rõ về theme của MUI sẽ giúp tận dụng tối đa sức mạnh của `sx` prop.\n\n## V. Tài liệu tham khảo\n\n*   **Video gốc:** [14. Hiểu rõ về “CSS Style thuần” so với “MUI SX Prop” | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=6k_PpL_wUSA&list=PLP6tw4Zpj-RK-M33E9-h6whI1S-ww1Jfu&index=18)\n*   **MUI `sx` prop documentation:** [https://mui.com/system/the-sx-prop/](https://mui.com/system/the-sx-prop/)\n*   **TrungQuanDev Blog:** [https://trungquandev.com/](https://trungquandev.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Theo bài học, ưu điểm chính của việc sử dụng CSS style thuần là gì?",
+        "options": [
+          "Dễ dàng thay đổi style dựa trên state của component.",
+          "Giữ cho logic style và component được tách biệt rõ ràng.",
+          "Cho phép truy cập trực tiếp vào theme của MUI.",
+          "Cú pháp ngắn gọn và tiện lợi khi viết style."
+        ],
+        "correctAnswer": 1,
+        "explanation": "CSS thuần giúp tách biệt phần style (trong file .css) và phần logic/cấu trúc (trong file .js/.jsx), giúp code rõ ràng và dễ quản lý hơn ở một khía cạnh nào đó."
+      },
+      {
+        "question": "Prop 'sx' của MUI được mô tả là gì?",
+        "options": [
+          "Một cách để viết CSS trong các file .css riêng biệt.",
+          "Một 'siêu tập hợp' (superset) của CSS, cho phép viết CSS trực tiếp trong JSX và truy cập theme.",
+          "Một thư viện CSS-in-JS thay thế hoàn toàn cho CSS thuần.",
+          "Một thuộc tính HTML tiêu chuẩn để áp dụng inline style."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Prop 'sx' là một tiện ích của MUI, nó mở rộng CSS thông thường bằng cách cho phép truy cập các giá trị từ theme (như màu sắc, khoảng cách) và sử dụng cú pháp đặc biệt cho responsive design."
+      },
+      {
+        "question": "Khi nào bạn nên ưu tiên sử dụng prop 'sx' của MUI?",
+        "options": [
+          "Khi cần tạo các style phức tạp và tái sử dụng ở nhiều nơi.",
+          "Khi muốn giữ cho code JSX của component hoàn toàn gọn gàng.",
+          "Khi cần style nhanh cho một component đơn lẻ và truy cập giá trị từ theme.",
+          "Khi xây dựng một component mới với cấu trúc và style phức tạp từ đầu."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Prop 'sx' rất lý tưởng cho các trường hợp cần style nhanh, style động theo props/state, hoặc cần sử dụng các giá trị từ theme của MUI một cách tiện lợi."
+      },
+      {
+        "question": "Nhược điểm của việc lạm dụng prop 'sx' là gì?",
+        "options": [
+          "Làm tăng hiệu suất của ứng dụng một cách đáng kể.",
+          "Giúp code dễ tái sử dụng hơn.",
+          "Có thể làm cho code JSX trở nên dài, khó đọc và khó bảo trì.",
+          "Bắt buộc phải tách biệt hoàn toàn style và logic."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Viết quá nhiều style trong prop 'sx' sẽ làm component bị phình to, trộn lẫn logic và hiển thị, gây khó khăn cho việc đọc hiểu và bảo trì sau này."
+      },
+      {
+        "question": "Trong cú pháp `sx={{ bgcolor: 'primary.main' }}`, `primary.main` được lấy từ đâu?",
+        "options": [
+          "Từ một biến CSS được định nghĩa trong file CSS toàn cục.",
+          "Từ một đối tượng JavaScript được import thủ công.",
+          "Từ đối tượng theme được cấu hình trong MUI.",
+          "Là một giá trị màu CSS mặc định của trình duyệt."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cú pháp `primary.main` là cách prop 'sx' cho phép truy cập trực tiếp vào các giá trị màu sắc đã được định nghĩa sẵn trong theme của Material-UI."
+      },
+      {
+        "question": "Để viết style responsive cho padding trong prop 'sx', cú pháp nào sau đây là đúng?",
+        "options": [
+          "`padding: '10px 20px 30px'`",
+          "`padding: [10, 20, 30]`",
+          "`padding: { xs: 1, sm: 2, md: 3 }`",
+          "`responsive-padding: { xs: 1, sm: 2, md: 3 }`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Prop 'sx' sử dụng một object với các key là breakpoint (xs, sm, md,...) để áp dụng các giá trị khác nhau cho từng kích thước màn hình, giúp viết responsive design rất nhanh."
+      },
+      {
+        "question": "So với CSS thuần, việc tạo dynamic style (thay đổi style dựa trên state/props) bằng prop 'sx' có ưu điểm gì?",
+        "options": [
+          "Phức tạp hơn và đòi hỏi nhiều code hơn.",
+          "Không thể thực hiện được.",
+          "Dễ dàng và trực quan hơn vì có thể viết logic ngay trong JSX.",
+          "Yêu cầu sử dụng một thư viện bên ngoài."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Với prop 'sx', bạn có thể dùng toán tử ba ngôi hoặc các biểu thức JavaScript trực tiếp bên trong để thay đổi giá trị style dựa trên props hoặc state, làm cho việc này trở nên rất linh hoạt."
+      },
+      {
+        "question": "Khi nào nên cân nhắc tách style từ prop 'sx' ra thành CSS thuần hoặc `styled()` API?",
+        "options": [
+          "Khi style chỉ có một hoặc hai dòng.",
+          "Khi khối `sx` trở nên quá lớn và phức tạp.",
+          "Khi bạn không cần tái sử dụng style đó.",
+          "Khi bạn muốn thay đổi style một cách linh động."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu một component có một khối `sx` quá lớn, đó là dấu hiệu cho thấy style này đủ phức tạp để được tách ra một file CSS riêng hoặc một styled component để tăng tính tái sử dụng và giúp component chính gọn gàng hơn."
+      },
+      {
+        "question": "Làm thế nào để áp dụng style khi hover lên một component Button của MUI bằng prop 'sx'?",
+        "options": [
+          "Sử dụng pseudo-class `:hover` như trong CSS thông thường.",
+          "Sử dụng một key đặc biệt `'&:hover'` bên trong đối tượng `sx`.",
+          "Sử dụng thuộc tính `onHoverStyle`.",
+          "Phải dùng JavaScript để lắng nghe sự kiện onMouseEnter."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Prop 'sx' hỗ trợ các pseudo-class của CSS bằng cách cho phép bạn lồng chúng dưới dạng các key trong đối tượng, ví dụ `'&:hover': { ... }`."
+      },
+      {
+        "question": "Đâu là một nhược điểm của việc sử dụng CSS thuần trong một dự án React lớn?",
+        "options": [
+          "Khó khăn trong việc tạo các class có thể tái sử dụng.",
+          "Hiệu suất render luôn luôn chậm hơn `sx` prop.",
+          "Khó quản lý và có thể gây xung đột tên class.",
+          "Không thể viết được các style phức tạp."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trong các dự án lớn, nếu không có quy ước đặt tên chặt chẽ (như BEM) hoặc sử dụng CSS Modules, việc xung đột tên class giữa các component khác nhau là một vấn đề phổ biến."
+      },
+      {
+        "question": "Mục tiêu chính của bài học là gì?",
+        "options": [
+          "Chứng minh rằng prop 'sx' luôn tốt hơn CSS thuần.",
+          "Hướng dẫn cách cài đặt Material-UI vào dự án React.",
+          "Giúp lập trình viên hiểu khi nào nên dùng CSS thuần và khi nào nên dùng prop 'sx'.",
+          "Chỉ trích việc sử dụng CSS thuần trong các dự án hiện đại."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học tập trung vào việc phân tích ưu/nhược điểm của cả hai phương pháp và đưa ra các tình huống sử dụng phù hợp cho từng loại, thay vì khẳng định một cách cực đoan."
+      },
+      {
+        "question": "Theo bài học, việc lựa chọn giữa CSS thuần và `sx` prop phụ thuộc vào yếu tố nào là chính?",
+        "options": [
+          "Sở thích cá nhân của lập trình viên.",
+          "Ngữ cảnh và yêu cầu của dự án.",
+          "Phiên bản React đang sử dụng.",
+          "Trình duyệt mà người dùng cuối sử dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Không có lựa chọn nào là \"tốt nhất\" tuyệt đối. Quyết định nên dựa trên các yếu tố như độ phức tạp của style, nhu cầu tái sử dụng, và yêu cầu về dynamic style của từng component cụ thể."
+      },
+      {
+        "question": "Để sử dụng các giá trị khoảng cách (spacing) từ theme trong `sx`, bạn có thể làm như thế nào?",
+        "options": [
+          "Chỉ có thể dùng giá trị pixel cố định (ví dụ: `'16px'`).",
+          "Sử dụng một số và MUI sẽ tự động nhân nó với giá trị spacing của theme (ví dụ: `padding: 2`).",
+          "Phải import hàm `theme.spacing()` và gọi nó.",
+          "Không thể sử dụng giá trị spacing của theme trong `sx`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi bạn truyền một số cho các thuộc tính như padding, margin, MUI sẽ tự động nhân số đó với giá trị `theme.spacing` (mặc định là 8px). Ví dụ, `padding: 2` sẽ tương đương `padding: '16px'`."
+      },
+      {
+        "question": "Đâu KHÔNG phải là ưu điểm của prop `sx`?",
+        "options": [
+          "Nhanh và tiện lợi cho việc style.",
+          "Dễ dàng truy cập các giá trị từ theme.",
+          "Luôn đảm bảo tách biệt hoàn toàn style và logic component.",
+          "Cú pháp đơn giản để viết responsive design."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Ngược lại, một trong những nhược điểm của `sx` là nó có thể làm trộn lẫn style và logic ngay trong file JSX, điều mà CSS thuần giúp tách biệt tốt hơn."
+      },
+      {
+        "question": "Nếu bạn cần xây dựng một component UI hoàn toàn mới, phức tạp và có khả năng tái sử dụng cao, phương pháp nào được khuyến nghị?",
+        "options": [
+          "Chỉ sử dụng prop `sx` cho tất cả mọi thứ.",
+          "Sử dụng inline style của React (`style={{...}}`).",
+          "Sử dụng CSS thuần hoặc `styled()` API của MUI.",
+          "Viết tất cả CSS vào một file duy nhất và dùng các ID."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đối với các component phức tạp, việc tách style ra bằng CSS thuần hoặc `styled()` API giúp code dễ quản lý, đọc hiểu và tái sử dụng hơn là viết một khối `sx` khổng lồ."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Style Button với CSS thuần",
+        "description": "Tạo một component React trả về một thẻ `<button>`. Sử dụng một file CSS riêng và `className` để style cho button có nền màu xanh (`dodgerblue`), chữ màu trắng, và padding là `10px 20px`.",
+        "starterCode": "import React from 'react';\n// import './styles.css'; // Đừng quên import file CSS của bạn\n\nconst SimpleButton = () => {\n  // Viết code của bạn ở đây\n  return <button>Click Me</button>;\n};\n\nexport default SimpleButton;",
+        "solution": "import React from 'react';\nimport './styles.css';\n\nconst SimpleButton = () => {\n  return <button className=\"simple-blue-button\">Click Me</button>;\n};\n\nexport default SimpleButton;\n\n/* Trong file styles.css */\n/*\n.simple-blue-button {\n  background-color: dodgerblue;\n  color: white;\n  padding: 10px 20px;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}\n*/",
+        "testCases": "Khi render, component phải hiển thị một button với nền màu xanh (dodgerblue), chữ màu trắng và có padding."
+      },
+      {
+        "title": "Bài 2: Style Button của MUI với `sx` prop",
+        "description": "Sử dụng component `Button` từ `@mui/material`. Dùng prop `sx` để style cho button có màu nền là `secondary.main`, chữ màu trắng, và padding là `2` (đơn vị theme).",
+        "starterCode": "import React from 'react';\nimport Button from '@mui/material/Button';\n\nconst MuiStyledButton = () => {\n  return (\n    <Button>\n      MUI Button\n    </Button>\n  );\n};\n\nexport default MuiStyledButton;",
+        "solution": "import React from 'react';\nimport Button from '@mui/material/Button';\n\nconst MuiStyledButton = () => {\n  return (\n    <Button\n      sx={{\n        bgcolor: 'secondary.main',\n        color: 'white',\n        padding: 2,\n        '&:hover': {\n          bgcolor: 'secondary.dark',\n        }\n      }}\n    >\n      MUI Button\n    </Button>\n  );\n};\n\nexport default MuiStyledButton;",
+        "testCases": "Khi render, component phải hiển thị một Button của MUI. Màu nền của button phải là màu `secondary` từ theme, và padding tương đương 16px (nếu theme spacing mặc định là 8px)."
+      },
+      {
+        "title": "Bài 3: Responsive `Box` với `sx` prop",
+        "description": "Tạo một component `Box` của MUI. Sử dụng prop `sx` để làm cho nó có chiều rộng (width) thay đổi theo kích thước màn hình: 100% trên màn hình `xs`, 50% trên màn hình `sm`, và 25% trên màn hình `md`.",
+        "starterCode": "import React from 'react';\nimport Box from '@mui/material/Box';\n\nconst ResponsiveBox = () => {\n  return (\n    <Box sx={{ bgcolor: 'lightblue', height: 100 }}>\n      Responsive Box\n    </Box>\n  );\n};\n\nexport default ResponsiveBox;",
+        "solution": "import React from 'react';\nimport Box from '@mui/material/Box';\n\nconst ResponsiveBox = () => {\n  return (\n    <Box\n      sx={{\n        bgcolor: 'lightblue',\n        height: 100,\n        width: {\n          xs: '100%', // 100% width on extra-small screens\n          sm: '50%',  // 50% width on small screens\n          md: '25%',  // 25% width on medium screens\n        },\n      }}\n    >\n      Responsive Box\n    </Box>\n  );\n};\n\nexport default ResponsiveBox;",
+        "testCases": "Thay đổi kích thước cửa sổ trình duyệt. Box phải chiếm toàn bộ chiều rộng trên màn hình nhỏ, một nửa trên màn hình vừa, và một phần tư trên màn hình lớn hơn."
+      },
+      {
+        "title": "Bài 4: Dynamic Style với `sx` và State",
+        "description": "Tạo một component `Box` có thể click được. Sử dụng `useState` để theo dõi trạng thái `isActive`. Dùng prop `sx` để thay đổi màu nền (bgcolor) của Box: màu `primary.main` khi `isActive` là true, và `grey.300` khi `isActive` là false.",
+        "starterCode": "import React, { useState } from 'react';\nimport Box from '@mui/material/Box';\n\nconst DynamicBox = () => {\n  const [isActive, setIsActive] = useState(false);\n\n  const handleClick = () => {\n    setIsActive(!isActive);\n  };\n\n  return (\n    <Box onClick={handleClick} sx={{ height: 100, width: 100, cursor: 'pointer' }}>\n      Click Me\n    </Box>\n  );\n};\n\nexport default DynamicBox;",
+        "solution": "import React, { useState } from 'react';\nimport Box from '@mui/material/Box';\n\nconst DynamicBox = () => {\n  const [isActive, setIsActive] = useState(false);\n\n  const handleClick = () => {\n    setIsActive(!isActive);\n  };\n\n  return (\n    <Box\n      onClick={handleClick}\n      sx={{\n        height: 100,\n        width: 100,\n        cursor: 'pointer',\n        display: 'flex',\n        alignItems: 'center',\n        justifyContent: 'center',\n        color: 'white',\n        bgcolor: isActive ? 'primary.main' : 'grey.500',\n      }}\n    >\n      Click Me\n    </Box>\n  );\n};\n\nexport default DynamicBox;",
+        "testCases": "Ban đầu, Box có màu xám. Sau khi click vào Box, màu nền của nó phải chuyển thành màu primary của theme. Click lần nữa, nó phải quay lại màu xám."
+      },
+      {
+        "title": "Bài 5: Tách `sx` phức tạp thành Styled Component",
+        "description": "Cho một component `Card` với một khối `sx` lớn. Hãy tái cấu trúc nó bằng cách sử dụng API `styled` của MUI để tạo một component `StyledCard` riêng biệt, giúp cho component gốc trở nên gọn gàng hơn.",
+        "starterCode": "import React from 'react';\nimport Box from '@mui/material/Box';\n\nconst ComplexCard = ({ title, children }) => {\n  return (\n    <Box\n      sx={{\n        padding: 3,\n        borderRadius: 2,\n        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',\n        backgroundColor: '#fff',\n        borderLeft: `5px solid ${'#1976d2'}`\n      }}\n    >\n      <h2>{title}</h2>\n      <div>{children}</div>\n    </Box>\n  );\n};\n\nexport default ComplexCard;",
+        "solution": "import React from 'react';\nimport Box from '@mui/material/Box';\nimport { styled } from '@mui/material/styles';\n\nconst StyledCard = styled(Box)(({ theme }) => ({\n  padding: theme.spacing(3),\n  borderRadius: theme.shape.borderRadius * 2,\n  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',\n  backgroundColor: '#fff',\n  borderLeft: `5px solid ${theme.palette.primary.main}`\n}));\n\nconst RefactoredCard = ({ title, children }) => {\n  return (\n    <StyledCard>\n      <h2>{title}</h2>\n      <div>{children}</div>\n    </StyledCard>\n  );\n};\n\nexport default RefactoredCard;",
+        "testCases": "Component sau khi tái cấu trúc (`RefactoredCard`) phải có giao diện y hệt như component gốc (`ComplexCard`). Logic style đã được chuyển vào `StyledCard`."
+      }
+    ]
+  }
+}

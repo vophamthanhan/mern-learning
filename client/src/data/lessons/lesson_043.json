@@ -1,0 +1,213 @@
+{
+  "id": 43,
+  "title": "Bài 25: Đập đi xây lại tone màu giao diện trang Trello",
+  "category": "layout",
+  "categoryName": "Layout & Giao diện",
+  "content": "# Bài 25: Đập đi xây lại tone màu giao diện trang Trello\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ cùng nhau \"đập đi xây lại\" toàn bộ tone màu của giao diện ứng dụng Trello clone, giúp cho ứng dụng trở nên chuyên nghiệp và thân thiện hơn với người dùng. Cụ thể, các mục tiêu chính bao gồm:\n\n*   **Hiểu và tùy chỉnh Theme trong Material-UI:** Nắm vững cách hoạt động của hệ thống theme trong Material-UI, từ đó có thể tùy chỉnh màu sắc, font chữ, và các thuộc tính giao diện khác một cách linh hoạt.\n*   **Xây dựng chức năng chuyển đổi Light/Dark Mode:** Thêm vào ứng dụng tính năng cho phép người dùng lựa chọn giữa giao diện sáng (Light Mode) và tối (Dark Mode), một tính năng rất phổ biến và được ưa chuộng trong các ứng dụng hiện đại.\n*   **Áp dụng Theme vào các component React:** Tích hợp theme đã tùy chỉnh vào các component có sẵn của ứng dụng, đảm bảo sự đồng nhất về giao diện trên toàn bộ trang web.\n\n## II. Kiến thức chi tiết\n\nĐể thực hiện các mục tiêu trên, chúng ta sẽ tìm hiểu và sử dụng các khái niệm và công cụ sau đây từ Material-UI:\n\n### 1. Hệ thống Theming trong Material-UI\n\nMaterial-UI cung cấp một cơ chế Theming mạnh mẽ, cho phép chúng ta định nghĩa một cách tập trung các giá trị về màu sắc, font chữ, khoảng cách, đổ bóng... để áp dụng cho toàn bộ ứng dụng. Điều này giúp đảm bảo tính nhất quán và dễ dàng thay đổi giao diện sau này.\n\n*   `createTheme`: Đây là một hàm từ `@mui/material/styles` được sử dụng để tạo ra một đối tượng theme. Chúng ta sẽ truyền vào hàm này một object chứa các giá trị tùy chỉnh mà chúng ta muốn ghi đè lên theme mặc định của Material-UI.\n*   `ThemeProvider`: Đây là một component React, có nhiệm vụ \"tiêm\" đối tượng theme vào cây component của ứng dụng. Bất kỳ component nào của Material-UI nằm bên trong `ThemeProvider` đều có thể truy cập và sử dụng các giá trị từ theme đó.\n*   `CssBaseline`: Component này giúp chuẩn hóa CSS trên các trình duyệt khác nhau, loại bỏ các khác biệt về hiển thị mặc định và cung cấp một nền tảng CSS nhất quán hơn để xây dựng giao diện.\n\n### 2. Color Palette (Bảng màu)\n\nBảng màu là một phần quan trọng của theme, định nghĩa các màu sắc chính sẽ được sử dụng trong ứng dụng. Material-UI định nghĩa sẵn một số \"slot\" màu sắc với ý nghĩa cụ thể:\n\n*   `primary`: Màu chủ đạo, thường được sử dụng cho các thành phần quan trọng nhất.\n*   `secondary`: Màu thứ cấp, dùng để nhấn mạnh hoặc tạo sự tương phản.\n*   `error`, `warning`, `info`, `success`: Các màu dùng cho các trạng thái thông báo khác nhau.\n*   `background`: Màu nền của ứng dụng.\n*   `text`: Màu chữ.\n\nTrong bài học này, chúng ta sẽ định nghĩa hai bảng màu riêng biệt: một cho Light Mode và một cho Dark Mode.\n\n### 3. Tùy chỉnh Theme\n\nNgoài màu sắc, chúng ta cũng có thể tùy chỉnh rất nhiều khía cạnh khác của theme, ví dụ:\n\n*   `typography`: Tùy chỉnh font chữ, kích thước, độ đậm nhạt cho các loại văn bản khác nhau (h1, h2, body1, body2...).\n*   `spacing`: Tùy chỉnh đơn vị khoảng cách (spacing unit) được sử dụng trong toàn bộ ứng dụng.\n*   `shape`: Tùy chỉnh độ bo tròn góc (border-radius) cho các component.\n*   `components`: Ghi đè style mặc định cho từng component cụ thể của Material-UI (ví dụ: `MuiButton`, `MuiTextField`...).\n\n### 4. Chức năng Light/Dark Mode\n\nĐể xây dựng chức năng này, chúng ta sẽ kết hợp React Hook và Material-UI:\n\n*   **`useState`:** Dùng để lưu trữ trạng thái hiện tại của chế độ hiển thị (là 'light' hay 'dark').\n*   **`useMemo`:** Dùng để tối ưu hóa việc tạo theme. Chúng ta sẽ chỉ tạo lại đối tượng theme khi trạng thái `mode` thay đổi, tránh việc phải tính toán lại theme một cách không cần thiết trong mỗi lần render.\n\n## III. Các bước thực hành\n\n1.  **Tạo file `theme.js`:**\n\n    Tạo một file mới tại `src/theme.js` để định nghĩa và quản lý theme của ứng dụng.\n\n2.  **Định nghĩa custom theme:**\n\n    Trong file `theme.js`, import `createTheme` và định nghĩa các bảng màu cũng như các tùy chỉnh khác cho cả Light và Dark mode.\n\n    ```javascript\n    import { experimental_extendTheme as extendTheme } from '@mui/material/styles';\n\n    const theme = extendTheme({\n      trello: {\n        appBarHeight: '58px',\n        boardBarHeight: '60px'\n      },\n      colorSchemes: {\n        light: {\n          palette: {\n            primary: {\n              main: '#0079bf'\n            }\n          }\n        },\n        dark: {\n          palette: {\n            primary: {\n              main: '#2c3e50'\n            }\n          }\n        }\n      }\n    });\n\n    export default theme;\n    ```\n\n3.  **Tích hợp ThemeProvider và CssBaseline:**\n\n    Trong file `App.jsx`, import `ThemeProvider`, `CssBaseline` và `theme` vừa tạo. Sau đó, bọc toàn bộ ứng dụng bằng các component này.\n\n    ```javascript\n    import { Experimental_CssVarsProvider as CssVarsProvider } from '@mui/material/styles';\n    import CssBaseline from '@mui/material/CssBaseline';\n    import theme from '~/theme';\n\n    function App() {\n      return (\n        <CssVarsProvider theme={theme}>\n          <CssBaseline />\n          {/* ... Các component khác của ứng dụng ... */}\n        </CssVarsProvider>\n      );\n    }\n\n    export default App;\n    ```\n\n4.  **Thêm nút chuyển đổi chế độ:**\n\n    Tạo một component Button (hoặc một biểu tượng) cho phép người dùng nhấp vào để chuyển đổi giữa hai chế độ.\n\n5.  **Sử dụng `useColorScheme` hook:**\n\n    Material-UI cung cấp hook `useColorScheme` để dễ dàng truy cập và thay đổi chế độ màu.\n\n    ```javascript\n    import { useColorScheme } from '@mui/material/styles';\n\n    function ModeToggle() {\n      const { mode, setMode } = useColorScheme();\n      return (\n        <Button\n          onClick={() => {\n            setMode(mode === 'light' ? 'dark' : 'light');\n          }}\n        >\n          {mode === 'light' ? 'Turn dark' : 'Turn light'}\n        </Button>\n      );\n    }\n    ```\n\n## IV. Lưu ý quan trọng\n\n*   **`experimental_extendTheme` và `CssVarsProvider`:** Ở thời điểm video được thực hiện, tính năng tùy chỉnh theme cho nhiều chế độ màu trong Material-UI vẫn đang trong giai đoạn thử nghiệm (experimental). Do đó, chúng ta cần sử dụng các API có tiền tố `experimental_`. Hãy luôn kiểm tra tài liệu mới nhất của Material-UI để cập nhật các API ổn định khi chúng được phát hành.\n*   **Vị trí của `ThemeProvider`:** `ThemeProvider` (hoặc `CssVarsProvider`) phải được đặt ở cấp cao nhất của cây component để tất cả các component con có thể nhận được theme.\n*   **Tối ưu hóa:** Sử dụng `React.memo` cho các component không cần render lại khi theme thay đổi có thể giúp cải thiện hiệu suất của ứng dụng.\n\n## V. Tài liệu tham khảo\n\n*   **Video bài học:** [25. Đập đi xây lại tone màu giao diện trang Trello | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=_Ds7mOYrgtI)\n*   **Material-UI Theming:** [https://mui.com/material-ui/customization/theming/](https://mui.com/material-ui/customization/theming/)\n*   **Material-UI Dark Mode:** [https://mui.com/material-ui/customization/dark-mode/](https://mui.com/material-ui/customization/dark-mode/)\n*   **GitHub Repository:** [https://github.com/trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Hàm nào trong Material-UI được sử dụng để tạo ra một đối tượng theme tùy chỉnh?",
+        "options": [
+          "A. createMuiTheme",
+          "B. makeTheme",
+          "C. experimental_extendTheme",
+          "D. buildTheme"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trong bài học, `experimental_extendTheme` được sử dụng để tạo theme hỗ trợ nhiều chế độ màu (light/dark), đây là API mới hơn và linh hoạt hơn so với `createTheme` trước đây."
+      },
+      {
+        "question": "Component nào có nhiệm vụ \"tiêm\" đối tượng theme vào cây component của ứng dụng React?",
+        "options": [
+          "A. ThemeContext",
+          "B. CssBaseline",
+          "C. StyleProvider",
+          "D. CssVarsProvider (hoặc ThemeProvider)"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`CssVarsProvider` (hoặc `ThemeProvider` trong các phiên bản cũ hơn) là component React bọc ngoài ứng dụng để cung cấp đối tượng theme cho tất cả các component con."
+      },
+      {
+        "question": "Mục đích chính của component `CssBaseline` trong Material-UI là gì?",
+        "options": [
+          "A. Định nghĩa màu sắc chủ đạo cho ứng dụng.",
+          "B. Chuẩn hóa CSS trên các trình duyệt khác nhau và cung cấp một nền tảng nhất quán.",
+          "C. Tự động chuyển đổi giữa light và dark mode.",
+          "D. Ghi đè style cho các component cụ thể."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`CssBaseline` giúp loại bỏ sự không nhất quán về hiển thị mặc định của các phần tử HTML trên các trình duyệt khác nhau, tạo ra một môi trường CSS đồng nhất."
+      },
+      {
+        "question": "Trong bảng màu (Color Palette) của Material-UI, slot màu `primary` thường được dùng để làm gì?",
+        "options": [
+          "A. Cho các thông báo lỗi.",
+          "B. Cho màu nền của ứng dụng.",
+          "C. Cho màu chủ đạo, được sử dụng ở các thành phần quan trọng nhất.",
+          "D. Cho màu chữ mặc định."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Màu `primary` là màu chủ đạo của thương hiệu hoặc ứng dụng, thường xuất hiện trên các nút, thanh điều hướng và các yếu tố giao diện quan trọng khác."
+      },
+      {
+        "question": "Để xây dựng chức năng chuyển đổi Light/Dark Mode, hook nào của Material-UI giúp truy cập và thay đổi chế độ màu một cách dễ dàng?",
+        "options": [
+          "A. useTheme",
+          "B. useMode",
+          "C. useColorScheme",
+          "D. usePalette"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hook `useColorScheme` được cung cấp bởi Material-UI để lấy giá trị `mode` hiện tại và hàm `setMode` để thay đổi nó, giúp việc chuyển đổi theme trở nên đơn giản."
+      },
+      {
+        "question": "Tại sao trong bài học lại sử dụng API có tiền tố `experimental_`?",
+        "options": [
+          "A. Vì đó là phiên bản API mới nhất và ổn định nhất.",
+          "B. Vì tính năng tùy chỉnh theme cho nhiều chế độ màu vẫn đang trong giai đoạn thử nghiệm.",
+          "C. Vì các API này cung cấp hiệu suất tốt hơn.",
+          "D. Vì đây là yêu cầu bắt buộc cho mọi dự án Material-UI."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tiền tố `experimental_` cho biết tính năng này chưa hoàn toàn ổn định và có thể thay đổi trong tương lai. Người dùng cần lưu ý và kiểm tra tài liệu khi sử dụng."
+      },
+      {
+        "question": "Trong cấu trúc theme của `extendTheme`, thuộc tính nào được dùng để định nghĩa các bảng màu cho các chế độ khác nhau?",
+        "options": [
+          "A. palettes",
+          "B. modes",
+          "C. colorSchemes",
+          "D. themes"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đối tượng `colorSchemes` chứa các key là tên của chế độ (ví dụ: `light`, `dark`) và giá trị là đối tượng `palette` tương ứng cho chế độ đó."
+      },
+      {
+        "question": "Để tối ưu hóa việc tạo theme và tránh tính toán lại không cần thiết trong mỗi lần render, ta nên kết hợp `useState` với hook nào của React?",
+        "options": [
+          "A. useEffect",
+          "B. useMemo",
+          "C. useCallback",
+          "D. useContext"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`useMemo` được sử dụng để \"ghi nhớ\" kết quả của một phép tính (trong trường hợp này là việc tạo đối tượng theme). Phép tính này chỉ được thực hiện lại khi một trong các dependency của nó (ví dụ: `mode`) thay đổi."
+      },
+      {
+        "question": "Khi tùy chỉnh theme, bạn có thể ghi đè style mặc định cho một component cụ thể (ví dụ `MuiButton`) thông qua thuộc tính nào?",
+        "options": [
+          "A. overrides",
+          "B. styles",
+          "C. custom",
+          "D. components"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Thuộc tính `components` trong đối tượng theme cho phép bạn truy cập và ghi đè các style mặc định cho từng component của Material-UI một cách chi tiết."
+      },
+      {
+        "question": "Đoạn code `setMode(mode === 'light' ? 'dark' : 'light')` thực hiện chức năng gì?",
+        "options": [
+          "A. Đặt chế độ màu thành 'light'.",
+          "B. Đặt chế độ màu thành 'dark'.",
+          "C. Chuyển đổi giữa hai chế độ 'light' và 'dark'.",
+          "D. Lấy giá trị chế độ màu hiện tại."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đây là một toán tử ba ngôi kiểm tra giá trị của `mode`. Nếu là 'light', nó sẽ chuyển thành 'dark', và ngược lại, tạo ra chức năng chuyển đổi (toggle)."
+      },
+      {
+        "question": "Vị trí tốt nhất để đặt `CssVarsProvider` trong cây component là ở đâu?",
+        "options": [
+          "A. Bọc quanh mỗi component cần sử dụng theme.",
+          "B. Ở cấp cao nhất của ứng dụng, bọc ngoài tất cả các component khác.",
+          "C. Bên trong component `Board`.",
+          "D. Ngay bên trên component `AppBar`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`CssVarsProvider` cần được đặt ở cấp cao nhất để đảm bảo rằng toàn bộ ứng dụng (tất cả các component con) có thể truy cập và sử dụng theme đã được định nghĩa."
+      },
+      {
+        "question": "Trong file `theme.js` của bài học, `trello.appBarHeight` là một ví dụ về việc gì?",
+        "options": [
+          "A. Một biến CSS mặc định của Material-UI.",
+          "B. Một cách để thêm các biến tùy chỉnh vào đối tượng theme.",
+          "C. Một yêu cầu bắt buộc khi tạo theme.",
+          "D. Một lỗi cú pháp trong code."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Material-UI cho phép mở rộng đối tượng theme với các biến tùy chỉnh. Trong trường hợp này, `trello` là một key tùy chỉnh chứa các biến kích thước để sử dụng lại trong ứng dụng."
+      },
+      {
+        "question": "Làm thế nào để một component con của Material-UI sử dụng màu `primary` đã được định nghĩa trong theme?",
+        "options": [
+          "A. Component tự động sử dụng màu đó mà không cần làm gì thêm.",
+          "B. Bằng cách truyền prop `color=\"primary\"`.",
+          "C. Bằng cách import trực tiếp file theme.js.",
+          "D. Bằng cách sử dụng hàm `getPrimaryColor()`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Các component của Material-UI được thiết kế để tự động nhận các giá trị từ theme được cung cấp bởi `ThemeProvider`/`CssVarsProvider`. Khi bạn đặt `color=\"primary\"` cho một Button, nó sẽ lấy màu `primary.main` từ theme."
+      },
+      {
+        "question": "Ngoài màu sắc, `typography` trong theme cho phép bạn tùy chỉnh điều gì?",
+        "options": [
+          "A. Độ bo tròn góc của component.",
+          "B. Khoảng cách giữa các phần tử.",
+          "C. Font chữ, kích thước, độ đậm nhạt cho văn bản.",
+          "D. Hiệu ứng đổ bóng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `typography` dùng để quản lý tất cả các khía cạnh liên quan đến văn bản như họ font (font-family), cỡ chữ (font-size), trọng lượng chữ (font-weight)..."
+      },
+      {
+        "question": "Sự khác biệt chính giữa `light` mode và `dark` mode trong theme là gì?",
+        "options": [
+          "A. Cấu trúc của đối tượng theme.",
+          "B. Các giá trị trong `palette`, đặc biệt là màu nền và màu chữ.",
+          "C. Tên của các component được sử dụng.",
+          "D. Cách import theme vào ứng dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sự khác biệt cốt lõi nằm ở bảng màu (`palette`). Dark mode thường có màu nền tối và màu chữ sáng để giảm độ chói, trong khi light mode thì ngược lại."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Theme cơ bản",
+        "description": "Sử dụng hàm `experimental_extendTheme` từ `@mui/material/styles` để tạo một đối tượng theme. Tùy chỉnh màu `primary` trong `light` mode thành một màu hex bất kỳ bạn chọn.",
+        "starterCode": "import { experimental_extendTheme as extendTheme } from '@mui/material/styles';\n\n// TODO: Tạo theme và tùy chỉnh màu primary cho light mode\nconst theme = extendTheme({\n  colorSchemes: {\n    light: {\n      // ...\n    }\n  }\n});\n\nexport default theme;",
+        "solution": "import { experimental_extendTheme as extendTheme } from '@mui/material/styles';\n\nconst theme = extendTheme({\n  colorSchemes: {\n    light: {\n      palette: {\n        primary: {\n          main: '#1abc9c'\n        }\n      }\n    }\n  }\n});\n\nexport default theme;",
+        "testCases": "Kiểm tra xem đối tượng `theme` có được export hay không. Kiểm tra `theme.colorSchemes.light.palette.primary.main` có giá trị là `#1abc9c`."
+      },
+      {
+        "title": "Bài 2: Tích hợp ThemeProvider và CssBaseline",
+        "description": "Cho một ứng dụng React đơn giản, hãy import `CssVarsProvider`, `CssBaseline` và theme bạn đã tạo ở Bài 1. Bọc component `App` bằng các provider cần thiết để áp dụng theme.",
+        "starterCode": "import React from 'react';\nimport Button from '@mui/material/Button';\nimport theme from './theme'; // Giả sử theme từ Bài 1 được lưu ở đây\n\n// TODO: Import các provider cần thiết và bọc ứng dụng\n\nfunction App() {\n  return (\n    <div>\n      <h1>My App</h1>\n      <Button variant=\"contained\" color=\"primary\">Primary Button</Button>\n    </div>\n  );\n}\n\n// Đoạn code để render App, ví dụ:\n// const root = ReactDOM.createRoot(document.getElementById('root'));\n// root.render(<AppWrapper />);",
+        "solution": "import React from 'react';\nimport Button from '@mui/material/Button';\nimport { Experimental_CssVarsProvider as CssVarsProvider } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport theme from './theme';\n\nfunction App() {\n  return (\n    <CssVarsProvider theme={theme}>\n      <CssBaseline />\n      <div>\n        <h1>My App</h1>\n        <Button variant=\"contained\" color=\"primary\">Primary Button</Button>\n      </div>\n    </CssVarsProvider>\n  );\n}\n\nexport default App;",
+        "testCases": "Kiểm tra xem component `App` có được bọc trong `CssVarsProvider` và `CssBaseline` hay không. Nút Button phải hiển thị với màu primary đã được định nghĩa trong theme."
+      },
+      {
+        "title": "Bài 3: Định nghĩa Dark Mode",
+        "description": "Mở rộng theme đã tạo, thêm một bảng màu cho `dark` mode. Hãy đặt màu `primary` của dark mode thành một màu tối hơn và màu `background.default` thành một màu xám đậm.",
+        "starterCode": "import { experimental_extendTheme as extendTheme } from '@mui/material/styles';\n\nconst theme = extendTheme({\n  colorSchemes: {\n    light: {\n      palette: {\n        primary: {\n          main: '#1abc9c'\n        }\n      }\n    },\n    // TODO: Thêm định nghĩa cho dark mode\n    dark: {\n      \n    }\n  }\n});\n\nexport default theme;",
+        "solution": "import { experimental_extendTheme as extendTheme } from '@mui/material/styles';\n\nconst theme = extendTheme({\n  colorSchemes: {\n    light: {\n      palette: {\n        primary: {\n          main: '#1abc9c'\n        }\n      }\n    },\n    dark: {\n      palette: {\n        primary: {\n          main: '#2c3e50'\n        },\n        background: {\n          default: '#121212'\n        }\n      }\n    }\n  }\n});\n\nexport default theme;",
+        "testCases": "Kiểm tra xem `theme.colorSchemes.dark` có tồn tại không. Kiểm tra giá trị của `theme.colorSchemes.dark.palette.primary.main` và `theme.colorSchemes.dark.palette.background.default`."
+      },
+      {
+        "title": "Bài 4: Tạo Component chuyển đổi Mode",
+        "description": "Tạo một component React tên là `ModeSwitcher`. Component này sử dụng hook `useColorScheme` để hiển thị một nút. Khi nhấn vào nút, chế độ màu của ứng dụng sẽ được chuyển đổi giữa 'light' và 'dark'.",
+        "starterCode": "import React from 'react';\nimport { useColorScheme } from '@mui/material/styles';\nimport Button from '@mui/material/Button';\n\nfunction ModeSwitcher() {\n  // TODO: Lấy mode và setMode từ hook useColorScheme\n  // TODO: Tạo hàm onClick để chuyển đổi mode\n\n  return (\n    <Button>\n      Toggle Mode\n    </Button>\n  );\n}\n\nexport default ModeSwitcher;",
+        "solution": "import React from 'react';\nimport { useColorScheme } from '@mui/material/styles';\nimport Button from '@mui/material/Button';\n\nfunction ModeSwitcher() {\n  const { mode, setMode } = useColorScheme();\n\n  const handleToggleMode = () => {\n    setMode(mode === 'light' ? 'dark' : 'light');\n  };\n\n  return (\n    <Button onClick={handleToggleMode}>\n      {mode === 'light' ? 'Switch to Dark' : 'Switch to Light'}\n    </Button>\n  );\n}\n\nexport default ModeSwitcher;",
+        "testCases": "Khi component được render, nhấn vào nút. Kiểm tra xem hàm `setMode` có được gọi với giá trị đúng hay không (nếu mode hiện tại là 'light', `setMode` được gọi với 'dark' và ngược lại)."
+      },
+      {
+        "title": "Bài 5: Tùy chỉnh Style Component",
+        "description": "Mở rộng đối tượng theme, sử dụng thuộc tính `components` để tùy chỉnh style mặc định của `MuiButton`. Hãy làm cho tất cả các button có `variant=\"contained\"` và `color=\"primary\"` đều có chữ in hoa (text-transform: uppercase) và độ bo tròn góc là 8px.",
+        "starterCode": "import { experimental_extendTheme as extendTheme } from '@mui/material/styles';\n\nconst theme = extendTheme({\n  colorSchemes: {\n    // ... định nghĩa light/dark mode\n  },\n  // TODO: Thêm tùy chỉnh cho MuiButton\n  components: {\n\n  }\n});\n\nexport default theme;",
+        "solution": "import { experimental_extendTheme as extendTheme } from '@mui/material/styles';\n\nconst theme = extendTheme({\n  colorSchemes: {\n    light: { palette: { primary: { main: '#1abc9c' } } },\n    dark: { palette: { primary: { main: '#2c3e50' } } }\n  },\n  components: {\n    MuiButton: {\n      styleOverrides: {\n        root: ({ ownerState }) => (\n          ownerState.variant === 'contained' && ownerState.color === 'primary' && {\n            textTransform: 'uppercase',\n            borderRadius: '8px'\n          }\n        )\n      }\n    }\n  }\n});\n\nexport default theme;",
+        "testCases": "Render một `<Button variant=\"contained\" color=\"primary\">`. Kiểm tra trong DOM xem button này có style `text-transform: uppercase` và `border-radius: 8px` hay không. Render một button khác (ví dụ `variant=\"outlined\"`) và đảm bảo nó không bị ảnh hưởng bởi style này."
+      }
+    ]
+  }
+}

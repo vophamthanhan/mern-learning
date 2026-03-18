@@ -1,0 +1,213 @@
+{
+  "id": 82,
+  "title": "Bài 64: Tạo UI/UX thêm mới Column & Card trong ứng dụng Trello",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Bài 64: Tạo UI/UX thêm mới Column & Card trong ứng dụng Trello\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tập trung vào việc xây dựng giao diện người dùng (UI) và trải nghiệm người dùng (UX) cho các chức năng quan trọng trong ứng dụng Trello clone của chúng ta: thêm mới một cột (Column) và thêm mới một thẻ (Card). Mục tiêu chính là tạo ra một giao diện trực quan, dễ sử dụng và mang lại trải nghiệm mượt mà cho người dùng, tương tự như phiên bản Trello gốc.\n\nCụ thể, các mục tiêu bao gồm:\n\n*   **Phân tích và thiết kế UI/UX:** Nghiên cứu cách Trello triển khai chức năng thêm mới và áp dụng các nguyên tắc tương tự vào dự án của chúng ta.\n*   **Xây dựng giao diện với Material-UI (MUI):** Tận dụng các component mạnh mẽ từ thư viện MUI như `Box`, `Button`, `TextField`, và `Collapse` để xây dựng các thành phần giao diện một cách nhanh chóng và hiệu quả.\n*   **Quản lý trạng thái giao diện:** Sử dụng React Hook `useState` để quản lý trạng thái hiển thị của các form thêm mới, đảm bảo giao diện phản ứng chính xác với tương tác của người dùng.\n*   **Tích hợp vào ứng dụng:** Lồng ghép các component giao diện mới vào cấu trúc layout chung của trang Board.\n\n## II. Kiến thức chi tiết\n\n### 1. Phân tích UI/UX của Trello\n\nTrước khi bắt tay vào code, việc phân tích ứng dụng gốc là vô cùng quan trọng. Quan sát Trello, chúng ta thấy rằng:\n\n*   **Thêm Column:** Ban đầu, chỉ có một nút \"+ Add another list\" hiển thị. Khi người dùng nhấp vào, nút này sẽ được thay thế bằng một form nhập liệu cho phép nhập tiêu đề của cột mới. Form này bao gồm một ô input và hai nút: \"Add list\" và một icon \"X\" để hủy bỏ.\n*   **Thêm Card:** Tương tự, ở cuối mỗi cột, có một nút \"+ Add a card\". Khi nhấp vào, một form nhập liệu sẽ xuất hiện ngay bên dưới thẻ cuối cùng, cho phép người dùng nhập tiêu đề cho thẻ mới và sau đó thêm vào cột.\n\nChúng ta sẽ mô phỏng lại luồng hoạt động này để tạo ra một trải nghiệm quen thuộc cho người dùng.\n\n### 2. Xây dựng chức năng \"Thêm mới Column\"\n\nChúng ta sẽ tạo một component riêng để quản lý chức năng này.\n\n**a. Quản lý trạng thái:**\n\nSử dụng `useState` để tạo một biến trạng thái, ví dụ `openNewColumnForm`, để quyết định xem nên hiển thị nút \"Add another column\" hay là form nhập liệu.\n\n```javascript\nconst [openNewColumnForm, setOpenNewColumnForm] = useState(false);\n```\n\n**b. Cấu trúc giao diện:**\n\nSử dụng component `Box` của MUI làm container chính. Bên trong, chúng ta sẽ hiển thị có điều kiện:\n\n*   Nếu `openNewColumnForm` là `false`, hiển thị một `Button` với nội dung \"Add another column\".\n*   Nếu `openNewColumnForm` là `true`, hiển thị form thêm mới.\n\n**c. Form thêm mới:**\n\nĐể tạo hiệu ứng đóng/mở mượt mà, chúng ta sẽ bọc form trong component `Collapse` của MUI.\n\n```jsx\n<Collapse in={openNewColumnForm}>\n  {/* Form content goes here */}\n</Collapse>\n```\n\nBên trong `Collapse`, form sẽ bao gồm:\n\n*   `TextField`: Để người dùng nhập tiêu đề cột mới. Chúng ta cũng cần một state để lưu giá trị này, ví dụ `newColumnTitle`.\n*   `Box` chứa hai `Button`:\n    *   `Button` \"Add column\": Khi được nhấp, nó sẽ xử lý logic thêm cột mới (sẽ được triển khai ở các bài sau) và sau đó đóng form lại (`setOpenNewColumnForm(false)`).\n    *   `Button` \"Cancel\" (hoặc một icon `Clear`): Khi được nhấp, nó chỉ đơn giản là đóng form lại.\n\n### 3. Xây dựng chức năng \"Thêm mới Card\"\n\nLuồng hoạt động hoàn toàn tương tự như thêm mới Column, nhưng được đặt ở chân của mỗi cột.\n\n**a. Quản lý trạng thái:**\n\nSử dụng `useState` để tạo state `openNewCardForm`.\n\n**b. Cấu trúc giao diện:**\n\nHiển thị có điều kiện nút \"Add a card\" hoặc form nhập liệu dựa trên giá trị của `openNewCardForm`.\n\n**c. Form thêm mới:**\n\nSử dụng `Collapse` để bọc `TextField` cho tiêu đề thẻ và các nút \"Add card\", \"Cancel\".\n\n## III. Các bước thực hành\n\n1.  **Tạo component `Column`:** Trong file `BoardContent.jsx`, bắt đầu cấu trúc cho từng cột. Mỗi cột sẽ là một `Box` component.\n2.  **Tạo nút \"Add new column\":**\n    *   Bên ngoài vòng lặp render các cột, tạo một `Box`.\n    *   Bên trong `Box` này, triển khai logic hiển thị nút \"Add another column\" hoặc form nhập liệu như đã mô tả ở trên.\n    *   Sử dụng `useState` để quản lý trạng thái `openNewColumnForm`.\n    *   Sử dụng `Collapse` để làm cho form xuất hiện mượt mà.\n    *   Style các component `Button`, `TextField` bằng `sx` prop của MUI để giao diện trông giống Trello nhất có thể.\n3.  **Tạo nút \"Add new card\":**\n    *   Trong phần footer của mỗi `Column` component, lặp lại quy trình tương tự như bước 2.\n    *   Tạo state `openNewCardForm` và `newCardTitle`.\n    *   Hiển thị nút \"Add a card\" hoặc form thêm thẻ mới.\n4.  **Xử lý sự kiện:**\n    *   Gán sự kiện `onClick` cho các nút để cập nhật trạng thái (ví dụ: `onClick={() => setOpenNewColumnForm(true)}`).\n    *   Gán sự kiện `onChange` cho `TextField` để cập nhật state chứa tiêu đề mới.\n\n## IV. Lưu ý quan trọng\n\n*   **Focus vào Input:** Khi form thêm mới xuất hiện, một trải nghiệm người dùng tốt là tự động focus vào ô `TextField`. Chúng ta có thể làm điều này bằng cách sử dụng `useEffect` và `useRef` của React.\n*   **Xử lý click ra ngoài:** Hiện tại, cách duy nhất để đóng form là nhấp vào nút \"Cancel\". Trong thực tế, người dùng thường mong đợi có thể nhấp ra bên ngoài form để hủy bỏ. Kỹ thuật này sẽ được đề cập trong các bài học sau.\n*   **Bug khi kéo chọn văn bản:** Một comment đáng chú ý trên YouTube đã chỉ ra một bug tiềm ẩn: khi người dùng cố gắng bôi đen (chọn) văn bản trong ô input, hành động này có thể vô tình bị hiểu nhầm là một hành động kéo-thả (drag) của thư viện `dnd-kit`. Đây là một vấn đề cần được giải quyết trong các bài học tiếp theo để đảm bảo trải nghiệm người dùng không bị gián đoạn.\n\n## V. Tài liệu tham khảo\n\n*   **Video bài học:** [64. Tạo UI/UX thêm mới Column & Card trong ứng dụng Trello | NodeJS + MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=P_vspsZNOUs&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=71)\n*   **GitHub Repository (Base Project):** [trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n*   **Material-UI Documentation:** [https://mui.com/](https://mui.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của bài học số 64 là gì?",
+        "options": [
+          "A. Xây dựng logic backend để lưu trữ Column và Card vào database.",
+          "B. Tối ưu hóa hiệu năng kéo thả (drag-and-drop) của ứng dụng Trello.",
+          "C. Xây dựng giao diện (UI) và trải nghiệm người dùng (UX) cho chức năng thêm mới Column và Card.",
+          "D. Triển khai xác thực người dùng và phân quyền trên board."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học tập trung vào việc xây dựng giao diện và trải nghiệm người dùng cho việc thêm mới các phần tử, mô phỏng theo Trello gốc, sử dụng Material-UI và React."
+      },
+      {
+        "question": "React Hook nào được sử dụng để quản lý trạng thái hiển thị của form thêm mới Column/Card?",
+        "options": [
+          "A. useEffect",
+          "B. useContext",
+          "C. useState",
+          "D. useRef"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useState` được dùng để tạo ra một biến trạng thái (ví dụ: `openNewColumnForm`) nhằm quyết định xem nên hiển thị nút bấm hay form nhập liệu."
+      },
+      {
+        "question": "Component nào của Material-UI (MUI) được sử dụng để tạo hiệu ứng đóng/mở mượt mà cho form nhập liệu?",
+        "options": [
+          "A. Box",
+          "B. Fade",
+          "C. Slide",
+          "D. Collapse"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`Collapse` là component của MUI được thiết kế đặc biệt để tạo hiệu ứng xổ xuống hoặc thu gọn một cách mượt mà, rất phù hợp cho việc hiển thị form."
+      },
+      {
+        "question": "Dựa trên phân tích UI/UX của Trello, hành động nào sẽ xảy ra khi người dùng nhấp vào nút \"+ Add another list\"?",
+        "options": [
+          "A. Một popup (modal) sẽ hiện ra ở giữa màn hình.",
+          "B. Nút đó sẽ được thay thế bằng một form nhập liệu ngay tại vị trí của nó.",
+          "C. Người dùng sẽ được chuyển đến một trang mới để tạo cột.",
+          "D. Một cột mới với tiêu đề mặc định sẽ được tạo ngay lập tức."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trải nghiệm của Trello là thay thế nút bấm bằng một form inline, cho phép người dùng nhập liệu ngay tại ngữ cảnh đó, và chúng ta đang mô phỏng lại luồng này."
+      },
+      {
+        "question": "Trong form thêm mới Column, ngoài ô `TextField` để nhập tiêu đề, cần có những thành phần nào khác?",
+        "options": [
+          "A. Một nút \"Add column\" duy nhất.",
+          "B. Một nút \"Add column\" và một icon \"X\" để hủy bỏ.",
+          "C. Một dropdown để chọn màu cho cột.",
+          "D. Một ô checkbox để đánh dấu cột là \"private\"."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một form hoàn chỉnh cần có hành động xác nhận (Add) và hành động hủy bỏ (Cancel/X) để mang lại trải nghiệm tốt cho người dùng."
+      },
+      {
+        "question": "Để lưu trữ giá trị người dùng nhập vào `TextField` cho tiêu đề cột mới, chúng ta cần làm gì?",
+        "options": [
+          "A. Sử dụng `useRef` để lấy giá trị trực tiếp từ DOM.",
+          "B. Không cần làm gì, giá trị tự động được lưu.",
+          "C. Tạo một biến trạng thái mới bằng `useState` (ví dụ: `newColumnTitle`) và cập nhật nó qua sự kiện `onChange`.",
+          "D. Lưu giá trị vào `localStorage`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đây là cách làm chuẩn trong React để quản lý các ô nhập liệu (controlled components), giúp state của ứng dụng luôn đồng bộ với những gì hiển thị trên UI."
+      },
+      {
+        "question": "Chức năng \"Thêm mới Card\" được đặt ở đâu trong giao diện?",
+        "options": [
+          "A. Ở đầu trang, bên cạnh nút thêm mới Column.",
+          "B. Ở phần chân (footer) của mỗi Column.",
+          "C. Trong một menu thả xuống ở header của mỗi Column.",
+          "D. Ở thanh sidebar của ứng dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tương tự Trello, mỗi cột có chức năng thêm thẻ riêng, được đặt ở cuối cột để người dùng dễ dàng thêm thẻ mới vào đúng cột mong muốn."
+      },
+      {
+        "question": "Làm thế nào để cải thiện trải nghiệm người dùng bằng cách tự động focus vào ô `TextField` khi form xuất hiện?",
+        "options": [
+          "A. Sử dụng thuộc tính `autoFocus` của HTML.",
+          "B. Dùng CSS selector `:focus`.",
+          "C. Kết hợp `useEffect` và `useRef` để gọi phương thức `.focus()` trên element.",
+          "D. Dùng `useState` để quản lý trạng thái focus."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useRef` cho phép tạo một tham chiếu đến DOM element, và `useEffect` cho phép thực thi một side effect (như việc gọi `.focus()`) khi component hoặc state thay đổi (khi form xuất hiện)."
+      },
+      {
+        "question": "Một bug tiềm ẩn được đề cập trong bài học liên quan đến thư viện `dnd-kit` là gì?",
+        "options": [
+          "A. Kéo thả cột làm crash ứng dụng.",
+          "B. Không thể kéo thẻ từ cột này sang cột khác.",
+          "C. Hành động bôi đen (chọn) văn bản trong ô input bị hiểu nhầm là hành động kéo-thả.",
+          "D. Hiệu năng kéo thả rất chậm trên mobile."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đây là một xung đột sự kiện cần lưu ý, khi hành động chọn văn bản của người dùng có thể bị thư viện `dnd-kit` chặn lại và coi đó là một nỗ lực kéo-thả."
+      },
+      {
+        "question": "Sự kiện nào được sử dụng trên `TextField` để cập nhật state chứa tiêu đề mới?",
+        "options": [
+          "A. onClick",
+          "B. onFocus",
+          "C. onBlur",
+          "D. onChange"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Sự kiện `onChange` được kích hoạt mỗi khi giá trị của ô input thay đổi, cho phép chúng ta bắt giá trị mới và cập nhật vào state của React."
+      },
+      {
+        "question": "Khi người dùng nhấp vào nút \"Cancel\" hoặc icon \"X\" trên form thêm mới, hành động hợp lý nhất là gì?",
+        "options": [
+          "A. Xóa toàn bộ nội dung đã nhập và đóng form.",
+          "B. Gửi thông báo lỗi cho người dùng.",
+          "C. Lưu lại nội dung đã nhập làm bản nháp.",
+          "D. Thêm cột/thẻ với tiêu đề rỗng."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Hành động hủy bỏ nên đưa giao diện về trạng thái trước khi mở form, tức là đóng form và loại bỏ các giá trị tạm thời."
+      },
+      {
+        "question": "Thuộc tính `sx` trong các component của MUI dùng để làm gì?",
+        "options": [
+          "A. Định nghĩa các hành vi phức tạp của component.",
+          "B. Truyền dữ liệu state cho component.",
+          "C. Viết CSS tùy chỉnh một cách nhanh chóng và trực tiếp trên component.",
+          "D. Xác định kích thước (small, medium, large) của component."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `sx` là một cách mạnh mẽ để truy cập các biến theme và viết CSS-in-JS, cho phép tùy chỉnh style của component một cách linh hoạt mà không cần tạo class riêng."
+      },
+      {
+        "question": "Trong cấu trúc component được đề xuất, `BoardContent.jsx` đóng vai trò gì?",
+        "options": [
+          "A. Chứa toàn bộ logic của ứng dụng.",
+          "B. Chỉ chứa phần header của trang.",
+          "C. Là nơi chứa layout chính, render ra các cột và các nút thêm mới.",
+          "D. Quản lý việc đăng nhập và đăng xuất."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`BoardContent` là component chính của trang board, chịu trách nhiệm sắp xếp và hiển thị các cột, thẻ, cũng như các chức năng tương tác chính trên board."
+      },
+      {
+        "question": "Tại sao việc phân tích UI/UX của ứng dụng Trello gốc lại quan trọng trước khi code?",
+        "options": [
+          "A. Để sao chép y hệt mã nguồn của họ.",
+          "B. Để đảm bảo ứng dụng clone có hiệu năng tốt hơn bản gốc.",
+          "C. Để tạo ra một trải nghiệm quen thuộc, trực quan và đã được kiểm chứng cho người dùng.",
+          "D. Để tìm ra các lỗ hổng bảo mật của Trello."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Học hỏi từ các sản phẩm thành công giúp chúng ta áp dụng những giải pháp thiết kế tốt, tránh các lỗi phổ biến và tạo ra sản phẩm mà người dùng cảm thấy dễ sử dụng ngay từ đầu."
+      },
+      {
+        "question": "Vấn đề \"xử lý click ra ngoài\" (clicking outside) được đề cập trong bài học là gì?",
+        "options": [
+          "A. Một tính năng cho phép người dùng click ra ngoài để lưu công việc.",
+          "B. Một lỗi khiến ứng dụng bị đóng khi click ra ngoài.",
+          "C. Một cải tiến UX cho phép người dùng hủy bỏ hành động bằng cách click vào bất kỳ đâu bên ngoài form.",
+          "D. Một kỹ thuật để mở nhiều cửa sổ ứng dụng cùng lúc."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đây là một trải nghiệm người dùng phổ biến. Thay vì phải tìm và click đúng vào nút \"Cancel\", người dùng có thể dễ dàng hủy bỏ bằng cách click ra vùng nền, và bài học ghi nhận đây là một cải tiến cần thực hiện sau này."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Nút Bấm Hiển Thị/Ẩn Form",
+        "description": "Sử dụng React Hook `useState` để tạo một component `ToggleFormButton`. Ban đầu, component hiển thị một nút với nội dung \"Thêm công việc\". Khi người dùng nhấp vào nút, nút này sẽ biến mất và thay vào đó là một ô `TextField` và một nút \"Hủy\". Nhấp vào nút \"Hủy\" sẽ đưa component trở về trạng thái ban đầu.",
+        "starterCode": "import React, { useState } from 'react';\nimport { Button, Box, TextField } from '@mui/material';\n\nfunction ToggleFormButton() {\n  // Sử dụng useState để quản lý trạng thái mở/đóng form\n  const [isFormOpen, setIsFormOpen] = useState(false);\n\n  if (isFormOpen) {\n    return (\n      <Box>\n        <TextField variant=\"outlined\" size=\"small\" placeholder=\"Nhập tiêu đề công việc...\" />\n        <Button onClick={() => setIsFormOpen(false)}>Hủy</Button>\n      </Box>\n    );\n  }\n\n  return (\n    <Button variant=\"contained\" onClick={() => setIsFormOpen(true)}>\n      Thêm công việc\n    </Button>\n  );\n}\n\nexport default ToggleFormButton;",
+        "solution": "import React, { useState } from 'react';\nimport { Button, Box, TextField } from '@mui/material';\n\nfunction ToggleFormButton() {\n  const [isFormOpen, setIsFormOpen] = useState(false);\n\n  if (isFormOpen) {\n    return (\n      <Box sx={{ p: 2, border: '1px dashed grey', borderRadius: '4px' }}>\n        <TextField \n          autoFocus\n          fullWidth\n          variant=\"outlined\" \n          size=\"small\" \n          placeholder=\"Nhập tiêu đề công việc...\" \n        />\n        <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>\n          <Button variant=\"contained\" color=\"primary\">Thêm</Button>\n          <Button onClick={() => setIsFormOpen(false)} color=\"error\">Hủy</Button>\n        </Box>\n      </Box>\n    );\n  }\n\n  return (\n    <Button \n      variant=\"contained\" \n      color=\"primary\" \n      onClick={() => setIsFormOpen(true)}\n    >\n      + Thêm công việc mới\n    </Button>\n  );\n}\n\nexport default ToggleFormButton;",
+        "testCases": "1. Ban đầu, chỉ có nút \"Thêm công việc\" được hiển thị. 2. Khi nhấp vào nút, ô TextField và nút \"Hủy\" xuất hiện. 3. Khi nhấp vào nút \"Hủy\", giao diện quay trở lại trạng thái ban đầu."
+      },
+      {
+        "title": "Bài 2: Quản Lý Giá Trị Input",
+        "description": "Mở rộng bài 1. Tạo thêm một state `newTitle` để lưu trữ giá trị của `TextField`. Khi người dùng gõ vào `TextField`, giá trị phải được cập nhật vào state. Khi nhấp nút \"Thêm\", hãy `console.log` giá trị của `newTitle`, sau đó xóa trống `TextField` và đóng form.",
+        "starterCode": "import React, { useState } from 'react';\nimport { Button, Box, TextField } from '@mui/material';\n\nfunction AddItemForm() {\n  const [isFormOpen, setIsFormOpen] = useState(false);\n  const [newTitle, setNewTitle] = useState('');\n\n  const handleAddNew = () => {\n    // Viết logic ở đây\n    console.log(newTitle);\n  };\n\n  if (isFormOpen) {\n    return (\n      <Box>\n        <TextField \n          variant=\"outlined\" \n          size=\"small\" \n          placeholder=\"Nhập tiêu đề...\"\n          value={newTitle}\n          onChange={e => setNewTitle(e.target.value)}\n        />\n        <Button onClick={handleAddNew}>Thêm</Button>\n        <Button onClick={() => setIsFormOpen(false)}>Hủy</Button>\n      </Box>\n    );\n  }\n\n  return (\n    <Button variant=\"contained\" onClick={() => setIsFormOpen(true)}>\n      Thêm mới\n    </Button>\n  );\n}\n\nexport default AddItemForm;",
+        "solution": "import React, { useState } from 'react';\nimport { Button, Box, TextField } from '@mui/material';\n\nfunction AddItemForm() {\n  const [isFormOpen, setIsFormOpen] = useState(false);\n  const [newTitle, setNewTitle] = useState('');\n\n  const handleAddNew = () => {\n    if (newTitle.trim() !== '') {\n      console.log(`Adding new item: ${newTitle}`);\n      // Reset state\n      setNewTitle('');\n      setIsFormOpen(false);\n    }\n  };\n\n  if (isFormOpen) {\n    return (\n      <Box sx={{ p: 2, border: '1px dashed grey', borderRadius: '4px' }}>\n        <TextField \n          fullWidth\n          variant=\"outlined\" \n          size=\"small\" \n          placeholder=\"Nhập tiêu đề...\"\n          value={newTitle}\n          onChange={e => setNewTitle(e.target.value)}\n        />\n        <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>\n          <Button onClick={handleAddNew} variant=\"contained\" color=\"primary\">Thêm</Button>\n          <Button onClick={() => setIsFormOpen(false)} color=\"error\">Hủy</Button>\n        </Box>\n      </Box>\n    );\n  }\n\n  return (\n    <Button \n      variant=\"contained\" \n      color=\"primary\" \n      onClick={() => setIsFormOpen(true)}\n    >\n      + Thêm mới\n    </Button>\n  );\n}\n\nexport default AddItemForm;",
+        "testCases": "1. Gõ \"Học React\" vào TextField. 2. Nhấp nút \"Thêm\". 3. Kiểm tra console thấy log \"Adding new item: Học React\". 4. Form đóng lại và nút \"Thêm mới\" xuất hiện trở lại."
+      },
+      {
+        "title": "Bài 3: Tích Hợp Hiệu Ứng Collapse",
+        "description": "Sử dụng component `Collapse` của MUI để bọc form thêm mới trong bài 2. Khi `isFormOpen` là `true`, form sẽ xổ xuống một cách mượt mà thay vì xuất hiện đột ngột.",
+        "starterCode": "import React, { useState } from 'react';\nimport { Button, Box, TextField, Collapse } from '@mui/material';\n\nfunction CollapsibleForm() {\n  const [isFormOpen, setIsFormOpen] = useState(false);\n  const [newTitle, setNewTitle] = useState('');\n\n  // ... logic tương tự bài 2 ...\n\n  return (\n    <Box>\n      <Button onClick={() => setIsFormOpen(!isFormOpen)}>\n        {isFormOpen ? 'Hủy' : 'Thêm mới'}\n      </Button>\n      {/* Bọc form bằng Collapse ở đây */}\n      <Box sx={{ mt: 1 }}>\n        <TextField placeholder=\"Nhập tiêu đề...\" />\n        <Button>Thêm</Button>\n      </Box>\n    </Box>\n  );\n}\n\nexport default CollapsibleForm;",
+        "solution": "import React, { useState } from 'react';\nimport { Button, Box, TextField, Collapse } from '@mui/material';\n\nfunction CollapsibleForm() {\n  const [isFormOpen, setIsFormOpen] = useState(false);\n  const [newTitle, setNewTitle] = useState('');\n\n  const handleAddNew = () => {\n    if (newTitle.trim() !== '') {\n      console.log(`Adding new item: ${newTitle}`);\n      setNewTitle('');\n      setIsFormOpen(false);\n    }\n  };\n\n  return (\n    <Box sx={{ minWidth: '250px' }}>\n      <Collapse in={isFormOpen}>\n        <Box sx={{ p: 2, border: '1px dashed grey', borderRadius: '4px' }}>\n          <TextField \n            fullWidth\n            variant=\"outlined\" \n            size=\"small\" \n            placeholder=\"Nhập tiêu đề...\"\n            value={newTitle}\n            onChange={e => setNewTitle(e.target.value)}\n          />\n          <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>\n            <Button onClick={handleAddNew} variant=\"contained\" color=\"primary\">Thêm</Button>\n            <Button onClick={() => setIsFormOpen(false)} color=\"error\">Hủy</Button>\n          </Box>\n        </Box>\n      </Collapse>\n\n      <Collapse in={!isFormOpen}>\n        <Button \n          variant=\"contained\" \n          color=\"primary\" \n          onClick={() => setIsFormOpen(true)}\n        >\n          + Thêm mới\n        </Button>\n      </Collapse>\n    </Box>\n  );\n}\n\nexport default CollapsibleForm;",
+        "testCases": "1. Giao diện ban đầu chỉ có nút \"Thêm mới\". 2. Khi nhấp vào, form nhập liệu xuất hiện với hiệu ứng xổ xuống. 3. Khi nhấp \"Hủy\", form thu gọn lại một cách mượt mà."
+      },
+      {
+        "title": "Bài 4: Tự Động Focus vào Input",
+        "description": "Cải tiến bài 3. Sử dụng `useRef` và `useEffect` để khi form vừa được mở ra, con trỏ chuột sẽ tự động được đặt vào trong ô `TextField`, sẵn sàng cho người dùng nhập liệu.",
+        "starterCode": "import React, { useState, useEffect, useRef } from 'react';\nimport { Button, Box, TextField, Collapse } from '@mui/material';\n\nfunction AutoFocusForm() {\n  const [isFormOpen, setIsFormOpen] = useState(false);\n  const inputRef = useRef(null);\n\n  // Viết useEffect để focus vào input tại đây\n\n  return (\n    <Box>\n      <Button onClick={() => setIsFormOpen(true)}>Thêm mới</Button>\n      <Collapse in={isFormOpen}>\n        <TextField inputRef={inputRef} placeholder=\"Nhập tiêu đề...\" />\n        <Button onClick={() => setIsFormOpen(false)}>Hủy</Button>\n      </Collapse>\n    </Box>\n  );\n}\n\nexport default AutoFocusForm;",
+        "solution": "import React, { useState, useEffect, useRef } from 'react';\nimport { Button, Box, TextField, Collapse } from '@mui/material';\n\nfunction AutoFocusForm() {\n  const [isFormOpen, setIsFormOpen] = useState(false);\n  const inputRef = useRef(null);\n\n  useEffect(() => {\n    // Nếu form được mở và ref đã tồn tại\n    if (isFormOpen && inputRef.current) {\n      // Focus vào element\n      inputRef.current.focus();\n    }\n  }, [isFormOpen]); // Phụ thuộc vào trạng thái isFormOpen\n\n  return (\n    <Box sx={{ minWidth: '250px' }}>\n      <Collapse in={!isFormOpen}>\n        <Button onClick={() => setIsFormOpen(true)} variant=\"contained\">Thêm mới</Button>\n      </Collapse>\n      <Collapse in={isFormOpen}>\n        <Box sx={{ p: 2, border: '1px dashed grey', borderRadius: '4px' }}>\n          <TextField \n            inputRef={inputRef} \n            fullWidth\n            placeholder=\"Nhập tiêu đề...\"\n          />\n          <Button sx={{ mt: 1 }} onClick={() => setIsFormOpen(false)}>Hủy</Button>\n        </Box>\n      </Collapse>\n    </Box>\n  );\n}\n\nexport default AutoFocusForm;",
+        "testCases": "1. Nhấp vào nút \"Thêm mới\". 2. Form xổ xuống. 3. Quan sát thấy con trỏ chuột đang nhấp nháy bên trong ô TextField mà không cần người dùng phải click vào."
+      },
+      {
+        "title": "Bài 5: Hoàn Thiện Component Thêm Mới",
+        "description": "Tổng hợp tất cả các kiến thức: tạo một component `AddNewItem` hoàn chỉnh. Component này nhận một prop `type` (có thể là 'Column' hoặc 'Card'). Dựa vào `type`, component sẽ hiển thị nút bấm với văn bản tương ứng (\"Thêm cột mới\" hoặc \"Thêm thẻ mới\"). Toàn bộ logic về state, collapse, auto-focus, và xử lý thêm/hủy phải được đóng gói trong component này.",
+        "starterCode": "import React, { useState, useEffect, useRef } from 'react';\nimport { Button, Box, TextField, Collapse } from '@mui/material';\n\n// props: { type: 'Column' | 'Card' }\nfunction AddNewItem({ type }) {\n  const [isFormOpen, setIsFormOpen] = useState(false);\n  const [title, setTitle] = useState('');\n  const inputRef = useRef(null);\n\n  const buttonText = type === 'Column' ? 'Thêm cột mới' : 'Thêm thẻ mới';\n  const placeholderText = type === 'Column' ? 'Nhập tiêu đề cột...' : 'Nhập tiêu đề thẻ...';\n\n  // Viết đầy đủ logic ở đây\n\n  return (\n    <Box>\n      {/* Viết code hiển thị nút bấm hoặc form */} \n    </Box>\n  );\n}\n\nexport default AddNewItem;",
+        "solution": "import React, { useState, useEffect, useRef } from 'react';\nimport { Button, Box, TextField, Collapse } from '@mui/material';\n\nfunction AddNewItem({ type }) {\n  const [isFormOpen, setIsFormOpen] = useState(false);\n  const [title, setTitle] = useState('');\n  const inputRef = useRef(null);\n\n  const buttonText = type === 'Column' ? '+ Thêm cột khác' : '+ Thêm thẻ';\n  const placeholderText = type === 'Column' ? 'Nhập tiêu đề cột...' : 'Nhập tiêu đề thẻ...';\n  const addButtonText = type === 'Column' ? 'Thêm Cột' : 'Thêm Thẻ';\n\n  useEffect(() => {\n    if (isFormOpen) {\n      inputRef.current?.focus();\n    }\n  }, [isFormOpen]);\n\n  const handleAdd = () => {\n    if (title.trim()) {\n      console.log(`New ${type}: ${title}`);\n      setTitle('');\n      setIsFormOpen(false);\n    }\n  };\n\n  const handleCancel = () => {\n    setTitle('');\n    setIsFormOpen(false);\n  };\n\n  return (\n    <Box sx={{ minWidth: '272px', p: 1 }}>\n      <Collapse in={!isFormOpen}>\n        <Button \n          fullWidth\n          variant=\"text\" \n          onClick={() => setIsFormOpen(true)}\n          sx={{ justifyContent: 'flex-start' }}\n        >\n          {buttonText}\n        </Button>\n      </Collapse>\n      <Collapse in={isFormOpen}>\n        <Box sx={{ p: 1, bgcolor: '#ffffff', borderRadius: '4px' }}>\n          <TextField \n            fullWidth\n            inputRef={inputRef}\n            placeholder={placeholderText}\n            value={title}\n            onChange={(e) => setTitle(e.target.value)}\n            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}\n          />\n          <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>\n            <Button onClick={handleAdd} variant=\"contained\">{addButtonText}</Button>\n            <Button onClick={handleCancel} variant=\"text\" color=\"error\">Hủy</Button>\n          </Box>\n        </Box>\n      </Collapse>\n    </Box>\n  );\n}\n\nexport default AddNewItem;",
+        "testCases": "1. Truyền prop `type='Column'`. Nút bấm hiển thị \"Thêm cột khác\". 2. Nhấp vào, form hiện ra với placeholder \"Nhập tiêu đề cột...\". 3. Truyền prop `type='Card'`. Nút bấm hiển thị \"Thêm thẻ\". 4. Nhấp vào, form hiện ra với placeholder \"Nhập tiêu đề thẻ...\". 5. Logic auto-focus và thêm/hủy hoạt động chính xác cho cả hai trường hợp."
+      }
+    ]
+  }
+}

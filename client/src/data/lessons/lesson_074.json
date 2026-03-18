@@ -1,0 +1,213 @@
+{
+  "id": 74,
+  "title": "Bài 57: Model Layer Code - Định nghĩa Collection Schema với Mongoose",
+  "category": "mongodb",
+  "categoryName": "MongoDB & Database",
+  "content": "# Bài 57: Model Layer Code - Định nghĩa Collection Schema với Mongoose\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tìm hiểu cách định nghĩa cấu trúc dữ liệu (Schema) cho một Collection trong MongoDB bằng thư viện Mongoose. Việc định nghĩa Schema là một bước cực kỳ quan trọng trong việc xây dựng ứng dụng MERN Stack, giúp đảm bảo tính toàn vẹn và nhất quán của dữ liệu.\n\n## II. Kiến thức chi tiết\n\n### 1. Model-View-Controller (MVC) và Tầng Model\n\nKiến trúc MVC là một mẫu thiết kế phần mềm phổ biến, giúp tách biệt logic ứng dụng thành ba phần chính:\n\n*   **Model:** Chịu trách nhiệm quản lý dữ liệu và logic nghiệp vụ của ứng dụng. Nó tương tác trực tiếp với cơ sở dữ liệu.\n*   **View:** Chịu trách nhiệm hiển thị dữ liệu cho người dùng.\n*   **Controller:** Đóng vai trò trung gian, nhận yêu cầu từ người dùng, tương tác với Model để xử lý dữ liệu và cập nhật lại View.\n\nTrong bài học này, chúng ta tập trung vào **Tầng Model**, nơi chúng ta sẽ định nghĩa cấu trúc dữ liệu cho các đối tượng trong ứng dụng của mình.\n\n### 2. Mongoose và Schema\n\n**Mongoose** là một thư viện ODM (Object Data Modeling) cho MongoDB và Node.js. Nó cung cấp một giải pháp đơn giản, dựa trên schema để mô hình hóa dữ liệu ứng dụng của bạn. Mongoose bao gồm các tính năng như định nghĩa schema, validation, middleware, và nhiều hơn nữa.\n\n**Schema** trong Mongoose định nghĩa cấu trúc của các document trong một collection. Nó chỉ định các trường, kiểu dữ liệu của chúng, các giá trị mặc định, và các quy tắc validation.\n\n### 3. Định nghĩa một Schema\n\nĐể định nghĩa một schema, chúng ta sử dụng `new mongoose.Schema()`. Dưới đây là một ví dụ về cách định nghĩa schema cho một collection `Board`:\n\n```javascript\nconst mongoose = require('mongoose');\n\nconst boardSchema = new mongoose.Schema({\n  title: {\n    type: String,\n    required: true,\n    minlength: 3,\n    maxlength: 50\n  },\n  description: {\n    type: String,\n    required: true,\n    minlength: 3,\n    maxlength: 255\n  },\n  type: {\n    type: String,\n    enum: ['public', 'private'],\n    default: 'public'\n  },\n  owner: {\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User' // Tham chiếu đến model User\n  },\n  members: [{\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User'\n  }],\n  createdAt: {\n    type: Date,\n    default: Date.now\n  }\n});\n\nconst Board = mongoose.model('Board', boardSchema);\n\nmodule.exports = Board;\n```\n\n**Giải thích:**\n\n*   `title`, `description`, `type`: Là các trường trong collection `Board`.\n*   `type: String`: Chỉ định kiểu dữ liệu là chuỗi.\n*   `required: true`: Bắt buộc phải có giá trị.\n*   `minlength`, `maxlength`: Quy định độ dài tối thiểu và tối đa.\n*   `enum`: Quy định các giá trị hợp lệ cho trường `type`.\n*   `default`: Giá trị mặc định nếu không được cung cấp.\n*   `owner`, `members`: Sử dụng `mongoose.Schema.Types.ObjectId` để lưu trữ ID của các document khác, và `ref` để tham chiếu đến model tương ứng (`User`).\n*   `createdAt`: Lưu trữ thời gian tạo document, với giá trị mặc định là thời gian hiện tại.\n\n## III. Các bước thực hành\n\n1.  **Cài đặt Mongoose:**\n\n    ```bash\n    npm install mongoose\n    ```\n\n2.  **Tạo file model:** Tạo một file mới, ví dụ `boardModel.js`, trong thư mục `models` của dự án.\n\n3.  **Định nghĩa Schema và Model:** Viết code để định nghĩa schema và tạo model như ví dụ ở trên.\n\n4.  **Sử dụng Model:** Import model vào các file controller để thực hiện các thao tác CRUD (Create, Read, Update, Delete) với cơ sở dữ liệu.\n\n## IV. Lưu ý quan trọng\n\n*   **Validation:** Luôn định nghĩa các quy tắc validation (như `required`, `minlength`, `maxlength`, `enum`) để đảm bảo dữ liệu đầu vào là hợp lệ.\n*   **Kiểu dữ liệu:** Chọn đúng kiểu dữ liệu cho từng trường để tối ưu hóa việc lưu trữ và truy vấn.\n*   **Tham chiếu (ref):** Sử dụng `ref` để tạo mối quan hệ giữa các collection, giúp cho việc truy vấn dữ liệu liên quan trở nên dễ dàng hơn.\n*   **Timestamps:** Mongoose cung cấp một tùy chọn `timestamps: true` trong schema, tự động thêm hai trường `createdAt` và `updatedAt` vào document.\n\n## V. Tài liệu tham khảo\n\n*   [Mongoose Schemas](https://mongoosejs.com/docs/guide.html)\n*   [TrungQuanDev Blog](https://trungquandev.com)\n*   [TrungQuanDev GitHub](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong kiến trúc MVC, tầng Model chịu trách nhiệm chính về việc gì?",
+        "options": [
+          "Hiển thị dữ liệu cho người dùng.",
+          "Nhận yêu cầu từ người dùng và điều hướng.",
+          "Quản lý dữ liệu và logic nghiệp vụ của ứng dụng.",
+          "Tạo giao diện người dùng tương tác."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tầng Model chịu trách nhiệm quản lý dữ liệu, tương tác với cơ sở dữ liệu và thực thi các logic nghiệp vụ cốt lõi của ứng dụng."
+      },
+      {
+        "question": "Mongoose là gì?",
+        "options": [
+          "Một cơ sở dữ liệu NoSQL.",
+          "Một thư viện ODM (Object Data Modeling) cho MongoDB và Node.js.",
+          "Một framework backend cho Node.js.",
+          "Một ngôn ngữ truy vấn dữ liệu."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mongoose là một thư viện ODM (Object Data Modeling) cung cấp một giải pháp dựa trên schema để mô hình hóa dữ liệu ứng dụng khi làm việc với MongoDB."
+      },
+      {
+        "question": "Mục đích chính của việc định nghĩa Schema trong Mongoose là gì?",
+        "options": [
+          "Để tăng tốc độ truy vấn cơ sở dữ liệu.",
+          "Để định nghĩa cấu trúc của các document trong một collection, bao gồm kiểu dữ liệu và các quy tắc validation.",
+          "Để tự động tạo giao diện người dùng.",
+          "Để mã hóa dữ liệu trước khi lưu vào database."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Schema trong Mongoose định nghĩa cấu trúc, kiểu dữ liệu, giá trị mặc định, và các quy tắc validation cho các document, giúp đảm bảo tính nhất quán và toàn vẹn của dữ liệu."
+      },
+      {
+        "question": "Cú pháp nào được sử dụng để tạo một Schema mới trong Mongoose?",
+        "options": [
+          "new mongoose.Schema({})",
+          "mongoose.createSchema({})",
+          "new mongoose.Structure({})",
+          "mongoose.define({})"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Chúng ta sử dụng constructor `new mongoose.Schema()` để tạo một đối tượng schema mới."
+      },
+      {
+        "question": "Làm thế nào để chỉ định một trường là bắt buộc (không được để trống) trong Mongoose Schema?",
+        "options": [
+          "Sử dụng `mandatory: true`",
+          "Sử dụng `allowNull: false`",
+          "Sử dụng `required: true`",
+          "Sử dụng `notEmpty: true`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `required: true` được sử dụng trong định nghĩa trường của schema để bắt buộc trường đó phải có giá trị."
+      },
+      {
+        "question": "Trình xác thực (validator) `enum` trong Mongoose Schema có công dụng gì?",
+        "options": [
+          "Quy định một giá trị số phải nằm trong một khoảng cho trước.",
+          "Quy định một chuỗi phải có độ dài nhất định.",
+          "Quy định một trường chỉ có thể nhận một trong các giá trị được liệt kê trong một mảng.",
+          "Quy định một trường phải là duy nhất trong collection."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`enum` là một validator cho phép bạn định nghĩa một danh sách các giá trị hợp lệ cho một trường."
+      },
+      {
+        "question": "Trong schema `const boardSchema = new mongoose.Schema({ title: String, type: { type: String, default: 'public' } });`, giá trị của trường `type` sẽ là gì nếu không được cung cấp khi tạo document mới?",
+        "options": [
+          "null",
+          "undefined",
+          "'public'",
+          "Gây ra lỗi validation"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `default` sẽ gán giá trị mặc định cho trường nếu không có giá trị nào được cung cấp."
+      },
+      {
+        "question": "Làm thế nào để tạo một tham chiếu đến một model khác (ví dụ: model 'User') trong một schema?",
+        "options": [
+          "{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }",
+          "{ type: 'reference', model: 'User' }",
+          "{ type: mongoose.Schema.Types.Reference, to: 'User' }",
+          "{ type: 'ObjectId', link: 'User' }"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Để tạo tham chiếu, chúng ta sử dụng kiểu dữ liệu `mongoose.Schema.Types.ObjectId` và thuộc tính `ref` để chỉ định tên của model được tham chiếu đến."
+      },
+      {
+        "question": "Phương thức `mongoose.model()` được dùng để làm gì?",
+        "options": [
+          "Để định nghĩa một schema.",
+          "Để kết nối tới cơ sở dữ liệu MongoDB.",
+          "Để biên dịch một schema thành một Model có thể sử dụng để tương tác với collection.",
+          "Để thực hiện validation dữ liệu."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`mongoose.model()` nhận một tên model và một schema, sau đó biên dịch chúng thành một lớp Model. Model này cung cấp giao diện để tạo, truy vấn, cập nhật và xóa các document."
+      },
+      {
+        "question": "Tùy chọn nào trong schema sẽ tự động thêm hai trường `createdAt` và `updatedAt` vào document?",
+        "options": [
+          "`autoTimestamp: true`",
+          "`{ timestamps: true }`",
+          "`addTimestamps: true`",
+          "`{ dates: true }`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi bạn truyền đối tượng `{ timestamps: true }` làm đối số thứ hai cho `new mongoose.Schema()`, Mongoose sẽ tự động quản lý hai trường `createdAt` và `updatedAt`."
+      },
+      {
+        "question": "Trong ví dụ `boardSchema`, trường `members` được định nghĩa là `[{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]`. Điều này có nghĩa là gì?",
+        "options": [
+          "Trường `members` là một đối tượng chứa ID của một User.",
+          "Trường `members` là một chuỗi duy nhất tham chiếu đến User.",
+          "Trường `members` là một mảng các ID tham chiếu đến các document trong collection User.",
+          "Trường `members` chỉ có thể chứa một thành viên duy nhất."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Dấu ngoặc vuông `[]` bao quanh định nghĩa kiểu cho biết `members` là một mảng. Bên trong mảng là các đối tượng ObjectId tham chiếu đến model 'User'."
+      },
+      {
+        "question": "Cú pháp nào sau đây là đúng để định nghĩa một trường `description` có kiểu chuỗi, bắt buộc, và có độ dài tối đa 255 ký tự?",
+        "options": [
+          "description: { type: String, required, maxlength: 255 }",
+          "description: { String, required: true, max: 255 }",
+          "description: { type: String, required: true, maxlength: 255 }",
+          "description: { type: String, notEmpty: true, length: 255 }"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cú pháp đúng là sử dụng một đối tượng để cấu hình trường, với các thuộc tính `type`, `required`, và `maxlength`."
+      },
+      {
+        "question": "Nếu một trường được định nghĩa với `enum: ['public', 'private']`, điều gì sẽ xảy ra khi bạn cố gắng lưu một document với giá trị `'internal'` cho trường đó?",
+        "options": [
+          "Giá trị sẽ được tự động chuyển thành `'public'`.",
+          "Mongoose sẽ bỏ qua trường đó.",
+          "Thao tác lưu sẽ thành công nhưng giá trị không được ghi lại.",
+          "Mongoose sẽ trả về một lỗi validation (ValidationError)."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Nếu giá trị cung cấp không nằm trong danh sách `enum`, Mongoose sẽ phát sinh lỗi validation và ngăn không cho document được lưu."
+      },
+      {
+        "question": "Lệnh nào được sử dụng để cài đặt Mongoose vào một dự án Node.js?",
+        "options": [
+          "npm get mongoose",
+          "npm install mongoose",
+          "npm add mongoose",
+          "npm mongoose install"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lệnh `npm install mongoose` được sử dụng để tải và thêm thư viện Mongoose vào `node_modules` và tệp `package.json` của dự án."
+      },
+      {
+        "question": "Tại sao việc sử dụng `ref` trong Mongoose Schema lại hữu ích?",
+        "options": [
+          "Nó giúp giảm kích thước của cơ sở dữ liệu.",
+          "Nó cho phép Mongoose thực hiện các phép toán `populate` để tự động thay thế ID bằng dữ liệu document được tham chiếu.",
+          "Nó mã hóa các ID để tăng cường bảo mật.",
+          "Nó là cách duy nhất để liên kết các document với nhau."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sử dụng `ref` cho phép bạn dễ dàng truy vấn và lấy dữ liệu liên quan từ các collection khác bằng cách sử dụng phương thức `.populate()`."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo User Schema đơn giản",
+        "description": "Hãy định nghĩa một Mongoose Schema cho model 'User'. Schema này cần có hai trường: `username` (kiểu String, bắt buộc, duy nhất) và `email` (kiểu String, bắt buộc, duy nhất).",
+        "starterCode": "const mongoose = require('mongoose');\n\n// Bắt đầu code của bạn ở đây\nconst userSchema = new mongoose.Schema({\n  \n});\n\n// Kết thúc code của bạn\n\nconst User = mongoose.model('User', userSchema);\n\nmodule.exports = User;",
+        "solution": "const mongoose = require('mongoose');\n\nconst userSchema = new mongoose.Schema({\n  username: {\n    type: String,\n    required: true,\n    unique: true\n  },\n  email: {\n    type: String,\n    required: true,\n    unique: true\n  }\n});\n\nconst User = mongoose.model('User', userSchema);\n\nmodule.exports = User;",
+        "testCases": "1. Schema phải có trường `username` với kiểu String, required và unique. 2. Schema phải có trường `email` với kiểu String, required và unique. 3. Model 'User' phải được tạo và export thành công."
+      },
+      {
+        "title": "Bài 2: Tạo Product Schema với Validation",
+        "description": "Định nghĩa một Schema cho model 'Product'. Schema cần các trường: `name` (String, bắt buộc, độ dài từ 3 đến 100 ký tự), `price` (Number, bắt buộc, giá trị tối thiểu là 0), và `onSale` (Boolean, giá trị mặc định là false).",
+        "starterCode": "const mongoose = require('mongoose');\n\n// Bắt đầu code của bạn ở đây\nconst productSchema = new mongoose.Schema({\n  \n});\n\n// Kết thúc code của bạn\n\nconst Product = mongoose.model('Product', productSchema);\n\nmodule.exports = Product;",
+        "solution": "const mongoose = require('mongoose');\n\nconst productSchema = new mongoose.Schema({\n  name: {\n    type: String,\n    required: true,\n    minlength: 3,\n    maxlength: 100\n  },\n  price: {\n    type: Number,\n    required: true,\n    min: 0\n  },\n  onSale: {\n    type: Boolean,\n    default: false\n  }\n});\n\nconst Product = mongoose.model('Product', productSchema);\n\nmodule.exports = Product;",
+        "testCases": "1. Trường `name` phải là String, required, minlength 3, maxlength 100. 2. Trường `price` phải là Number, required, min 0. 3. Trường `onSale` phải là Boolean với giá trị mặc định là false."
+      },
+      {
+        "title": "Bài 3: Tạo Comment Schema với Tham chiếu và Timestamps",
+        "description": "Định nghĩa một Schema cho model 'Comment'. Schema cần có: `content` (String, bắt buộc), `author` (tham chiếu đến model 'User'), và tự động thêm các trường `createdAt` và `updatedAt`.",
+        "starterCode": "const mongoose = require('mongoose');\n\n// Bắt đầu code của bạn ở đây\nconst commentSchema = new mongoose.Schema({\n  \n}, {\n  \n});\n\n// Kết thúc code của bạn\n\nconst Comment = mongoose.model('Comment', commentSchema);\n\nmodule.exports = Comment;",
+        "solution": "const mongoose = require('mongoose');\n\nconst commentSchema = new mongoose.Schema({\n  content: {\n    type: String,\n    required: true\n  },\n  author: {\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User',\n    required: true\n  }\n}, {\n  timestamps: true\n});\n\nconst Comment = mongoose.model('Comment', commentSchema);\n\nmodule.exports = Comment;",
+        "testCases": "1. Trường `content` phải là String và required. 2. Trường `author` phải là một ObjectId tham chiếu đến model 'User' và required. 3. Schema phải được cấu hình để tự động thêm timestamps."
+      },
+      {
+        "title": "Bài 4: Tạo BlogPost Schema với Mảng và Enum",
+        "description": "Định nghĩa Schema cho model 'BlogPost'. Schema cần có: `title` (String, bắt buộc), `body` (String, bắt buộc), `status` (String, chỉ chấp nhận các giá trị 'draft', 'published', 'archived', mặc định là 'draft'), và `tags` (một mảng các chuỗi).",
+        "starterCode": "const mongoose = require('mongoose');\n\n// Bắt đầu code của bạn ở đây\nconst blogPostSchema = new mongoose.Schema({\n  \n});\n\n// Kết thúc code của bạn\n\nconst BlogPost = mongoose.model('BlogPost', blogPostSchema);\n\nmodule.exports = BlogPost;",
+        "solution": "const mongoose = require('mongoose');\n\nconst blogPostSchema = new mongoose.Schema({\n  title: {\n    type: String,\n    required: true\n  },\n  body: {\n    type: String,\n    required: true\n  },\n  status: {\n    type: String,\n    enum: ['draft', 'published', 'archived'],\n    default: 'draft'\n  },\n  tags: [String]\n});\n\nconst BlogPost = mongoose.model('BlogPost', blogPostSchema);\n\nmodule.exports = BlogPost;",
+        "testCases": "1. Các trường `title` và `body` phải là String và required. 2. Trường `status` phải có validator `enum` với các giá trị cho trước và default là 'draft'. 3. Trường `tags` phải được định nghĩa là một mảng các chuỗi (Array of Strings)."
+      },
+      {
+        "title": "Bài 5: Xây dựng Model Trello Column hoàn chỉnh",
+        "description": "Dựa trên kiến thức về Mongoose, hãy xây dựng một file model hoàn chỉnh cho một cột (Column) trong Trello. Schema `columnSchema` cần có: `boardId` (tham chiếu đến model 'Board'), `title` (String, required, min 3, max 50), `cardOrderIds` (mảng các ObjectId tham chiếu đến model 'Card'), và tự động có timestamps.",
+        "starterCode": "const mongoose = require('mongoose');\n\n// Bắt đầu code của bạn ở đây\nconst columnSchema = new mongoose.Schema({\n  \n}, {\n  \n});\n\nconst Column = mongoose.model('Column', columnSchema);\n\nmodule.exports = Column;\n",
+        "solution": "const mongoose = require('mongoose');\n\nconst columnSchema = new mongoose.Schema({\n  boardId: {\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'Board',\n    required: true\n  },\n  title: {\n    type: String,\n    required: true,\n    minlength: 3,\n    maxlength: 50,\n    trim: true\n  },\n  cardOrderIds: [{\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'Card',\n    default: []\n  }]\n}, {\n  timestamps: true\n});\n\nconst Column = mongoose.model('Column', columnSchema);\n\nmodule.exports = Column;",
+        "testCases": "1. Trường `boardId` phải tham chiếu đến model 'Board' và là bắt buộc. 2. Trường `title` phải có các validation về độ dài và được trim. 3. Trường `cardOrderIds` phải là một mảng các ObjectId tham chiếu đến model 'Card', mặc định là mảng rỗng. 4. Schema phải có timestamps."
+      }
+    ]
+  }
+}

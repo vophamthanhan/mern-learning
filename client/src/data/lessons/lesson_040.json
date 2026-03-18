@@ -1,0 +1,213 @@
+{
+  "id": 40,
+  "title": "Bài học 21: Code thanh Header: Trello App Bar (part 1)",
+  "category": "layout",
+  "categoryName": "Layout & Giao diện",
+  "content": "# Bài học 21: Code thanh Header: Trello App Bar (part 1)\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ bắt đầu xây dựng giao diện cho ứng dụng Trello clone, cụ thể là thanh `AppBar` (thanh tiêu đề) ở phía trên cùng. Mục tiêu chính là tạo ra một `AppBar` tĩnh, bao gồm các thành phần cơ bản như logo, các nút điều hướng, và menu người dùng. Chúng ta sẽ sử dụng thư viện Material-UI để xây dựng giao diện một cách nhanh chóng và chuyên nghiệp.\n\n## II. Kiến thức chi tiết\n\n### 1. Giới thiệu về Material-UI\n\nMaterial-UI (MUI) là một thư viện UI component dành cho React, được xây dựng dựa trên hệ thống thiết kế Material Design của Google. MUI cung cấp một bộ sưu tập lớn các component được thiết kế sẵn, giúp các nhà phát triển xây dựng giao diện người dùng đẹp mắt, nhất quán và responsive một cách hiệu quả.\n\n> **Material Design** là một hệ thống thiết kế được phát triển bởi Google, bao gồm các nguyên tắc và hướng dẫn về cách thiết kế giao diện người dùng cho các ứng dụng và trang web. Nó tập trung vào việc tạo ra trải nghiệm người dùng tự nhiên và trực quan.\n\n### 2. Component `AppBar` trong Material-UI\n\n`AppBar` là một trong những component cơ bản và quan trọng nhất của Material-UI. Nó thường được sử dụng để hiển thị thông tin và các hành động liên quan đến màn hình hiện tại, chẳng hạn như:\n\n*   **Branding:** Hiển thị logo hoặc tên của ứng dụng.\n*   **Screen titles:** Hiển thị tiêu đề của màn hình hiện tại.\n*   **Navigation:** Chứa các liên kết hoặc nút để điều hướng đến các trang khác.\n*   **Actions:** Chứa các nút để thực hiện các hành động, chẳng-hạn-như-tìm-kiếm, thông-báo, hoặc-mở-menu-người-dùng.\n\n### 3. Styling trong Material-UI\n\nMaterial-UI cung cấp nhiều cách để tùy chỉnh style cho các component. Trong phạm vi bài học này, chúng ta sẽ tập trung vào việc sử dụng `sx` prop, một cách tiếp cận hiện đại và linh hoạt để áp dụng style trực tiếp lên component.\n\n`sx` prop cho phép bạn viết CSS trực tiếp trong JSX, với sự hỗ trợ của các giá trị từ theme (chủ đề) của Material-UI. Điều này giúp cho việc styling trở nên nhanh chóng và nhất quán với hệ thống thiết kế của bạn.\n\n```jsx\n<Box\n  sx={{\n    width: 300,\n    height: 300,\n    backgroundColor: 'primary.main',\n    '&:hover': {\n      backgroundColor: 'primary.dark',\n      opacity: [0.9, 0.8, 0.7],\n    },\n  }}\n/>\n```\n\n## III. Các bước thực hành\n\n### 1. Cài đặt Material-UI\n\nTrước tiên, bạn cần cài đặt Material-UI và các gói phụ thuộc vào dự án React của mình:\n\n```bash\nnpm install @mui/material @emotion/react @emotion/styled\n```\n\n### 2. Tạo component `AppBar`\n\nTạo một file mới có tên `AppBar.jsx` trong thư mục `src/components` và thêm đoạn code sau:\n\n```jsx\nimport React from 'react';\nimport { Box, AppBar as MuiAppBar, Toolbar, Typography } from '@mui/material';\n\nfunction AppBar() {\n  return (\n    <MuiAppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\" component=\"div\" sx={{ flexGrow: 1 }}>\n          Trello Clone\n        </Typography>\n        {/* Add more components here */}\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default AppBar;\n```\n\n### 3. Tích hợp `AppBar` vào trang chính\n\nTrong file `App.jsx`, import và sử dụng component `AppBar` vừa tạo:\n\n```jsx\nimport React from 'react';\nimport AppBar from './components/AppBar';\n\nfunction App() {\n  return (\n    <div>\n      <AppBar />\n      {/* Other components will go here */}\n    </div>\n  );\n}\n\nexport default App;\n```\n\n### 4. Thêm các thành phần vào `AppBar`\n\nBây giờ, chúng ta sẽ thêm các thành phần khác vào `AppBar` như các nút và menu.\n\n```jsx\n// In AppBar.jsx\nimport React from 'react';\nimport { Box, AppBar as MuiAppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem } from '@mui/material';\nimport MenuIcon from '@mui/icons-material/Menu';\n\nfunction AppBar() {\n  const [anchorEl, setAnchorEl] = React.useState(null);\n\n  const handleMenu = (event) => {\n    setAnchorEl(event.currentTarget);\n  };\n\n  const handleClose = () => {\n    setAnchorEl(null);\n  };\n\n  return (\n    <MuiAppBar position=\"static\">\n      <Toolbar>\n        <IconButton\n          size=\"large\"\n          edge=\"start\"\n          color=\"inherit\"\n          aria-label=\"menu\"\n          sx={{ mr: 2 }}\n        >\n          <MenuIcon />\n        </IconButton>\n        <Typography variant=\"h6\" component=\"div\" sx={{ flexGrow: 1 }}>\n          Trello Clone\n        </Typography>\n        <Button color=\"inherit\">Login</Button>\n        <div>\n          <IconButton\n            size=\"large\"\n            aria-label=\"account of current user\"\n            aria-controls=\"menu-appbar\"\n            aria-haspopup=\"true\"\n            onClick={handleMenu}\n            color=\"inherit\"\n          >\n            <AccountCircle />\n          </IconButton>\n          <Menu\n            id=\"menu-appbar\"\n            anchorEl={anchorEl}\n            anchorOrigin={{\n              vertical: 'top',\n              horizontal: 'right',\n            }}\n            keepMounted\n            transformOrigin={{\n              vertical: 'top',\n              horizontal: 'right',\n            }}\n            open={Boolean(anchorEl)}\n            onClose={handleClose}\n          >\n            <MenuItem onClick={handleClose}>Profile</MenuItem>\n            <MenuItem onClick={handleClose}>My account</MenuItem>\n          </Menu>\n        </div>\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default AppBar;\n```\n\n## IV. Lưu ý quan trọng\n\n*   **Component `Box`:** `Box` là một component đa dụng của Material-UI, cho phép bạn dễ dàng tạo ra các layout và áp dụng style bằng `sx` prop.\n*   **`flexGrow: 1`:** Thuộc tính này được sử dụng để làm cho `Typography` (tiêu đề) chiếm hết không gian còn lại, đẩy các thành phần khác sang bên phải.\n*   **State quản lý Menu:** Chúng ta sử dụng `React.useState` để quản lý trạng thái của menu (đóng hoặc mở).\n\n## V. Tài liệu tham khảo\n\n*   [Material-UI AppBar Component](https://mui.com/material-ui/react-app-bar/)\n*   [Material-UI `sx` prop](https://mui.com/system/the-sx-prop/)\n*   [GitHub Repository - vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Material-UI (MUI) là gì?",
+        "options": [
+          "Một thư viện JavaScript để thao tác DOM",
+          "Một framework CSS tương tự Bootstrap",
+          "Một thư viện UI component cho React dựa trên Material Design",
+          "Một ngôn ngữ lập trình mới"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Material-UI là một thư viện UI component dành cho React, được xây dựng dựa trên hệ thống thiết kế Material Design của Google."
+      },
+      {
+        "question": "Component nào trong Material-UI thường được sử dụng để tạo thanh tiêu đề cho ứng dụng?",
+        "options": [
+          "Card",
+          "AppBar",
+          "Drawer",
+          "Grid"
+        ],
+        "correctAnswer": 1,
+        "explanation": "AppBar là component được thiết kế đặc biệt để hiển thị thông tin và các hành động liên quan đến màn hình hiện tại, thường được dùng làm thanh tiêu đề."
+      },
+      {
+        "question": "Prop `sx` trong Material-UI dùng để làm gì?",
+        "options": [
+          "Để xử lý sự kiện click",
+          "Để định tuyến trong ứng dụng",
+          "Để áp dụng style CSS trực tiếp lên component",
+          "Để quản lý trạng thái của component"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Prop `sx` cho phép viết CSS trực tiếp trong JSX, giúp styling nhanh chóng và nhất quán với theme của Material-UI."
+      },
+      {
+        "question": "Lệnh nào sau đây dùng để cài đặt Material-UI và các gói phụ thuộc cần thiết?",
+        "options": [
+          "npm install material-ui",
+          "npm install @mui/material @emotion/react @emotion/styled",
+          "npm install react-mui",
+          "npm install @google/material-design"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để sử dụng Material-UI, bạn cần cài đặt gói `@mui/material` cùng với các gói phụ thuộc là `@emotion/react` và `@emotion/styled`."
+      },
+      {
+        "question": "Trong component `Toolbar`, thuộc tính `sx={{ flexGrow: 1 }}` trên một `Typography` có tác dụng gì?",
+        "options": [
+          "Làm cho font chữ lớn hơn",
+          "Canh giữa tiêu đề",
+          "Làm cho tiêu đề chiếm hết không gian còn lại, đẩy các phần tử khác ra xa",
+          "Thêm một icon vào bên cạnh tiêu đề"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `flexGrow: 1` làm cho phần tử đó (ở đây là Typography) mở rộng để lấp đầy không gian có sẵn trong flex container, đẩy các phần tử khác sang hai bên."
+      },
+      {
+        "question": "Để tạo một menu xổ xuống khi người dùng nhấp vào một `IconButton`, bạn cần sử dụng component nào của Material-UI?",
+        "options": [
+          "Popover",
+          "Dialog",
+          "Menu",
+          "Snackbar"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Component `Menu` được sử dụng để hiển thị một danh sách các lựa chọn trên một bề mặt tạm thời khi người dùng tương tác với một nút hoặc điều khiển khác."
+      },
+      {
+        "question": "Trạng thái của `Menu` (đóng hoặc mở) thường được quản lý bằng hook nào của React?",
+        "options": [
+          "useEffect",
+          "useContext",
+          "useState",
+          "useReducer"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Chúng ta sử dụng `React.useState` để quản lý trạng thái của menu, ví dụ như lưu trữ `anchorEl` để xác định vị trí và trạng thái mở/đóng của menu."
+      },
+      {
+        "question": "Component `Box` trong Material-UI có công dụng chính là gì?",
+        "options": [
+          "Hiển thị hình ảnh",
+          "Tạo các ô nhập liệu",
+          "Một component đa dụng để tạo layout và áp dụng style bằng `sx` prop",
+          "Chỉ dùng để chứa các component khác"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`Box` là một component đa dụng, hoạt động như một thẻ `div` có thể áp dụng style trực tiếp thông qua `sx` prop, rất hữu ích cho việc xây dựng layout."
+      },
+      {
+        "question": "Prop `position=\"static\"` trên component `MuiAppBar` có ý nghĩa gì?",
+        "options": [
+          "AppBar sẽ dính cố định ở đầu trang khi cuộn",
+          "AppBar sẽ nằm ở cuối trang",
+          "AppBar sẽ được hiển thị theo luồng bình thường của tài liệu, không có định vị đặc biệt",
+          "AppBar sẽ ẩn đi"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`position=\"static\"` là giá trị mặc định, có nghĩa là AppBar sẽ được render như một phần tử bình thường trong luồng của trang."
+      },
+      {
+        "question": "Để hiển thị một icon trong Material-UI, bạn thường import từ gói nào?",
+        "options": [
+          "@mui/material/icons",
+          "@mui/icons-material",
+          "@mui/core/icons",
+          "@material-ui/icons"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Các icon của Material Design được cung cấp trong một gói riêng là `@mui/icons-material`."
+      },
+      {
+        "question": "Sự khác biệt chính giữa `Button` và `IconButton` là gì?",
+        "options": [
+          "Không có sự khác biệt",
+          "`IconButton` chỉ có thể chứa icon, trong khi `Button` có thể chứa text và icon",
+          "`Button` không thể xử lý sự kiện `onClick`",
+          "`IconButton` có viền tròn mặc định"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`IconButton` được tối ưu hóa để chứa chỉ một icon, trong khi `Button` linh hoạt hơn và thường được dùng với text."
+      },
+      {
+        "question": "Trong ví dụ code, `handleMenu` và `handleClose` là các hàm để làm gì?",
+        "options": [
+          "Điều hướng trang",
+          "Gửi dữ liệu form",
+          "Thay đổi theme của ứng dụng",
+          "Mở và đóng menu người dùng"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`handleMenu` được gọi khi nhấp vào icon để mở menu (bằng cách set `anchorEl`), và `handleClose` được gọi để đóng menu (bằng cách set `anchorEl` về `null`)."
+      },
+      {
+        "question": "Component `Toolbar` có vai trò gì bên trong `AppBar`?",
+        "options": [
+          "Tạo khoảng cách trên và dưới cho `AppBar`",
+          "Là một container linh hoạt để sắp xếp các mục bên trong `AppBar` theo chiều ngang",
+          "Thay đổi màu nền của `AppBar`",
+          "Thêm bóng đổ cho `AppBar`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`Toolbar` được sử dụng bên trong `AppBar` để chứa các nội dung và tự động áp dụng các style cần thiết để sắp xếp chúng một cách hợp lý."
+      },
+      {
+        "question": "Hệ thống thiết kế (design system) mà Material-UI dựa trên là gì?",
+        "options": [
+          "Fluent Design System",
+          "Human Interface Guidelines",
+          "Ant Design",
+          "Material Design"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Material-UI là bộ triển khai React của Material Design, một hệ thống thiết kế được tạo ra và phát triển bởi Google."
+      },
+      {
+        "question": "Để sử dụng `sx` prop, bạn cần cài đặt gói nào ngoài `@mui/material`?",
+        "options": [
+          "styled-components",
+          "css-in-js",
+          "@emotion/react và @emotion/styled",
+          "node-sass"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`sx` prop được cung cấp bởi Emotion, do đó bạn cần cài đặt `@emotion/react` và `@emotion/styled` để sử dụng nó."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo AppBar cơ bản",
+        "description": "Tạo một component React có tên `MyAppBar` sử dụng Material-UI để render một `AppBar` đơn giản với tiêu đề là \"My App\".",
+        "starterCode": "import React from 'react';\nimport { Box, AppBar as MuiAppBar, Toolbar, Typography } from '@mui/material';\n\nfunction MyAppBar() {\n  // Viết code của bạn ở đây\n  return null;\n}\n\nexport default MyAppBar;",
+        "solution": "import React from 'react';\nimport { Box, AppBar as MuiAppBar, Toolbar, Typography } from '@mui/material';\n\nfunction MyAppBar() {\n  return (\n    <MuiAppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\">\n          My App\n        </Typography>\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default MyAppBar;",
+        "testCases": "Render component và kiểm tra xem có một phần tử `header` (AppBar) chứa text \"My App\" hay không."
+      },
+      {
+        "title": "Bài 2: Thêm nút vào AppBar",
+        "description": "Mở rộng `MyAppBar` từ bài 1, thêm một `Button` ở bên phải của tiêu đề với nội dung là \"Login\". Sử dụng `flexGrow` để đẩy nút sang phải.",
+        "starterCode": "import React from 'react';\nimport { Box, AppBar as MuiAppBar, Toolbar, Typography, Button } from '@mui/material';\n\nfunction MyAppBar() {\n  return (\n    <MuiAppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\">\n          My App\n        </Typography>\n        {/* Thêm Button và style cho Typography ở đây */}\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default MyAppBar;",
+        "solution": "import React from 'react';\nimport { Box, AppBar as MuiAppBar, Toolbar, Typography, Button } from '@mui/material';\n\nfunction MyAppBar() {\n  return (\n    <MuiAppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\" component=\"div\" sx={{ flexGrow: 1 }}>\n          My App\n        </Typography>\n        <Button color=\"inherit\">Login</Button>\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default MyAppBar;",
+        "testCases": "Render component và kiểm tra xem có một `Button` với text \"Login\" và tiêu đề được đẩy sang trái hay không."
+      },
+      {
+        "title": "Bài 3: Tùy chỉnh màu sắc AppBar",
+        "description": "Sử dụng `sx` prop để thay đổi màu nền của `AppBar` thành màu xanh lá cây (`#4caf50`).",
+        "starterCode": "import React from 'react';\nimport { Box, AppBar as MuiAppBar, Toolbar, Typography } from '@mui/material';\n\nfunction MyAppBar() {\n  return (\n    // Thêm sx prop vào đây\n    <MuiAppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\">\n          Green App\n        </Typography>\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default MyAppBar;",
+        "solution": "import React from 'react';\nimport { Box, AppBar as MuiAppBar, Toolbar, Typography } from '@mui/material';\n\nfunction MyAppBar() {\n  return (\n    <MuiAppBar position=\"static\" sx={{ backgroundColor: '#4caf50' }}>\n      <Toolbar>\n        <Typography variant=\"h6\">\n          Green App\n        </Typography>\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default MyAppBar;",
+        "testCases": "Render component và kiểm tra xem màu nền của `AppBar` có mã hex là `#4caf50` hay không."
+      },
+      {
+        "title": "Bài 4: Thêm IconButton với Icon",
+        "description": "Thêm một `IconButton` vào bên trái của tiêu đề trong `AppBar`. Sử dụng `MenuIcon` từ gói `@mui/icons-material`.",
+        "starterCode": "import React from 'react';\nimport { AppBar as MuiAppBar, Toolbar, Typography, IconButton } from '@mui/material';\n// import icon cần thiết ở đây\n\nfunction MyAppBar() {\n  return (\n    <MuiAppBar position=\"static\">\n      <Toolbar>\n        {/* Thêm IconButton ở đây */}\n        <Typography variant=\"h6\" component=\"div\" sx={{ flexGrow: 1 }}>\n          App with Icon\n        </Typography>\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default MyAppBar;",
+        "solution": "import React from 'react';\nimport { AppBar as MuiAppBar, Toolbar, Typography, IconButton } from '@mui/material';\nimport MenuIcon from '@mui/icons-material/Menu';\n\nfunction MyAppBar() {\n  return (\n    <MuiAppBar position=\"static\">\n      <Toolbar>\n        <IconButton size=\"large\" edge=\"start\" color=\"inherit\" aria-label=\"menu\" sx={{ mr: 2 }}>\n          <MenuIcon />\n        </IconButton>\n        <Typography variant=\"h6\" component=\"div\" sx={{ flexGrow: 1 }}>\n          App with Icon\n        </Typography>\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default MyAppBar;",
+        "testCases": "Render component và kiểm tra sự tồn tại của một `IconButton` chứa `MenuIcon`."
+      },
+      {
+        "title": "Bài 5: Tạo Menu người dùng đơn giản",
+        "description": "Tạo một `IconButton` với `AccountCircle` icon ở bên phải. Khi nhấp vào, một `Menu` sẽ xuất hiện với hai `MenuItem`: \"Profile\" và \"Logout\". Quản lý trạng thái mở/đóng của menu bằng `useState`.",
+        "starterCode": "import React from 'react';\nimport { AppBar as MuiAppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';\nimport AccountCircle from '@mui/icons-material/AccountCircle';\n\nfunction UserMenuAppBar() {\n  // Sử dụng useState để quản lý trạng thái menu\n\n  // Viết các hàm xử lý mở và đóng menu\n\n  return (\n    <MuiAppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\" component=\"div\" sx={{ flexGrow: 1 }}>\n          My App\n        </Typography>\n        <div>\n          {/* Thêm IconButton và Menu ở đây */}\n        </div>\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default UserMenuAppBar;",
+        "solution": "import React from 'react';\nimport { AppBar as MuiAppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';\nimport AccountCircle from '@mui/icons-material/AccountCircle';\n\nfunction UserMenuAppBar() {\n  const [anchorEl, setAnchorEl] = React.useState(null);\n\n  const handleMenu = (event) => {\n    setAnchorEl(event.currentTarget);\n  };\n\n  const handleClose = () => {\n    setAnchorEl(null);\n  };\n\n  return (\n    <MuiAppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\" component=\"div\" sx={{ flexGrow: 1 }}>\n          My App\n        </Typography>\n        <div>\n          <IconButton size=\"large\" onClick={handleMenu} color=\"inherit\">\n            <AccountCircle />\n          </IconButton>\n          <Menu\n            anchorEl={anchorEl}\n            open={Boolean(anchorEl)}\n            onClose={handleClose}\n          >\n            <MenuItem onClick={handleClose}>Profile</MenuItem>\n            <MenuItem onClick={handleClose}>Logout</MenuItem>\n          </Menu>\n        </div>\n      </Toolbar>\n    </MuiAppBar>\n  );\n}\n\nexport default UserMenuAppBar;",
+        "testCases": "Render component. Nhấp vào icon `AccountCircle`. Kiểm tra xem menu có xuất hiện với hai mục \"Profile\" và \"Logout\" hay không. Nhấp vào một mục, kiểm tra xem menu có đóng lại không."
+      }
+    ]
+  }
+}

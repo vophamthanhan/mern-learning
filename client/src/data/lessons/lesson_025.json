@@ -1,0 +1,213 @@
+{
+  "id": 25,
+  "title": "Buổi 13: Xử lý Active Board, Board Owners, và Members",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Buổi 13: Xử lý Active Board, Board Owners, và Members\n\n## I. Mục tiêu bài học\n\nVideo này là một phần của series MERN Stack Pro, tập trung vào việc xây dựng các tính năng cốt lõi cho một ứng dụng quản lý dự án giống Trello. Dựa trên tiêu đề \"Xử lý Active Board, Board Owners, Members...vv\", mục tiêu chính của bài học này là triển khai các cơ chế quản lý và phân quyền truy cập cho các bảng (boards) trong dự án.\n\nCác mục tiêu cụ thể bao gồm:\n\n1.  **Thiết lập quyền sở hữu (Ownership):** Xây dựng logic để xác định người tạo ra một board là \"chủ sở hữu\" (Owner), người có toàn quyền quản lý board đó.\n2.  **Quản lý thành viên (Members):** Implement tính năng mời và quản lý các thành viên khác tham gia vào một board, cho phép làm việc cộng tác.\n3.  **Xử lý \"Active Board\":** Xây dựng cơ chế để giao diện người dùng (UI) nhận biết và hiển thị board đang được chọn hoặc đang hoạt động.\n4.  **Phân quyền (Permissions):** (Suy luận từ \"...vv\") Xây dựng các quy tắc phân quyền cơ bản, ví dụ như chỉ chủ sở hữu mới có quyền mời thêm thành viên hoặc xóa board.\n\n## II. Kiến thức chi tiết\n\nVì đây là video dành cho thành viên, chúng ta sẽ dựa trên kiến thức chuyên môn về MERN Stack để suy luận và trình bày chi tiết các khái niệm và cách triển khai.\n\n### 1. Cập nhật Data Models (Mongoose Schemas)\n\nĐể hỗ trợ các tính năng trên, chúng ta cần cập nhật lại cấu trúc của các models, chủ yếu là `Board` model và có thể là `User` model.\n\n#### `board.model.js`\n\nModel `Board` cần được mở rộng để lưu trữ thông tin về chủ sở hữu và danh sách thành viên. Chúng ta sẽ sử dụng `ObjectId` và `ref` của Mongoose để tạo các mối quan hệ với `User` model.\n\n```javascript\nimport mongoose from 'mongoose'\n\nconst boardSchema = new mongoose.Schema({\n  title: { type: String, required: true, trim: true },\n  description: { type: String, trim: true },\n  \n  // Owner của board\n  owner: {\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User',\n    required: true\n  },\n\n  // Danh sách các thành viên được mời vào board\n  members: [{\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User'\n  }],\n\n  // Mảng chứa các list (cột) trong board\n  lists: [{\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'List'\n  }],\n\n  // Các trường khác...\n  createdAt: { type: Date, default: Date.now },\n  updatedAt: { type: Date, default: Date.now }\n});\n\n// Tự động thêm owner vào danh sách members khi tạo board\nboardSchema.pre('save', function(next) {\n  if (this.isNew && !this.members.includes(this.owner)) {\n    this.members.push(this.owner);\n  }\n  next();\n});\n\nexport const Board = mongoose.model('Board', boardSchema);\n```\n\n**Giải thích:**\n\n*   `owner`: Một trường mới lưu `ObjectId` của user đã tạo ra board. Đây là mối quan hệ một-nhiều (một user có thể sở hữu nhiều board).\n*   `members`: Một mảng các `ObjectId`, lưu trữ tất cả các user có quyền truy cập vào board (bao gồm cả owner).\n*   Sử dụng `pre('save')` hook để đảm bảo rằng `owner` luôn là một thành viên của board ngay từ khi board được tạo.\n\n### 2. Xây dựng API Endpoints (Node.js & Express.js)\n\nChúng ta cần các API endpoints để xử lý các logic nghiệp vụ liên quan.\n\n#### a. Lấy thông tin chi tiết Board (Active Board)\n\nKhi người dùng truy cập vào một board cụ thể, chúng ta cần một endpoint để lấy toàn bộ thông tin của board đó, bao gồm cả thông tin chi tiết của owner và members.\n\n**Endpoint:** `GET /api/boards/:id`\n\n**Controller (`board.controller.js`):**\n\n```javascript\nexport const getBoardDetails = async (req, res, next) => {\n  try {\n    const board = await Board.findById(req.params.id).populate('owner', 'name email avatar').populate('members', 'name email avatar').populate('lists');\n\n    if (!board) {\n      return res.status(404).json({ message: 'Board not found' });\n    }\n\n    // Logic kiểm tra quyền truy cập (chỉ members mới được xem)\n    const userId = req.user._id; // Lấy từ middleware xác thực JWT\n    if (!board.members.some(member => member._id.equals(userId))) {\n        return res.status(403).json({ message: 'Access denied' });\n    }\n\n    res.status(200).json(board);\n  } catch (error) {\n    next(error);\n  }\n};\n```\n\n**Giải thích:**\n\n*   Sử dụng `.populate()` để lấy thông tin chi tiết (`name`, `email`, `avatar`) của `owner` và `members` thay vì chỉ trả về `ObjectId`.\n*   Đây chính là logic cốt lõi để xử lý **Active Board**. Frontend sẽ gọi API này khi người dùng click vào một board, và dữ liệu trả về sẽ được dùng để render toàn bộ giao diện của board đó.\n*   **Quan trọng:** Cần có bước kiểm tra quyền truy cập. Chỉ những ai có trong danh sách `members` mới có quyền xem thông tin board.\n\n#### b. Mời thành viên vào Board\n\nChỉ owner của board mới có quyền mời thêm thành viên mới.\n\n**Endpoint:** `PUT /api/boards/:id/invite`\n\n**Controller (`board.controller.js`):**\n\n```javascript\nexport const inviteMember = async (req, res, next) => {\n  try {\n    const { memberId } = req.body; // ID của người được mời\n    const boardId = req.params.id;\n    const userId = req.user._id; // ID của người thực hiện hành động\n\n    const board = await Board.findById(boardId);\n    if (!board) {\n      return res.status(404).json({ message: 'Board not found' });\n    }\n\n    // Kiểm tra quyền: chỉ owner mới được mời\n    if (!board.owner.equals(userId)) {\n      return res.status(403).json({ message: 'Only the board owner can invite members' });\n    }\n\n    // Kiểm tra xem thành viên đã có trong board chưa\n    if (board.members.includes(memberId)) {\n      return res.status(400).json({ message: 'User is already a member of this board' });\n    }\n\n    // Thêm thành viên mới và lưu lại\n    board.members.push(memberId);\n    const updatedBoard = await board.save();\n    await updatedBoard.populate('members', 'name email avatar');\n\n    res.status(200).json(updatedBoard.members);\n  } catch (error) {\n    next(error);\n  }\n};\n```\n\n**Giải thích:**\n\n*   Endpoint nhận vào `memberId` của người dùng cần mời.\n*   Logic kiểm tra quyền (`board.owner.equals(userId)`) là tối quan trọng để đảm bảo tính bảo mật.\n*   Sau khi thêm thành viên, trả về danh sách members đã được cập nhật.\n\n### 3. Logic phía Frontend (React)\n\nPhía client, chúng ta cần sử dụng React để xây dựng UI và tương tác với các API đã tạo.\n\n#### a. Quản lý State cho Active Board\n\nKhi người dùng vào trang chi tiết một board (ví dụ: `/boards/some-board-id`), chúng ta cần gọi API `GET /api/boards/:id` và lưu trữ dữ liệu trả về vào một state global hoặc state của component cha.\n\nSử dụng **React Context** hoặc **Zustand/Redux** là một giải pháp tốt.\n\n**Ví dụ với React Context (`BoardContext.js`):**\n\n```jsx\nimport { createContext, useContext, useState, useEffect } from 'react';\nimport { useParams } from 'react-router-dom';\nimport { boardApi } from '~/apis'; // Giả định có một file quản lý API\n\nconst BoardContext = createContext();\n\nexport const useBoard = () => useContext(BoardContext);\n\nexport const BoardProvider = ({ children }) => {\n  const [activeBoard, setActiveBoard] = useState(null);\n  const [loading, setLoading] = useState(true);\n  const { boardId } = useParams(); // Lấy boardId từ URL\n\n  useEffect(() => {\n    if (boardId) {\n      setLoading(true);\n      boardApi.getBoardDetails(boardId)\n        .then(boardData => {\n          setActiveBoard(boardData);\n        })\n        .catch(error => console.error(error))\n        .finally(() => setLoading(false));\n    }\n  }, [boardId]);\n\n  return (\n    <BoardContext.Provider value={{ activeBoard, loading }}>\n      {children}\n    </BoardContext.Provider>\n  );\n};\n```\n\nSau đó, bọc `BoardProvider` quanh layout của trang chi tiết board. Bất kỳ component con nào cũng có thể dùng `useBoard()` để truy cập thông tin của `activeBoard`.\n\n#### b. Hiển thị Owner và Members\n\nTrong component board, chúng ta có thể đọc `activeBoard` từ context và render danh sách thành viên.\n\n```jsx\nimport { useBoard } from '~/contexts/BoardContext';\n\nconst BoardHeader = () => {\n  const { activeBoard } = useBoard();\n\n  if (!activeBoard) return null;\n\n  return (\n    <div className=\"board-header\">\n      <h2>{activeBoard.title}</h2>\n      <div className=\"members\">\n        <span>Owner: {activeBoard.owner.name}</span>\n        <div className=\"member-avatars\">\n          {activeBoard.members.map(member => (\n            <img key={member._id} src={member.avatar} alt={member.name} title={member.name} />\n          ))}\n        </div>\n        {/* Nút mời thành viên sẽ được đặt ở đây */}\n      </div>\n    </div>\n  );\n};\n```\n\n## III. Các bước thực hành\n\n1.  **Backend:**\n    *   Mở file `src/models/board.model.js`, thêm các trường `owner` và `members` như đã mô tả ở trên.\n    *   Thêm `pre('save')` hook để tự động thêm owner vào danh sách members.\n    *   Trong `src/controllers/board.controller.js`, tạo các hàm `getBoardDetails` và `inviteMember`.\n    *   Trong `src/routes/v1/board.route.js`, định nghĩa các route `GET /:id` và `PUT /:id/invite`, trỏ đến các controller tương ứng. Đừng quên thêm middleware xác thực người dùng (JWT).\n\n2.  **Frontend:**\n    *   Tạo một `BoardProvider` context để quản lý state của active board.\n    *   Tại trang chi tiết board (component được render bởi route `/boards/:boardId`), sử dụng `useEffect` để gọi API lấy chi tiết board khi component được mount hoặc `boardId` thay đổi.\n    *   Xây dựng các component để hiển thị thông tin board, danh sách members, avatar...\n    *   Tạo một component (ví dụ: Modal hoặc Popover) cho phép owner mời thành viên mới. Component này sẽ chứa một form để nhập email hoặc username của người được mời, sau đó gọi API `PUT /api/boards/:id/invite`.\n\n## IV. Lưu ý quan trọng\n\n*   **Bảo mật là trên hết:** Luôn luôn xác thực quyền của người dùng ở phía backend cho mỗi hành động nhạy cảm (mời thành viên, xóa board, sửa thông tin...). Đừng bao giờ tin tưởng vào dữ liệu từ client.\n*   **Populate hợp lý:** Chỉ `populate` những trường cần thiết để tránh làm API trả về dữ liệu thừa, ảnh hưởng đến hiệu năng.\n*   **Xử lý lỗi:** Cần xử lý tất cả các trường hợp lỗi có thể xảy ra: board không tồn tại, không có quyền truy cập, user được mời không tồn tại, user đã là thành viên...\n*   **Tối ưu Frontend:** Sử dụng `React.memo` hoặc các kỹ thuật memoization khác cho các component con để tránh re-render không cần thiết khi state của `activeBoard` thay đổi.\n\n## V. Tài liệu tham khảo\n\n*   **Mongoose Population:** [https://mongoosejs.com/docs/populate.html](https://mongoosejs.com/docs/populate.html)\n*   **Mongoose Middleware (pre/post hooks):** [https://mongoosejs.com/docs/middleware.html](https://mongoosejs.com/docs/middleware.html)\n*   **React Context:** [https://react.dev/learn/passing-data-deeply-with-context](https://react.dev/learn/passing-data-deeply-with-context)\n*   **Express.js Routing:** [https://expressjs.com/en/guide/routing.html](https://expressjs.com/en/guide/routing.html)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong Mongoose, trường `owner` trong `boardSchema` nên được định nghĩa với kiểu dữ liệu nào để tham chiếu đến một user?",
+        "options": [
+          "String",
+          "mongoose.Schema.Types.ObjectId",
+          "Number",
+          "Object"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để tạo mối quan hệ tham chiếu đến một document khác trong Mongoose (trong trường hợp này là User), chúng ta sử dụng `mongoose.Schema.Types.ObjectId` và thuộc tính `ref: 'User'`."
+      },
+      {
+        "question": "Mục đích chính của Mongoose hook `pre('save')` trong `boardSchema` được đề cập trong bài học là gì?",
+        "options": [
+          "Để mã hóa mật khẩu của owner",
+          "Để tự động thêm owner vào danh sách `members` khi tạo board mới",
+          "Để xóa tất cả các list con khi board bị xóa",
+          "Để kiểm tra xem title của board có bị trùng lặp hay không"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hook `pre('save')` được sử dụng để thực hiện một hành động ngay trước khi document được lưu. Trong bài học, nó đảm bảo rằng người tạo board (owner) cũng là một thành viên (member) của board đó ngay từ đầu."
+      },
+      {
+        "question": "Phương thức Mongoose nào được sử dụng để thay thế `ObjectId` bằng dữ liệu chi tiết của document được tham chiếu?",
+        "options": [
+          "`.find()`",
+          "`.join()`",
+          "`.populate()`",
+          "`.merge()`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`.populate()` là phương thức của Mongoose cho phép chúng ta lấy thông tin chi tiết từ các collection khác được tham chiếu bằng `ObjectId`, ví dụ như lấy `name` và `email` của `owner` và `members`."
+      },
+      {
+        "question": "Trong controller `getBoardDetails`, tại sao cần phải kiểm tra `!board.members.some(member => member._id.equals(userId))`?",
+        "options": [
+          "Để đảm bảo board có ít nhất một thành viên",
+          "Để kiểm tra xem người dùng có phải là owner của board hay không",
+          "Để ngăn chặn người dùng không phải thành viên xem thông tin của board",
+          "Để thêm người dùng hiện tại vào danh sách thành viên"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đây là một bước kiểm tra quyền truy cập quan trọng để đảm bảo tính bảo mật. Chỉ những người dùng có `_id` nằm trong danh sách `members` của board mới có quyền xem chi tiết board đó."
+      },
+      {
+        "question": "Theo bài học, ai có quyền mời thành viên mới vào một board?",
+        "options": [
+          "Bất kỳ thành viên nào trong board",
+          "Chỉ `owner` của board",
+          "Bất kỳ người dùng nào đã đăng ký",
+          "Chỉ admin của hệ thống"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Logic nghiệp vụ được xây dựng yêu cầu chỉ chủ sở hữu (`owner`) của board mới có quyền thực hiện hành động mời thêm thành viên mới, được kiểm tra bằng `board.owner.equals(userId)`."
+      },
+      {
+        "question": "Endpoint API nào được đề xuất để xử lý việc mời một thành viên mới vào board?",
+        "options": [
+          "POST /api/boards/:id/members",
+          "GET /api/boards/:id/invite",
+          "DELETE /api/boards/:id/members",
+          "PUT /api/boards/:id/invite"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bài học đề xuất sử dụng phương thức `PUT` cho endpoint `/api/boards/:id/invite` vì hành động này cập nhật một tài nguyên đã tồn tại (board) bằng cách thêm một thành viên mới vào danh sách."
+      },
+      {
+        "question": "Trong React, `useParams()` hook từ `react-router-dom` được sử dụng để làm gì trong `BoardProvider`?",
+        "options": [
+          "Để lấy các query parameters từ URL",
+          "Để lấy `boardId` từ route parameters của URL (ví dụ: /boards/:boardId)",
+          "Để điều hướng người dùng đến một trang khác",
+          "Để quản lý state của component"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`useParams()` là một hook của React Router DOM cho phép component truy cập các tham số động trong URL, chẳng hạn như `boardId` trong đường dẫn `/boards/some-id`."
+      },
+      {
+        "question": "Khái niệm \"Active Board\" trong bài học đề cập đến điều gì?",
+        "options": [
+          "Board có nhiều hoạt động nhất trong ngày",
+          "Board đang được người dùng chọn và hiển thị trên giao diện",
+          "Board đầu tiên trong danh sách các board",
+          "Board được tạo gần đây nhất"
+        ],
+        "correctAnswer": 1,
+        "explanation": "\"Active Board\" là board mà người dùng đang tương tác. Dữ liệu của nó được tải về từ API và được giữ trong state của frontend để render giao diện chi tiết của board đó."
+      },
+      {
+        "question": "Tại sao việc kiểm tra quyền luôn phải được thực hiện ở phía backend thay vì chỉ ở frontend?",
+        "options": [
+          "Vì backend chạy nhanh hơn frontend",
+          "Vì code backend dễ viết hơn",
+          "Vì client (frontend) có thể bị giả mạo, không đáng tin cậy",
+          "Vì frontend không thể truy cập vào database"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Luôn phải xác thực quyền ở backend vì người dùng có thể dễ dàng thay đổi code ở phía client hoặc gửi yêu cầu API trực tiếp mà không thông qua giao diện. Backend là nguồn tin cậy duy nhất để thực thi các quy tắc bảo mật."
+      },
+      {
+        "question": "Trong `boardSchema`, tại sao trường `members` lại là một mảng các `ObjectId`?",
+        "options": [
+          "Vì một board chỉ có thể có một thành viên",
+          "Vì một board có thể có nhiều thành viên",
+          "Vì `ObjectId` là kiểu dữ liệu duy nhất Mongoose hỗ trợ",
+          "Vì Mongoose yêu cầu tất cả các trường phải là mảng"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một board được thiết kế để cho phép cộng tác, vì vậy nó cần lưu trữ một danh sách (mảng) các thành viên. Mỗi thành viên được tham chiếu bằng `ObjectId` của họ."
+      },
+      {
+        "question": "Khi gọi API `GET /api/boards/:id`, dữ liệu nào về `owner` và `members` được trả về nhờ `.populate()`?",
+        "options": [
+          "Chỉ ID của owner và members",
+          "Toàn bộ thông tin user, bao gồm cả mật khẩu đã hash",
+          "Các thông tin công khai được chọn lọc như `name`, `email`, `avatar`",
+          "Không có thông tin nào, chỉ có thông tin của board"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`.populate('owner', 'name email avatar')` cho phép chỉ định rõ những trường nào của document được tham chiếu sẽ được trả về, giúp tránh lộ thông tin nhạy cảm và giảm lượng dữ liệu không cần thiết."
+      },
+      {
+        "question": "Giải pháp nào được đề xuất trong bài học để quản lý state của \"Active Board\" trên frontend?",
+        "options": [
+          "Lưu vào `localStorage`",
+          "Sử dụng `useState` trong mỗi component con",
+          "Sử dụng React Context hoặc một thư viện quản lý state global (Zustand/Redux)",
+          "Lưu trực tiếp vào `window` object"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng React Context hoặc state management library như Redux/Zustand là giải pháp phù hợp để chia sẻ state của `activeBoard` cho nhiều component khác nhau trong cây component một cách hiệu quả."
+      },
+      {
+        "question": "Trong controller `inviteMember`, điều gì sẽ xảy ra nếu một người dùng cố gắng mời một người khác đã là thành viên của board?",
+        "options": [
+          "Thành viên đó sẽ bị xóa và được thêm lại",
+          "API sẽ trả về lỗi 400 (Bad Request) với thông báo lỗi",
+          "API sẽ trả về thành công nhưng không có gì thay đổi",
+          "Board sẽ bị xóa"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Logic nghiệp vụ nên kiểm tra xem người được mời đã là thành viên hay chưa (`board.members.includes(memberId)`). Nếu đã là thành viên, API nên trả về lỗi để thông báo cho người dùng biết."
+      },
+      {
+        "question": "Trong `BoardProvider`, tại sao `useEffect` lại có `[boardId]` làm dependency?",
+        "options": [
+          "Để `useEffect` chỉ chạy một lần duy nhất",
+          "Để `useEffect` chạy lại mỗi khi state `activeBoard` thay đổi",
+          "Để `useEffect` chạy lại và fetch dữ liệu mới khi người dùng điều hướng đến một board khác (boardId thay đổi)",
+          "Để ngăn chặn việc fetch dữ liệu"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc đưa `boardId` vào mảng dependency của `useEffect` đảm bảo rằng khi người dùng chuyển từ board này sang board khác, `boardId` trong URL sẽ thay đổi, và hook sẽ được kích hoạt lại để gọi API và lấy dữ liệu cho board mới."
+      },
+      {
+        "question": "Hành động nào sau đây KHÔNG phải là trách nhiệm của controller `getBoardDetails`?",
+        "options": [
+          "Tìm board trong database bằng ID",
+          "Populate thông tin của owner và members",
+          "Kiểm tra quyền truy cập của người dùng",
+          "Tạo một board mới trong database"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Controller `getBoardDetails` chỉ chịu trách nhiệm lấy và trả về thông tin của một board đã tồn tại. Việc tạo một board mới là trách nhiệm của một controller khác (ví dụ: `createBoard`)."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Mở rộng Board Schema",
+        "description": "Chỉnh sửa `board.model.js`. Thêm hai trường mới vào `boardSchema`: `owner` để lưu `ObjectId` của người tạo board và `members` là một mảng các `ObjectId` để lưu danh sách thành viên. Cả hai trường đều phải tham chiếu đến model 'User'.",
+        "starterCode": "import mongoose from 'mongoose';\n\nconst boardSchema = new mongoose.Schema({\n  title: { type: String, required: true, trim: true },\n  description: { type: String, trim: true },\n  // Thêm code của bạn ở đây\n  lists: [{\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'List'\n  }]\n});\n\nexport const Board = mongoose.model('Board', boardSchema);",
+        "solution": "import mongoose from 'mongoose';\n\nconst boardSchema = new mongoose.Schema({\n  title: { type: String, required: true, trim: true },\n  description: { type: String, trim: true },\n  \n  // Owner của board\n  owner: {\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User',\n    required: true\n  },\n\n  // Danh sách các thành viên được mời vào board\n  members: [{\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User'\n  }],\n\n  lists: [{\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'List'\n  }]\n});\n\nexport const Board = mongoose.model('Board', boardSchema);",
+        "testCases": "Schema sau khi chỉnh sửa phải chứa trường `owner` với `type` là `ObjectId`, `ref` là 'User' và `required` là `true`. Schema cũng phải chứa trường `members` là một mảng các `ObjectId` tham chiếu đến 'User'."
+      },
+      {
+        "title": "Bài 2: Tự động thêm Owner vào Members",
+        "description": "Sử dụng Mongoose middleware, hãy thêm một hook `pre('save')` vào `boardSchema`. Hook này phải đảm bảo rằng khi một board mới được tạo (`isNew`), `owner` của board sẽ tự động được thêm vào mảng `members` nếu họ chưa có trong đó.",
+        "starterCode": "import mongoose from 'mongoose';\n\nconst boardSchema = new mongoose.Schema({ /* ... các trường từ bài 1 ... */ });\n\n// Thêm code của bạn ở đây\n\nexport const Board = mongoose.model('Board', boardSchema);",
+        "solution": "import mongoose from 'mongoose';\n\nconst boardSchema = new mongoose.Schema({ /* ... các trường từ bài 1 ... */ });\n\n// Tự động thêm owner vào danh sách members khi tạo board\nboardSchema.pre('save', function(next) {\n  if (this.isNew && !this.members.includes(this.owner)) {\n    this.members.push(this.owner);\n  }\n  next();\n});\n\nexport const Board = mongoose.model('Board', boardSchema);",
+        "testCases": "Khi một document board mới được tạo và lưu, ID của `owner` phải xuất hiện trong mảng `members`."
+      },
+      {
+        "title": "Bài 3: Lấy chi tiết Board",
+        "description": "Hoàn thành controller `getBoardDetails`. Controller này nhận `req`, `res`, `next`. Nó phải tìm board bằng `id` từ `req.params`, populate thông tin `name` và `avatar` cho cả `owner` và `members`. Quan trọng: phải kiểm tra xem người dùng hiện tại (lấy từ `req.user._id`) có nằm trong danh sách `members` của board không. Nếu không, trả về lỗi 403.",
+        "starterCode": "import { Board } from '../models/board.model';\n\nexport const getBoardDetails = async (req, res, next) => {\n  try {\n    const boardId = req.params.id;\n    const userId = req.user._id; // Giả sử đã có middleware xác thực\n\n    // Thêm code của bạn ở đây\n\n  } catch (error) {\n    next(error);\n  }\n};",
+        "solution": "import { Board } from '../models/board.model';\n\nexport const getBoardDetails = async (req, res, next) => {\n  try {\n    const boardId = req.params.id;\n    const userId = req.user._id;\n\n    const board = await Board.findById(boardId)\n      .populate('owner', 'name avatar')\n      .populate('members', 'name avatar');\n\n    if (!board) {\n      return res.status(404).json({ message: 'Board not found' });\n    }\n\n    if (!board.members.some(member => member._id.equals(userId))) {\n      return res.status(403).json({ message: 'Access denied' });\n    }\n\n    res.status(200).json(board);\n  } catch (error) {\n    next(error);\n  }\n};",
+        "testCases": "Gửi request với ID của board hợp lệ và user là thành viên, kết quả trả về 200 và dữ liệu board. Gửi request với user không phải thành viên, kết quả trả về 403. Gửi request với ID không tồn tại, kết quả trả về 404."
+      },
+      {
+        "title": "Bài 4: Mời thành viên",
+        "description": "Viết controller `inviteMember`. Controller này phải: 1. Tìm board bằng `id`. 2. Xác thực rằng người thực hiện request (`req.user._id`) chính là `owner` của board. 3. Lấy `memberId` từ `req.body`. 4. Kiểm tra xem `memberId` đã tồn tại trong mảng `members` chưa. 5. Nếu tất cả điều kiện hợp lệ, thêm `memberId` vào mảng `members` và lưu lại board.",
+        "starterCode": "import { Board } from '../models/board.model';\n\nexport const inviteMember = async (req, res, next) => {\n  try {\n    const { memberId } = req.body;\n    const boardId = req.params.id;\n    const userId = req.user._id;\n\n    // Thêm code của bạn ở đây\n\n  } catch (error) {\n    next(error);\n  }\n};",
+        "solution": "import { Board } from '../models/board.model';\n\nexport const inviteMember = async (req, res, next) => {\n  try {\n    const { memberId } = req.body;\n    const boardId = req.params.id;\n    const userId = req.user._id;\n\n    const board = await Board.findById(boardId);\n    if (!board) {\n      return res.status(404).json({ message: 'Board not found' });\n    }\n\n    if (!board.owner.equals(userId)) {\n      return res.status(403).json({ message: 'Only the board owner can invite members' });\n    }\n\n    if (board.members.includes(memberId)) {\n      return res.status(400).json({ message: 'User is already a member' });\n    }\n\n    board.members.push(memberId);\n    await board.save();\n\n    res.status(200).json({ message: 'Member invited successfully' });\n  } catch (error) {\n    next(error);\n  }\n};",
+        "testCases": "Request từ owner với memberId hợp lệ -> 200. Request từ user không phải owner -> 403. Request với memberId đã có trong board -> 400. Request tới board không tồn tại -> 404."
+      },
+      {
+        "title": "Bài 5: Tạo BoardProvider Context",
+        "description": "Tạo một React component `BoardProvider` sử dụng Context API. Component này sẽ nhận `children`. Bên trong, nó sử dụng `useParams` để lấy `boardId` từ URL. Sử dụng `useEffect` để gọi một hàm API giả định `boardApi.getBoardDetails(boardId)` khi component mount hoặc `boardId` thay đổi. Dữ liệu board trả về được lưu trong state `activeBoard` và cung cấp cho các component con thông qua Context Provider.",
+        "starterCode": "import { createContext, useContext, useState, useEffect } from 'react';\nimport { useParams } from 'react-router-dom';\n\n// Giả định có một file quản lý API\nconst boardApi = {\n  getBoardDetails: (boardId) => Promise.resolve({ id: boardId, title: `Board ${boardId}` })\n};\n\nconst BoardContext = createContext();\n\nexport const useBoard = () => useContext(BoardContext);\n\nexport const BoardProvider = ({ children }) => {\n  // Thêm code của bạn ở đây\n};",
+        "solution": "import { createContext, useContext, useState, useEffect } from 'react';\nimport { useParams } from 'react-router-dom';\n\nconst boardApi = {\n  getBoardDetails: (boardId) => Promise.resolve({ id: boardId, title: `Board ${boardId}` })\n};\n\nconst BoardContext = createContext();\n\nexport const useBoard = () => useContext(BoardContext);\n\nexport const BoardProvider = ({ children }) => {\n  const [activeBoard, setActiveBoard] = useState(null);\n  const { boardId } = useParams();\n\n  useEffect(() => {\n    if (boardId) {\n      boardApi.getBoardDetails(boardId)\n        .then(boardData => {\n          setActiveBoard(boardData);\n        })\n        .catch(error => console.error(error));\n    }\n  }, [boardId]);\n\n  return (\n    <BoardContext.Provider value={{ activeBoard }}>\n      {children}\n    </BoardContext.Provider>\n  );\n};",
+        "testCases": "Bọc một component con trong `BoardProvider` với một route có `boardId`. Component con sử dụng `useBoard()` phải nhận được dữ liệu `activeBoard` tương ứng với `boardId` từ URL."
+      }
+    ]
+  }
+}

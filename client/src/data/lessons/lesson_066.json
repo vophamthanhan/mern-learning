@@ -1,0 +1,213 @@
+{
+  "id": 66,
+  "title": "Bài 50: Viết API với Express Router, hiểu HTTP Status Codes",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Bài 50: Viết API với Express Router, hiểu HTTP Status Codes\n\n## Mục tiêu bài học\n\nVideo này tập trung vào hai chủ đề quan trọng trong việc xây dựng API chuyên nghiệp với Node.js và Express:\n\n1.  **Sử dụng Express Router:** Tổ chức và quản lý các routes (đường dẫn API) một cách khoa học, dễ bảo trì và mở rộng.\n2.  **Hiểu và áp dụng HTTP Status Codes:** Nắm vững ý nghĩa của các mã trạng thái HTTP để giao tiếp hiệu quả giữa client và server.\n\nViệc nắm vững hai khái niệm này là nền tảng để xây dựng các API RESTful mạnh mẽ, có cấu trúc tốt và dễ dàng cho việc phát triển và bảo trì sau này.\n\n## Kiến thức chi tiết\n\n### 1. Express Router\n\n#### a. Express Router là gì?\n\n`Express Router` là một middleware và cũng là một đối tượng trong Express, cho phép chúng ta nhóm các route handler (hàm xử lý các request) lại với nhau. Thay vì định nghĩa tất cả các routes trong một file `server.js` duy nhất, chúng ta có thể tách chúng ra thành các module riêng biệt, mỗi module tương ứng với một tài nguyên (resource) hoặc một nhóm chức năng cụ thể.\n\n**Lợi ích của việc sử dụng Express Router:**\n\n*   **Tổ chức code tốt hơn (Code Organization):** Giúp mã nguồn trở nên sạch sẽ, dễ đọc và dễ quản lý hơn. Mỗi file router chỉ tập trung vào một nhóm chức năng nhất định (ví dụ: `user.route.js`, `product.route.js`).\n*   **Dễ dàng bảo trì và mở rộng (Maintainability & Scalability):** Khi cần sửa đổi hoặc thêm mới API cho một chức năng nào đó, chúng ta chỉ cần tìm đến file router tương ứng mà không làm ảnh hưởng đến các phần khác của ứng dụng.\n*   **Tái sử dụng (Reusability):** Các router có thể được tái sử dụng trong các ứng dụng khác nhau.\n\n#### b. Cách sử dụng Express Router\n\n**Bước 1: Tạo file router**\n\nThông thường, chúng ta sẽ tạo một thư mục `routes` trong project để chứa tất cả các file router. Ví dụ, tạo file `v1/boards.route.js` để quản lý các API liên quan đến \"boards\".\n\n```javascript\n// /src/routes/v1/boards.route.js\n\nimport express from 'express'\n\nconst router = express.Router()\n\nrouter.route('/')\n  .get((req, res) => {\n    res.status(200).json({ message: 'GET boards' })\n  })\n  .post((req, res) => {\n    res.status(201).json({ message: 'POST boards' })\n  })\n\nexport const boardRoutes = router\n```\n\n**Giải thích:**\n\n*   `import express from 'express'`: Import thư viện Express.\n*   `const router = express.Router()`: Tạo một instance mới của Express Router.\n*   `router.route('/')`: Định nghĩa một route cho đường dẫn gốc (`/`). Chúng ta có thể \"chain\" (nối chuỗi) các phương thức HTTP (GET, POST, PUT, DELETE...) trên cùng một route này.\n*   `.get(...)`, `.post(...)`: Định nghĩa các handler cho từng phương thức HTTP.\n*   `export const boardRoutes = router`: Xuất router để có thể sử dụng ở file khác.\n\n**Bước 2: Sử dụng router trong file server chính**\n\nTrong file `server.js` (hoặc `app.js`), chúng ta cần import và \"gắn\" router này vào một đường dẫn cha.\n\n```javascript\n// /src/server.js\n\nimport express from 'express'\nimport { boardRoutes } from './routes/v1/boards.route.js'\n\nconst app = express()\n\n// Sử dụng router\napp.use('/api/v1/boards', boardRoutes)\n\napp.listen(8017, () => {\n  console.log('Server is running on port 8017')\n})\n```\n\n**Giải thích:**\n\n*   `app.use('/api/v1/boards', boardRoutes)`: Express sẽ sử dụng `boardRoutes` cho tất cả các request có đường dẫn bắt đầu bằng `/api/v1/boards`. Điều này có nghĩa là:\n    *   Request `GET /api/v1/boards` sẽ được xử lý bởi handler `GET` trong `boards.route.js`.\n    *   Request `POST /api/v1/boards` sẽ được xử lý bởi handler `POST` trong `boards.route.js`.\n\n### 2. HTTP Status Codes\n\n#### a. HTTP Status Codes là gì?\n\nHTTP Status Codes (Mã trạng thái HTTP) là các mã số tiêu chuẩn gồm 3 chữ số mà server trả về cho client sau mỗi request. Các mã này cung cấp thông tin về kết quả của request: thành công, thất bại, cần chuyển hướng, hay có lỗi xảy ra.\n\nViệc sử dụng đúng status code là cực kỳ quan trọng trong việc thiết kế API RESTful, giúp client hiểu rõ chuyện gì đã xảy ra và cần thực hiện hành động gì tiếp theo.\n\n#### b. Các nhóm Status Codes chính\n\n*   **1xx (Informational):** Yêu cầu đã được nhận, đang tiếp tục xử lý. (Ít khi sử dụng trực tiếp trong API thông thường).\n*   **2xx (Success):** Yêu cầu đã được nhận, hiểu và xử lý thành công.\n*   **3xx (Redirection):** Cần thực hiện hành động bổ sung để hoàn tất yêu cầu (ví dụ: chuyển hướng đến URL khác).\n*   **4xx (Client Error):** Yêu cầu của client có lỗi (ví dụ: sai cú pháp, không có quyền truy cập).\n*   **5xx (Server Error):** Server gặp lỗi khi xử lý một yêu cầu hợp lệ.\n\n#### c. Một số Status Codes phổ biến trong API\n\n| Code | Tên trạng thái | Ý nghĩa | Ví dụ sử dụng | \n| :--- | :--- | :--- | :--- | \n| `200` | **OK** | Yêu cầu thành công. Đây là mã phổ biến nhất cho các request `GET` thành công. | `GET /api/v1/users` trả về danh sách người dùng. | \n| `201` | **Created** | Yêu cầu đã thành công và một tài nguyên mới đã được tạo ra. Thường dùng cho `POST` hoặc `PUT`. | `POST /api/v1/users` tạo một người dùng mới thành công. | \n| `204` | **No Content** | Yêu cầu thành công nhưng không có nội dung nào để trả về. Thường dùng cho `DELETE`. | `DELETE /api/v1/users/123` xóa người dùng thành công. | \n| `400` | **Bad Request** | Server không thể hiểu yêu cầu do cú pháp không hợp lệ (ví dụ: thiếu trường dữ liệu quan trọng trong body). | Client gửi request tạo người dùng nhưng thiếu `email`. | \n| `401` | **Unauthorized** | Yêu cầu cần xác thực. Client chưa đăng nhập hoặc token không hợp lệ. | Client chưa đăng nhập nhưng cố gắng truy cập trang cá nhân. | \n| `403` | **Forbidden** | Client đã được xác thực nhưng không có quyền truy cập vào tài nguyên này. | Người dùng thường cố gắng truy cập vào trang quản trị. | \n| `404` | **Not Found** | Server không tìm thấy tài nguyên được yêu cầu. | `GET /api/v1/users/999` với `id=999` không tồn tại. | \n| `500` | **Internal Server Error** | Một lỗi chung chung xảy ra trên server mà không thuộc các trường hợp trên. Đây là lỗi mà server không lường trước được. | Lỗi kết nối đến database, hoặc một lỗi logic không mong muốn trong code. | \n\n## Các bước thực hành\n\n1.  **Cấu trúc lại project:**\n    *   Tạo thư mục `src/routes/v1`.\n    *   Tạo file `src/routes/v1/boards.route.js`.\n2.  **Viết code cho router:**\n    *   Di chuyển logic xử lý route cho `boards` từ `server.js` vào `boards.route.js`.\n    *   Sử dụng `express.Router()` để tạo router.\n    *   Định nghĩa các route `GET`, `POST`... cho `boards`.\n    *   Export router ra ngoài.\n3.  **Tích hợp router vào server:**\n    *   Trong `server.js`, import `boardRoutes`.\n    *   Sử dụng `app.use('/api/v1/boards', boardRoutes)` để áp dụng router.\n4.  **Áp dụng HTTP Status Codes:**\n    *   Trong các route handler, thay vì chỉ dùng `res.send()` hoặc `res.json()`, hãy sử dụng `res.status(CODE).json(...)`.\n    *   Ví dụ: `res.status(201).json({ message: 'Board created successfully!' })`.\n\n## Lưu ý quan trọng\n\n*   **Versioning API:** Việc đặt `v1` trong đường dẫn (`/api/v1/...`) là một thông lệ tốt để quản lý các phiên bản của API. Khi có những thay đổi lớn (breaking changes), bạn có thể phát triển `v2` mà không làm ảnh hưởng đến các client đang sử dụng `v1`.\n*   **Không lạm dụng một status code:** Tránh việc lúc nào cũng trả về `200 OK` ngay cả khi có lỗi. Hãy chọn status code mô tả chính xác nhất kết quả của request.\n*   **Cung cấp thông điệp lỗi rõ ràng:** Khi trả về các lỗi 4xx hoặc 5xx, hãy kèm theo một message trong body của response để client (và developer) biết chính xác lỗi là gì. Ví dụ: `res.status(400).json({ error: 'Email is required.' })`.\n\n## Tài liệu tham khảo\n\n1.  [Express.js routing documentation](https://expressjs.com/en/guide/routing.html)\n2.  [MDN Web Docs: HTTP response status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)\n3.  [Build A REST API With Node.js, Express, & MongoDB - Quick](https://www.youtube.com/watch?v=fgTGADljAeg)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Đối tượng nào trong Express cho phép nhóm các route handler lại với nhau để tổ chức code tốt hơn?",
+        "options": [
+          "express.Application()",
+          "express.Router()",
+          "express.Middleware()",
+          "express.Request()"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Express.Router() là một middleware và đối tượng trong Express cho phép nhóm các route handler, giúp tách chúng ra thành các module riêng biệt, làm cho mã nguồn sạch sẽ và dễ quản lý hơn."
+      },
+      {
+        "question": "Lợi ích chính của việc sử dụng Express Router là gì?",
+        "options": [
+          "Tăng tốc độ phản hồi của server",
+          "Giảm dung lượng bộ nhớ của ứng dụng",
+          "Tổ chức code khoa học, dễ bảo trì và mở rộng",
+          "Tự động xử lý tất cả các lỗi HTTP"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng Express Router giúp mã nguồn trở nên sạch sẽ, dễ đọc, dễ quản lý, dễ bảo trì và mở rộng hơn bằng cách chia nhỏ các routes thành các file module."
+      },
+      {
+        "question": "Lệnh nào dùng để tạo một instance mới của Express Router?",
+        "options": [
+          "const router = new express.Router();",
+          "const router = express.createRouter();",
+          "const router = express.Router();",
+          "const router = express.newRouter();"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cú pháp chính xác để tạo một instance của router trong Express là `const router = express.Router()`."
+      },
+      {
+        "question": "Phương thức nào của Express app được sử dụng để \"gắn\" một router vào một đường dẫn cha cụ thể?",
+        "options": [
+          "app.get()",
+          "app.use()",
+          "app.route()",
+          "app.connect()"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`app.use('/path', router)` được sử dụng để gắn một router vào một đường dẫn. Mọi request tới đường dẫn đó sẽ được router tương ứng xử lý."
+      },
+      {
+        "question": "Trong đoạn code `router.route('/').get(...).post(...)`, việc nối chuỗi các phương thức được gọi là gì?",
+        "options": [
+          "Linking",
+          "Connecting",
+          "Chaining",
+          "Attaching"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Kỹ thuật nối chuỗi các phương thức xử lý cho cùng một route (ví dụ: .get(), .post()) được gọi là \"chaining\" trong Express."
+      },
+      {
+        "question": "HTTP Status Code nào cho biết yêu cầu đã thành công và một tài nguyên mới đã được tạo ra?",
+        "options": [
+          "200 OK",
+          "201 Created",
+          "204 No Content",
+          "301 Moved Permanently"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`201 Created` là mã trạng thái chuẩn để thông báo rằng server đã xử lý thành công yêu cầu và kết quả là một tài nguyên mới đã được tạo."
+      },
+      {
+        "question": "Khi client gửi một request xóa tài nguyên và server đã xóa thành công mà không cần trả về nội dung gì, status code nào là phù hợp nhất?",
+        "options": [
+          "200 OK",
+          "404 Not Found",
+          "202 Accepted",
+          "204 No Content"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`204 No Content` được sử dụng khi server đã thực hiện thành công hành động (ví dụ: DELETE) nhưng không có nội dung nào để gửi lại trong phần body của response."
+      },
+      {
+        "question": "Một người dùng chưa đăng nhập cố gắng truy cập vào một trang yêu cầu xác thực. Server nên trả về status code nào?",
+        "options": [
+          "404 Not Found",
+          "403 Forbidden",
+          "401 Unauthorized",
+          "500 Internal Server Error"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`401 Unauthorized` chỉ ra rằng yêu cầu cần xác thực. Client cần phải cung cấp thông tin xác thực (đăng nhập) để có thể truy cập."
+      },
+      {
+        "question": "Sự khác biệt chính giữa `401 Unauthorized` và `403 Forbidden` là gì?",
+        "options": [
+          "401 dành cho lỗi server, 403 dành cho lỗi client",
+          "401 có nghĩa là chưa xác thực, 403 có nghĩa là đã xác thực nhưng không có quyền",
+          "401 là lỗi tạm thời, 403 là lỗi vĩnh viễn",
+          "Không có sự khác biệt, chúng có thể dùng thay thế cho nhau"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`401 Unauthorized` có nghĩa là client chưa xác thực (chưa đăng nhập). `403 Forbidden` có nghĩa là client đã xác thực (đã đăng nhập) nhưng không có quyền truy cập vào tài nguyên được yêu cầu."
+      },
+      {
+        "question": "Khi server không tìm thấy tài nguyên mà client yêu cầu (ví dụ: user với ID không tồn tại), status code nào nên được trả về?",
+        "options": [
+          "400 Bad Request",
+          "500 Internal Server Error",
+          "404 Not Found",
+          "204 No Content"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`404 Not Found` là status code tiêu chuẩn để thông báo rằng server không thể tìm thấy tài nguyên được yêu cầu tại URL đã cho."
+      },
+      {
+        "question": "Việc đặt `v1` trong đường dẫn API (ví dụ: `/api/v1/boards`) là một thông lệ tốt cho mục đích gì?",
+        "options": [
+          "Bảo mật API",
+          "Tăng hiệu năng",
+          "Quản lý phiên bản của API (API Versioning)",
+          "Tuân thủ tiêu chuẩn REST"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng `v1`, `v2`... trong URL giúp quản lý các phiên bản khác nhau của API. Khi có thay đổi lớn, bạn có thể ra mắt phiên bản mới mà không ảnh hưởng đến các client đang dùng phiên bản cũ."
+      },
+      {
+        "question": "Trong Express, để gửi một response với status code cụ thể, bạn nên dùng cú pháp nào?",
+        "options": [
+          "res.send(201, { message: 'Created' })",
+          "res.json({ status: 201, message: 'Created' })",
+          "res.status(201).json({ message: 'Created' })",
+          "res.set(201).send({ message: 'Created' })"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cú pháp chuẩn và được khuyến khích là sử dụng phương thức `.status()` để thiết lập mã trạng thái, sau đó nối chuỗi với một phương thức gửi response như `.json()` hoặc `.send()`."
+      },
+      {
+        "question": "Nhóm status code nào chỉ ra lỗi từ phía client?",
+        "options": [
+          "2xx (Success)",
+          "3xx (Redirection)",
+          "4xx (Client Error)",
+          "5xx (Server Error)"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Nhóm mã 4xx (ví dụ: 400, 401, 404) được dùng để chỉ ra rằng có lỗi xảy ra do yêu cầu từ phía client không hợp lệ."
+      },
+      {
+        "question": "Nếu server gặp một lỗi không lường trước được (ví dụ: lỗi kết nối database), status code nào là phù hợp nhất để trả về?",
+        "options": [
+          "400 Bad Request",
+          "404 Not Found",
+          "500 Internal Server Error",
+          "503 Service Unavailable"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`500 Internal Server Error` là một mã lỗi chung, cho biết server đã gặp phải một tình huống không mong muốn và không thể xử lý yêu cầu."
+      },
+      {
+        "question": "Khi client gửi thiếu một trường dữ liệu bắt buộc trong body của request POST, server nên trả về status code nào?",
+        "options": [
+          "201 Created",
+          "400 Bad Request",
+          "404 Not Found",
+          "500 Internal Server Error"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`400 Bad Request` là mã lỗi phù hợp khi yêu cầu của client có cú pháp không hợp lệ, chẳng hạn như thiếu dữ liệu cần thiết, khiến server không thể xử lý."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo Express Router đơn giản",
+        "description": "Tạo một file router mới cho tài nguyên 'products'. Định nghĩa một route cho phương thức GET tại đường dẫn gốc ('/') và trả về một tin nhắn JSON `{ \"message\": \"GET all products\" }` với status code 200.",
+        "starterCode": "import express from 'express';\n\nconst router = express.Router();\n\n// Your code here\n\nexport const productRoutes = router;",
+        "solution": "import express from 'express';\n\nconst router = express.Router();\n\nrouter.route('/')\n  .get((req, res) => {\n    res.status(200).json({ message: 'GET all products' });\n  });\n\nexport const productRoutes = router;",
+        "testCases": "Khi gửi request GET đến endpoint sử dụng router này, response phải có status code là 200 và body là `{\"message\":\"GET all products\"}`."
+      },
+      {
+        "title": "Thêm route POST với Status Code 201",
+        "description": "Mở rộng router 'products' từ bài tập trước. Thêm một route cho phương thức POST tại đường dẫn gốc ('/'). Handler này nên trả về status code `201 Created` và một tin nhắn JSON `{ \"message\": \"Product created successfully\" }`.",
+        "starterCode": "import express from 'express';\n\nconst router = express.Router();\n\nrouter.route('/')\n  .get((req, res) => {\n    res.status(200).json({ message: 'GET all products' });\n  });\n\n// Your code here for the POST route\n\nexport const productRoutes = router;",
+        "solution": "import express from 'express';\n\nconst router = express.Router();\n\nrouter.route('/')\n  .get((req, res) => {\n    res.status(200).json({ message: 'GET all products' });\n  })\n  .post((req, res) => {\n    res.status(201).json({ message: 'Product created successfully' });\n  });\n\nexport const productRoutes = router;",
+        "testCases": "Khi gửi request POST đến endpoint, response phải có status code là 201 và body là `{\"message\":\"Product created successfully\"}`."
+      },
+      {
+        "title": "Sử dụng Router trong App chính",
+        "description": "Giả sử bạn có một file `product.route.js` chứa `productRoutes`. Hãy viết code trong file `server.js` để import và sử dụng router này cho tất cả các request có đường dẫn bắt đầu bằng `/api/v1/products`.",
+        "starterCode": "import express from 'express';\n// Giả sử productRoutes được export từ './routes/product.route.js'\nimport { productRoutes } from './routes/product.route.js';\n\nconst app = express();\nconst PORT = 8080;\n\n// Your code here to use the router\n\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});",
+        "solution": "import express from 'express';\nimport { productRoutes } from './routes/product.route.js';\n\nconst app = express();\nconst PORT = 8080;\n\napp.use('/api/v1/products', productRoutes);\n\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});",
+        "testCases": "Một request GET đến `/api/v1/products` sẽ được xử lý bởi `productRoutes`. Một request đến `/api/v1/users` sẽ không được xử lý bởi router này."
+      },
+      {
+        "title": "Xử lý Route với Parameter và Status 404",
+        "description": "Tạo một route `GET /:id` trong router của bạn. Bên trong handler, hãy kiểm tra nếu `req.params.id` bằng với chuỗi \"999\". Nếu bằng, trả về status `404 Not Found` với JSON `{ \"error\": \"Product not found\" }`. Nếu khác, trả về status `200 OK` với JSON `{ \"message\": `Product with id ${req.params.id} found` }`.",
+        "starterCode": "import express from 'express';\n\nconst router = express.Router();\n\n// Your code here for the GET /:id route\n\nexport const productRoutes = router;",
+        "solution": "import express from 'express';\n\nconst router = express.Router();\n\nrouter.route('/:id')\n  .get((req, res) => {\n    if (req.params.id === '999') {\n      res.status(404).json({ error: 'Product not found' });\n    } else {\n      res.status(200).json({ message: `Product with id ${req.params.id} found` });\n    }\n  });\n\nexport const productRoutes = router;",
+        "testCases": "Request GET đến `/products/123` trả về status 200. Request GET đến `/products/999` trả về status 404 và thông điệp lỗi."
+      },
+      {
+        "title": "Validation và Status 400",
+        "description": "Tạo một route `POST` để tạo một bài viết (post). Yêu cầu request body phải có thuộc tính `title`. Bên trong handler, hãy kiểm tra nếu `req.body.title` không tồn tại hoặc rỗng. Nếu vậy, trả về status `400 Bad Request` với JSON `{ \"error\": \"Title is required\" }`. Nếu có `title`, trả về status `201 Created` với JSON `{ \"message\": \"Post created successfully\", \"post\": req.body }`.",
+        "starterCode": "import express from 'express';\n\nconst router = express.Router();\n// Đừng quên thêm middleware để parse JSON body\nrouter.use(express.json()); \n\n// Your code here for the POST route\n\nexport const postRoutes = router;",
+        "solution": "import express from 'express';\n\nconst router = express.Router();\nrouter.use(express.json());\n\nrouter.route('/')\n  .post((req, res) => {\n    if (!req.body.title) {\n      return res.status(400).json({ error: 'Title is required' });\n    }\n    res.status(201).json({ message: 'Post created successfully', post: req.body });\n  });\n\nexport const postRoutes = router;",
+        "testCases": "Request POST đến endpoint với body `{}` sẽ trả về status 400. Request POST với body `{\"title\": \"My First Post\"}` sẽ trả về status 201."
+      }
+    ]
+  }
+}

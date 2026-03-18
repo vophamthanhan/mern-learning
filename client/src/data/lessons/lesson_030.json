@@ -1,0 +1,213 @@
+{
+  "id": 30,
+  "title": "Bài học 16: Custom CSS trong Material UI như thế nào cho đúng?",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài học 16: Custom CSS trong Material UI như thế nào cho đúng?\n\n## 1. Mục tiêu bài học\n\nVideo này là bài học cuối cùng trong chuỗi các bài về Material UI (MUI) trong series, tập trung vào một kỹ năng cực kỳ quan trọng: **Custom CSS trong Material UI**. Mục tiêu chính là giúp người học hiểu rõ và áp dụng các phương pháp tùy chỉnh CSS một cách chính xác, hiệu quả để có được mã nguồn sạch sẽ, dễ bảo trì và mở rộng khi làm việc với MUI.\n\nSau bài học này, bạn sẽ có khả năng:\n\n-   Nắm vững các cách custom CSS khác nhau trong MUI và biết khi nào nên sử dụng phương pháp nào.\n-   Hiểu được cách ghi đè (override) CSS của các component con một cách hiệu quả.\n-   Tổ chức cấu trúc CSS trong dự án React một cách khoa học và chuyên nghiệp.\n-   Tránh các lỗi phổ biến khi custom CSS trong MUI.\n\n## 2. Kiến thức chi tiết\n\nTrong các bài học trước, chúng ta đã tìm hiểu về các cách styling cơ bản trong MUI v5 bao gồm:\n\n-   **Prop `sx`**: Dùng cho các tùy chỉnh nhỏ, đơn lẻ, áp dụng trực tiếp trên component.\n-   **API `styled`**: Dùng để tạo ra các component mới đã được styling sẵn, có thể tái sử dụng nhiều lần.\n-   **Theme Overrides (`theme.components`)**: Dùng để ghi đè style mặc định của một loại component trên toàn bộ ứng dụng.\n\nTuy nhiên, trong thực tế, sẽ có những trường hợp phức tạp mà ba cách trên không đủ để giải quyết, đặc biệt là khi cần style các **phần tử con nằm sâu bên trong một component** của MUI. Video này tập trung giải quyết vấn đề đó.\n\n### Vấn đề: Custom CSS cho các phần tử con\n\nKhi bạn sử dụng một component MUI, ví dụ `<Card>`, nó không chỉ render ra một thẻ `<div>` đơn giản. Thay vào đó, nó có thể bao gồm nhiều thẻ `div`, `span`, `button`... lồng nhau với các class name đặc thù của MUI (ví dụ: `.MuiCard-root`, `.MuiCardContent-root`).\n\nLàm thế nào để chúng ta có thể tùy chỉnh style cho các phần tử con này? Ví dụ, làm sao để thay đổi màu chữ của tất cả các thẻ `<span>` bên trong một `<CardContent>`?\n\n### Giải pháp: Sử dụng Nested Selector với Prop `sx`\n\nĐây là phương pháp chính và được khuyến khích trong video. Prop `sx` không chỉ nhận các thuộc tính CSS thông thường, mà còn cho phép viết các **nested selector** (bộ chọn lồng nhau) tương tự như khi bạn viết trong SASS/SCSS. Điều này được hỗ trợ bởi Emotion, thư viện CSS-in-JS mà MUI v5 sử dụng.\n\nCú pháp sử dụng ký tự `&` để tham chiếu đến component hiện tại.\n\n**Ví dụ 1: Tùy chỉnh thanh cuộn (scrollbar)**\n\nĐể tùy chỉnh thanh cuộn cho một `Box` component, chúng ta có thể style các pseudo-elements `::-webkit-scrollbar`, `::-webkit-scrollbar-thumb`...\n\n```jsx\n<Box sx={{\n  overflowY: 'auto',\n  '&::-webkit-scrollbar': {\n    width: '8px',\n    height: '8px'\n  },\n  '&::-webkit-scrollbar-thumb': {\n    backgroundColor: '#d3d3d3',\n    borderRadius: '8px'\n  },\n  '&::-webkit-scrollbar-thumb:hover': {\n    backgroundColor: '#a8a8a8'\n  }\n}}>\n  {/* Content */}\n</Box>\n```\n\nTrong ví dụ trên:\n\n-   `&::-webkit-scrollbar`: Áp dụng style cho thanh cuộn của chính `Box` này.\n-   `&::-webkit-scrollbar-thumb`: Áp dụng style cho con trượt của thanh cuộn.\n\n**Ví dụ 2: Ghi đè style của component con**\n\nGiả sử chúng ta có một component `Chip` bên trong một `Box` và muốn thay đổi màu của icon xóa mặc định (`.MuiChip-deleteIcon`).\n\n```jsx\n<Box sx={{\n  // ... các style khác của Box\n  '.MuiChip-deleteIcon': {\n    color: 'red'\n  }\n}}>\n  <Chip label=\"Test Chip\" onDelete={() => {}} />\n</Box>\n```\n\nLưu ý: Trong trường hợp này, chúng ta không cần `&` ở đầu vì chúng ta đang nhắm đến một class CSS toàn cục (`.MuiChip-deleteIcon`) *bên trong* phạm vi của `Box`.\n\n### Khi nào nên sử dụng phương pháp này?\n\n-   Khi cần tùy chỉnh các phần tử con hoặc pseudo-elements mà không thể truy cập trực tiếp qua props.\n-   Khi các tùy chỉnh chỉ áp dụng cho một khu vực cụ thể, không mang tính toàn cục.\n-   Khi muốn giữ logic styling gói gọn trong một component duy nhất thay vì tạo file CSS riêng.\n\n## 3. Các bước thực hành\n\n1.  **Tạo Component**: Tạo một component React, ví dụ `BoardContent`, và import các component MUI cần thiết như `Box`.\n2.  **Thêm nội dung**: Thêm nội dung vào trong `Box` để nó có chiều cao và xuất hiện thanh cuộn.\n3.  **Áp dụng `sx` Prop**: Sử dụng prop `sx` trên `Box` để thêm các thuộc tính CSS.\n4.  **Style thanh cuộn**: Bên trong `sx`, thêm các nested selector để style `::-webkit-scrollbar` và các pseudo-elements liên quan như trong ví dụ trên.\n5.  **Kiểm tra kết quả**: Chạy ứng dụng và xem thanh cuộn đã được tùy chỉnh thành công hay chưa.\n6.  **Thực hành với component con**: Thêm một component MUI khác vào bên trong `Box` (ví dụ: `Chip`, `Button`). Dùng trình duyệt Developer Tools để xác định class name của phần tử con bạn muốn thay đổi. Thêm một nested selector mới vào trong `sx` của `Box` để ghi đè style cho class name đó.\n\n## 4. Lưu ý quan trọng\n\n-   **Thứ tự ưu tiên**: Style từ prop `sx` sẽ ghi đè lên style từ `styled()` API và theme overrides. Đây là cấp ưu tiên cao nhất trong các phương pháp styling của MUI.\n-   **Sử dụng Developer Tools**: Luôn sử dụng công cụ của trình duyệt (Inspect Element) để tìm ra đúng class name của các phần tử con mà MUI tạo ra. Đây là kỹ năng bắt buộc.\n-   **Tránh lạm dụng**: Mặc dù rất mạnh mẽ, việc lạm dụng nested selector có thể làm cho code khó đọc và khó bảo trì. Hãy luôn cân nhắc xem có thể giải quyết vấn đề bằng các props có sẵn của component hoặc bằng theme overrides trước hay không.\n-   **Clean Code**: Đây là phương pháp giúp giữ code CSS gọn gàng bên trong component, tránh việc phải tạo các file `.css` riêng lẻ và viết các selector dài dòng, phức tạp.\n\n## 5. Tài liệu tham khảo\n\n-   **Video gốc**: [16. Custom CSS trong Material UI như thế nào cho đúng? | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=VIDEO_20&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=20)\n-   **MUI Styling Documentation**: [Usage - Material UI](https://mui.com/system/getting-started/usage/)\n-   **GitHub Repository (Base Project)**: [vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của bài học về Custom CSS trong Material UI là gì?",
+        "options": [
+          "Học cách tạo một theme Material UI hoàn toàn mới từ đầu.",
+          "Nắm vững các phương pháp tùy chỉnh CSS để có mã nguồn sạch sẽ, dễ bảo trì và mở rộng.",
+          "Chỉ tập trung vào việc sử dụng prop `sx` cho các thay đổi nhỏ.",
+          "Thay thế hoàn toàn CSS của Material UI bằng SASS/SCSS."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học tập trung vào việc giúp người học hiểu rõ và áp dụng các phương pháp tùy chỉnh CSS một cách chính xác và hiệu quả, nhằm mục đích có được mã nguồn sạch sẽ và dễ bảo trì."
+      },
+      {
+        "question": "Phương pháp chính được khuyến khích trong bài học để style các phần tử con nằm sâu bên trong một component MUI là gì?",
+        "options": [
+          "Sử dụng file CSS/SCSS riêng và các selector toàn cục.",
+          "Ghi đè theme cho từng component con một cách riêng lẻ.",
+          "Sử dụng Nested Selector (bộ chọn lồng nhau) với prop `sx`.",
+          "Sử dụng API `styled` để tạo một component mới cho mỗi phần tử con."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học nhấn mạnh việc sử dụng nested selector bên trong prop `sx` là giải pháp hiệu quả để tùy chỉnh các phần tử con mà không thể truy cập trực tiếp qua props."
+      },
+      {
+        "question": "Ký tự `&` có vai trò gì khi được sử dụng trong nested selector của prop `sx`?",
+        "options": [
+          "Đại diện cho tất cả các component con.",
+          "Là một cách viết tắt cho `!important`.",
+          "Tham chiếu đến chính component hiện tại đang áp dụng prop `sx`.",
+          "Kết hợp hai class CSS khác nhau."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Ký tự `&` được dùng để tham chiếu đến selector của component hiện tại, tương tự như cách hoạt động trong SASS/SCSS, cho phép viết các quy tắc lồng nhau."
+      },
+      {
+        "question": "Để tùy chỉnh con trượt của thanh cuộn (scrollbar thumb) trong một `Box`, bạn sẽ sử dụng selector nào bên trong prop `sx`?",
+        "options": [
+          "'&::-webkit-scrollbar'",
+          "'&::-webkit-scrollbar-track'",
+          "'&::-webkit-scrollbar-thumb'",
+          "'&::scrollbar-thumb'"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Pseudo-element `::-webkit-scrollbar-thumb` được sử dụng để style cho con trượt của thanh cuộn trên các trình duyệt dựa trên WebKit."
+      },
+      {
+        "question": "Thứ tự ưu tiên của các phương pháp styling trong MUI từ cao nhất đến thấp nhất là gì?",
+        "options": [
+          "`styled()` API > prop `sx` > theme overrides",
+          "theme overrides > `styled()` API > prop `sx`",
+          "prop `sx` > `styled()` API > theme overrides",
+          "Tất cả các phương pháp có độ ưu tiên như nhau."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Theo tài liệu, style từ prop `sx` có độ ưu tiên cao nhất, nó sẽ ghi đè lên style từ `styled()` API và theme overrides."
+      },
+      {
+        "question": "Công cụ nào được nhấn mạnh là \"bắt buộc\" phải sử dụng để tìm ra class name của các phần tử con do MUI tạo ra?",
+        "options": [
+          "Trình soạn thảo mã nguồn (VS Code, WebStorm).",
+          "Công cụ của trình duyệt (Developer Tools / Inspect Element).",
+          "Tài liệu chính thức của Material UI.",
+          "Thư viện React DevTools."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nêu rõ rằng kỹ năng bắt buộc là phải sử dụng công cụ của trình duyệt để kiểm tra và tìm ra đúng class name cần ghi đè."
+      },
+      {
+        "question": "Khi nào bạn KHÔNG nên sử dụng nested selector trong prop `sx`?",
+        "options": [
+          "Khi cần style các pseudo-elements như `::before` hoặc `::after`.",
+          "Khi có thể giải quyết vấn đề bằng các props có sẵn của component hoặc bằng theme overrides.",
+          "Khi cần thay đổi style của một component con dựa trên trạng thái của component cha.",
+          "Khi tùy chỉnh chỉ áp dụng cho một khu vực cụ thể."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học khuyên rằng nên luôn cân nhắc các giải pháp đơn giản hơn như dùng props có sẵn hoặc theme overrides trước khi dùng đến nested selector để tránh lạm dụng và làm code phức tạp không cần thiết."
+      },
+      {
+        "question": "Thư viện CSS-in-JS nào hỗ trợ tính năng nested selector cho prop `sx` trong MUI v5?",
+        "options": [
+          "Styled-components",
+          "JSS",
+          "Emotion",
+          "SASS"
+        ],
+        "correctAnswer": 2,
+        "explanation": "MUI v5 sử dụng thư viện Emotion, chính Emotion đã cung cấp khả năng viết các bộ chọn lồng nhau tương tự như SASS/SCSS."
+      },
+      {
+        "question": "Làm thế nào để thay đổi màu của icon xóa (`.MuiChip-deleteIcon`) bên trong một component `Chip` từ `sx` prop của component cha?",
+        "options": [
+          "sx={{ '& .MuiChip-deleteIcon': { color: 'red' } }}",
+          "sx={{ '.MuiChip-deleteIcon': { color: 'red' } }}",
+          "sx={{ deleteIcon: { color: 'red' } }}",
+          "Không thể làm được từ component cha, phải dùng theme."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Chúng ta có thể nhắm đến class CSS toàn cục của phần tử con (`.MuiChip-deleteIcon`) trực tiếp từ `sx` prop của thẻ cha chứa nó."
+      },
+      {
+        "question": "Mục đích chính của việc sử dụng API `styled` trong Material UI là gì?",
+        "options": [
+          "Để áp dụng các tùy chỉnh CSS nhỏ, dùng một lần.",
+          "Để ghi đè style mặc định của một loại component trên toàn bộ ứng dụng.",
+          "Để tạo ra các component mới đã được styling sẵn và có thể tái sử dụng.",
+          "Để style các pseudo-elements như thanh cuộn."
+        ],
+        "correctAnswer": 2,
+        "explanation": "API `styled` được dùng để tạo ra các component mới với style đã được định sẵn, giúp tăng khả năng tái sử dụng và đóng gói logic styling."
+      },
+      {
+        "question": "Phương pháp `theme.components` (Theme Overrides) phù hợp nhất cho trường hợp nào?",
+        "options": [
+          "Khi muốn thay đổi style của một component duy nhất ở một nơi cụ thể.",
+          "Khi muốn ghi đè style mặc định của một loại component (ví dụ: tất cả các `Button`) trên toàn bộ ứng dụng.",
+          "Khi cần style các phần tử con nằm sâu bên trong một component.",
+          "Khi cần áp dụng một vài thuộc tính CSS nhanh chóng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Theme Overrides được thiết kế để thay đổi giao diện mặc định của các component một cách nhất quán trên toàn bộ ứng dụng."
+      },
+      {
+        "question": "Theo bài học, việc sử dụng nested selector trong prop `sx` giúp giữ code CSS gọn gàng bằng cách nào?",
+        "options": [
+          "Tự động xóa các CSS không sử dụng.",
+          "Bắt buộc viết CSS trên một dòng duy nhất.",
+          "Giảm số lượng file CSS/SCSS riêng lẻ và các selector phức tạp.",
+          "Chuyển tất cả CSS thành inline style."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phương pháp này giúp đóng gói logic styling ngay bên trong component, tránh việc phải tạo các file `.css` riêng và viết các selector dài, khó quản lý."
+      },
+      {
+        "question": "Để style một phần tử con có class là `.child-class` bên trong một `Box`, cú pháp nào sau đây trong prop `sx` của `Box` là đúng?",
+        "options": [
+          "sx={{ childClass: { color: 'blue' } }}",
+          "sx={{ '& > .child-class': { color: 'blue' } }}",
+          "sx={{ children: { '.child-class': { color: 'blue' } } }}",
+          "sx={{ styling: { '.child-class': { color: 'blue' } } }}"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sử dụng `&` để tham chiếu đến `Box` và `> .child-class` để chọn phần tử con trực tiếp có class là `child-class`. Hoặc có thể dùng `'.child-class'` nếu không cần quan tâm đến quan hệ cha-con trực tiếp."
+      },
+      {
+        "question": "Điều gì có thể xảy ra nếu lạm dụng nested selectors?",
+        "options": [
+          "Ứng dụng chạy nhanh hơn do tối ưu hóa CSS.",
+          "Gói bundle của ứng dụng sẽ nhỏ hơn.",
+          "Code có thể trở nên khó đọc và khó bảo trì.",
+          "Gây ra lỗi xung đột với theme mặc định của MUI."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học cảnh báo rằng việc lạm dụng nested selector có thể làm cho logic styling trở nên phức tạp, khó theo dõi và bảo trì trong dài hạn."
+      },
+      {
+        "question": "Prop `sx` là một giải pháp thay thế cho...",
+        "options": [
+          "Tất cả các file CSS trong dự án.",
+          "API `styled` và hook `useStyles` từ MUI v4.",
+          "Việc viết HTML.",
+          "Thư viện React."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Prop `sx` là một phần của hệ thống styling mới trong MUI v5, được giới thiệu như một cách tiếp cận hiện đại và linh hoạt hơn so với các API cũ như `makeStyles`/`useStyles`."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tùy chỉnh Scrollbar cơ bản",
+        "description": "Tạo một component `Box` có chiều cao cố định và nội dung dài hơn chiều cao đó để hiển thị thanh cuộn. Sử dụng prop `sx` và nested selectors để thay đổi chiều rộng của thanh cuộn và màu sắc của con trượt (thumb).",
+        "starterCode": "import Box from '@mui/material/Box';\n\nfunction CustomScrollbarBox() {\n  return (\n    <Box\n      sx={{\n        height: 200, // 200px\n        overflowY: 'auto',\n        border: '1px solid grey',\n        // Thêm code của bạn ở đây\n\n      }}\n    >\n      {[...Array(20)].map((_, index) => (\n        <p key={index}>Đây là dòng nội dung số {index + 1}</p>\n      ))}\n    </Box>\n  );\n}\n\nexport default CustomScrollbarBox;",
+        "solution": "import Box from '@mui/material/Box';\n\nfunction CustomScrollbarBox() {\n  return (\n    <Box\n      sx={{\n        height: 200,\n        overflowY: 'auto',\n        border: '1px solid grey',\n        '&::-webkit-scrollbar': {\n          width: '10px'\n        },\n        '&::-webkit-scrollbar-thumb': {\n          backgroundColor: '#888',\n          borderRadius: '10px'\n        }\n      }}\n    >\n      {[...Array(20)].map((_, index) => (\n        <p key={index}>Đây là dòng nội dung số {index + 1}</p>\n      ))}\n    </Box>\n  );\n}\n\nexport default CustomScrollbarBox;",
+        "testCases": "Kiểm tra xem thanh cuộn của Box có chiều rộng là 10px và con trượt có màu nền là #888 hay không."
+      },
+      {
+        "title": "Bài 2: Style phần tử con với class của MUI",
+        "description": "Tạo một component `Card` chứa một `CardActions` và một `Button`. Sử dụng prop `sx` trên `Card` để tìm và đổi màu chữ của `Button` bên trong thành màu đỏ (red).",
+        "starterCode": "import Card from '@mui/material/Card';\nimport CardActions from '@mui/material/CardActions';\nimport Button from '@mui/material/Button';\n\nfunction StyledChildButtonCard() {\n  return (\n    <Card\n      sx={{ \n        width: 200,\n        // Thêm code của bạn ở đây để thay đổi màu Button\n\n      }}\n    >\n      <CardActions>\n        <Button size=\"small\">Click Me</Button>\n      </CardActions>\n    </Card>\n  );\n}\n\nexport default StyledChildButtonCard;",
+        "solution": "import Card from '@mui/material/Card';\nimport CardActions from '@mui/material/CardActions';\nimport Button from '@mui/material/Button';\n\nfunction StyledChildButtonCard() {\n  return (\n    <Card\n      sx={{ \n        width: 200,\n        // Nhắm đến class của button bên trong card\n        '.MuiButton-root': {\n          color: 'red'\n        }\n      }}\n    >\n      <CardActions>\n        <Button size=\"small\">Click Me</Button>\n      </CardActions>\n    </Card>\n  );\n}\n\nexport default StyledChildButtonCard;",
+        "testCases": "Kiểm tra xem chữ bên trong Button có màu đỏ hay không. Gợi ý: Dùng Inspect để tìm class của Button, đó là `.MuiButton-root`."
+      },
+      {
+        "title": "Bài 3: Style trạng thái hover của phần tử con",
+        "description": "Tạo một `List` chứa các `ListItemButton`. Sử dụng prop `sx` trên `List` để khi di chuột (hover) vào một `ListItemButton`, màu nền của nó sẽ chuyển thành màu xám nhạt (`#f0f0f0`).",
+        "starterCode": "import List from '@mui/material/List';\nimport ListItem from '@mui/material/ListItem';\nimport ListItemButton from '@mui/material/ListItemButton';\nimport ListItemText from '@mui/material/ListItemText';\n\nfunction HoverableList() {\n  return (\n    <List sx={{ \n      width: 300, \n      border: '1px solid grey',\n      // Thêm code của bạn ở đây\n\n    }}>\n      <ListItem disablePadding>\n        <ListItemButton>\n          <ListItemText primary=\"Mục 1\" />\n        </ListItemButton>\n      </ListItem>\n      <ListItem disablePadding>\n        <ListItemButton>\n          <ListItemText primary=\"Mục 2\" />\n        </ListItemButton>\n      </ListItem>\n    </List>\n  );\n}\n\nexport default HoverableList;",
+        "solution": "import List from '@mui/material/List';\nimport ListItem from '@mui/material/ListItem';\nimport ListItemButton from '@mui/material/ListItemButton';\nimport ListItemText from '@mui/material/ListItemText';\n\nfunction HoverableList() {\n  return (\n    <List sx={{ \n      width: 300, \n      border: '1px solid grey',\n      // Nhắm đến ListItemButton và trạng thái hover của nó\n      '.MuiListItemButton-root:hover': {\n        backgroundColor: '#f0f0f0'\n      }\n    }}>\n      <ListItem disablePadding>\n        <ListItemButton>\n          <ListItemText primary=\"Mục 1\" />\n        </ListItemButton>\n      </ListItem>\n      <ListItem disablePadding>\n        <ListItemButton>\n          <ListItemText primary=\"Mục 2\" />\n        </ListItemButton>\n      </ListItem>\n    </List>\n  );\n}\n\nexport default HoverableList;",
+        "testCases": "Di chuột qua các mục trong danh sách. Màu nền của mục đang được di chuột phải chuyển thành màu xám nhạt."
+      },
+      {
+        "title": "Bài 4: Tùy chỉnh icon bên trong một Button",
+        "description": "Tạo một `Box` chứa một `Button` có `startIcon`. Sử dụng prop `sx` trên `Box` để thay đổi màu của icon bên trong `Button` thành màu cam (orange) mà không làm thay đổi màu của chữ.",
+        "starterCode": "import Box from '@mui/material/Box';\nimport Button from '@mui/material/Button';\nimport DeleteIcon from '@mui/icons-material/Delete';\n\nfunction CustomIconColorButton() {\n  return (\n    <Box sx={{ \n      padding: 2,\n      // Thêm code của bạn ở đây\n\n    }}>\n      <Button variant=\"contained\" startIcon={<DeleteIcon />}>\n        Delete\n      </Button>\n    </Box>\n  );\n}\n\nexport default CustomIconColorButton;",
+        "solution": "import Box from '@mui/material/Box';\nimport Button from '@mui/material/Button';\nimport DeleteIcon from '@mui/icons-material/Delete';\n\nfunction CustomIconColorButton() {\n  return (\n    <Box sx={{ \n      padding: 2,\n      // Nhắm đến class của startIcon bên trong Button\n      '.MuiButton-startIcon': {\n        color: 'orange'\n      }\n    }}>\n      <Button variant=\"contained\" startIcon={<DeleteIcon />}>\n        Delete\n      </Button>\n    </Box>\n  );\n}\n\nexport default CustomIconColorButton;",
+        "testCases": "Kiểm tra xem icon xóa trong Button có màu cam, trong khi chữ \"Delete\" vẫn giữ màu mặc định của variant `contained` (thường là màu trắng)."
+      },
+      {
+        "title": "Bài 5: Kết hợp nhiều nested selectors",
+        "description": "Tạo một `Box` chứa nhiều `Chip` component. Sử dụng prop `sx` trên `Box` để thực hiện 2 việc: 1. Thay đổi màu của icon xóa (delete icon) trên tất cả các `Chip` thành màu đỏ. 2. Khi di chuột qua một `Chip`, màu nền của nó sẽ thay đổi.",
+        "starterCode": "import Box from '@mui/material/Box';\nimport Chip from '@mui/material/Chip';\nimport Stack from '@mui/material/Stack';\n\nfunction AdvancedChipStyling() {\n  const handleDelete = () => {};\n\n  return (\n    <Box sx={{ \n      padding: 2, \n      border: '1px dashed grey',\n      // Thêm code của bạn ở đây\n\n    }}>\n      <Stack direction=\"row\" spacing={1}>\n        <Chip label=\"Apple\" onDelete={handleDelete} />\n        <Chip label=\"Banana\" onDelete={handleDelete} />\n        <Chip label=\"Cherry\" onDelete={handleDelete} />\n      </Stack>\n    </Box>\n  );\n}\n\nexport default AdvancedChipStyling;",
+        "solution": "import Box from '@mui/material/Box';\nimport Chip from '@mui/material/Chip';\nimport Stack from '@mui/material/Stack';\n\nfunction AdvancedChipStyling() {\n  const handleDelete = () => {};\n\n  return (\n    <Box sx={{ \n      padding: 2, \n      border: '1px dashed grey',\n      // Thay đổi màu icon xóa\n      '.MuiChip-deleteIcon': {\n        color: 'red'\n      },\n      // Thay đổi màu nền khi hover\n      '.MuiChip-root:hover': {\n        backgroundColor: '#e0e0e0'\n      }\n    }}>\n      <Stack direction=\"row\" spacing={1}>\n        <Chip label=\"Apple\" onDelete={handleDelete} />\n        <Chip label=\"Banana\" onDelete={handleDelete} />\n        <Chip label=\"Cherry\" onDelete={handleDelete} />\n      </Stack>\n    </Box>\n  );\n}\n\nexport default AdvancedChipStyling;",
+        "testCases": "1. Kiểm tra icon xóa trên tất cả các Chip có màu đỏ. 2. Di chuột qua từng Chip, màu nền của nó phải thay đổi."
+      }
+    ]
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "id": 98,
+  "title": "Bài 89: [BONUS] Hướng Dẫn Cài Đặt Bộ Source Code Final Full Đầy Đủ Chi Tiết Từ A-Z",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# Bài 89: [BONUS] Hướng Dẫn Cài Đặt Bộ Source Code Final Full Đầy Đủ Chi Tiết Từ A-Z\n\n## I. Mục Tiêu Bài Học\n\nVideo này là một bài học bonus trong chuỗi MERN Stack Pro, tập trung vào việc hướng dẫn học viên cách cài đặt và chạy bộ mã nguồn hoàn chỉnh của dự án Trello Clone. Mặc dù đây là video dành riêng cho hội viên, dựa trên tiêu đề và bối cảnh của khóa học, chúng ta có thể suy luận mục tiêu chính như sau:\n\n*   **Hiểu rõ cấu trúc:** Giúp học viên nắm được cấu trúc của một dự án MERN Stack hoàn chỉnh, bao gồm cả frontend (ReactJS) và backend (NodeJS), cũng như cách chúng tương tác với nhau.\n*   **Thiết lập môi trường:** Hướng dẫn chi tiết các bước để thiết lập môi trường phát triển cục bộ, từ việc cài đặt các công cụ cần thiết đến việc cấu hình các biến môi trường.\n*   **Chạy dự án:** Đảm bảo học viên có thể tự mình chạy thành công toàn bộ ứng dụng Trello Clone trên máy tính cá nhân, làm nền tảng cho việc tùy chỉnh, phát triển thêm hoặc tham khảo cho các dự án trong tương lai.\n*   **Gỡ lỗi cơ bản:** Trang bị cho học viên khả năng xác định và xử lý một số lỗi cài đặt phổ biến.\n\n## II. Kiến Thức Chi Tiết\n\nĐể cài đặt một dự án MERN Stack hoàn chỉnh, chúng ta cần thực hiện song song ở cả hai phía: Backend (API server) và Frontend (Web application).\n\n### 1. Tổng Quan Cấu Trúc Dự Án\n\nBộ mã nguồn hoàn chỉnh thường được chia thành hai thư mục chính riêng biệt:\n\n*   `trello-web-app-backend`: Chứa toàn bộ mã nguồn cho phần máy chủ, được xây dựng bằng NodeJS, ExpressJS và kết nối với cơ sở dữ liệu MongoDB.\n*   `trello-web-app-frontend`: Chứa toàn bộ mã nguồn cho phần giao diện người dùng, được xây dựng bằng ReactJS (sử dụng Vite) và các thư viện liên quan như Material UI.\n\nSự phân tách này giúp quản lý mã nguồn dễ dàng, độc lập và chuyên nghiệp hơn, phản ánh đúng môi trường làm việc thực tế.\n\n### 2. Các Công Cụ Cần Thiết (Prerequisites)\n\nTrước khi bắt đầu, bạn cần đảm bảo đã cài đặt các công cụ sau trên máy tính của mình:\n\n| Công cụ | Mục đích | Lưu ý | \n| --- | --- | --- |\n| **Node.js & npm/yarn** | Môi trường thực thi JavaScript và quản lý thư viện. | Nên sử dụng `nvm` (Node Version Manager) để quản lý nhiều phiên bản Node.js. Khóa học có thể yêu cầu một phiên bản Node.js cụ thể (ví dụ: LTS). |\n| **Git** | Hệ thống quản lý phiên bản phân tán. | Dùng để tải mã nguồn từ GitHub và quản lý các thay đổi. |\n| **MongoDB** | Cơ sở dữ liệu NoSQL. | Bạn có thể cài đặt MongoDB Community Server trên máy hoặc sử dụng dịch vụ cloud như MongoDB Atlas. |\n| **VS Code** | Trình soạn thảo mã nguồn. | Khuyến khích cài đặt các extension hữu ích như ESLint, Prettier, DotENV. |\n\n### 3. Cài Đặt Backend (API Server)\n\nPhần backend chịu trách nhiệm xử lý logic nghiệp vụ, tương tác với cơ sở dữ liệu và cung cấp các API cho frontend.\n\n**a. Cấu hình biến môi trường:**\n\nĐây là bước quan trọng nhất. Trong thư mục backend, bạn sẽ tìm thấy một file tên là `.env.example`. Bạn cần tạo một bản sao của file này và đổi tên thành `.env`. File này chứa các thông tin nhạy cảm và cấu hình riêng cho môi trường của bạn.\n\n```bash\n# Ví dụ nội dung file .env\n\nMONGODB_URI=\"mongodb+srv://<username>:<password>@cluster0.mongodb.net/<databaseName>?retryWrites=true&w=majority\"\nAPP_HOST=\"localhost\"\nAPP_PORT=8017\n\n# BUILD_MODE có thể là 'dev' hoặc 'production'\nBUILD_MODE=\"dev\"\n```\n\n*   `MONGODB_URI`: Chuỗi kết nối đến cơ sở dữ liệu MongoDB của bạn. Bạn cần thay thế `<username>`, `<password>`, `<databaseName>` bằng thông tin thực tế.\n*   `APP_HOST`, `APP_PORT`: Địa chỉ và cổng mà server backend sẽ chạy.\n\n**b. Cài đặt thư viện:**\n\nSau khi cấu hình môi trường, bạn mở terminal trong thư mục backend và chạy lệnh:\n\n```bash\n# Sử dụng yarn\nyarn install\n\n# Hoặc sử dụng npm\nnpm install\n```\n\nLệnh này sẽ tải về tất cả các thư viện cần thiết được định nghĩa trong file `package.json`.\n\n**c. Khởi chạy server:**\n\n```bash\n# Chạy ở chế độ development với hot-reload\nyarn dev\n\n# Hoặc sử dụng npm\nnpm run dev\n```\n\nNếu mọi thứ thành công, bạn sẽ thấy thông báo cho biết server đang lắng nghe trên cổng đã cấu hình (ví dụ: `Server is running at http://localhost:8017`).\n\n### 4. Cài Đặt Frontend (React App)\n\nPhần frontend chịu trách nhiệm hiển thị giao diện người dùng và tương tác với người dùng, gọi API từ backend để lấy và gửi dữ liệu.\n\n**a. Cấu hình biến môi trường:**\n\nTương tự backend, bạn cần tạo file `.env` từ file `.env.example` trong thư mục frontend.\n\n```bash\n# Ví dụ nội dung file .env trong project React với Vite\n\nVITE_API_ROOT=\"http://localhost:8017\"\n```\n\n*   `VITE_API_ROOT`: Đây là địa chỉ gốc của API server backend. Frontend sẽ sử dụng biến này để biết nơi gửi các yêu cầu (request).\n\n**b. Cài đặt thư viện:**\n\nMở một terminal mới trong thư mục frontend và chạy:\n\n```bash\n# Sử dụng yarn\nyarn install\n\n# Hoặc sử dụng npm\nnpm install\n```\n\n**c. Khởi chạy ứng dụng:**\n\n```bash\n# Chạy development server\nyarn dev\n\n# Hoặc sử dụng npm\nnpm run dev\n```\n\nTerminal sẽ hiển thị một địa chỉ URL (thường là `http://localhost:5173` đối với Vite) để bạn truy cập ứng dụng trong trình duyệt.\n\n## III. Các Bước Thực Hành Tuần Tự\n\n1.  **Tải Mã Nguồn:** Sử dụng `git clone` để tải toàn bộ mã nguồn của dự án từ kho chứa GitHub do tác giả cung cấp.\n2.  **Thiết Lập Database:** Đăng nhập vào MongoDB Atlas, tạo một cluster mới, một database user, và lấy chuỗi kết nối `MONGODB_URI`. Đừng quên thêm địa chỉ IP hiện tại của bạn vào danh sách IP Access List.\n3.  **Cấu Hình & Chạy Backend:**\n    *   `cd` vào thư mục backend.\n    *   Tạo và cấu hình file `.env` với chuỗi `MONGODB_URI` đã lấy.\n    *   Chạy `yarn install`.\n    *   Chạy `yarn dev`.\n4.  **Cấu Hình & Chạy Frontend:**\n    *   Mở terminal mới, `cd` vào thư mục frontend.\n    *   Tạo và cấu hình file `.env` với biến `VITE_API_ROOT` trỏ đến địa chỉ backend (ví dụ: `http://localhost:8017`).\n    *   Chạy `yarn install`.\n    *   Chạy `yarn dev`.\n5.  **Kiểm Tra:** Mở trình duyệt và truy cập vào địa chỉ của frontend. Nếu ứng dụng hiển thị và hoạt động đúng cách, bạn đã cài đặt thành công.\n\n## IV. Lưu Ý Quan Trọng\n\n*   **Phiên bản Node.js:** Luôn kiểm tra phiên bản Node.js yêu cầu của dự án. Sử dụng sai phiên bản có thể gây ra lỗi không tương thích với các thư viện.\n*   **CORS (Cross-Origin Resource Sharing):** Backend server cần được cấu hình để chấp nhận các yêu cầu từ địa chỉ của frontend. Trong khóa học này, tác giả có thể đã cấu hình sẵn trong mã nguồn backend, nhưng đây là một điểm cần lưu ý trong các dự án thực tế.\n*   **Xung đột cổng (Port Conflict):** Nếu cổng `8017` hoặc `5173` đã được sử dụng bởi một ứng dụng khác, bạn cần thay đổi giá trị `APP_PORT` trong file `.env` của backend và khởi động lại server.\n*   **Không chỉnh sửa `package-lock.json` hoặc `yarn.lock`:** Các file này đảm bảo tất cả các thành viên trong nhóm (hoặc chính bạn trên các máy khác nhau) cài đặt cùng một phiên bản của các thư viện, tránh lỗi \"it works on my machine\".\n\n## V. Tài Liệu Tham Khảo\n\nDựa trên các tìm kiếm, đây là những tài nguyên có khả năng liên quan trực tiếp đến khóa học:\n\n1.  **GitHub Repository (Backend):** [trungquandev/nodejs-express-mongodb-rest-api-boilerplate](https://github.com/trungquandev/nodejs-express-mongodb-rest-api-boilerplate)\n2.  **GitHub Repository (Frontend):** [trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n3.  **Blog Tác Giả:** [https://trungquandev.com](https://trungquandev.com)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của việc tách dự án Trello Clone thành hai thư mục `trello-web-app-backend` và `trello-web-app-frontend` là gì?",
+        "options": [
+          "Để giảm tổng dung lượng của dự án.",
+          "Để quản lý mã nguồn dễ dàng, độc lập và chuyên nghiệp, phản ánh môi trường làm việc thực tế.",
+          "Để dự án có thể chạy được trên nhiều hệ điều hành khác nhau.",
+          "Để tăng tốc độ biên dịch của cả frontend và backend."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nêu rõ: \"Sự phân tách này giúp quản lý mã nguồn dễ dàng, độc lập và chuyên nghiệp hơn, phản ánh đúng môi trường làm việc thực tế.\""
+      },
+      {
+        "question": "Công cụ nào được khuyến nghị sử dụng để quản lý nhiều phiên bản Node.js khác nhau trong quá trình phát triển?",
+        "options": [
+          "npm",
+          "yarn",
+          "nvm (Node Version Manager)",
+          "Git"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bảng \"Các Công Cụ Cần Thiết\" trong bài học ghi rõ: \"Nên sử dụng nvm (Node Version Manager) để quản lý nhiều phiên bản Node.js.\""
+      },
+      {
+        "question": "File `.env` trong thư mục backend thường chứa thông tin quan trọng nào?",
+        "options": [
+          "Danh sách các thư viện frontend cần cài đặt.",
+          "Cấu hình giao diện người dùng như màu sắc, font chữ.",
+          "Chuỗi kết nối đến cơ sở dữ liệu MongoDB (MONGODB_URI).",
+          "Các đoạn mã HTML cho các trang chính."
+        ],
+        "correctAnswer": 2,
+        "explanation": "File `.env` dùng để lưu các biến môi trường, và `MONGODB_URI` là một ví dụ điển hình và quan trọng nhất được đề cập để kết nối backend với database."
+      },
+      {
+        "question": "Lệnh `yarn install` trong thư mục dự án có tác dụng gì?",
+        "options": [
+          "Biên dịch mã nguồn React sang JavaScript thuần.",
+          "Khởi chạy server backend ở chế độ production.",
+          "Tải về tất cả các thư viện cần thiết được định nghĩa trong file `package.json`.",
+          "Kiểm tra lỗi cú pháp trong toàn bộ mã nguồn."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học giải thích: \"Lệnh này sẽ tải về tất cả các thư viện cần thiết được định nghĩa trong file package.json.\""
+      },
+      {
+        "question": "Biến môi trường `VITE_API_ROOT` trong file `.env` của frontend được sử dụng để làm gì?",
+        "options": [
+          "Chỉ định phiên bản của Vite được sử dụng.",
+          "Khai báo địa chỉ gốc của API server backend để frontend gửi yêu cầu.",
+          "Đặt tên cho ứng dụng React.",
+          "Cấu hình cổng mà ứng dụng frontend sẽ chạy."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Frontend cần biết địa chỉ của backend để giao tiếp. Bài học nêu rõ: \"Đây là địa chỉ gốc của API server backend. Frontend sẽ sử dụng biến này để biết nơi gửi các yêu cầu (request).\""
+      },
+      {
+        "question": "Lệnh nào được sử dụng để khởi chạy server backend ở chế độ development với tính năng hot-reload?",
+        "options": [
+          "npm start",
+          "yarn build",
+          "npm run server",
+          "yarn dev"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Trong phần \"Cài Đặt Backend\", bài học hướng dẫn sử dụng `yarn dev` (hoặc `npm run dev`) để chạy server ở chế độ development."
+      },
+      {
+        "question": "Khi gặp lỗi xung đột cổng (Port Conflict), ví dụ cổng 8017 đã được sử dụng, bạn nên làm gì?",
+        "options": [
+          "Xóa thư mục `node_modules` và chạy lại `yarn install`.",
+          "Khởi động lại máy tính.",
+          "Thay đổi giá trị `APP_PORT` trong file `.env` của backend và khởi động lại server.",
+          "Cài đặt lại Node.js phiên bản mới nhất."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phần \"Lưu Ý Quan Trọng\" có đề cập rõ ràng về cách xử lý xung đột cổng bằng cách thay đổi giá trị `APP_PORT` trong file `.env`."
+      },
+      {
+        "question": "Tại sao không nên chỉnh sửa trực tiếp các file như `package-lock.json` hoặc `yarn.lock`?",
+        "options": [
+          "Vì các file này chứa mã nguồn chính của ứng dụng.",
+          "Để đảm bảo tất cả thành viên trong nhóm cài đặt cùng một phiên bản của các thư viện, tránh lỗi không tương thích.",
+          "Vì chúng tự động bị xóa mỗi khi chạy `yarn install`.",
+          "Vì chúng chỉ là các file ghi chú, không ảnh hưởng đến dự án."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nhấn mạnh rằng các file lock đảm bảo tính nhất quán của môi trường cài đặt thư viện giữa các lần cài đặt khác nhau và giữa các thành viên trong nhóm."
+      },
+      {
+        "question": "CORS là viết tắt của thuật ngữ gì và tại sao nó quan trọng trong kiến trúc MERN?",
+        "options": [
+          "Cross-Origin Resource Sharing; nó cho phép frontend (chạy ở một origin khác) gọi API của backend một cách an toàn.",
+          "Cascading Origin React Sheets; nó là một kỹ thuật để style cho component React.",
+          "Centralized Object Routing System; nó là một cơ chế định tuyến trong ExpressJS.",
+          "Cross-Object Reference Syntax; nó là quy tắc đặt tên biến trong JavaScript."
+        ],
+        "correctAnswer": 0,
+        "explanation": "CORS (Cross-Origin Resource Sharing) là một cơ chế bảo mật của trình duyệt, nhưng cũng là một vấn đề phổ biến cần cấu hình đúng ở backend để cho phép frontend (thường chạy trên một domain/port khác) có thể truy cập tài nguyên."
+      },
+      {
+        "question": "Bước đầu tiên để lấy mã nguồn dự án từ GitHub về máy tính cá nhân là gì?",
+        "options": [
+          "Tạo một repository mới trên GitHub.",
+          "Sử dụng lệnh `git clone` với URL của repository.",
+          "Chạy lệnh `yarn init`.",
+          "Tải file ZIP của dự án và giải nén."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học mô tả tuần tự các bước thực hành, trong đó bước đầu tiên là \"Tải Mã Nguồn: Sử dụng `git clone` để tải toàn bộ mã nguồn của dự án...\""
+      },
+      {
+        "question": "Trong chuỗi kết nối MongoDB `mongodb+srv://<username>:<password>@cluster0.mongodb.net/<databaseName>`, bạn cần thay thế những gì?",
+        "options": [
+          "Chỉ cần thay thế `<databaseName>`.",
+          "Chỉ cần thay thế `<username>` và `<password>`.",
+          "Cần thay thế `<username>`, `<password>`, và `<databaseName>` bằng thông tin thực tế.",
+          "Không cần thay thế gì, chuỗi kết nối này có thể dùng ngay."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học hướng dẫn rõ ràng rằng người dùng cần thay thế các thông tin định danh như username, password và tên database bằng thông tin tài khoản MongoDB Atlas của họ."
+      },
+      {
+        "question": "Dự án frontend trong khóa học được xây dựng bằng công cụ nào?",
+        "options": [
+          "Create React App",
+          "Next.js",
+          "Vite",
+          "Angular CLI"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề cập cụ thể: \"...được xây dựng bằng ReactJS (sử dụng Vite)...\" và biến môi trường cũng có tiền tố `VITE_`."
+      },
+      {
+        "question": "File `.env.example` có vai trò gì trong dự án?",
+        "options": [
+          "Là file cấu hình chính, được ưu tiên hơn file `.env`.",
+          "Chứa các ví dụ về dữ liệu mẫu cho database.",
+          "Là một file backup của file `.env`.",
+          "Là một file mẫu, định nghĩa các biến môi trường cần thiết mà không chứa giá trị nhạy cảm."
+        ],
+        "correctAnswer": 3,
+        "explanation": "`.env.example` hoạt động như một bản thiết kế cho file `.env` thật. Nó cho các nhà phát triển khác biết những biến môi trường nào cần được cung cấp để ứng dụng chạy đúng cách."
+      },
+      {
+        "question": "Khi thiết lập database trên MongoDB Atlas, hành động nào sau đây là cần thiết để backend có thể kết nối tới?",
+        "options": [
+          "Tạo một collection có tên là `users`.",
+          "Thêm địa chỉ IP hiện tại của bạn vào danh sách IP Access List.",
+          "Bật tính năng backup tự động hàng giờ.",
+          "Chọn khu vực máy chủ gần nhất."
+        ],
+        "correctAnswer": 1,
+        "explanation": "MongoDB Atlas sử dụng IP Access List (hoặc IP Whitelisting) như một lớp bảo mật. Nếu IP của server backend không được cho phép, kết nối sẽ bị từ chối. Bài học đã lưu ý điều này."
+      },
+      {
+        "question": "Framework nào được sử dụng để xây dựng API cho phần backend của dự án?",
+        "options": [
+          "Django",
+          "Ruby on Rails",
+          "ExpressJS",
+          "Laravel"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học nêu rõ cấu trúc backend: \"...được xây dựng bằng NodeJS, ExpressJS và kết nối với cơ sở dữ liệu MongoDB.\""
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo file .env cho Backend",
+        "description": "Dựa vào nội dung của file `.env.example` dưới đây, hãy tạo ra nội dung cho file `.env` bằng cách thay thế các giá trị mẫu bằng thông tin kết nối tới MongoDB Atlas của bạn. Giả sử username là 'myuser', password là 'mypass123', và databaseName là 'trello_clone_db'.",
+        "starterCode": "MONGODB_URI=\"mongodb+srv://<username>:<password>@cluster0.mongodb.net/<databaseName>?retryWrites=true&w=majority\nAPP_HOST=\"localhost\"\nAPP_PORT=8017\nBUILD_MODE=\"dev\"",
+        "solution": "MONGODB_URI=\"mongodb+srv://myuser:mypass123@cluster0.mongodb.net/trello_clone_db?retryWrites=true&w=majority\nAPP_HOST=\"localhost\"\nAPP_PORT=8017\nBUILD_MODE=\"dev\"",
+        "testCases": "Nội dung trả về phải là một chuỗi ký tự. Chuỗi này phải chứa MONGODB_URI đã được cập nhật đúng username, password và databaseName. Các biến khác phải được giữ nguyên."
+      },
+      {
+        "title": "Viết lệnh cài đặt thư viện cho Frontend",
+        "description": "Bạn đang ở trong thư mục `trello-web-app-frontend`. Hãy viết một lệnh duy nhất trong terminal để cài đặt tất cả các thư viện cần thiết cho dự án frontend bằng trình quản lý gói `yarn`.",
+        "starterCode": "# Viết lệnh của bạn vào đây",
+        "solution": "yarn install",
+        "testCases": "Lệnh phải là `yarn install`. Khi thực thi, nó sẽ đọc file `package.json` và tải các dependencies vào thư mục `node_modules`."
+      },
+      {
+        "title": "Cấu hình biến môi trường cho Frontend",
+        "description": "Tạo nội dung cho file `.env` của dự án frontend để nó có thể giao tiếp với server backend đang chạy tại địa chỉ `http://localhost:8017`.",
+        "starterCode": "# Khai báo biến môi trường cho Vite tại đây",
+        "solution": "VITE_API_ROOT=\"http://localhost:8017\"",
+        "testCases": "Nội dung trả về phải là một chuỗi ký tự. Chuỗi này phải định nghĩa biến `VITE_API_ROOT` với giá trị là địa chỉ của backend."
+      },
+      {
+        "title": "Viết lệnh khởi chạy cả hai server",
+        "description": "Giả sử bạn đang ở thư mục gốc chứa cả `trello-web-app-backend` và `trello-web-app-frontend`. Viết một chuỗi các lệnh shell để đi vào từng thư mục và khởi chạy development server của chúng. Sử dụng `&&` để nối các lệnh.",
+        "starterCode": "# Bắt đầu từ thư mục gốc",
+        "solution": "cd trello-web-app-backend && yarn dev & cd ../trello-web-app-frontend && yarn dev",
+        "testCases": "Script phải khởi chạy được cả hai server. Server backend chạy trên cổng 8017 và frontend chạy trên cổng 5173. Ký tự `&` được dùng để chạy tiến trình backend trong nền."
+      },
+      {
+        "title": "Xác định và sửa lỗi trong file cấu hình",
+        "description": "Dưới đây là nội dung file `.env` của một dự án frontend. Nó chứa một lỗi sai khiến ứng dụng không thể kết nối tới backend. Hãy xác định lỗi và cung cấp nội dung đúng.",
+        "starterCode": "# File .env của Frontend\nAPI_ROOT=\"http://localhost:8017\"",
+        "solution": "# File .env của Frontend\nVITE_API_ROOT=\"http://localhost:8017\"",
+        "testCases": "Lỗi là tên biến môi trường. Vì dự án frontend dùng Vite, biến môi trường phải có tiền tố `VITE_`. Nội dung đúng phải là `VITE_API_ROOT=\"http://localhost:8017\"`."
+      }
+    ]
+  }
+}

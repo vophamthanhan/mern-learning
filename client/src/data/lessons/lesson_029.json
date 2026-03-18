@@ -1,0 +1,213 @@
+{
+  "id": 29,
+  "title": "Buổi 15: Update Card Description, Cover, Comment...vv",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Buổi 15: Update Card Description, Cover, Comment...vv\n\n## Mục tiêu bài học\n\nTrong buổi học này, chúng ta sẽ tập trung vào việc hoàn thiện các tính năng quan trọng liên quan đến việc cập nhật thông tin chi tiết của một chiếc thẻ (Card) trong dự án Trello clone. Đồng thời, chúng ta sẽ mở rộng API để lấy và hiển thị thông tin về người sở hữu (Owner) và các thành viên (Members) của một bảng (Board).\n\nCác mục tiêu chính bao gồm:\n\n1.  **Tích hợp API Update Card**: Xây dựng và tích hợp API cho phép người dùng cập nhật các thuộc tính của Card như `title`, `description`, và `cover`.\n2.  **Quản lý State với Redux**: Xử lý và đồng bộ hóa dữ liệu Card được cập nhật giữa giao diện người dùng và state quản lý bởi Redux Toolkit, bao gồm cả optimistic updates.\n3.  **Mở rộng API Board Details**: Cập nhật API lấy chi tiết Board để trả về thêm thông tin về `Owners` và `Members`.\n4.  **Hiển thị thông tin thành viên**: Render thông tin thành viên và owner của Board ra giao diện, cải thiện trải nghiệm người dùng.\n\n## Kiến thức chi tiết được trình bày trong video\n\nVì đây là video dành cho hội viên, nội dung chi tiết sẽ được suy luận dựa trên tiêu đề, mô tả video và kiến thức chuyên môn về MERN Stack. Các kỹ thuật và khái niệm dưới đây là những gì một lập trình viên sẽ cần để triển khai các tính năng này.\n\n### 1. Cập nhật chi tiết Card (Description, Cover)\n\nĐây là một tính năng CRUD (Create, Read, Update, Delete) cơ bản nhưng rất quan trọng. Luồng hoạt động sẽ đi từ Frontend (React) đến Backend (Node.js/Express).\n\n#### a. Frontend (React & Redux Toolkit)\n\n-   **Component và UI/UX**: Giao diện của Card Detail Modal cần được cập nhật để cho phép người dùng chỉnh sửa. Ví dụ:\n    -   **Description**: Sử dụng một thẻ `<textarea>` hoặc một trình soạn thảo văn bản giàu tính năng (Rich Text Editor) như `Tiptap` hoặc `react-quill` để người dùng có thể nhập mô tả chi tiết, hỗ trợ cả Markdown.\n    -   **Cover**: Cung cấp chức năng cho phép người dùng tải lên ảnh bìa mới hoặc chọn từ các ảnh đã đính kèm.\n\n-   **Quản lý State với Redux Toolkit**:\n    -   **Optimistic Updates**: Để cải thiện trải nghiệm người dùng, chúng ta nên áp dụng kỹ thuật \"Optimistic Update\". Khi người dùng thực hiện một thay đổi (ví dụ: lưu description mới), giao diện sẽ được cập nhật ngay lập tức mà không cần chờ phản hồi từ server. Nếu API call thất bại, giao diện sẽ được rollback về trạng thái cũ và một thông báo lỗi sẽ được hiển thị.\n    -   **createAsyncThunk**: Chúng ta sẽ định nghĩa một `async thunk` để xử lý việc gọi API cập nhật Card. Thunk này sẽ bao gồm logic cho cả trường hợp thành công và thất bại.\n\n    ```javascript\n    // Ví dụ về async thunk để update card\n    import { createAsyncThunk } from '@reduxjs/toolkit';\n    import cardAPI from '~/apis/cardAPI';\n\n    export const updateCardDetails = createAsyncThunk(\n      'cards/updateDetails',\n      async (updateData, { rejectWithValue }) => {\n        try {\n          const updatedCard = await cardAPI.update(updateData.cardId, updateData.data);\n          return updatedCard;\n        } catch (error) {\n          return rejectWithValue(error.response.data);\n        }\n      }\n    );\n    ```\n\n    -   **Slice và Reducer**: Trong `extraReducers` của card slice, chúng ta sẽ xử lý các action `pending`, `fulfilled`, và `rejected` từ `async thunk` để cập nhật state một cách phù hợp.\n\n#### b. Backend (Node.js, Express, MongoDB)\n\n-   **API Endpoint**: Định nghĩa một route `PATCH` hoặc `PUT` để xử lý yêu cầu cập nhật. Sử dụng `PATCH` là lựa chọn tốt hơn vì chúng ta chỉ cập nhật một phần của tài nguyên.\n\n    ```javascript\n    // card.route.js\n    import express from 'express';\n    import { cardController } from '~/controllers/cardController';\n    import { cardValidation } from '~/validations/cardValidation';\n\n    const router = express.Router();\n\n    router.route('/:id')\n      .put(cardValidation.update, cardController.update);\n\n    export const cardRoute = router;\n    ```\n\n-   **Validation (Joi)**: Luôn luôn validate dữ liệu đầu vào từ client để đảm bảo tính toàn vẹn dữ liệu. `Joi` là một thư viện mạnh mẽ cho việc này.\n\n    ```javascript\n    // cardValidation.js\n    import Joi from 'joi';\n\n    const update = async (req, res, next) => {\n      const correctCondition = Joi.object({\n        title: Joi.string().min(3).max(50).trim().strict(),\n        description: Joi.string().min(3).max(255).trim().strict(),\n        // ... các trường khác\n      });\n      // ... logic validate\n    };\n    ```\n\n-   **Controller & Service**: Controller sẽ nhận request, gọi service tương ứng để xử lý business logic. Service sẽ tương tác trực tiếp với database.\n\n-   **Database (Mongoose)**: Sử dụng phương thức `findByIdAndUpdate` của Mongoose để tìm và cập nhật Card trong collection.\n\n    ```javascript\n    // card.service.js\n    const update = async (cardId, updateData) => {\n      try {\n        const updatedCard = await cardModel.update(cardId, updateData);\n        return updatedCard;\n      } catch (error) { throw error; }\n    };\n    ```\n\n### 2. Query và Hiển thị Board Owners & Members\n\nTính năng này yêu cầu sự kết hợp giữa Frontend và Backend để lấy và hiển thị dữ liệu quan hệ.\n\n#### a. Backend (Mở rộng API `getBoardDetails`)\n\n-   **MongoDB Aggregation**: Để lấy thông tin chi tiết của `owner` và `members` (thay vì chỉ có ID), chúng ta cần sử dụng Aggregation Framework của MongoDB. Cụ thể là pipeline `$lookup` để \"join\" collection `boards` với collection `users`.\n\n    ```javascript\n    // board.model.js\n    const getDetails = async (boardId) => {\n      try {\n        const result = await GET_DB().collection('boards').aggregate([\n          { $match: { _id: new ObjectId(boardId), _destroy: false } },\n          { $lookup: { from: 'users', localField: 'ownerIds', foreignField: '_id', as: 'owners' } },\n          { $lookup: { from: 'users', localField: 'memberIds', foreignField: '_id', as: 'members' } }\n        ]).toArray();\n        return result[0] || null;\n      } catch (error) { throw error; }\n    };\n    ```\n\n-   **Tối ưu hóa**: Cần đảm bảo các trường `ownerIds` và `memberIds` được index để tăng tốc độ truy vấn.\n\n#### b. Frontend (Cập nhật UI)\n\n-   **Redux State**: Dữ liệu board trong Redux store giờ đây sẽ chứa một mảng các object `owners` và `members` đầy đủ thông tin (thay vì chỉ là ID).\n-   **Component**: Tạo các component để hiển thị danh sách avatar của các thành viên. Khi hover vào avatar, có thể hiển thị tooltip với tên đầy đủ và email của họ.\n\n## Các bước thực hành\n\n1.  **Backend**: Bắt đầu bằng việc cập nhật API.\n    -   Mở file `boardModel.js` và sửa đổi hàm `getDetails` để sử dụng `$lookup` như ví dụ trên.\n    -   Tạo file `card.route.js`, `card.controller.js`, `card.validation.js`, và `card.service.js`.\n    -   Định nghĩa route `PUT /:id` trong `card.route.js`.\n    -   Viết logic validation trong `cardValidation.js`.\n    -   Viết hàm `update` trong `cardController.js` và `cardService.js` để xử lý logic cập nhật Card.\n\n2.  **Frontend**: Kết nối giao diện với API mới.\n    -   Trong `boardSlice.js`, đảm bảo rằng `extraReducers` cho `fetchBoardDetails` có thể xử lý đúng cấu trúc dữ liệu mới (với `owners` và `members`).\n    -   Tạo một `async thunk` mới tên là `updateCardDetails` trong một file slice riêng cho card hoặc trong board slice.\n    -   Trong component `CardDetailsModal`, gọi `dispatch(updateCardDetails(...))` khi người dùng lưu thay đổi.\n    -   Triển khai optimistic update trong `extraReducers` của slice.\n    -   Tạo component `BoardMembers` để nhận props là mảng `owners` và `members` và render ra danh sách avatar.\n\n## Lưu ý quan trọng\n\n-   **Phân quyền (Authorization)**: Cần có một tầng middleware để kiểm tra xem người dùng hiện tại có phải là thành viên của board hay không trước khi cho phép họ cập nhật card. Tránh việc một người dùng bất kỳ có thể sửa thông tin của board khác chỉ bằng cách đoán Card ID.\n-   **Xử lý lỗi**: Xử lý lỗi một cách cẩn thận ở cả Frontend và Backend. Backend nên trả về mã lỗi và thông điệp rõ ràng. Frontend cần bắt những lỗi này và hiển thị thông báo thân thiện cho người dùng.\n-   **Bất biến (Immutability)**: Khi làm việc với Redux, luôn đảm bảo rằng bạn không bao giờ thay đổi trực tiếp state. Luôn tạo ra một bản sao mới của state và chỉnh sửa trên đó.\n-   **Tối ưu Performance**: Việc sử dụng `$lookup` có thể ảnh hưởng đến hiệu năng nếu không được tối ưu. Đảm bảo rằng các trường dùng để join đã được đánh index. Ở phía Frontend, sử dụng `React.memo` và `useSelector` một cách khôn ngoan để tránh re-render không cần thiết.\n\n## Tài liệu tham khảo\n\n1.  [Redux Toolkit: `createAsyncThunk`](https://redux-toolkit.js.org/api/createAsyncThunk)\n2.  [Mongoose Docs: `findByIdAndUpdate`](https://mongoosejs.com/docs/api/model.html#Model.findByIdAndUpdate())\n3.  [MongoDB Docs: `$lookup` (aggregation)](https://www.mongodb.com/docs/manual/reference/operator/aggregation/lookup/)\n4.  [Joi - Object Validation](https://joi.dev/api/?v=17.9.1#object)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục đích chính của kỹ thuật 'Optimistic Update' trong Redux là gì?",
+        "options": [
+          "Để tăng tốc độ phản hồi của API từ server.",
+          "Để cải thiện trải nghiệm người dùng bằng cách cập nhật UI ngay lập tức.",
+          "Để đảm bảo dữ liệu luôn được đồng bộ hóa chính xác với server.",
+          "Để giảm tải cho server bằng cách gửi ít yêu cầu hơn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Optimistic Update cập nhật giao diện người dùng ngay lập tức sau một hành động, tạo cảm giác phản hồi nhanh chóng mà không cần chờ xác nhận từ máy chủ. Nếu có lỗi xảy ra, giao diện sẽ được khôi phục lại trạng thái cũ."
+      },
+      {
+        "question": "Trong Redux Toolkit, `createAsyncThunk` được sử dụng để làm gì?",
+        "options": [
+          "Để tạo một slice mới trong Redux store.",
+          "Để xử lý các hành động (actions) bất đồng bộ, chẳng hạn như gọi API.",
+          "Để tạo các reducer cho một slice.",
+          "Để kết nối component React với Redux store."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`createAsyncThunk` là một công cụ của Redux Toolkit giúp đơn giản hóa việc xử lý các tác vụ bất đồng bộ (như API calls) và tự động tạo ra các action types (pending, fulfilled, rejected) tương ứng."
+      },
+      {
+        "question": "Khi xây dựng API để cập nhật một phần thông tin của một tài nguyên (ví dụ: chỉ cập nhật `description` của Card), phương thức HTTP nào được khuyến khích sử dụng?",
+        "options": [
+          "POST",
+          "GET",
+          "PUT",
+          "PATCH"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`PATCH` là phương thức HTTP phù hợp nhất để cập nhật một phần của tài nguyên. `PUT` thường được sử dụng để thay thế toàn bộ tài nguyên."
+      },
+      {
+        "question": "Thư viện `Joi` được sử dụng trong backend Node.js với mục đích gì?",
+        "options": [
+          "Để tương tác với cơ sở dữ liệu MongoDB.",
+          "Để tạo các API endpoint.",
+          "Để xác thực (validate) dữ liệu đầu vào từ client.",
+          "Để quản lý các biến môi trường."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`Joi` là một thư viện mạnh mẽ dùng để định nghĩa schema và xác thực dữ liệu đầu vào, đảm bảo rằng dữ liệu gửi từ client tuân thủ đúng định dạng và ràng buộc trước khi được xử lý."
+      },
+      {
+        "question": "Trong MongoDB, pipeline aggregation nào được sử dụng để \"join\" dữ liệu từ hai collection khác nhau?",
+        "options": [
+          "$match",
+          "$group",
+          "$lookup",
+          "$project"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`$lookup` thực hiện một phép \"left outer join\" với một collection khác trong cùng một cơ sở dữ liệu để lấy về các document liên quan."
+      },
+      {
+        "question": "Khi sử dụng Mongoose để cập nhật một document và muốn nhận về document đã được cập nhật, bạn nên sử dụng phương thức nào?",
+        "options": [
+          "model.update(id, data)",
+          "model.updateOne({ _id: id }, data)",
+          "model.findByIdAndUpdate(id, data, { new: true })",
+          "model.save(data)"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`findByIdAndUpdate` với tùy chọn `{ new: true }` sẽ tìm document theo ID, cập nhật nó và trả về phiên bản mới của document sau khi cập nhật."
+      },
+      {
+        "question": "Trong `extraReducers` của một Redux slice, bạn sẽ xử lý action nào để rollback lại state khi một `async thunk` gọi API thất bại?",
+        "options": [
+          "updateCardDetails.pending",
+          "updateCardDetails.fulfilled",
+          "updateCardDetails.rejected",
+          "updateCardDetails.settled"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Action `rejected` được dispatch bởi `createAsyncThunk` khi promise bị từ chối (thất bại). Đây là nơi để xử lý lỗi và rollback lại các thay đổi 'optimistic'."
+      },
+      {
+        "question": "Để lấy thông tin chi tiết của `owners` và `members` (thay vì chỉ ID) trong API `getBoardDetails`, kỹ thuật nào đã được sử dụng ở backend?",
+        "options": [
+          "Sử dụng `populate` của Mongoose.",
+          "Gọi nhiều query riêng lẻ đến collection `users`.",
+          "Sử dụng MongoDB Aggregation với `$lookup`.",
+          "Lưu trực tiếp thông tin user vào trong document của board."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học mô tả việc sử dụng MongoDB Aggregation Framework với pipeline `$lookup` để join collection `boards` với `users` và lấy về thông tin chi tiết."
+      },
+      {
+        "question": "Tại sao cần phải có một tầng middleware để kiểm tra phân quyền (Authorization) trước khi cho phép user cập nhật Card?",
+        "options": [
+          "Để tăng hiệu năng cho ứng dụng.",
+          "Để ngăn chặn các cuộc tấn công SQL Injection.",
+          "Để đảm bảo chỉ những thành viên của board mới có quyền sửa đổi nội dung.",
+          "Để mã hóa dữ liệu truyền đi."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phân quyền là cực kỳ quan trọng để bảo mật, đảm bảo rằng một người dùng không thể tùy tiện thay đổi dữ liệu không thuộc về họ, ví dụ như sửa card trong một board mà họ không phải là thành viên."
+      },
+      {
+        "question": "Trong React, để tránh re-render không cần thiết cho một component, bạn có thể sử dụng công cụ nào?",
+        "options": [
+          "`useState`",
+          "`useEffect`",
+          "`React.memo`",
+          "`useContext`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`React.memo` là một Higher-Order Component (HOC) giúp ghi nhớ (memoize) kết quả render của một component. Component sẽ chỉ re-render nếu props của nó thay đổi."
+      },
+      {
+        "question": "Khi làm việc với Redux, nguyên tắc Bất biến (Immutability) yêu cầu điều gì?",
+        "options": [
+          "Không bao giờ thay đổi trực tiếp state, luôn tạo bản sao mới.",
+          "Luôn luôn thay đổi state trực tiếp để có hiệu năng tốt nhất.",
+          "Chỉ sử dụng object cho state.",
+          "Chỉ sử dụng `createAsyncThunk` để thay đổi state."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Nguyên tắc bất biến trong Redux là cốt lõi. Việc không thay đổi trực tiếp state giúp theo dõi thay đổi, debug dễ dàng và tối ưu hóa hiệu năng."
+      },
+      {
+        "question": "Trong file `card.route.js`, phương thức nào của Express router được dùng để định nghĩa một endpoint cho việc cập nhật card?",
+        "options": [
+          "router.get('/:id', ...)",
+          "router.post('/', ...)",
+          "router.delete('/:id', ...)",
+          "router.put('/:id', ...)"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bài học đề cập đến việc sử dụng `router.route('/:id').put(...)` để xử lý yêu cầu cập nhật card, với `:id` là tham số động cho ID của card."
+      },
+      {
+        "question": "Hàm `rejectWithValue` trong `createAsyncThunk` có công dụng gì?",
+        "options": [
+          "Để trả về giá trị thành công cho thunk.",
+          "Để tự động tạo một action `fulfilled`.",
+          "Để trả về một giá trị tùy chỉnh trong payload của action `rejected` khi có lỗi.",
+          "Để hủy bỏ việc thực thi của thunk."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`rejectWithValue` cho phép bạn trả về một payload cụ thể khi một thunk thất bại, giúp bạn truyền thông tin lỗi từ API call về Redux store một cách tường minh."
+      },
+      {
+        "question": "Để tối ưu tốc độ truy vấn có sử dụng `$lookup` trong MongoDB, chúng ta nên làm gì?",
+        "options": [
+          "Xóa bớt dữ liệu không cần thiết.",
+          "Sử dụng ổ cứng SSD.",
+          "Đánh index (chỉ mục) cho các trường được dùng để join (`localField` và `foreignField`).",
+          "Tăng bộ nhớ RAM cho server."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc đánh index trên các trường dùng trong phép join (`ownerIds`, `memberIds`, `_id`) sẽ giúp MongoDB tìm kiếm và kết hợp dữ liệu nhanh hơn đáng kể, cải thiện hiệu năng của aggregation."
+      },
+      {
+        "question": "Trong ví dụ về `cardValidation.js`, `Joi.string().min(3).max(50).trim().strict()` có ý nghĩa gì?",
+        "options": [
+          "Trường dữ liệu phải là một chuỗi, có độ dài từ 3 đến 50 ký tự, không được có khoảng trắng thừa và phải chính xác là một chuỗi.",
+          "Trường dữ liệu có thể là số hoặc chuỗi, dài từ 3 đến 50.",
+          "Trường dữ liệu phải là một chuỗi, không được chứa khoảng trắng.",
+          "Trường dữ liệu là bắt buộc và phải có giá trị là \"strict\"."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đây là một chuỗi các quy tắc xác thực của Joi: `string()` yêu cầu kiểu chuỗi, `min()` và `max()` xác định độ dài, `trim()` loại bỏ khoảng trắng đầu/cuối, và `strict()` đảm bảo không có chuyển đổi kiểu dữ liệu ngầm."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Route và Controller cơ bản cho việc Update Card",
+        "description": "Hãy tạo một API endpoint sử dụng phương thức `PUT` để nhận yêu cầu cập nhật một Card. Endpoint này cần nhận `cardId` từ URL params. Controller chỉ cần log `cardId` và body của request ra console và trả về một message thành công.",
+        "starterCode": "import express from 'express';\n\nconst router = express.Router();\n\nconst updateCardController = (req, res) => {\n  // Code của bạn ở đây\n  const cardId = req.params.id;\n  const updateData = req.body;\n\n  console.log('Updating card with ID:', cardId);\n  console.log('Data:', updateData);\n\n  res.status(200).json({ message: 'Card update request received' });\n};\n\nrouter.route('/:id').put(updateCardController);\n\nexport const cardRoute = router;",
+        "solution": "import express from 'express';\n\nconst router = express.Router();\n\nconst updateCardController = (req, res) => {\n  const cardId = req.params.id;\n  const updateData = req.body;\n\n  console.log('Updating card with ID:', cardId);\n  console.log('Data:', updateData);\n\n  res.status(200).json({ message: 'Card update request received successfully for card ' + cardId });\n};\n\nrouter.route('/:id').put(updateCardController);\n\nexport const cardRoute = router;",
+        "testCases": "Gửi một request `PUT` đến `/cards/some-card-id` với một JSON body như `{\"title\": \"New Title\"}`. Response body phải là `{\"message\": \"Card update request received successfully for card some-card-id\"}` và status code là 200."
+      },
+      {
+        "title": "Bài 2: Viết Validation cho API Update Card với Joi",
+        "description": "Mở rộng bài 1, hãy viết một middleware validation sử dụng `Joi` để kiểm tra dữ liệu đầu vào. Yêu cầu: `title` phải là chuỗi, dài từ 3-50 ký tự; `description` (nếu có) phải là chuỗi, dài tối đa 255 ký tự.",
+        "starterCode": "import Joi from 'joi';\nimport { StatusCodes } from 'http-status-codes';\n\nconst updateValidation = async (req, res, next) => {\n  const correctCondition = Joi.object({\n    // Schema của bạn ở đây\n  });\n\n  try {\n    await correctCondition.validateAsync(req.body, { abortEarly: false });\n    next();\n  } catch (error) {\n    res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ errors: error.message });\n  }\n};\n\n// Giả sử bạn sẽ dùng middleware này trong route\n// router.route('/:id').put(updateValidation, updateCardController);",
+        "solution": "import Joi from 'joi';\nimport { StatusCodes } from 'http-status-codes';\n\nconst updateValidation = async (req, res, next) => {\n  const correctCondition = Joi.object({\n    title: Joi.string().min(3).max(50).trim().strict(),\n    description: Joi.string().max(255).trim().strict().optional()\n  });\n\n  try {\n    // Chỉ validate những trường có trong req.body\n    await correctCondition.validateAsync(req.body, { abortEarly: false, allowUnknown: true });\n    next();\n  } catch (error) {\n    res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ errors: error.message });\n  }\n};",
+        "testCases": "1. Gửi request với body `{\"title\": \"OK\"}` -> Lỗi 422. \n2. Gửi request với body `{\"title\": \"A valid title\"}` -> Pass. \n3. Gửi request với body `{\"description\": \"A valid description\"}` -> Lỗi 422 (thiếu title). \n4. Gửi request với body `{\"title\": \"Valid\", \"description\": \"Also valid\"}` -> Pass."
+      },
+      {
+        "title": "Bài 3: Viết Service và Model để cập nhật Card trong DB",
+        "description": "Hoàn thiện luồng backend. Viết hàm `update` trong service và model. Hàm trong model sẽ sử dụng `findOneAndUpdate` của MongoDB (hoặc `findByIdAndUpdate` của Mongoose) để cập nhật document trong DB và trả về document đã được cập nhật.",
+        "starterCode": "// card.service.js\nconst update = async (cardId, updateData) => {\n  try {\n    // Gọi hàm update từ model\n    // ...\n  } catch (error) { throw error; }\n};\n\n// card.model.js\nimport { GET_DB } from '~/config/mongodb';\nimport { ObjectId } from 'mongodb';\n\nconst CARD_COLLECTION_NAME = 'cards';\n\nconst update = async (cardId, updateData) => {\n  try {\n    // Code của bạn ở đây\n  } catch (error) { throw error; }\n};",
+        "solution": "// card.service.js\nimport { cardModel } from '~/models/cardModel';\n\nconst update = async (cardId, updateData) => {\n  try {\n    const updatedCard = await cardModel.update(cardId, updateData);\n    return updatedCard;\n  } catch (error) { throw error; }\n};\n\n// card.model.js\nimport { GET_DB } from '~/config/mongodb';\nimport { ObjectId } from 'mongodb';\n\nconst CARD_COLLECTION_NAME = 'cards';\n\nconst update = async (cardId, updateData) => {\n  try {\n    const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(\n      { _id: new ObjectId(cardId) },\n      { $set: updateData },\n      { returnDocument: 'after' }\n    );\n    return result.value;\n  } catch (error) { throw error; }\n};",
+        "testCases": "Gọi hàm `service.update('some-card-id', { title: 'Updated Title' })`. Hàm phải trả về object card đã được cập nhật với title mới."
+      },
+      {
+        "title": "Bài 4: Viết `createAsyncThunk` để gọi API Update Card",
+        "description": "Phía frontend, hãy tạo một `async thunk` bằng `createAsyncThunk` của Redux Toolkit để thực hiện gọi API cập nhật card. Thunk này cần nhận một object chứa `cardId` và `data` để gửi lên server.",
+        "starterCode": "import { createAsyncThunk } from '@reduxjs/toolkit';\n// Giả sử bạn có một file api client đã được cấu hình\nimport { authorizedAxiosInstance } from '~/utils/axios';\n\nexport const updateCardDetails = createAsyncThunk(\n  'cards/updateDetails',\n  async (updateData, { rejectWithValue }) => {\n    try {\n      // Code gọi API của bạn ở đây\n      // updateData sẽ có dạng { cardId: '...', data: { title: '...' } }\n    } catch (error) {\n      return rejectWithValue(error.response.data);\n    }\n  }\n);",
+        "solution": "import { createAsyncThunk } from '@reduxjs/toolkit';\nimport { authorizedAxiosInstance } from '~/utils/axios';\n\nexport const updateCardDetails = createAsyncThunk(\n  'cards/updateDetails',\n  async ({ cardId, data }, { rejectWithValue }) => {\n    try {\n      const response = await authorizedAxiosInstance.put(`/v1/cards/${cardId}`, data);\n      return response.data; // Trả về card đã được cập nhật từ API\n    } catch (error) {\n      return rejectWithValue(error.response.data);\n    }\n  }\n);",
+        "testCases": "Dispatch thunk `updateCardDetails({ cardId: 'abc', data: { title: 'New' } })`. Mock API để trả về dữ liệu card đã cập nhật. Action `fulfilled` phải được dispatch với payload là dữ liệu card đó."
+      },
+      {
+        "title": "Bài 5: Mở rộng API getBoardDetails với `$lookup`",
+        "description": "Trong `board.model.js`, sửa đổi hàm `getDetails` để sử dụng MongoDB Aggregation Framework. Thêm hai pipeline `$lookup` để lấy thông tin chi tiết của `owners` và `members` từ collection `users` dựa trên các trường `ownerIds` và `memberIds` của board.",
+        "starterCode": "// board.model.js\nconst getDetails = async (boardId) => {\n  try {\n    // Hiện tại chỉ là một query đơn giản\n    const result = await GET_DB().collection('boards').findOne({ _id: new ObjectId(boardId) });\n    return result;\n  } catch (error) { throw error; }\n};",
+        "solution": "// board.model.js\nconst getDetails = async (boardId) => {\n  try {\n    const result = await GET_DB().collection('boards').aggregate([\n      { $match: { _id: new ObjectId(boardId), _destroy: false } },\n      { $lookup: { from: 'users', localField: 'ownerIds', foreignField: '_id', as: 'owners' } },\n      { $lookup: { from: 'users', localField: 'memberIds', foreignField: '_id', as: 'members' } }\n    ]).toArray();\n    return result[0] || null;\n  } catch (error) { throw error; }\n};",
+        "testCases": "Gọi hàm `model.getDetails('some-board-id')`. Kết quả trả về phải là một object board, trong đó có thêm hai trường là `owners` và `members`, là các mảng chứa các object user đầy đủ thông tin, thay vì chỉ là mảng các ID."
+      }
+    ]
+  }
+}

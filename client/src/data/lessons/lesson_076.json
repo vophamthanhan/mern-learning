@@ -1,0 +1,213 @@
+{
+  "id": 76,
+  "title": "Bài học 59: Tại sao nên check data ở cả Validation và Model Schema?",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Bài học 59: Tại sao nên check data ở cả Validation và Model Schema?\n\n## Mục tiêu bài học\n\nBài học này nhằm mục đích giải thích tầm quan trọng của việc thực hiện kiểm tra (validate) dữ liệu ở hai lớp riêng biệt trong một ứng dụng MERN Stack: lớp **Validation** (sử dụng thư viện như Joi) và lớp **Model Schema** (sử dụng Mongoose). Hiểu rõ lý do và cách triển khai hai lớp bảo vệ này sẽ giúp xây dựng các ứng dụng mạnh mẽ, an toàn và dễ bảo trì hơn.\n\n## Kiến thức chi tiết\n\nTrong một ứng dụng web, đặc biệt là với API, dữ liệu từ client gửi lên (ví dụ: qua `req.body`) không bao giờ đáng tin cậy. Việc kiểm tra tính hợp lệ của dữ liệu là bắt buộc để đảm bảo an toàn và tính toàn vẹn cho hệ thống. Có hai tầng chính để thực hiện việc này:\n\n### 1. Lớp Validation (Ví dụ: sử dụng Joi)\n\nĐây là lớp kiểm tra đầu tiên, thường được đặt ở tầng Controller hoặc Middleware. Nhiệm vụ của nó là xác thực dữ liệu **ngay khi request đến server**, trước khi bất kỳ logic nghiệp vụ nào được thực thi.\n\n*   **Mục đích:**\n    *   **Phản hồi nhanh cho client:** Nhanh chóng từ chối các request chứa dữ liệu không hợp lệ và gửi lại thông báo lỗi rõ ràng cho phía client.\n    *   **Giảm tải cho server:** Ngăn chặn việc xử lý các dữ liệu sai định dạng, tiết kiệm tài nguyên tính toán.\n    *   **Bảo vệ tầng service/business:** Đảm bảo rằng các hàm xử lý nghiệp vụ chỉ nhận được dữ liệu đã được định dạng đúng.\n\n*   **Code mẫu (sử dụng Joi):**\n\n```javascript\n// In a validation middleware or file\nconst Joi = require('joi');\n\nconst createNewValidation = async (req, res, next) => {\n  const correctCondition = Joi.object({\n    title: Joi.string().required().min(3).max(50).trim().strict(),\n    description: Joi.string().required().min(3).max(256).trim().strict(),\n    // Thêm các trường cần validate khác\n  });\n\n  try {\n    // Chỉ validate req.body và cho phép các trường không được định nghĩa trong schema\n    await correctCondition.validateAsync(req.body, { abortEarly: false });\n    next();\n  } catch (error) {\n    // Nếu có lỗi, trả về response lỗi cho client\n    res.status(400).json({ errors: error.details.map(d => d.message) });\n  }\n};\n```\n\n### 2. Lớp Model Schema (Ví dụ: sử dụng Mongoose)\n\nĐây là lớp kiểm tra cuối cùng, được định nghĩa trực tiếp trong Schema của Mongoose. Nó đảm bảo rằng **chỉ những dữ liệu hợp lệ mới được lưu vào cơ sở dữ liệu MongoDB**.\n\n*   **Mục đích:**\n    *   **Đảm bảo tính toàn vẹn dữ liệu (Data Integrity):** Là chốt chặn cuối cùng để bảo vệ cơ sở dữ liệu khỏi dữ liệu rác hoặc sai cấu trúc.\n    *   **Nguồn tin cậy duy nhất (Single Source of Truth):** Schema định nghĩa cấu trúc và các ràng buộc của dữ liệu, bất kể dữ liệu đó đến từ đâu (API, một script khác, admin panel...).\n    *   **Tận dụng các tính năng của Mongoose:** Sử dụng các validators tích hợp sẵn như `required`, `minlength`, `maxlength`, `enum`, `match` (regex), hoặc các custom validators.\n\n*   **Code mẫu (sử dụng Mongoose):**\n\n```javascript\n// In a Mongoose model file\nconst mongoose = require('mongoose');\n\nconst boardSchema = new mongoose.Schema({\n  title: {\n    type: String,\n    required: true,\n    minLength: 3,\n    maxLength: 50,\n    trim: true\n  },\n  description: {\n    type: String,\n    required: true,\n    minLength: 3,\n    maxLength: 256,\n    trim: true\n  },\n  createdAt: {\n    type: Date,\n    default: Date.now\n  }\n  // ...các trường khác\n});\n\nmodule.exports = mongoose.model('Board', boardSchema);\n```\n\n### Tại sao cần cả hai?\n\nCâu hỏi đặt ra là: \"Nếu Mongoose Schema đã validate rồi, tại sao cần thêm Joi?\". Câu trả lời nằm ở **nhiệm vụ và thời điểm hoạt động** của mỗi lớp:\n\n| Tiêu chí | Lớp Validation (Joi) | Lớp Model Schema (Mongoose) |\n| :--- | :--- | :--- |\n| **Thời điểm** | Khi request vừa đến server, **trước** khi vào controller. | Ngay **trước** khi lưu dữ liệu vào database. |\n| **Mục tiêu** | Validate **dữ liệu đầu vào** từ client (API contract). | Validate **dữ liệu trước khi lưu trữ** (data integrity). |\n| **Thông báo lỗi** | Rõ ràng, chi tiết, thân thiện với client. | Thường chung chung hơn, khó để parse và gửi về cho client một cách tường minh. |\n| **Trường hợp sử dụng** | Bắt lỗi định dạng (string, number), độ dài, các quy tắc phức tạp mà không liên quan đến DB. | Bắt lỗi `required`, `unique`, `enum`, kiểu dữ liệu (ObjectId), các ràng buộc toàn vẹn với DB. |\n\n**Ví dụ thực tế:**\n\n*   Client gửi lên một trường `columnOrderIds` là một mảng chứa các chuỗi không phải ObjectId. **Joi** sẽ bắt lỗi này ngay lập tức và báo \"Đây không phải là định dạng ObjectId hợp lệ\".\n*   Một developer khác viết một service nội bộ, quên không truyền trường `title` (được `required: true` trong Mongoose). Khi service này cố gắng lưu dữ liệu, **Mongoose** sẽ ném lỗi, bảo vệ database khỏi một bản ghi không hoàn chỉnh.\n\nViệc có cả hai lớp validation tạo ra một hệ thống phòng thủ theo chiều sâu (defense in depth), giúp ứng dụng trở nên cực kỳ vững chắc.\n\n## Các bước thực hành\n\n1.  **Cài đặt Joi:** `npm install joi`\n2.  **Tạo Middleware Validation:** Tạo một file (ví dụ: `validations/boardValidation.js`) để định nghĩa các schema của Joi cho từng API endpoint.\n3.  **Áp dụng Middleware:** Trong file router, thêm middleware validation vào trước controller xử lý request.\n    ```javascript\n    // routes/boardRoute.js\n    const express = require('express');\n    const router = express.Router();\n    const { createNewValidation } = require('../validations/boardValidation');\n    const { createNew } = require('../controllers/boardController');\n\n    router.route('/')\n      .post(createNewValidation, createNew);\n    ```\n4.  **Định nghĩa Mongoose Schema:** Đảm bảo các trường trong Mongoose model có đầy đủ các ràng buộc cần thiết (`required`, `type`, `enum`...).\n5.  **Kiểm thử:** Dùng Postman hoặc các công cụ tương tự để gửi các request với dữ liệu đúng và sai để kiểm tra phản hồi từ cả hai lớp validation.\n\n## Lưu ý quan trọng\n\n*   **Tách biệt logic:** Luôn giữ logic validation của Joi tách biệt với logic nghiệp vụ trong controller. Controller chỉ nên tập trung vào việc điều phối dữ liệu sau khi đã được xác thực.\n*   **Thông báo lỗi:** Lỗi từ Joi nên được xử lý để trả về một cấu trúc JSON lỗi nhất quán cho client. Lỗi từ Mongoose thường là dấu hiệu của lỗi logic ở server (500 Internal Server Error) hơn là lỗi từ người dùng (400 Bad Request).\n*   **`abortEarly: false`:** Khi dùng Joi, nên set tùy chọn này để Joi có thể trả về tất cả các lỗi validation cùng một lúc, thay vì dừng lại ở lỗi đầu tiên.\n\n## Tài liệu tham khảo\n\n*   **Joi Documentation:** [https://joi.dev/](https://joi.dev/)\n*   **Mongoose Validation:** [https://mongoosejs.com/docs/validation.html](https://mongoosejs.com/docs/validation.html)\n*   **TrungQuanDev GitHub:** [https://github.com/trungquandev](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Theo bài học, tại sao việc kiểm tra dữ liệu (validation) lại quan trọng trong một ứng dụng MERN Stack?",
+        "options": [
+          "Để làm cho ứng dụng chạy nhanh hơn.",
+          "Để đảm bảo an toàn và tính toàn vẹn cho hệ thống vì dữ liệu từ client không bao giờ đáng tin cậy.",
+          "Để giảm số lượng code cần viết ở backend.",
+          "Để tự động tạo tài liệu cho API."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nhấn mạnh rằng dữ liệu từ client không bao giờ đáng tin cậy, do đó việc kiểm tra là bắt buộc để đảm bảo an toàn và tính toàn vẹn cho hệ thống."
+      },
+      {
+        "question": "Lớp Validation sử dụng thư viện như Joi thường được đặt ở đâu và hoạt động vào thời điểm nào?",
+        "options": [
+          "Ở tầng Model, ngay trước khi lưu vào database.",
+          "Ở tầng Controller hoặc Middleware, ngay khi request đến server.",
+          "Ở phía client, trước khi gửi request.",
+          "Sau khi dữ liệu đã được lưu vào database để kiểm tra lại."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lớp Validation (Joi) là lớp kiểm tra đầu tiên, thường đặt ở Controller hoặc Middleware để xác thực dữ liệu ngay khi request đến server, trước khi bất kỳ logic nghiệp vụ nào được thực thi."
+      },
+      {
+        "question": "Mục đích chính của việc sử dụng Lớp Validation (Joi) là gì?",
+        "options": [
+          "Đảm bảo dữ liệu tuân thủ đúng cấu trúc trong database.",
+          "Phản hồi nhanh cho client về lỗi dữ liệu và giảm tải cho server.",
+          "Tạo ra các giá trị mặc định cho các trường còn thiếu.",
+          "Mã hóa dữ liệu nhạy cảm trước khi lưu trữ."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mục đích chính của Joi là nhanh chóng từ chối request không hợp lệ, gửi lỗi rõ ràng cho client và ngăn chặn việc xử lý dữ liệu sai, giúp giảm tải cho server."
+      },
+      {
+        "question": "Lớp Model Schema sử dụng Mongoose có vai trò chính là gì?",
+        "options": [
+          "Định dạng lại dữ liệu request để client dễ đọc hơn.",
+          "Gửi thông báo lỗi chi tiết về định dạng cho client.",
+          "Là chốt chặn cuối cùng, đảm bảo chỉ dữ liệu hợp lệ mới được lưu vào cơ sở dữ liệu.",
+          "Thực thi logic nghiệp vụ phức tạp."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vai trò của Mongoose Schema là đảm bảo tính toàn vẹn dữ liệu (Data Integrity), là chốt chặn cuối cùng để bảo vệ cơ sở dữ liệu khỏi dữ liệu sai cấu trúc trước khi lưu."
+      },
+      {
+        "question": "Sự khác biệt chính về thời điểm hoạt động giữa Joi và Mongoose validation là gì?",
+        "options": [
+          "Joi hoạt động sau khi lưu vào DB, Mongoose hoạt động trước khi vào controller.",
+          "Cả hai đều hoạt động cùng lúc ở middleware.",
+          "Joi hoạt động khi request đến server, Mongoose hoạt động ngay trước khi lưu vào DB.",
+          "Joi chỉ hoạt động ở môi trường development, Mongoose chỉ ở production."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bảng so sánh trong bài học chỉ rõ: Joi validate khi request vừa đến server, trong khi Mongoose validate ngay trước khi lưu dữ liệu vào database."
+      },
+      {
+        "question": "Tùy chọn `abortEarly: false` trong Joi có tác dụng gì?",
+        "options": [
+          "Dừng kiểm tra ngay khi phát hiện lỗi đầu tiên.",
+          "Bỏ qua tất cả các lỗi và cho phép request đi tiếp.",
+          "Báo cáo tất cả các lỗi validation cùng một lúc thay vì chỉ lỗi đầu tiên.",
+          "Cho phép các trường không được định nghĩa trong schema."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học lưu ý rằng `abortEarly: false` nên được dùng để Joi có thể trả về tất cả các lỗi validation, giúp client nhận được thông tin đầy đủ để sửa lỗi."
+      },
+      {
+        "question": "Trong Mongoose Schema, ràng buộc nào dùng để đảm bảo một trường phải có giá trị?",
+        "options": [
+          "`minLength: 1`",
+          "`exists: true`",
+          "`required: true`",
+          "`notNull: true`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mongoose sử dụng `required: true` để định nghĩa rằng một trường không được để trống khi lưu vào cơ sở dữ liệu."
+      },
+      {
+        "question": "Theo bài học, lỗi từ lớp nào thường được coi là lỗi từ người dùng (400 Bad Request)?",
+        "options": [
+          "Lỗi từ Mongoose Schema.",
+          "Lỗi từ Joi Validation.",
+          "Lỗi kết nối cơ sở dữ liệu.",
+          "Lỗi logic bên trong service."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lỗi từ Joi thường là do client gửi dữ liệu sai định dạng, không đáp ứng \"API contract\", nên được coi là lỗi 400 Bad Request. Lỗi Mongoose thường chỉ ra lỗi logic ở server (500)."
+      },
+      {
+        "question": "Hệ thống \"phòng thủ theo chiều sâu\" (defense in depth) trong ngữ cảnh bài học có nghĩa là gì?",
+        "options": [
+          "Chỉ sử dụng Mongoose để validation vì nó gần database nhất.",
+          "Sử dụng nhiều thư viện validation khác nhau cùng lúc.",
+          "Sử dụng cả Joi (ở tầng vào) và Mongoose (ở tầng DB) để tạo ra hai lớp bảo vệ, giúp ứng dụng vững chắc hơn.",
+          "Viết các unit test cho tất cả các hàm validation."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học kết luận rằng việc có cả hai lớp validation (Joi và Mongoose) tạo ra một hệ thống phòng thủ theo chiều sâu, giúp ứng dụng trở nên cực kỳ vững chắc."
+      },
+      {
+        "question": "Trong code mẫu Joi, `trim()` có chức năng gì?",
+        "options": [
+          "Cắt ngắn chuỗi nếu nó dài hơn `max`.",
+          "Yêu cầu chuỗi phải có độ dài chính xác.",
+          "Loại bỏ khoảng trắng ở đầu và cuối chuỗi.",
+          "Chuyển đổi chuỗi thành chữ thường."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hàm `trim()` trong Joi được sử dụng để tự động loại bỏ các khoảng trắng không cần thiết ở đầu và cuối của một giá trị chuỗi."
+      },
+      {
+        "question": "Trong Mongoose, thuộc tính nào dùng để định nghĩa giá trị mặc định cho một trường nếu nó không được cung cấp?",
+        "options": [
+          "`placeholder`",
+          "`default`",
+          "`initial`",
+          "`fallback`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mongoose Schema cho phép sử dụng thuộc tính `default` để gán một giá trị mặc định cho trường, ví dụ như `default: Date.now` cho trường `createdAt`."
+      },
+      {
+        "question": "Tại sao thông báo lỗi từ Joi lại được cho là \"thân thiện với client\" hơn Mongoose?",
+        "options": [
+          "Vì Joi luôn trả về lỗi bằng tiếng Anh.",
+          "Vì lỗi Joi có thể được tùy chỉnh chi tiết và rõ ràng cho từng trường, trong khi lỗi Mongoose thường chung chung hơn.",
+          "Vì Joi cho phép trả về mã HTML trong thông báo lỗi.",
+          "Vì Joi không bao giờ trả về lỗi 500."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học so sánh rằng thông báo lỗi của Joi rõ ràng, chi tiết và có thể tùy chỉnh, giúp client dễ dàng hiểu và sửa lỗi. Lỗi Mongoose thường khó parse và không tường minh bằng."
+      },
+      {
+        "question": "Ví dụ nào sau đây là một trường hợp mà Joi sẽ bắt lỗi hiệu quả nhưng Mongoose có thể không?",
+        "options": [
+          "Một trường `title` bị thiếu trong khi nó được `required: true`.",
+          "Một trường `email` có giá trị không phải là duy nhất (unique).",
+          "Một mảng `columnOrderIds` chứa các chuỗi không phải là định dạng ObjectId hợp lệ.",
+          "Một trường `status` có giá trị không nằm trong danh sách `enum` cho phép."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đưa ra ví dụ cụ thể: Joi có thể dễ dàng validate định dạng của một chuỗi (ví dụ: có phải ObjectId không) và báo lỗi ngay. Mongoose cũng có thể làm điều này, nhưng Joi thực hiện nó ở lớp sớm hơn, giúp phản hồi nhanh hơn."
+      },
+      {
+        "question": "Cách áp dụng một middleware validation (ví dụ `createNewValidation`) vào một route trong Express là gì?",
+        "options": [
+          "Gọi hàm validation bên trong hàm controller.",
+          "Truyền hàm validation như một tham số vào sau hàm controller trong định nghĩa route.",
+          "Truyền hàm validation như một tham số vào trước hàm controller trong định nghĩa route.",
+          "Sử dụng `app.use(createNewValidation)` cho toàn bộ ứng dụng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Code mẫu trong bài học cho thấy middleware validation được đặt ngay trước controller xử lý request trong file router: `router.route('/').post(createNewValidation, createNew);`."
+      },
+      {
+        "question": "Mục tiêu của lớp Model Schema (Mongoose) là gì?",
+        "options": [
+          "Validate dữ liệu đầu vào từ client (API contract).",
+          "Validate dữ liệu trước khi lưu trữ (data integrity).",
+          "Cả A và B đều đúng.",
+          "Cả A và B đều sai."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Theo bảng so sánh, mục tiêu của Mongoose là validate dữ liệu trước khi lưu trữ để đảm bảo tính toàn vẹn, trong khi mục tiêu của Joi là validate dữ liệu đầu vào từ client."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Joi Schema đơn giản",
+        "description": "Tạo một Joi schema để xác thực một object `user` có chứa `username` (string, bắt buộc, tối thiểu 3 ký tự) và `email` (string, bắt buộc, phải là định dạng email hợp lệ).",
+        "starterCode": "const Joi = require('joi');\n\n// Viết code của bạn ở đây\nconst userSchema = null; // Thay thế null bằng schema của bạn\n\nmodule.exports = userSchema;",
+        "solution": "const Joi = require('joi');\n\nconst userSchema = Joi.object({\n  username: Joi.string().min(3).required(),\n  email: Joi.string().email().required()\n});\n\nmodule.exports = userSchema;",
+        "testCases": "Schema phải validate thành công với `{ username: 'testuser', email: 'test@example.com' }`. Schema phải báo lỗi với `{ username: 'te', email: 'test@example.com' }` và `{ username: 'testuser', email: 'invalid-email' }`."
+      },
+      {
+        "title": "Bài 2: Tạo Mongoose Schema cơ bản",
+        "description": "Tạo một Mongoose schema cho model `Product` bao gồm các trường: `name` (String, bắt buộc), `price` (Number, bắt buộc), và `inStock` (Boolean, mặc định là true).",
+        "starterCode": "const mongoose = require('mongoose');\n\n// Viết code của bạn ở đây\nconst productSchema = new mongoose.Schema({});\n\nmodule.exports = mongoose.model('Product', productSchema);",
+        "solution": "const mongoose = require('mongoose');\n\nconst productSchema = new mongoose.Schema({\n  name: {\n    type: String,\n    required: true\n  },\n  price: {\n    type: Number,\n    required: true\n  },\n  inStock: {\n    type: Boolean,\n    default: true\n  }\n});\n\nmodule.exports = mongoose.model('Product', productSchema);",
+        "testCases": "Model khi tạo mới không có `name` hoặc `price` sẽ báo lỗi validation. Model khi tạo mới không có `inStock` sẽ có giá trị `inStock` là `true`."
+      },
+      {
+        "title": "Bài 3: Viết Middleware Validation với Joi",
+        "description": "Hoàn thiện middleware `validateTask` để kiểm tra `req.body` cho việc tạo một task mới. Task cần có `title` (string, bắt buộc, từ 3-100 ký tự, bỏ khoảng trắng thừa) và `completed` (boolean, không bắt buộc). Nếu validation thất bại, trả về status 400 với chi tiết lỗi.",
+        "starterCode": "const Joi = require('joi');\n\nconst taskSchema = Joi.object({\n  title: Joi.string().required().min(3).max(100).trim(),\n  completed: Joi.boolean()\n});\n\nconst validateTask = async (req, res, next) => {\n  try {\n    // Viết code của bạn ở đây\n    // Validate req.body và gọi next() nếu thành công\n  } catch (error) {\n    // Viết code của bạn ở đây\n    // Trả về lỗi 400 nếu thất bại\n  }\n};\n\nmodule.exports = validateTask;",
+        "solution": "const Joi = require('joi');\n\nconst taskSchema = Joi.object({\n  title: Joi.string().required().min(3).max(100).trim(),\n  completed: Joi.boolean()\n});\n\nconst validateTask = async (req, res, next) => {\n  try {\n    await taskSchema.validateAsync(req.body, { abortEarly: false });\n    next();\n  } catch (error) {\n    res.status(400).json({ errors: error.details.map(d => d.message) });\n  }\n};\n\nmodule.exports = validateTask;",
+        "testCases": "Khi nhận request body hợp lệ, middleware sẽ gọi `next()`. Khi nhận `{ title: '  ' }`, middleware sẽ trả về lỗi 400 với thông báo `title` không được rỗng. Khi nhận `{ title: 'ab' }`, sẽ trả về lỗi về độ dài tối thiểu."
+      },
+      {
+        "title": "Bài 4: Mongoose Schema với Validation nâng cao",
+        "description": "Tạo một Mongoose schema cho model `Comment` với các ràng buộc sau: `author` (ObjectId, tham chiếu đến model 'User', bắt buộc), `content` (String, 1-500 ký tự, bắt buộc), `status` (String, chỉ được là một trong các giá trị ['pending', 'approved', 'rejected'], mặc định là 'pending').",
+        "starterCode": "const mongoose = require('mongoose');\nconst { Schema } = mongoose;\n\n// Viết code của bạn ở đây\nconst commentSchema = new Schema({});\n\nmodule.exports = mongoose.model('Comment', commentSchema);",
+        "solution": "const mongoose = require('mongoose');\nconst { Schema } = mongoose;\n\nconst commentSchema = new Schema({\n  author: {\n    type: Schema.Types.ObjectId,\n    ref: 'User',\n    required: true\n  },\n  content: {\n    type: String,\n    required: true,\n    minLength: 1,\n    maxLength: 500\n  },\n  status: {\n    type: String,\n    enum: ['pending', 'approved', 'rejected'],\n    default: 'pending'\n  }\n});\n\nmodule.exports = mongoose.model('Comment', commentSchema);",
+        "testCases": "Lưu một comment với `status` là 'published' sẽ thất bại. Lưu một comment không có `author` sẽ thất bại. Lưu một comment mới sẽ có `status` mặc định là 'pending'."
+      },
+      {
+        "title": "Bài 5: Kết hợp Joi và Mongoose",
+        "description": "Cho một Mongoose schema `boardSchema` đã có sẵn. Hãy viết Joi schema `boardValidationSchema` tương ứng để validate dữ liệu đầu vào cho API tạo mới một board. Joi schema cần kiểm tra `title` và `description` với các ràng buộc tương tự Mongoose (required, min/max length, trim, strict).",
+        "starterCode": "const mongoose = require('mongoose');\nconst Joi = require('joi');\n\n// Mongoose Schema (đã cho)\nconst boardSchema = new mongoose.Schema({\n  title: { type: String, required: true, minLength: 3, maxLength: 50, trim: true },\n  description: { type: String, required: true, minLength: 3, maxLength: 256, trim: true }\n});\n\n// Viết Joi schema của bạn ở đây\nconst boardValidationSchema = null; // Thay thế null bằng schema của bạn\n\nmodule.exports = boardValidationSchema;",
+        "solution": "const mongoose = require('mongoose');\nconst Joi = require('joi');\n\n// Mongoose Schema (đã cho)\nconst boardSchema = new mongoose.Schema({\n  title: { type: String, required: true, minLength: 3, maxLength: 50, trim: true },\n  description: { type: String, required: true, minLength: 3, maxLength: 256, trim: true }\n});\n\n// Viết Joi schema của bạn ở đây\nconst boardValidationSchema = Joi.object({\n  title: Joi.string().required().min(3).max(50).trim().strict(),\n  description: Joi.string().required().min(3).max(256).trim().strict()\n});\n\nmodule.exports = boardValidationSchema;",
+        "testCases": "Joi schema phải validate thành công với dữ liệu hợp lệ. Phải báo lỗi nếu `title` hoặc `description` không được cung cấp, hoặc không đúng độ dài. Phải báo lỗi nếu có thêm trường lạ trong body (do có `.strict()`)."
+      }
+    ]
+  }
+}

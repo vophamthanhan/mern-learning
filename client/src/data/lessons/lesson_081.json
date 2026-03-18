@@ -1,0 +1,213 @@
+{
+  "id": 81,
+  "title": "Bài 63: Aggregate - Query tổng hợp và Join dữ liệu giữa các Collections trong MongoDB",
+  "category": "mongodb",
+  "categoryName": "MongoDB & Database",
+  "content": "# Bài 63: Aggregate - Query tổng hợp và Join dữ liệu giữa các Collections trong MongoDB\n\n## I. Mục tiêu bài học\n\nVideo này cung cấp kiến thức chuyên sâu về một trong những tính năng mạnh mẽ nhất của MongoDB: **Aggregation Pipeline**. Mục tiêu chính là giúp người học hiểu và áp dụng được kỹ thuật này để thực hiện các truy vấn phức tạp, đặc biệt là cách \"join\" (kết hợp) dữ liệu từ nhiều collections khác nhau, một tác vụ thường thấy trong các hệ quản trị cơ sở dữ liệu quan hệ nhưng có cách tiếp cận khác trong NoSQL.\n\nSau khi hoàn thành bài học, người xem có thể:\n\n*   Hiểu rõ khái niệm và cách hoạt động của Aggregation Pipeline trong MongoDB.\n*   Nắm vững cú pháp và cách sử dụng của toán tử `$lookup` để thực hiện các thao tác join giữa các collection.\n*   Biết cách kết hợp `$lookup` với các \"stage\" (giai đoạn) khác trong pipeline như `$match`, `$unwind`, `$group`, `$project` để xử lý và biến đổi dữ liệu theo yêu cầu phức tạp.\n*   Áp dụng kiến thức vào dự án MERN Stack thực tế để xây dựng các API yêu cầu tổng hợp dữ liệu từ nhiều nguồn.\n\n## II. Kiến thức chi tiết\n\n### 1. Giới thiệu về Aggregation Pipeline\n\nAggregation Pipeline (Luồng tổng hợp) là một framework của MongoDB cho phép xử lý và biến đổi dữ liệu qua một chuỗi các giai đoạn (stages). Dữ liệu từ một collection sẽ đi qua từng giai đoạn, ở mỗi giai đoạn, dữ liệu sẽ được xử lý, lọc, nhóm, hoặc biến đổi theo một cách nào đó, và kết quả đầu ra của giai đoạn này sẽ là đầu vào cho giai đoạn tiếp theo.\n\nCấu trúc của một pipeline là một mảng các đối tượng, mỗi đối tượng đại diện cho một stage.\n\n```javascript\ndb.collection.aggregate([\n  { $stage1: { ... } },\n  { $stage2: { ... } },\n  // ... các stage khác\n])\n```\n\n### 2. Toán tử `$lookup` - \"Join\" trong MongoDB\n\nTrong các hệ CSDL quan hệ (SQL), `JOIN` là thao tác cơ bản để kết hợp các bảng. Trong MongoDB, `$lookup` là stage trong aggregation pipeline cho phép thực hiện một thao tác tương tự: một **left outer join** với một collection khác trong cùng một database.\n\n**Cú pháp cơ bản:**\n\n```javascript\n{\n  $lookup:\n    {\n      from: <collection to join>,\n      localField: <field from the input documents>,\n      foreignField: <field from the documents of the \"from\" collection>,\n      as: <output array field>\n    }\n}\n```\n\n*   `from`: Tên của collection mà bạn muốn join vào.\n*   `localField`: Tên trường từ collection hiện tại (đang thực hiện aggregate) để so khớp.\n*   `foreignField`: Tên trường từ collection `from` để so khớp.\n*   `as`: Tên của trường mảng mới sẽ được thêm vào collection hiện tại. Trường này sẽ chứa tất cả các document từ collection `from` có `foreignField` khớp với `localField`.\n\n**Ví dụ thực tế:**\n\nGiả sử chúng ta có 2 collections: `orders` và `inventory`.\n\n*Collection `orders`:*\n```json\n{ \"_id\": 1, \"item\": \"abc\", \"price\": 12, \"quantity\": 2 }\n{ \"_id\": 2, \"item\": \"jkl\", \"price\": 20, \"quantity\": 1 }\n```\n\n*Collection `inventory`:*\n```json\n{ \"_id\": 1, \"sku\": \"abc\", \"description\": \"product 1\", \"instock\": 120 }\n{ \"_id\": 2, \"sku\": \"def\", \"description\": \"product 2\", \"instock\": 80 }\n{ \"_id\": 3, \"sku\": \"jkl\", \"description\": \"product 3\", \"instock\": 60 }\n```\n\nĐể lấy thông tin chi tiết của sản phẩm trong mỗi đơn hàng, ta dùng `$lookup`:\n\n```javascript\ndb.orders.aggregate([\n  {\n    $lookup:\n      {\n        from: \"inventory\",\n        localField: \"item\",\n        foreignField: \"sku\",\n        as: \"inventoryDetails\"\n      }\n  }\n])\n```\n\n*Kết quả:*\n\n```json\n{\n  \"_id\": 1,\n  \"item\": \"abc\",\n  \"price\": 12,\n  \"quantity\": 2,\n  \"inventoryDetails\": [\n    { \"_id\": 1, \"sku\": \"abc\", \"description\": \"product 1\", \"instock\": 120 }\n  ]\n},\n{\n  \"_id\": 2,\n  \"item\": \"jkl\",\n  \"price\": 20,\n  \"quantity\": 1,\n  \"inventoryDetails\": [\n    { \"_id\": 3, \"sku\": \"jkl\", \"description\": \"product 3\", \"instock\": 60 }\n  ]\n}\n```\n\n### 3. Kết hợp `$lookup` với các Stage khác\n\nSức mạnh thực sự của aggregation pipeline đến từ việc kết hợp nhiều stage. `$lookup` thường được sử dụng cùng với:\n\n*   `$match`: Để lọc các document trước hoặc sau khi join. Ví dụ, chỉ lấy các đơn hàng có `quantity > 1`.\n*   `$unwind`: Trường `as` trong `$lookup` trả về một mảng. `$unwind` được dùng để \"tách\" mỗi phần tử trong mảng đó ra thành một document riêng biệt. Điều này hữu ích khi bạn biết chắc chắn kết quả join chỉ có một document hoặc muốn xử lý từng document con một cách riêng lẻ.\n*   `$project`: Để định hình lại cấu trúc của document đầu ra: chọn các trường muốn giữ lại, thêm trường mới, hoặc đổi tên trường.\n*   `$group`: Để nhóm các document lại dựa trên một hoặc nhiều trường và thực hiện các phép tính tổng hợp (ví dụ: `$sum`, `$avg`, `$min`, `$max`).\n\n**Code mẫu trong môi trường NodeJS (sử dụng Mongoose):**\n\n```javascript\n// Giả sử có BoardModel và ColumnModel\n// Ta muốn lấy thông tin chi tiết của một Board và tất cả các Column thuộc về nó\n\nconst boardDetails = await BoardModel.aggregate([\n    // Stage 1: Lọc ra board cần lấy\n    { $match: {\n        _id: mongoose.Types.ObjectId(boardId),\n        _destroy: false\n    } },\n\n    // Stage 2: Join với collection 'columns'\n    { $lookup: {\n        from: 'columns',\n        localField: '_id',\n        foreignField: 'boardId',\n        as: 'columns'\n    } },\n\n    // Stage 3: Join với collection 'cards'\n    { $lookup: {\n        from: 'cards',\n        localField: '_id',\n        foreignField: 'boardId',\n        as: 'cards'\n    } }\n]);\n```\n\nTrong ví dụ trên, chúng ta đã thực hiện join một board với cả columns và cards thuộc về nó, tạo ra một document tổng hợp chứa toàn bộ thông tin cần thiết cho việc hiển thị một board Trello.\n\n## III. Các bước thực hành\n\n1.  **Phân tích yêu cầu:** Xác định rõ dữ liệu bạn cần tổng hợp và các collection liên quan.\n2.  **Xác định trường join:** Tìm ra các cặp `localField` và `foreignField` hợp lý để liên kết các collection.\n3.  **Viết câu lệnh `aggregate`:** Bắt đầu với stage `$match` để giới hạn tập dữ liệu đầu vào (nếu cần), sau đó thêm stage `$lookup`.\n4.  **Xử lý kết quả join:** Sử dụng `$unwind` nếu cần tách mảng kết quả. Dùng `$project` để định dạng lại cấu trúc dữ liệu đầu ra cho gọn gàng và đúng với yêu cầu của API.\n5.  **Thêm các stage tổng hợp khác:** Nếu cần tính toán (đếm, tổng, trung bình), hãy thêm stage `$group`.\n6.  **Tích hợp vào API:** Đặt câu lệnh aggregate vào trong một service hoặc controller trong ứng dụng NodeJS của bạn.\n7.  **Kiểm thử:** Dùng Postman hoặc các công cụ tương tự để gọi API và kiểm tra kết quả trả về.\n\n## IV. Lưu ý quan trọng\n\n*   **Hiệu năng:** `$lookup` có thể làm giảm hiệu năng nếu thực hiện trên tập dữ liệu lớn. Luôn đảm bảo rằng trường `foreignField` (trong collection `from`) đã được **đánh chỉ mục (index)** để tăng tốc độ truy vấn.\n*   **Left Outer Join:** `$lookup` hoạt động như một `LEFT OUTER JOIN`. Điều này có nghĩa là tất cả các document từ collection gốc sẽ được giữ lại, kể cả khi không tìm thấy document nào khớp trong collection `from`. Trong trường hợp đó, trường `as` sẽ là một mảng rỗng `[]`.\n*   **Database:** `$lookup` chỉ hoạt động với các collection trong cùng một database.\n*   **Sharded Collections:** Kể từ MongoDB 5.1, `$lookup` đã hỗ trợ tốt hơn cho các sharded collection.\n\n## V. Tài liệu tham khảo\n\n1.  **Video bài học:** [63. Aggregate: Query tổng hợp, Join dữ liệu giữa các Collections | NodeJS + MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=EQVWMjKo1PI)\n2.  **Tài liệu chính thức của MongoDB:**\n    *   [Aggregation Pipeline](https://docs.mongodb.com/manual/core/aggregation-pipeline/)\n    *   [$lookup (aggregation)](https://docs.mongodb.com/manual/reference/operator/aggregation/lookup/)\n3.  **Source code tham khảo trên GitHub:** [trungquandev/nodejs-express-mongodb-rest-api-boilerplate](https://github.com/trungquandev/nodejs-express-mongodb-rest-api-boilerplate)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Tính năng chính của Aggregation Pipeline trong MongoDB là gì?",
+        "options": [
+          "Để tạo người dùng và phân quyền.",
+          "Để xử lý và biến đổi dữ liệu qua một chuỗi các giai đoạn (stages).",
+          "Để sao lưu và phục hồi cơ sở dữ liệu.",
+          "Để tạo chỉ mục (index) cho collection."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Aggregation Pipeline là một framework của MongoDB cho phép xử lý và biến đổi dữ liệu qua một chuỗi các giai đoạn, giúp thực hiện các truy vấn phức tạp."
+      },
+      {
+        "question": "Toán tử nào trong Aggregation Pipeline được sử dụng để \"join\" dữ liệu giữa các collection?",
+        "options": [
+          "$merge",
+          "$join",
+          "$lookup",
+          "$combine"
+        ],
+        "correctAnswer": 2,
+        "explanation": "$lookup là stage trong aggregation pipeline cho phép thực hiện một thao tác tương tự LEFT OUTER JOIN trong SQL để kết hợp dữ liệu từ collection khác."
+      },
+      {
+        "question": "Trong cú pháp của `$lookup`, thuộc tính `from` có ý nghĩa gì?",
+        "options": [
+          "Tên của collection hiện tại.",
+          "Tên của collection mà bạn muốn join vào.",
+          "Tên của trường trong collection hiện tại để so khớp.",
+          "Tên của trường mảng đầu ra."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thuộc tính `from` trong toán tử `$lookup` chỉ định collection mục tiêu mà bạn muốn thực hiện phép join."
+      },
+      {
+        "question": "`localField` và `foreignField` trong `$lookup` dùng để làm gì?",
+        "options": [
+          "Xác định các trường để hiển thị trong kết quả.",
+          "Xác định các trường để so khớp và liên kết hai collection.",
+          "Xác định tên của collection nguồn và đích.",
+          "Xác định điều kiện lọc cho collection."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`localField` là trường của collection đầu vào và `foreignField` là trường của collection `from`, chúng được dùng để so khớp các document với nhau."
+      },
+      {
+        "question": "Kết quả của toán tử `$lookup` được lưu vào đâu?",
+        "options": [
+          "Một collection mới.",
+          "Ghi đè lên collection hiện tại.",
+          "Một trường mảng mới được chỉ định bởi thuộc tính `as`.",
+          "Một file log."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `as` xác định tên của một trường mảng mới sẽ được thêm vào document, chứa các document được join vào."
+      },
+      {
+        "question": "$lookup trong MongoDB thực hiện loại join nào?",
+        "options": [
+          "INNER JOIN",
+          "RIGHT OUTER JOIN",
+          "FULL OUTER JOIN",
+          "LEFT OUTER JOIN"
+        ],
+        "correctAnswer": 3,
+        "explanation": "$lookup hoạt động như một `LEFT OUTER JOIN`, nghĩa là nó giữ lại tất cả các document từ collection gốc ngay cả khi không có kết quả khớp từ collection join."
+      },
+      {
+        "question": "Stage nào thường được dùng để \"tách\" các phần tử trong mảng kết quả của `$lookup` thành các document riêng biệt?",
+        "options": [
+          "$project",
+          "$unwind",
+          "$group",
+          "$match"
+        ],
+        "correctAnswer": 1,
+        "explanation": "$unwind được sử dụng để deconstruct một trường mảng từ các document đầu vào để tạo ra một document cho mỗi phần tử."
+      },
+      {
+        "question": "Để tăng hiệu năng cho truy vấn `$lookup`, bạn nên làm gì với trường `foreignField`?",
+        "options": [
+          "Xóa trường đó đi.",
+          "Đổi tên trường đó.",
+          "Tạo chỉ mục (index) cho trường đó.",
+          "Không cần làm gì cả."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Luôn đảm bảo rằng trường `foreignField` (trong collection `from`) đã được đánh chỉ mục (index) để tăng tốc độ truy vấn `$lookup`."
+      },
+      {
+        "question": "Điều gì xảy ra khi `$lookup` không tìm thấy document nào khớp trong collection `from`?",
+        "options": [
+          "Truy vấn sẽ báo lỗi.",
+          "Document gốc sẽ bị loại bỏ khỏi kết quả.",
+          "Trường `as` sẽ là một mảng rỗng `[]`.",
+          "Trường `as` sẽ có giá trị `null`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vì `$lookup` là một `LEFT OUTER JOIN`, document gốc vẫn được giữ lại và trường `as` sẽ là một mảng rỗng nếu không tìm thấy kết quả khớp."
+      },
+      {
+        "question": "Stage `$match` thường được kết hợp với `$lookup` để làm gì?",
+        "options": [
+          "Để định hình lại cấu trúc document đầu ra.",
+          "Để nhóm các document lại.",
+          "Để lọc các document trước hoặc sau khi join.",
+          "Để tách các phần tử mảng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`$match` được dùng để lọc các document, giúp giảm lượng dữ liệu cần xử lý ở các giai đoạn sau, bao gồm cả trước và sau `$lookup`."
+      },
+      {
+        "question": "Toán tử `$lookup` có thể join các collection từ các database khác nhau không?",
+        "options": [
+          "Có, không có giới hạn nào.",
+          "Có, nhưng chỉ trên cùng một server MongoDB.",
+          "Không, `$lookup` chỉ hoạt động với các collection trong cùng một database.",
+          "Có, nhưng cần cấu hình đặc biệt."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Một trong những giới hạn của `$lookup` là nó chỉ có thể thực hiện join trên các collection tồn tại trong cùng một database."
+      },
+      {
+        "question": "Trong môi trường NodeJS với Mongoose, khi dùng `aggregate`, giá trị `_id` dạng chuỗi cần được chuyển đổi bằng gì để `$match` hoạt động chính xác?",
+        "options": [
+          "`mongoose.toString(id)`",
+          "`mongoose.Types.ObjectId(id)`",
+          "`mongoose.toObject(id)`",
+          "Không cần chuyển đổi."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để so khớp một `_id` trong pipeline, chuỗi ID cần được chuyển đổi thành một đối tượng ObjectId của MongoDB, và Mongoose cung cấp `mongoose.Types.ObjectId()` cho việc này."
+      },
+      {
+        "question": "Stage `$project` trong aggregation pipeline dùng để làm gì?",
+        "options": [
+          "Chỉ để tính tổng các giá trị.",
+          "Để định hình lại cấu trúc của document đầu ra (chọn, bỏ, thêm, đổi tên trường).",
+          "Để join với collection khác.",
+          "Để lọc các document không thỏa mãn điều kiện."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`$project` được sử dụng để định hình lại các document, ví dụ như thêm các trường mới, hoặc loại bỏ các trường hiện có."
+      },
+      {
+        "question": "Giả sử collection `orders` có trường `productId` và collection `products` có trường `_id`. Đâu là cú pháp `$lookup` đúng để lấy thông tin sản phẩm cho mỗi đơn hàng?",
+        "options": [
+          "{ $lookup: { from: 'products', localField: 'productId', foreignField: '_id', as: 'productInfo' } }",
+          "{ $lookup: { from: 'orders', localField: '_id', foreignField: 'productId', as: 'productInfo' } }",
+          "{ $lookup: { from: 'products', localField: '_id', foreignField: 'productId', as: 'productInfo' } }",
+          "{ $lookup: { from: 'products', localField: 'productId', foreignField: 'productId', as: 'productInfo' } }"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Cú pháp đúng yêu cầu `from` là collection cần join (`products`), `localField` là trường trong collection nguồn (`productId`), `foreignField` là trường trong collection đích (`_id`), và `as` là tên trường kết quả."
+      },
+      {
+        "question": "Mục đích chính của việc kết hợp nhiều stage trong một Aggregation Pipeline là gì?",
+        "options": [
+          "Để làm cho câu truy vấn trông phức tạp hơn.",
+          "Để thực hiện các tác vụ xử lý dữ liệu phức tạp, đa bước một cách hiệu quả.",
+          "Để giảm số lượng collection trong database.",
+          "Để tăng tốc độ ghi dữ liệu."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sức mạnh của Aggregation Pipeline đến từ việc kết hợp nhiều stage, cho phép dữ liệu được lọc, biến đổi, nhóm, và xử lý qua nhiều bước để tạo ra kết quả cuối cùng mong muốn."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài tập 1: Join đơn giản với `$lookup`",
+        "description": "Cho hai collection `authors` và `books`. Viết một aggregation query để lấy danh sách tất cả các sách, đồng thời đính kèm thông tin tác giả tương ứng vào mỗi cuốn sách.",
+        "starterCode": "db.books.aggregate([\n  // Viết stage $lookup của bạn ở đây\n]);",
+        "solution": "db.books.aggregate([\n  {\n    $lookup: {\n      from: \"authors\",\n      localField: \"author_id\",\n      foreignField: \"_id\",\n      as: \"authorDetails\"\n    }\n  }\n]);",
+        "testCases": "Kiểm tra kết quả trả về. Mỗi document sách phải có một trường mới là `authorDetails` chứa một mảng với thông tin của tác giả tương ứng."
+      },
+      {
+        "title": "Bài tập 2: Join và làm phẳng kết quả với `$unwind`",
+        "description": "Từ kết quả của Bài tập 1, sử dụng thêm stage `$unwind` để làm phẳng trường `authorDetails`, biến mỗi cuốn sách thành một document riêng biệt với thông tin tác giả được nhúng trực tiếp.",
+        "starterCode": "db.books.aggregate([\n  {\n    $lookup: {\n      from: \"authors\",\n      localField: \"author_id\",\n      foreignField: \"_id\",\n      as: \"authorDetails\"\n    }\n  },\n  // Viết stage $unwind của bạn ở đây\n]);",
+        "solution": "db.books.aggregate([\n  {\n    $lookup: {\n      from: \"authors\",\n      localField: \"author_id\",\n      foreignField: \"_id\",\n      as: \"authorDetails\"\n    }\n  },\n  {\n    $unwind: \"$authorDetails\"\n  }\n]);",
+        "testCases": "Kiểm tra kết quả. Số lượng document trả về phải bằng số lượng sách. Trường `authorDetails` bây giờ phải là một object thay vì một mảng."
+      },
+      {
+        "title": "Bài tập 3: Lọc kết quả sau khi join với `$match`",
+        "description": "Mở rộng query từ Bài tập 2, chỉ lấy những cuốn sách được viết bởi tác giả có tên là \"George Orwell\".",
+        "starterCode": "db.books.aggregate([\n  {\n    $lookup: {\n      from: \"authors\",\n      localField: \"author_id\",\n      foreignField: \"_id\",\n      as: \"authorDetails\"\n    }\n  },\n  {\n    $unwind: \"$authorDetails\"\n  },\n  // Viết stage $match của bạn ở đây\n]);",
+        "solution": "db.books.aggregate([\n  {\n    $lookup: {\n      from: \"authors\",\n      localField: \"author_id\",\n      foreignField: \"_id\",\n      as: \"authorDetails\"\n    }\n  },\n  {\n    $unwind: \"$authorDetails\"\n  },\n  {\n    $match: { \"authorDetails.name\": \"George Orwell\" }\n  }\n]);",
+        "testCases": "Kiểm tra kết quả. Tất cả các document sách trả về phải có `authorDetails.name` là \"George Orwell\"."
+      },
+      {
+        "title": "Bài tập 4: Định dạng lại output với `$project`",
+        "description": "Từ query của Bài tập 3, sử dụng `$project` để chỉ hiển thị tên sách (`title`), tên tác giả (`authorName`), và năm sinh của tác giả (`birthYear`). Đổi tên các trường cho dễ đọc.",
+        "starterCode": "db.books.aggregate([\n  // ... các stage trước đó ...\n  {\n    $match: { \"authorDetails.name\": \"George Orwell\" }\n  },\n  // Viết stage $project của bạn ở đây\n]);",
+        "solution": "db.books.aggregate([\n  {\n    $lookup: { from: \"authors\", localField: \"author_id\", foreignField: \"_id\", as: \"authorDetails\" }\n  },\n  {\n    $unwind: \"$authorDetails\"\n  },\n  {\n    $match: { \"authorDetails.name\": \"George Orwell\" }\n  },\n  {\n    $project: {\n      _id: 0,\n      title: \"$title\",\n      authorName: \"$authorDetails.name\",\n      birthYear: \"$authorDetails.birth_year\"\n    }\n  }\n]);",
+        "testCases": "Kiểm tra kết quả. Mỗi document chỉ được chứa 3 trường: `title`, `authorName`, và `birthYear`. Trường `_id` phải bị ẩn đi."
+      },
+      {
+        "title": "Bài tập 5: Nhóm và đếm số sách của mỗi tác giả với `$group`",
+        "description": "Viết một query mới, join hai collection `books` và `authors`, sau đó sử dụng `$group` để đếm xem mỗi tác giả đã viết bao nhiêu cuốn sách.",
+        "starterCode": "db.books.aggregate([\n  // Viết các stage cần thiết ở đây\n]);",
+        "solution": "db.books.aggregate([\n  {\n    $lookup: {\n      from: \"authors\",\n      localField: \"author_id\",\n      foreignField: \"_id\",\n      as: \"authorDetails\"\n    }\n  },\n  {\n    $unwind: \"$authorDetails\"\n  },\n  {\n    $group: {\n      _id: \"$authorDetails.name\",\n      bookCount: { $sum: 1 }\n    }\n  },\n  {\n    $project: {\n      _id: 0,\n      authorName: \"$_id\",\n      bookCount: 1\n    }\n  }\n]);",
+        "testCases": "Kiểm tra kết quả. Kết quả phải là một danh sách các document, mỗi document chứa `authorName` và `bookCount` thể hiện tổng số sách của tác giả đó."
+      }
+    ]
+  }
+}

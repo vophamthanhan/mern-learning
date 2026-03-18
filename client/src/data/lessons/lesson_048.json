@@ -1,0 +1,213 @@
+{
+  "id": 48,
+  "title": "Bài học 30: Kéo thả Trello Columns với ReactJS và Material UI",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài học 30: Kéo thả Trello Columns với ReactJS và Material UI\n\n## Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tìm hiểu cách triển khai chức năng kéo thả (drag and drop) cho các cột (columns) trong một giao diện giống Trello. Chúng ta sẽ sử dụng thư viện `dnd-kit` mạnh mẽ để xử lý các tương tác kéo thả, đồng thời hỗ trợ nhiều phương thức nhập liệu khác nhau như chuột, ngón tay (cảm ứng) và bút cảm ứng. Mục tiêu là xây dựng một giao diện mượt mà, hiệu năng cao và có khả năng tùy biến linh hoạt.\n\n## Kiến thức chi tiết\n\n### 1. Giới thiệu về `dnd-kit`\n\n`dnd-kit` là một bộ công cụ hiện đại, nhẹ và có khả năng mở rộng để xây dựng các giao diện kéo thả phức tạp trong React. Nó cung cấp một tập hợp các hooks và components cấp thấp, cho phép chúng ta toàn quyền kiểm soát giao diện và hành vi của các phần tử kéo thả. Một số ưu điểm chính của `dnd-kit` bao gồm:\n\n*   **Hiệu năng cao:** Được xây dựng với hiệu năng là ưu tiên hàng đầu, `dnd-kit` đảm bảo các hoạt ảnh kéo thả mượt mà ngay cả với số lượng lớn các phần tử.\n*   **Hỗ trợ đa dạng cảm biến:** `dnd-kit` hỗ trợ nhiều loại cảm biến đầu vào khác nhau, bao gồm chuột, cảm ứng và bút cảm ứng, giúp ứng dụng của bạn hoạt động trên nhiều thiết bị.\n*   **Khả năng tùy biến cao:** `dnd-kit` cung cấp các API linh hoạt để tùy chỉnh giao diện và hành vi của các phần tử kéo thả, cho phép bạn tạo ra các trải nghiệm người dùng độc đáo.\n*   **Không phụ thuộc vào thư viện khác:** `dnd-kit` không có bất kỳ phụ thuộc nào, giúp giữ cho kích thước gói của bạn nhỏ gọn.\n\n### 2. Cài đặt và cấu hình\n\nĐể bắt đầu, chúng ta cần cài đặt các gói cần thiết:\n\n```bash\nnpm install @dnd-kit/core @dnd-kit/sortable\n```\n\nSau đó, chúng ta cần cấu hình `DndContext` ở cấp cao nhất của ứng dụng để cung cấp context cho các thành phần kéo thả.\n\n```jsx\nimport { DndContext } from '@dnd-kit/core';\n\nfunction App() {\n  return (\n    <DndContext>\n      {/* Các thành phần khác của ứng dụng */}\n    </DndContext>\n  );\n}\n```\n\n### 3. Kéo thả cột (Columns)\n\nĐể triển khai chức năng kéo thả cho các cột, chúng ta sẽ sử dụng `SortableContext` và `useSortable` hook từ `@dnd-kit/sortable`. `SortableContext` cung cấp context cho các mục có thể sắp xếp, trong khi `useSortable` cung cấp các thuộc tính và trình xử lý sự kiện cần thiết để làm cho một mục có thể kéo thả được.\n\n```jsx\nimport { SortableContext, useSortable } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction SortableColumn({ id, children }) {\n  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });\n\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n  };\n\n  return (\n    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>\n      {children}\n    </div>\n  );\n}\n\nfunction Board() {\n  const columns = ['column-1', 'column-2', 'column-3'];\n\n  return (\n    <SortableContext items={columns}>\n      {columns.map(id => <SortableColumn key={id} id={id}>{/* Nội dung cột */}</SortableColumn>)}\n    </SortableContext>\n  );\n}\n```\n\n### 4. Xử lý sự kiện kéo thả\n\nChúng ta có thể xử lý các sự kiện kéo thả bằng cách sử dụng các trình xử lý sự kiện `onDragStart`, `onDragMove` và `onDragEnd` trên `DndContext`. Trong trình xử lý `onDragEnd`, chúng ta sẽ cập nhật trạng thái của ứng dụng để phản ánh thứ tự mới của các cột.\n\n```jsx\nimport { DndContext, closestCenter } from '@dnd-kit/core';\nimport { arrayMove } from '@dnd-kit/sortable';\nimport { useState } from 'react';\n\nfunction App() {\n  const [columns, setColumns] = useState(['column-1', 'column-2', 'column-3']);\n\n  function handleDragEnd(event) {\n    const { active, over } = event;\n\n    if (active.id !== over.id) {\n      setColumns(items => {\n        const oldIndex = items.indexOf(active.id);\n        const newIndex = items.indexOf(over.id);\n        return arrayMove(items, oldIndex, newIndex);\n      });\n    }\n  }\n\n  return (\n    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>\n      {/* ... */}\n    </DndContext>\n  );\n}\n```\n\n## Các bước thực hành\n\n1.  **Cài đặt các gói cần thiết:** `npm install @dnd-kit/core @dnd-kit/sortable`\n2.  **Tạo một `Board` component:** Component này sẽ chứa danh sách các cột.\n3.  **Tạo một `Column` component:** Component này sẽ đại diện cho một cột trong Trello.\n4.  **Sử dụng `DndContext`:** Bọc `Board` component trong `DndContext`.\n5.  **Sử dụng `SortableContext`:** Bọc danh sách các cột trong `SortableContext`.\n6.  **Sử dụng `useSortable`:** Áp dụng `useSortable` hook cho `Column` component.\n7.  **Xử lý sự kiện `onDragEnd`:** Cập nhật trạng thái của ứng dụng khi một cột được kéo và thả.\n\n## Lưu ý quan trọng\n\n*   **`collisionDetection`:** Thuộc tính `collisionDetection` trên `DndContext` xác định cách phát hiện va chạm giữa các phần tử kéo thả. `closestCenter` là một lựa chọn tốt cho các danh sách có thể sắp xếp.\n*   **`arrayMove`:** Hàm `arrayMove` từ `@dnd-kit/sortable` là một tiện ích hữu ích để di chuyển một mục trong một mảng.\n*   **Tùy chỉnh cảm biến:** Bạn có thể tùy chỉnh các cảm biến để thay đổi hành vi kéo thả. Ví dụ, bạn có thể thêm độ trễ cho cảm biến cảm ứng để tránh các thao tác kéo vô tình.\n\n## Tài liệu tham khảo\n\n*   **dnd-kit Documentation:** [https://docs.dndkit.com/](https://docs.dndkit.com/)\n*   **TrungQuanDev GitHub:** [https://github.com/trungquandev](https://github.com/trungquandev)\n*   **Video bài học:** [https://www.youtube.com/watch?v=IttteelPx-k](https://www.youtube.com/watch?v=IttteelPx-k)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Thư viện nào được sử dụng trong bài học để triển khai chức năng kéo thả?",
+        "options": [
+          "react-beautiful-dnd",
+          "dnd-kit",
+          "react-dnd",
+          "Material UI Drag and Drop"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học sử dụng `dnd-kit` vì nó là một bộ công cụ hiện đại, nhẹ và có khả năng mở rộng để xây dựng các giao diện kéo thả phức tạp trong React."
+      },
+      {
+        "question": "Component nào từ `dnd-kit` cần được đặt ở cấp cao nhất của ứng dụng để cung cấp context cho các thành phần kéo thả?",
+        "options": [
+          "DragDropContext",
+          "SortableContext",
+          "DndContext",
+          "Droppable"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`DndContext` là component cốt lõi của `dnd-kit`, cung cấp context cần thiết cho tất cả các hooks và components khác hoạt động."
+      },
+      {
+        "question": "Hook nào từ `@dnd-kit/sortable` được sử dụng để làm cho một thành phần có thể sắp xếp (sortable)?",
+        "options": [
+          "useDraggable",
+          "useDroppable",
+          "useSortable",
+          "useDndContext"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useSortable` là một hook chuyên dụng từ `@dnd-kit/sortable` cung cấp các thuộc tính và trình xử lý sự kiện để bật chức năng kéo thả và sắp xếp cho một phần tử."
+      },
+      {
+        "question": "Thuộc tính nào của `DndContext` xác định cách phát hiện va chạm giữa các phần tử kéo thả?",
+        "options": [
+          "detectionMode",
+          "collisionStrategy",
+          "collisionDetection",
+          "overlapDetector"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `collisionDetection` trên `DndContext` cho phép bạn chỉ định thuật toán phát hiện va chạm, ví dụ như `closestCenter` hoặc `closestCorners`."
+      },
+      {
+        "question": "Hàm tiện ích nào từ `@dnd-kit/sortable` giúp di chuyển một mục trong một mảng?",
+        "options": [
+          "moveItem",
+          "arrayMove",
+          "reorder",
+          "shiftArray"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`arrayMove` là một hàm tiện ích được cung cấp bởi `@dnd-kit/sortable` để đơn giản hóa việc cập nhật thứ tự của các mục trong một mảng sau thao tác kéo thả."
+      },
+      {
+        "question": "Trong `useSortable`, các thuộc tính `attributes` và `listeners` nên được gán vào đâu?",
+        "options": [
+          "Vào phần tử con trực tiếp của phần tử có `ref`",
+          "Vào chính phần tử được kéo thả (phần tử có `ref`)",
+          "Vào một phần tử cha của phần tử được kéo thả",
+          "Không cần gán vào đâu cả"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để phần tử có thể được kéo, các thuộc tính `attributes` và `listeners` trả về từ `useSortable` phải được trải (spread) lên phần tử DOM mà bạn muốn người dùng tương tác để bắt đầu kéo."
+      },
+      {
+        "question": "Sự kiện nào trên `DndContext` được kích hoạt khi thao tác kéo thả kết thúc?",
+        "options": [
+          "onDragStart",
+          "onDragMove",
+          "onDragOver",
+          "onDragEnd"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Sự kiện `onDragEnd` được gọi khi người dùng thả phần tử đang kéo. Đây là nơi bạn thường xử lý logic cập nhật trạng thái ứng dụng."
+      },
+      {
+        "question": "Trong hàm xử lý sự kiện `onDragEnd`, làm thế nào để lấy được ID của phần tử đang được kéo (active) và phần tử bị đè lên (over)?",
+        "options": [
+          "Từ `event.data.active` và `event.data.over`",
+          "Từ `event.source` và `event.destination`",
+          "Từ `event.active` và `event.over`",
+          "Từ `event.draggableId` và `event.droppableId`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đối tượng `event` được truyền vào `onDragEnd` chứa hai thuộc tính quan trọng là `active` và `over`, đại diện cho phần tử đang kéo và phần tử đích."
+      },
+      {
+        "question": "Mục đích của `SortableContext` là gì?",
+        "options": [
+          "Để định nghĩa một phần tử có thể kéo được.",
+          "Để cung cấp context cho một nhóm các phần tử có thể sắp xếp, chia sẻ cùng một trạng thái.",
+          "Để xử lý va chạm giữa các phần tử.",
+          "Để áp dụng style cho phần tử đang được kéo."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`SortableContext` bao bọc một nhóm các mục có thể sắp xếp và cung cấp thông tin context cần thiết để `useSortable` hoạt động chính xác trong nhóm đó."
+      },
+      {
+        "question": "Tại sao `dnd-kit` được coi là có hiệu năng cao?",
+        "options": [
+          "Vì nó sử dụng Web Workers để xử lý logic.",
+          "Vì nó được xây dựng với hiệu năng là ưu tiên hàng đầu và đảm bảo hoạt ảnh mượt mà.",
+          "Vì nó tự động ảo hóa (virtualize) các danh sách dài.",
+          "Vì nó yêu cầu sử dụng `shouldComponentUpdate`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tài liệu của `dnd-kit` nhấn mạnh rằng nó được xây dựng với hiệu năng là ưu tiên hàng đầu, nhằm mang lại trải nghiệm kéo thả mượt mà."
+      },
+      {
+        "question": "Lệnh `npm` nào dùng để cài đặt các gói core và sortable của `dnd-kit`?",
+        "options": [
+          "npm install dnd-kit",
+          "npm install @dnd-kit/core @dnd-kit/sortable",
+          "npm install react-dnd-kit",
+          "npm install @dnd/core @dnd/sortable"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để sử dụng các chức năng cốt lõi và sắp xếp của `dnd-kit`, bạn cần cài đặt hai gói riêng biệt là `@dnd-kit/core` và `@dnd-kit/sortable`."
+      },
+      {
+        "question": "Đối tượng `transform` trả về từ `useSortable` được sử dụng để làm gì?",
+        "options": [
+          "Để thay đổi màu sắc của phần tử khi kéo.",
+          "Để áp dụng các biến đổi CSS (translate, scale) cho phần tử, tạo hiệu ứng di chuyển.",
+          "Để thay đổi dữ liệu của phần tử.",
+          "Để xác định vị trí con trỏ chuột."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đối tượng `transform` chứa các giá trị `x` và `y` cho biết phần tử nên được di chuyển bao nhiêu. Nó được sử dụng với thuộc tính `transform` của CSS để tạo hoạt ảnh kéo."
+      },
+      {
+        "question": "Sự khác biệt chính giữa `sensors` và `collisionDetection` trong `dnd-kit` là gì?",
+        "options": [
+          "Không có sự khác biệt, chúng là một.",
+          "`sensors` xác định cách bắt đầu thao tác kéo, trong khi `collisionDetection` xác định cách phát hiện va chạm.",
+          "`sensors` dùng cho thiết bị di động, `collisionDetection` dùng cho máy tính để bàn.",
+          "`sensors` xác định va chạm, trong khi `collisionDetection` xác định cách bắt đầu kéo."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`sensors` (cảm biến) định nghĩa các phương thức nhập liệu (chuột, cảm ứng) để bắt đầu một thao tác kéo. `collisionDetection` (phát hiện va chạm) là thuật toán dùng để xác định phần tử nào đang ở dưới phần tử được kéo."
+      },
+      {
+        "question": "Tại sao cần kiểm tra `active.id !== over.id` trong `handleDragEnd`?",
+        "options": [
+          "Để đảm bảo rằng hàm chỉ chạy một lần.",
+          "Để ngăn việc cập nhật trạng thái không cần thiết khi phần tử được thả lại vào vị trí ban đầu.",
+          "Để xử lý lỗi khi `over` là null.",
+          "Để tăng hiệu năng cho ứng dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc kiểm tra này là một tối ưu hóa để tránh thực hiện các thao tác cập nhật trạng thái tốn kém khi người dùng kéo một mục và thả nó trở lại đúng vị trí cũ."
+      },
+      {
+        "question": "Thành phần nào của Material UI có thể được sử dụng để tạo giao diện cho các cột trong ví dụ Trello?",
+        "options": [
+          "Card",
+          "Grid",
+          "Paper",
+          "Tất cả các đáp án trên"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Mặc dù bài học tập trung vào `dnd-kit`, nhưng trong một ứng dụng thực tế với Material UI, bạn có thể sử dụng các component như `Paper` hoặc `Card` để tạo nền và `Grid` để sắp xếp bố cục cho các cột."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cấu hình DndContext cơ bản",
+        "description": "Bọc ứng dụng của bạn trong `DndContext` để kích hoạt chức năng kéo thả. Thêm một trình xử lý sự kiện `onDragEnd` để log thông tin sự kiện ra console.",
+        "starterCode": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\n\nfunction App() {\n  function handleDragEnd(event) {\n    // TODO: Log the event object to the console\n  }\n\n  return (\n    // TODO: Wrap the content in DndContext and provide the onDragEnd handler\n    <div>\n      <h1>My Draggable App</h1>\n    </div>\n  );\n}\n\nexport default App;",
+        "solution": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\n\nfunction App() {\n  function handleDragEnd(event) {\n    console.log(event);\n  }\n\n  return (\n    <DndContext onDragEnd={handleDragEnd}>\n      <h1>My Draggable App</h1>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "testCases": "Kiểm tra xem khi kéo và thả một phần tử (nếu có), đối tượng sự kiện có được log ra console hay không."
+      },
+      {
+        "title": "Bài 2: Tạo một Component có thể kéo (Draggable)",
+        "description": "Tạo một component `Draggable` đơn giản sử dụng hook `useDraggable` từ `@dnd-kit/core`. Component này sẽ có thể được kéo xung quanh màn hình.",
+        "starterCode": "import React from 'react';\nimport { useDraggable } from '@dnd-kit/core';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction Draggable(props) {\n  // TODO: Use the useDraggable hook\n  // TODO: Apply style for transformation\n\n  return (\n    <div /* TODO: Add ref, style, and listeners */>\n      {props.children}\n    </div>\n  );\n}\n\nexport default Draggable;",
+        "solution": "import React from 'react';\nimport { useDraggable } from '@dnd-kit/core';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction Draggable(props) {\n  const { attributes, listeners, setNodeRef, transform } = useDraggable({\n    id: 'draggable',\n  });\n  const style = transform ? {\n    transform: CSS.Translate.toString(transform),\n  } : undefined;\n\n  return (\n    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>\n      {props.children}\n    </div>\n  );\n}\n\nexport default Draggable;",
+        "testCases": "Component `Draggable` phải di chuyển theo con trỏ chuột khi được kéo. Component phải có id là 'draggable'."
+      },
+      {
+        "title": "Bài 3: Tạo một danh sách có thể sắp xếp (Sortable List)",
+        "description": "Sử dụng `SortableContext` và `useSortable` để tạo một danh sách các mục có thể được sắp xếp lại bằng cách kéo thả.",
+        "starterCode": "import React, { useState } from 'react';\nimport { DndContext, closestCenter } from '@dnd-kit/core';\nimport { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction SortableItem({ id }) {\n  // TODO: Use useSortable hook\n  // TODO: Apply style for transformation\n\n  return (\n    <div /* TODO: Add ref, style, attributes, and listeners */>Item {id}</div>\n  );\n}\n\nfunction App() {\n  const [items, setItems] = useState(['1', '2', '3']);\n\n  // TODO: Add handleDragEnd function\n\n  return (\n    <DndContext collisionDetection={closestCenter} /* TODO: Add onDragEnd */>\n      <SortableContext items={items}>\n        {items.map(id => <SortableItem key={id} id={id} />)}\n      </SortableContext>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "solution": "import React, { useState } from 'react';\nimport { DndContext, closestCenter } from '@dnd-kit/core';\nimport { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction SortableItem({ id }) {\n  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });\n\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n    padding: 10,\n    border: '1px solid #ccc',\n    marginBottom: 5,\n  };\n\n  return (\n    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>\n      Item {id}\n    </div>\n  );\n}\n\nfunction App() {\n  const [items, setItems] = useState(['1', '2', '3']);\n\n  function handleDragEnd(event) {\n    const { active, over } = event;\n    if (active.id !== over.id) {\n      setItems((items) => {\n        const oldIndex = items.indexOf(active.id);\n        const newIndex = items.indexOf(over.id);\n        return arrayMove(items, oldIndex, newIndex);\n      });\n    }\n  }\n\n  return (\n    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>\n      <SortableContext items={items} strategy={verticalListSortingStrategy}>\n        {items.map(id => <SortableItem key={id} id={id} />)}\n      </SortableContext>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "testCases": "Các mục trong danh sách phải có thể được kéo và thả để thay đổi thứ tự. Trạng thái `items` phải được cập nhật chính xác sau khi thả."
+      },
+      {
+        "title": "Bài 4: Xử lý logic trong onDragEnd",
+        "description": "Hoàn thiện hàm `handleDragEnd` để cập nhật chính xác trạng thái của một danh sách các mục có thể sắp xếp. Sử dụng hàm `arrayMove` để di chuyển các mục.",
+        "starterCode": "import { arrayMove } from '@dnd-kit/sortable';\n\nfunction handleDragEnd(event, setItems) {\n  const { active, over } = event;\n\n  // TODO: Check if the item was dropped in a new position\n  if (active.id !== over.id) {\n    // TODO: Update the state using setItems and arrayMove\n    setItems(items => {\n      // ... your logic here\n      return []; // Replace with the new array\n    });\n  }\n}",
+        "solution": "import { arrayMove } from '@dnd-kit/sortable';\n\nfunction handleDragEnd(event, setItems) {\n  const { active, over } = event;\n\n  if (over && active.id !== over.id) {\n    setItems(items => {\n      const oldIndex = items.findIndex(item => item.id === active.id);\n      const newIndex = items.findIndex(item => item.id === over.id);\n      return arrayMove(items, oldIndex, newIndex);\n    });\n  }\n}",
+        "testCases": "Hàm phải cập nhật chính xác mảng `items`. Nếu một mục được kéo từ index 0 đến index 2, mảng mới phải phản ánh đúng thứ tự đó."
+      },
+      {
+        "title": "Bài 5: Xây dựng Giao diện Kéo thả Cột Trello",
+        "description": "Kết hợp các kiến thức đã học để xây dựng một giao diện gồm nhiều cột (giống Trello) có thể được sắp xếp lại bằng cách kéo thả theo chiều ngang.",
+        "starterCode": "import React, { useState } from 'react';\nimport { DndContext, closestCenter } from '@dnd-kit/core';\nimport { SortableContext, useSortable, arrayMove, horizontalListSortingStrategy } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\n// Assume Column component is created here, similar to SortableItem but with horizontal layout\nfunction Column({ id }) {\n  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n    width: 200,\n    height: 300,\n    border: '1px solid black',\n    margin: '0 10px',\n    padding: 10,\n    float: 'left' // for horizontal layout\n  };\n  return <div ref={setNodeRef} style={style} {...attributes} {...listeners}>Column {id}</div>;\n}\n\nfunction App() {\n  const [columns, setColumns] = useState(['A', 'B', 'C']);\n\n  function handleDragEnd(event) {\n    // TODO: Implement the drag end logic for columns\n  }\n\n  return (\n    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>\n      <div style={{ display: 'flex' }}>\n        {/* TODO: Use SortableContext with horizontal strategy */}\n        {columns.map(id => <Column key={id} id={id} />)}\n      </div>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "solution": "import React, { useState } from 'react';\nimport { DndContext, closestCenter } from '@dnd-kit/core';\nimport { SortableContext, useSortable, arrayMove, horizontalListSortingStrategy } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction Column({ id }) {\n  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n    width: 200,\n    height: 300,\n    backgroundColor: '#f0f0f0',\n    border: '1px solid #ccc',\n    borderRadius: 4,\n    margin: '0 10px',\n    padding: 10,\n  };\n  return <div ref={setNodeRef} style={style} {...attributes} {...listeners}><h3>Column {id}</h3></div>;\n}\n\nfunction App() {\n  const [columns, setColumns] = useState(['A', 'B', 'C']);\n\n  function handleDragEnd(event) {\n    const { active, over } = event;\n    if (over && active.id !== over.id) {\n      setColumns((columns) => {\n        const oldIndex = columns.indexOf(active.id);\n        const newIndex = columns.indexOf(over.id);\n        return arrayMove(columns, oldIndex, newIndex);\n      });\n    }\n  }\n\n  return (\n    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>\n      <div style={{ display: 'flex', padding: 20 }}>\n        <SortableContext items={columns} strategy={horizontalListSortingStrategy}>\n          {columns.map(id => <Column key={id} id={id} />)}\n        </SortableContext>\n      </div>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "testCases": "Các cột phải được hiển thị theo chiều ngang. Người dùng có thể kéo và thả các cột để sắp xếp lại chúng. Thứ tự của mảng `columns` phải được cập nhật chính xác."
+      }
+    ]
+  }
+}

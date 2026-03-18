@@ -1,0 +1,15 @@
+{
+  "intro": "Giới thiệu & Cài đặt",
+  "react-basics": "React Cơ bản",
+  "mui": "Material UI",
+  "layout": "Layout & Giao diện",
+  "dnd": "Kéo thả (Drag & Drop)",
+  "backend": "Backend & NodeJS",
+  "mongodb": "MongoDB & Database",
+  "api": "API & Integration",
+  "deploy": "Deploy & Production",
+  "advanced": "Nâng cao & Redux",
+  "auth": "Authentication & Security",
+  "realtime": "Real-time & Socket.io",
+  "features": "Tính năng nâng cao"
+}

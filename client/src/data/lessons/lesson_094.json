@@ -1,0 +1,213 @@
+{
+  "id": 94,
+  "title": "Bài 83: 74.1 Xóa Column Id trong Board (video bổ sung)",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Bài 83: 74.1 Xóa Column Id trong Board (video bổ sung)\n\n## Mục tiêu bài học\n\nVideo này là một bài học bổ sung, tập trung vào việc tái cấu trúc (refactor) cơ sở dữ liệu để tối ưu hóa cấu trúc và đảm bảo tính nhất quán của dữ liệu. Mục tiêu chính là loại bỏ trường `columnOrderIds` (hoặc một trường tương tự lưu danh sách ID của các column) ra khỏi collection `boards` trong MongoDB. Thay vào đó, chúng ta sẽ truy vấn các `column` thuộc về một `board` một cách linh hoạt hơn, dựa trên trường `boardId` đã có sẵn trong mỗi `column`.\n\n## Kiến thức chi tiết được trình bày trong video\n\nTrong một ứng dụng phức tạp như Trello clone, việc thiết kế cấu trúc dữ liệu đóng vai trò cực kỳ quan trọng. Ban đầu, để sắp xếp thứ tự các column trong một board, một phương pháp phổ biến là lưu một mảng các ID của column (`columnOrderIds`) ngay trong document của board đó. Tuy nhiên, phương pháp này có một số nhược điểm:\n\n*   **Dư thừa dữ liệu (Data Redundancy):** Mỗi document `column` đã chứa một trường `boardId` để xác định nó thuộc về board nào. Việc lưu thêm danh sách ID của column trong `board` tạo ra sự trùng lặp thông tin.\n*   **Khó khăn trong việc duy trì tính nhất quán (Data Consistency):** Khi một column được thêm hoặc xóa, chúng ta phải cập nhật ở hai nơi: collection `columns` và mảng `columnOrderIds` trong collection `boards`. Điều này làm tăng nguy cơ xảy ra lỗi và khiến dữ liệu không nhất quán nếu một trong hai thao tác thất bại.\n*   **Single Source of Truth:** Nguyên tắc \"Nguồn chân lý duy nhất\" chỉ ra rằng mỗi mẩu dữ liệu chỉ nên được lưu trữ ở một nơi duy nhất. Trong trường hợp này, danh sách các column của một board nên được xác định bởi collection `columns`.\n\nVideo này hướng dẫn cách refactor lại code để giải quyết vấn đề trên.\n\n### Giải pháp\n\nThay vì lưu cứng mảng `columnOrderIds` trong `board`, chúng ta sẽ:\n\n1.  **Phía Backend (NodeJS/ExpressJS):** Sửa đổi API lấy chi tiết của một board. API này sẽ không trả về mảng `columnOrderIds` nữa. Thay vào đó, nó sẽ thực hiện một thao tác `lookup` (tương tự `JOIN` trong SQL) hoặc một truy vấn riêng để lấy tất cả các `column` có `boardId` trùng với ID của board đang được truy vấn.\n2.  **Phía Frontend (ReactJS):** Điều chỉnh lại cách nhận và xử lý dữ liệu từ API. Component sẽ nhận về một đối tượng `board` và một mảng các đối tượng `column` đầy đủ, thay vì chỉ là một mảng ID.\n\n### Code mẫu (Minh họa ý tưởng)\n\n#### Cấu trúc dữ liệu cũ\n\n```json\n// boards collection\n{\n  \"_id\": \"board_id_1\",\n  \"title\": \"My Board\",\n  \"columnOrderIds\": [\"column_id_1\", \"column_id_2\"]\n}\n\n// columns collection\n{\n  \"_id\": \"column_id_1\",\n  \"boardId\": \"board_id_1\",\n  \"title\": \"To Do\"\n}\n```\n\n#### Cấu trúc dữ liệu mới\n\n```json\n// boards collection\n{\n  \"_id\": \"board_id_1\",\n  \"title\": \"My Board\"\n  // không còn columnOrderIds\n}\n\n// columns collection\n{\n  \"_id\": \"column_id_1\",\n  \"boardId\": \"board_id_1\",\n  \"title\": \"To Do\"\n}\n```\n\n#### Cập nhật API (Backend)\n\n```javascript\n// service/boardService.js\nconst getBoardDetails = async (boardId) => {\n  const board = await boardModel.findOne({ _id: boardId });\n  if (!board) throw new Error('Board not found');\n\n  // Thay vì trả về board cũ, ta tìm các column liên quan\n  const columns = await columnModel.find({ boardId: boardId });\n\n  // Gộp dữ liệu và trả về\n  const boardDetails = {\n    ...board.toObject(),\n    columns: columns\n  };\n\n  return boardDetails;\n};\n```\n\n## Các bước thực hành\n\n1.  **Phân tích cấu trúc dữ liệu:** Xác định lại mối quan hệ giữa `Board` và `Column`. Một `Board` chứa nhiều `Column`, và mỗi `Column` thuộc về một `Board` duy nhất.\n2.  **Cập nhật Model (Backend):** Mở file `src/models/board.model.js` và xóa hoặc bình luận lại dòng định nghĩa trường `columnOrderIds`.\n3.  **Cập nhật Service/Controller (Backend):**\n    *   Tìm đến hàm xử lý việc lấy chi tiết một board (ví dụ: `getDetails` trong `board.service.js`).\n    *   Thay đổi logic: Sau khi lấy được thông tin `board` từ database, hãy thực hiện một truy vấn thứ hai đến collection `columns` để lấy tất cả các column có `boardId` tương ứng.\n    *   Gắn danh sách `columns` vừa lấy được vào đối tượng `board` trả về cho client.\n4.  **Cập nhật Frontend:**\n    *   Kiểm tra các component chịu trách nhiệm hiển thị board (ví dụ: `BoardContent.jsx`).\n    *   Thay đổi cách component này nhận và sử dụng dữ liệu. Thay vì dùng `board.columnOrderIds` để lặp và render, giờ đây nó sẽ dùng trực tiếp mảng `board.columns` đã được API trả về.\n5.  **Kiểm tra và gỡ lỗi:**\n    *   Chạy lại ứng dụng và truy cập vào một board cụ thể.\n    *   Kiểm tra xem các column có hiển thị đúng hay không.\n    *   Sử dụng công cụ cho lập trình viên của trình duyệt (Developer Tools) để kiểm tra dữ liệu trả về từ API có đúng như cấu trúc mới hay không.\n\n## Lưu ý quan trọng\n\n*   **Migration Dữ liệu:** Nếu dự án của bạn đã có dữ liệu cũ, bạn cần viết một script di dời (migration script) để xóa trường `columnOrderIds` khỏi tất cả các document trong collection `boards`. Nếu không, dữ liệu cũ có thể gây ra lỗi không mong muốn.\n*   **Thứ tự Column:** Việc xóa `columnOrderIds` sẽ làm mất thông tin về thứ tự sắp xếp các column. Để giải quyết vấn đề này, bạn cần thêm một trường mới, ví dụ `columnIndex` hoặc `position`, vào collection `columns` để lưu trữ vị trí của chúng. Khi kéo thả, bạn sẽ cập nhật giá trị này.\n*   **Hiệu năng:** Việc thực hiện hai truy vấn riêng lẻ (một cho board, một cho columns) có thể ảnh hưởng đến hiệu năng. Trong môi trường production, hãy cân nhắc sử dụng phương thức `$lookup` của MongoDB Aggregation Framework để thực hiện việc này trong một lần gọi API duy nhất, giúp tối ưu hóa hiệu suất.\n\n## Tài liệu tham khảo\n\n*   [Playlist MERN Stack Pro của TrungQuanDev](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n*   [Blog của TrungQuanDev](https://trungquandev.com/)\n*   [GitHub của TrungQuanDev](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của việc refactor được đề cập trong bài học là gì?",
+        "options": [
+          "Thêm trường `columnOrderIds` vào collection `boards`.",
+          "Loại bỏ trường `columnOrderIds` khỏi collection `boards` để tối ưu hóa cấu trúc.",
+          "Thay đổi tên collection `boards` thành `project`.",
+          "Xóa toàn bộ collection `columns`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học tập trung vào việc loại bỏ `columnOrderIds` để giảm dư thừa dữ liệu và tăng tính nhất quán, thay vào đó sẽ truy vấn các column dựa trên `boardId`."
+      },
+      {
+        "question": "Theo bài học, nhược điểm chính của việc lưu một mảng ID các column (`columnOrderIds`) trong document của board là gì?",
+        "options": [
+          "Làm tăng tốc độ truy vấn dữ liệu.",
+          "Giúp đơn giản hóa logic ở phía frontend.",
+          "Gây ra dư thừa dữ liệu và khó khăn trong việc duy trì tính nhất quán.",
+          "Là yêu cầu bắt buộc của MongoDB để thực hiện quan hệ."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc lưu `columnOrderIds` tạo ra sự trùng lặp thông tin (vì mỗi column đã có `boardId`) và đòi hỏi phải cập nhật ở hai nơi, làm tăng nguy cơ dữ liệu không nhất quán."
+      },
+      {
+        "question": "Nguyên tắc \"Nguồn chân lý duy nhất\" (Single Source of Truth) được áp dụng trong bài học như thế nào?",
+        "options": [
+          "Bằng cách sao lưu `columnOrderIds` ở nhiều nơi.",
+          "Bằng cách chỉ lưu danh sách các column ở phía frontend.",
+          "Bằng cách xác định danh sách column của một board chỉ thông qua collection `columns` dựa trên `boardId`.",
+          "Bằng cách tạo một collection riêng chỉ để lưu `columnOrderIds`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Nguyên tắc này được áp dụng bằng cách coi collection `columns` là nguồn chân lý duy nhất để xác định các column thuộc về một board, thay vì dựa vào một mảng ID bị trùng lặp."
+      },
+      {
+        "question": "Sau khi refactor, API lấy chi tiết board (get board details) ở backend sẽ thay đổi như thế nào?",
+        "options": [
+          "API sẽ trả về thêm một mảng `cardOrderIds`.",
+          "API sẽ không trả về `columnOrderIds` mà thay vào đó sẽ gộp (embed) toàn bộ danh sách các object `column` vào trong object `board`.",
+          "API sẽ yêu cầu client tự gọi một API khác để lấy columns.",
+          "API sẽ không có gì thay đổi, mọi logic được xử lý ở frontend."
+        ],
+        "correctAnswer": 1,
+        "explanation": "API backend sẽ được sửa đổi để thực hiện truy vấn lấy các column liên quan và nhúng chúng trực tiếp vào đối tượng board trả về, thay vì trả về mảng ID."
+      },
+      {
+        "question": "Phía frontend cần thực hiện thay đổi gì để tương thích với cấu trúc dữ liệu mới?",
+        "options": [
+          "Không cần thay đổi gì.",
+          "Thay đổi cách gọi API từ GET sang POST.",
+          "Sử dụng trực tiếp mảng `board.columns` được API trả về thay vì dùng `board.columnOrderIds` để lặp và render.",
+          "Lưu trữ `columnOrderIds` trong state của Redux."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Frontend phải cập nhật logic để làm việc với mảng các đối tượng column đầy đủ (`board.columns`) thay vì mảng các ID (`board.columnOrderIds`)."
+      },
+      {
+        "question": "Vấn đề gì sẽ phát sinh khi loại bỏ trường `columnOrderIds` mà không có giải pháp thay thế?",
+        "options": [
+          "Không thể tạo column mới.",
+          "Thông tin về thứ tự sắp xếp các column sẽ bị mất.",
+          "Không thể xóa board.",
+          "Hiệu năng ứng dụng sẽ tăng lên đáng kể."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trường `columnOrderIds` ban đầu dùng để quy định thứ tự hiển thị của các column. Khi xóa nó đi, thông tin này sẽ mất nếu không có cơ chế thay thế."
+      },
+      {
+        "question": "Để giải quyết vấn đề mất thứ tự sắp xếp các column, bài học đề xuất giải pháp nào?",
+        "options": [
+          "Sắp xếp các column theo thứ tự alphabet của tiêu đề.",
+          "Thêm một trường mới như `columnIndex` hoặc `position` vào collection `columns`.",
+          "Luôn hiển thị column mới nhất ở đầu danh sách.",
+          "Để người dùng tự sắp xếp mỗi khi tải lại trang."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để duy trì thứ tự, cần thêm một trường vào mỗi document column (ví dụ: `position`) để lưu trữ vị trí của nó trong board."
+      },
+      {
+        "question": "Trong môi trường production, phương pháp nào được đề xuất để tối ưu hiệu năng khi lấy dữ liệu của board và các column liên quan?",
+        "options": [
+          "Thực hiện hai truy vấn riêng lẻ từ client: một cho board, một cho columns.",
+          "Sử dụng `Promise.all` ở backend để chạy 2 truy vấn song song.",
+          "Sử dụng toán tử `$lookup` của MongoDB Aggregation Framework để gộp dữ liệu trong một lần gọi database.",
+          "Lưu tất cả dữ liệu của column vào trong document của board."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`$lookup` cho phép thực hiện một phép \"join\" giữa các collection trên server, giúp lấy dữ liệu liên quan trong một truy vấn duy nhất, tối ưu hơn việc thực hiện nhiều truy vấn."
+      },
+      {
+        "question": "Migration script (script di dời dữ liệu) được đề cập trong bài học để làm gì?",
+        "options": [
+          "Để tạo người dùng mới trong hệ thống.",
+          "Để xóa trường `columnOrderIds` khỏi tất cả các document `board` đã tồn tại trong database.",
+          "Để cập nhật phiên bản NodeJS.",
+          "Để thêm chỉ mục (index) cho collection `columns`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Với dữ liệu hiện có, cần một script để cập nhật cấu trúc, cụ thể là xóa trường `columnOrderIds` đã không còn được sử dụng khỏi các bản ghi cũ để đảm bảo tính nhất quán."
+      },
+      {
+        "question": "Trong đoạn code mẫu `boardService.js`, hàm `getBoardDetails` trả về dữ liệu gì?",
+        "options": [
+          "Chỉ thông tin của board.",
+          "Một đối tượng chứa thông tin của board và một mảng các object `column` liên quan.",
+          "Chỉ một mảng các `column`.",
+          "Một chuỗi JSON chứa `boardId`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Code mẫu minh họa việc hàm service sẽ tìm board, sau đó tìm các column tương ứng và trả về một đối tượng mới gộp cả hai."
+      },
+      {
+        "question": "Hành động nào sau đây KHÔNG phải là một bước trong quy trình refactor được đề xuất?",
+        "options": [
+          "Cập nhật model `board.model.js` để xóa `columnOrderIds`.",
+          "Thay đổi logic trong service ở backend để lấy `columns` theo `boardId`.",
+          "Thêm một trường `boardTitle` vào collection `columns`.",
+          "Cập nhật component ở frontend để sử dụng mảng `board.columns`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc thêm `boardTitle` vào `columns` sẽ lại gây ra dư thừa dữ liệu, đi ngược lại với mục tiêu của việc refactor. `boardId` đã đủ để xác định mối quan hệ."
+      },
+      {
+        "question": "Tại sao việc duy trì tính nhất quán dữ liệu (Data Consistency) lại khó khăn với cấu trúc cũ?",
+        "options": [
+          "Vì MongoDB không hỗ trợ transaction.",
+          "Vì khi thêm/xóa column, phải cập nhật ở cả collection `columns` và mảng `columnOrderIds` trong `boards`, có thể gây lỗi.",
+          "Vì frontend có thể gửi dữ liệu không hợp lệ.",
+          "Vì giới hạn về kích thước của mảng trong document MongoDB."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi một hành động yêu cầu cập nhật ở nhiều nơi, nguy cơ một trong các cập nhật thất bại sẽ tăng lên, dẫn đến dữ liệu không nhất quán (ví dụ: column đã bị xóa nhưng ID vẫn còn trong `columnOrderIds`)."
+      },
+      {
+        "question": "Cấu trúc dữ liệu mới sau khi refactor có đặc điểm gì?",
+        "options": [
+          "Collection `boards` có thêm trường `cards`.",
+          "Collection `boards` không còn trường `columnOrderIds`.",
+          "Collection `columns` không còn trường `boardId`.",
+          "Collection `boards` và `columns` được gộp thành một."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thay đổi cốt lõi của việc refactor là loại bỏ trường `columnOrderIds` khỏi collection `boards`."
+      },
+      {
+        "question": "Toán tử `$lookup` trong MongoDB tương đương với khái niệm nào trong SQL?",
+        "options": [
+          "UPDATE",
+          "DELETE",
+          "JOIN",
+          "INDEX"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`$lookup` được dùng trong Aggregation Pipeline để thực hiện các phép kết nối (left outer join) từ một collection này sang một collection khác trong cùng một database."
+      },
+      {
+        "question": "Sau khi refactor, để lấy danh sách column của một board, ta cần thông tin gì?",
+        "options": [
+          "ID của board (`boardId`).",
+          "Tiêu đề của board.",
+          "ID của người dùng tạo board.",
+          "Ngày tạo board."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Mối quan hệ giữa board và column được xác định qua trường `boardId` trong mỗi document của column. Do đó, chỉ cần `boardId` là có thể truy vấn tất cả các column thuộc về board đó."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cập nhật Board Model",
+        "description": "Trong file model của Board, hãy loại bỏ trường `columnOrderIds`. Đây là bước đầu tiên để refactor lại cấu trúc dữ liệu.",
+        "starterCode": "const boardSchema = new mongoose.Schema({\n  title: { type: String, required: true },\n  description: { type: String },\n  columnOrderIds: { type: [mongoose.Schema.Types.ObjectId], ref: 'Column' } // Dòng cần xóa\n});",
+        "solution": "const boardSchema = new mongoose.Schema({\n  title: { type: String, required: true },\n  description: { type: String }\n});",
+        "testCases": "Kiểm tra file model của Board không còn chứa định nghĩa cho `columnOrderIds`."
+      },
+      {
+        "title": "Bài 2: Cập nhật Board Service để lấy Columns",
+        "description": "Viết lại hàm `getBoardDetails(boardId)` trong service. Hàm này cần tìm board bằng `boardId`, sau đó tìm tất cả các column có cùng `boardId` và trả về một object chứa cả thông tin board và danh sách các column đó.",
+        "starterCode": "const getBoardDetails = async (boardId) => {\n  const board = await boardModel.findById(boardId);\n  // Viết code tiếp theo ở đây\n  return board;\n};",
+        "solution": "const getBoardDetails = async (boardId) => {\n  const board = await boardModel.findById(boardId);\n  if (!board) throw new Error('Board not found');\n\n  const columns = await columnModel.find({ boardId: boardId });\n\n  const boardDetails = {\n    ...board.toObject(),\n    columns: columns\n  };\n\n  return boardDetails;\n};",
+        "testCases": "Gọi hàm `getBoardDetails` với một `boardId` hợp lệ. Kết quả trả về phải là một object chứa key `columns` là một mảng."
+      },
+      {
+        "title": "Bài 3: Thêm trường `position` vào Column Model",
+        "description": "Để duy trì thứ tự các column sau khi xóa `columnOrderIds`, hãy cập nhật `column.model.js` để thêm một trường mới tên là `position` có kiểu dữ liệu là Number.",
+        "starterCode": "const columnSchema = new mongoose.Schema({\n  title: { type: String, required: true },\n  boardId: { type: mongoose.Schema.Types.ObjectId, ref: 'Board', required: true }\n});",
+        "solution": "const columnSchema = new mongoose.Schema({\n  title: { type: String, required: true },\n  boardId: { type: mongoose.Schema.Types.ObjectId, ref: 'Board', required: true },\n  position: { type: Number }\n});",
+        "testCases": "Kiểm tra file model của Column có chứa định nghĩa cho trường `position` với kiểu Number."
+      },
+      {
+        "title": "Bài 4: Viết API Route để lấy chi tiết Board",
+        "description": "Tạo một API endpoint GET `/boards/:id` sử dụng hàm `getBoardDetails` đã viết ở Bài 2 để trả về chi tiết của một board bao gồm cả các column của nó.",
+        "starterCode": "router.get('/boards/:id', (req, res) => {\n  // Viết code xử lý ở đây\n});",
+        "solution": "router.get('/boards/:id', async (req, res) => {\n  try {\n    const boardId = req.params.id;\n    const boardDetails = await boardService.getBoardDetails(boardId);\n    res.status(200).json(boardDetails);\n  } catch (error) {\n    res.status(500).json({ error: error.message });\n  }\n});",
+        "testCases": "Sử dụng một công cụ như Postman hoặc curl để gửi request GET đến `/api/boards/some-valid-id`. Response body phải là một JSON object chứa thông tin board và mảng `columns`."
+      },
+      {
+        "title": "Bài 5: Tối ưu truy vấn bằng `$lookup`",
+        "description": "Viết lại hàm `getBoardDetails` sử dụng MongoDB Aggregation Framework và toán tử `$lookup` để lấy thông tin board và các column liên quan trong một truy vấn duy nhất.",
+        "starterCode": "const getBoardDetailsWithLookup = async (boardId) => {\n  // Viết pipeline aggregation ở đây\n};",
+        "solution": "const getBoardDetailsWithLookup = async (boardId) => {\n  const result = await boardModel.aggregate([\n    { $match: { _id: new mongoose.Types.ObjectId(boardId) } },\n    {\n      $lookup: {\n        from: 'columns', // Tên collection của column\n        localField: '_id',\n        foreignField: 'boardId',\n        as: 'columns'\n      }\n    }\n  ]);\n  return result[0] || null;\n};",
+        "testCases": "Gọi hàm `getBoardDetailsWithLookup`. Kết quả trả về phải có cấu trúc tương tự Bài 2, nhưng chỉ thực hiện một lệnh gọi đến database. Kiểm tra log của MongoDB để xác nhận chỉ có một truy vấn aggregation được thực thi."
+      }
+    ]
+  }
+}

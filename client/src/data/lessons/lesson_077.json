@@ -1,0 +1,213 @@
+{
+  "id": 77,
+  "title": "Video 59: Code tầng Validation - Dùng Joi để Validate dữ liệu",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# **Video 59: Code tầng Validation - Dùng Joi để Validate dữ liệu**\n\n## **Mục tiêu bài học**\n\nVideo này tập trung vào việc hướng dẫn cách xây dựng một tầng validation (xác thực dữ liệu) mạnh mẽ và hiệu quả cho các API trong một ứng dụng NodeJS, sử dụng thư viện Joi. Mục tiêu chính là đảm bảo rằng dữ liệu đầu vào (request data) từ client luôn hợp lệ trước khi được xử lý bởi tầng controller và service, qua đó nâng cao tính toàn vẹn dữ liệu và bảo mật cho ứng dụng.\n\nSau khi hoàn thành bài học, người xem sẽ có khả năng:\n\n*   Hiểu rõ tầm quan trọng của việc validate dữ liệu trong kiến trúc back-end.\n*   Nắm vững cách cài đặt và sử dụng thư viện Joi để định nghĩa các schema xác thực.\n*   Tích hợp Joi vào middleware của Express để tự động hóa quy trình validation.\n*   Xử lý và trả về các thông báo lỗi (error message) một cách thân thiện và chi tiết cho client.\n*   Tổ chức code cho tầng validation một cách khoa học và dễ bảo trì.\n\n---\n\n## **Kiến thức chi tiết**\n\n### **1. Tại sao cần Validation?**\n\nTrong bất kỳ ứng dụng nào, việc xác thực dữ liệu đầu vào là một bước tối quan trọng. Nếu không có validation, dữ liệu không hợp lệ hoặc thậm chí độc hại có thể được lưu vào cơ sở dữ liệu, gây ra các lỗi nghiêm trọng, làm sai lệch thông tin và tạo ra các lỗ hổng bảo mật. Tầng validation hoạt động như một người gác cổng, chỉ cho phép những dữ liệu đúng định dạng và tuân thủ các quy tắc đã định đi vào hệ thống.\n\n### **2. Giới thiệu về Joi**\n\nJoi là một thư viện validation dữ liệu cho JavaScript mạnh mẽ và phổ biến nhất, thường được sử dụng trong hệ sinh thái Node.js và Hapi.js. Nó cung cấp một API đơn giản, trực quan và linh hoạt để định nghĩa các schema (lược đồ) mô tả cấu trúc và các ràng buộc của dữ liệu. [1]\n\n> Joi allows you to create blueprints or schemas for JavaScript objects (an object that stores information) to ensure validation of key information. - **[GeeksforGeeks](https://www.geeksforgeeks.org/node-js/how-to-validate-data-using-hapi-joi-module-in-node-js/)**\n\nƯu điểm của Joi:\n\n*   **API tường minh (Declarative API):** Dễ dàng định nghĩa các quy tắc phức tạp.\n*   **Thông báo lỗi chi tiết:** Cung cấp thông tin rõ ràng về lỗi validation, giúp cho việc debug và hiển thị lỗi cho người dùng cuối trở nên đơn giản.\n*   **Khả năng mở rộng:** Dễ dàng tạo các quy tắc validation tùy chỉnh.\n*   **Tích hợp tốt:** Hoạt động liền mạch với các framework như Express.js.\n\n### **3. Cấu trúc tầng Validation trong dự án**\n\nTrong video, tác giả đề xuất một cấu trúc thư mục rõ ràng để quản lý code validation, tách biệt nó khỏi các tầng khác như `routes`, `controllers`, và `services`.\n\n```bash\nsrc/\n├── routes/\n│   └── v1/\n│       └── boardRoute.js\n├── controllers/\n│   └── boardController.js\n├── services/\n│   └── boardService.js\n├── validations/  <-- Thư mục chứa code validation\n│   └── boardValidation.js\n├── models/\n│   └── boardModel.js\n└── server.js\n```\n\nCách tổ chức này giúp code dễ đọc, dễ quản lý và tái sử dụng.\n\n### **4. Code mẫu và giải thích**\n\n#### **Cài đặt Joi**\n\n```bash\nnpm install joi\n# hoặc\nyarn add joi\n```\n\n#### **Định nghĩa Schema Validation**\n\nTrong file `src/validations/boardValidation.js`, chúng ta sẽ định nghĩa các schema cho các API liên quan đến `board`.\n\n```javascript\n// src/validations/boardValidation.js\n\nimport Joi from 'joi'\nimport { StatusCodes } from 'http-status-codes'\n\nconst createNew = async (req, res, next) => {\n  // Mặc định chúng ta không cần custom message ở phía BE vì để cho FE tự validate và custom message phía FE cho đẹp.\n  // BE chỉ cần validate Đảm Bảo Dữ Liệu Chuẩn Xác, và trả về message mặc định từ thư viện là được.\n  // Quan trọng: Việc Validate dữ liệu ở BE là BẮT BUỘC vì đây là điểm cuối để lưu trữ dữ liệu vào Database.\n  // Và thông thường trong thực tế, FE có thể có nhiều dev khác nhau, họ có thể quên validate ở một vài trường hợp nào đó, hoặc bug,...vv\n  const correctCondition = Joi.object({\n    title: Joi.string().required().min(3).max(50).trim().strict().messages({\n      'any.required': 'Title is required',\n      'string.empty': 'Title is not allowed to be empty',\n      'string.min': 'Title length must be at least 3 characters long',\n      'string.max': 'Title length must be less than or equal to 50 characters long',\n      'string.trim': 'Title must not have leading or trailing whitespace'\n    }),\n    description: Joi.string().required().min(3).max(256).trim().strict()\n  })\n\n  try {\n    // Chỉ định abortEarly: false để trường hợp có nhiều lỗi validation thì trả về tất cả lỗi\n    await correctCondition.validateAsync(req.body, { abortEarly: false })\n    // Validate dữ liệu hợp lệ thì cho request đi tiếp sang Controller\n    next()\n  } catch (error) {\n    const errorMessage = new Error(error).message\n    const customError = {\n      statusCode: StatusCodes.UNPROCESSABLE_ENTITY,\n      message: errorMessage\n    }\n    // res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({\n    //   errors: new Error(error).message\n    // })\n    next(customError)\n  }\n}\n\nexport const boardValidation = {\n  createNew\n}\n```\n\n**Giải thích:**\n\n*   `Joi.object({...})`: Định nghĩa rằng `req.body` phải là một object.\n*   `title: Joi.string().required().min(3).max(50).trim().strict()`: Định nghĩa các quy tắc cho trường `title`.\n    *   `Joi.string()`: Phải là một chuỗi.\n    *   `.required()`: Là trường bắt buộc.\n    *   `.min(3)`: Độ dài tối thiểu là 3 ký tự.\n    *   `.max(50)`: Độ dài tối đa là 50 ký tự.\n    *   `.trim()`: Tự động cắt bỏ khoảng trắng ở đầu và cuối chuỗi.\n    *   `.strict()`: Không thực hiện ép kiểu (type casting). Ví dụ, nếu `title` là một số, nó sẽ báo lỗi thay vì chuyển thành chuỗi.\n*   `.messages({...})`: Cho phép tùy chỉnh các thông báo lỗi cho từng quy tắc cụ thể, giúp FE dễ dàng hiển thị lỗi cho người dùng.\n*   `validateAsync(req.body, { abortEarly: false })`: Thực hiện validation. `abortEarly: false` đảm bảo Joi sẽ kiểm tra tất cả các trường và trả về tất cả các lỗi tìm thấy, thay vì dừng lại ở lỗi đầu tiên.\n*   `try...catch`: Bắt lỗi nếu validation thất bại. Lỗi từ Joi sẽ được đóng gói lại và gửi đến error-handling middleware thông qua `next(error)`.\n\n#### **Tích hợp vào Route**\n\nSử dụng schema validation như một middleware trong file route.\n\n```javascript\n// src/routes/v1/boardRoute.js\n\nimport express from 'express'\nimport { StatusCodes } from 'http-status-codes'\nimport { boardValidation } from '~/validations/boardValidation'\nimport { boardController } from '~/controllers/boardController'\n\nconst Router = express.Router()\n\nRouter.route('/')\n  .get((req, res) => {\n    res.status(StatusCodes.OK).json({ message: 'GET: API get list boards' })\n  })\n  .post(boardValidation.createNew, boardController.createNew)\n\nexport const boardRoute = Router\n```\n\n**Giải thích:**\n\nKhi có một request `POST` đến `/`, Express sẽ thực thi middleware `boardValidation.createNew` trước. Nếu validation thành công, `next()` được gọi và request được chuyển tiếp đến `boardController.createNew`. Nếu thất bại, `next(error)` được gọi và request sẽ đi đến middleware xử lý lỗi tập trung.\n\n---\n\n## **Các bước thực hành**\n\n1.  **Cài đặt Joi:** Mở terminal và chạy lệnh `npm install joi`.\n2.  **Tạo thư mục `validations`:** Trong thư mục `src`, tạo một thư mục mới tên là `validations`.\n3.  **Tạo file `boardValidation.js`:** Bên trong `validations`, tạo file `boardValidation.js`.\n4.  **Viết schema:** Copy và paste code mẫu ở trên để định nghĩa schema `createNew`.\n5.  **Import và sử dụng middleware:** Mở file `src/routes/v1/boardRoute.js`, import `boardValidation` và thêm nó vào trước `boardController.createNew` cho route `POST`.\n6.  **Kiểm tra (Test):** Sử dụng Postman hoặc một công cụ tương tự để gửi các request `POST` đến API của bạn với các dữ liệu khác nhau (cả hợp lệ và không hợp lệ) để kiểm tra xem tầng validation có hoạt động đúng như mong đợi không.\n    *   **Trường hợp hợp lệ:** Gửi `title` và `description` đúng định dạng.\n    *   **Trường hợp không hợp lệ:**\n        *   Bỏ trống `title`.\n        *   Gửi `title` quá ngắn hoặc quá dài.\n        *   Gửi `title` chứa khoảng trắng ở đầu/cuối.\n        *   Gửi `description` là một con số thay vì chuỗi.\n\n---\n\n## **Lưu ý quan trọng**\n\n*   **Luôn validate ở Back-end:** Không bao giờ tin tưởng dữ liệu từ client. Validation ở front-end chỉ mang tính chất cải thiện trải nghiệm người dùng, còn validation ở back-end là bắt buộc để đảm bảo an toàn và toàn vẹn dữ liệu.\n*   **`abortEarly: false`:** Luôn sử dụng tùy chọn này trong môi trường thực tế để cung cấp cho người dùng một danh sách đầy đủ các lỗi họ cần sửa, thay vì bắt họ phải sửa lỗi từng cái một.\n*   **Tách biệt validation logic:** Giữ cho code validation tách biệt khỏi controller và service. Điều này tuân thủ nguyên tắc Single Responsibility Principle (SRP) và làm cho code sạch sẽ, dễ bảo trì hơn.\n*   **Sử dụng `http-status-codes`:** Dùng thư viện `http-status-codes` để trả về các mã trạng thái HTTP một cách tường minh và nhất quán, ví dụ `StatusCodes.UNPROCESSABLE_ENTITY` (422) cho các lỗi validation.\n\n---\n\n## **Tài liệu tham khảo**\n\n[1] Joi.dev. (n.d.). *API Reference 17.13.3*. Retrieved from https://joi.dev/api/\n\n[2] GitHub - hapijs/joi. (n.d.). *The most powerful data validation library for JS*. Retrieved from https://github.com/hapijs/joi\n\n[3] GeeksforGeeks. (2024, June 13). *How to Validate Data using joi Module in Node.js?*. Retrieved from https://www.geeksforgeeks.org/node-js/how-to-validate-data-using-hapi-joi-module-in-node-js/\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục đích chính của việc sử dụng tầng Validation trong một ứng dụng back-end là gì?",
+        "options": [
+          "A. Để đảm bảo dữ liệu đầu vào từ client hợp lệ trước khi xử lý.",
+          "B. Để tăng tốc độ phản hồi của API.",
+          "C. Để mã hóa dữ liệu nhạy cảm.",
+          "D. Để ghi log các request đến server."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Tầng validation hoạt động như một người gác cổng, chỉ cho phép những dữ liệu đúng định dạng và tuân thủ các quy tắc đã định đi vào hệ thống, qua đó đảm bảo tính toàn vẹn dữ liệu và bảo mật."
+      },
+      {
+        "question": "Thư viện nào được giới thiệu trong bài học để thực hiện validation dữ liệu trong Node.js?",
+        "options": [
+          "A. Express-validator",
+          "B. Joi",
+          "C. Mongoose",
+          "D. Lodash"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học tập trung vào việc sử dụng thư viện Joi, một thư viện mạnh mẽ và phổ biến để validation dữ liệu trong hệ sinh thái Node.js."
+      },
+      {
+        "question": "Trong Joi, phương thức nào được sử dụng để xác định một trường là bắt buộc phải có?",
+        "options": [
+          "A. .optional()",
+          "B. .exists()",
+          "C. .required()",
+          "D. .mandatory()"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phương thức `.required()` được sử dụng để đánh dấu một khóa là bắt buộc, không được `undefined`."
+      },
+      {
+        "question": "Tùy chọn `{ abortEarly: false }` trong phương thức `validateAsync` của Joi có tác dụng gì?",
+        "options": [
+          "A. Dừng validation ngay khi phát hiện lỗi đầu tiên.",
+          "B. Bỏ qua tất cả các lỗi và cho phép request đi tiếp.",
+          "C. Báo cáo tất cả các lỗi validation tìm thấy thay vì chỉ dừng ở lỗi đầu tiên.",
+          "D. Thực hiện validation một cách không đồng bộ."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`abortEarly: false` đảm bảo Joi sẽ kiểm tra tất cả các trường và trả về một danh sách đầy đủ tất cả các lỗi tìm thấy, giúp người dùng sửa lỗi hiệu quả hơn."
+      },
+      {
+        "question": "Làm thế nào để tích hợp một hàm validation của Joi vào một route của Express?",
+        "options": [
+          "A. Gọi hàm validation bên trong controller.",
+          "B. Truyền hàm validation như một middleware vào trước hàm controller trong định nghĩa route.",
+          "C. Import hàm validation vào file server.js chính.",
+          "D. Sử dụng app.use() với hàm validation cho tất cả các route."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Validation được thực thi như một middleware. Nếu validation thành công, `next()` được gọi để chuyển tiếp đến controller. Nếu thất bại, `next(error)` được gọi để chuyển đến middleware xử lý lỗi."
+      },
+      {
+        "question": "Phương thức `.trim()` trong Joi dùng để làm gì?",
+        "options": [
+          "A. Yêu cầu chuỗi phải có độ dài chính xác.",
+          "B. Chuyển đổi chuỗi thành chữ hoa.",
+          "C. Tự động cắt bỏ khoảng trắng ở đầu và cuối chuỗi.",
+          "D. Giới hạn các ký tự được phép trong chuỗi."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`.trim()` được sử dụng để loại bỏ các khoảng trắng không cần thiết ở đầu và cuối của một chuỗi, giúp làm sạch dữ liệu đầu vào."
+      },
+      {
+        "question": "Theo bài học, tại sao việc validation ở back-end là bắt buộc ngay cả khi đã có validation ở front-end?",
+        "options": [
+          "A. Vì validation ở back-end nhanh hơn.",
+          "B. Để giảm tải cho trình duyệt của client.",
+          "C. Vì không bao giờ được tin tưởng dữ liệu từ client và back-end là điểm cuối cùng để bảo vệ cơ sở dữ liệu.",
+          "D. Vì Joi chỉ hoạt động được ở môi trường back-end."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Validation ở front-end chỉ để cải thiện trải nghiệm người dùng. Validation ở back-end là bắt buộc để đảm bảo an toàn, bảo mật và toàn vẹn dữ liệu, vì client có thể bỏ qua validation ở front-end."
+      },
+      {
+        "question": "Mã trạng thái HTTP (HTTP status code) nào được đề xuất sử dụng cho các lỗi validation?",
+        "options": [
+          "A. 200 OK",
+          "B. 404 NOT FOUND",
+          "C. 500 INTERNAL SERVER ERROR",
+          "D. 422 UNPROCESSABLE_ENTITY"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bài học đề xuất sử dụng `StatusCodes.UNPROCESSABLE_ENTITY` (422) để chỉ ra rằng server hiểu request nhưng không thể xử lý do dữ liệu không hợp lệ."
+      },
+      {
+        "question": "Trong schema của Joi, phương thức `.strict()` có chức năng gì?",
+        "options": [
+          "A. Bắt buộc tất cả các quy tắc phải được tuân thủ nghiêm ngặt.",
+          "B. Cho phép ép kiểu dữ liệu tự động.",
+          "C. Vô hiệu hóa việc ép kiểu (type casting), ví dụ không tự động chuyển số thành chuỗi.",
+          "D. Yêu cầu chuỗi phải khớp với một biểu thức chính quy (regex)."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi bật chế độ `.strict()`, Joi sẽ không thực hiện ép kiểu. Nếu kiểu dữ liệu đầu vào không khớp với schema, nó sẽ báo lỗi thay vì cố gắng chuyển đổi."
+      },
+      {
+        "question": "Theo cấu trúc thư mục được đề xuất, file chứa logic validation cho `board` nên được đặt ở đâu?",
+        "options": [
+          "A. `src/controllers/boardValidation.js`",
+          "B. `src/routes/v1/boardValidation.js`",
+          "C. `src/validations/boardValidation.js`",
+          "D. `src/services/boardValidation.js`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề xuất tạo một thư mục `src/validations` riêng biệt để chứa tất cả logic validation, giúp mã nguồn sạch sẽ và tuân thủ nguyên tắc Single Responsibility."
+      },
+      {
+        "question": "Làm thế nào để tùy chỉnh thông báo lỗi cho một quy tắc cụ thể trong Joi?",
+        "options": [
+          "A. Sử dụng phương thức `.errorMessage('...')`",
+          "B. Sử dụng phương thức `.messages({...})`",
+          "C. Chỉnh sửa trực tiếp trong file nguồn của thư viện Joi.",
+          "D. Viết một hàm `try...catch` riêng cho mỗi quy tắc."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Phương thức `.messages({...})` cho phép bạn cung cấp một đối tượng chứa các thông báo lỗi tùy chỉnh cho các quy tắc khác nhau (ví dụ: 'string.min', 'any.required')."
+      },
+      {
+        "question": "Trong đoạn code `await correctCondition.validateAsync(req.body)`, `req.body` là gì?",
+        "options": [
+          "A. Dữ liệu được gửi lên trong phần thân (body) của HTTP request.",
+          "B. Các tham số trên URL (query parameters).",
+          "C. Các header của HTTP request.",
+          "D. Cookie được lưu trữ ở client."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`req.body` là một thuộc tính của đối tượng request trong Express, chứa dữ liệu được gửi từ client trong phần thân của request, thường thấy trong các phương thức POST hoặc PUT."
+      },
+      {
+        "question": "Chuỗi quy tắc Joi nào sau đây dùng để validate một chuỗi có độ dài từ 10 đến 255 ký tự và là bắt buộc?",
+        "options": [
+          "A. `Joi.string().length(10, 255).required()`",
+          "B. `Joi.string().required().min(10).max(255)`",
+          "C. `Joi.string(10, 255).mandatory()`",
+          "D. `Joi.string().min(10).max(255).optional()`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`.required()` để bắt buộc, `.min(10)` để xác định độ dài tối thiểu, và `.max(255)` để xác định độ dài tối đa. Đây là chuỗi phương thức chính xác."
+      },
+      {
+        "question": "Khi validation thất bại trong khối `try...catch` của middleware, hành động tiếp theo là gì?",
+        "options": [
+          "A. Gửi phản hồi lỗi trực tiếp về cho client bằng `res.json()`.",
+          "B. Ghi lỗi ra console và kết thúc tiến trình.",
+          "C. Gọi `next()` để chuyển sang controller tiếp theo.",
+          "D. Gọi `next(error)` để chuyển lỗi đến middleware xử lý lỗi tập trung."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Cách làm tốt nhất là tạo một đối tượng lỗi tùy chỉnh và truyền nó vào `next(error)`. Điều này cho phép một middleware xử lý lỗi tập trung xử lý tất cả các lỗi trong ứng dụng một cách nhất quán."
+      },
+      {
+        "question": "Điều nào sau đây KHÔNG phải là một ưu điểm của Joi được đề cập trong bài học?",
+        "options": [
+          "A. API tường minh (Declarative API).",
+          "B. Tự động kết nối và validation với cơ sở dữ liệu.",
+          "C. Cung cấp thông báo lỗi chi tiết.",
+          "D. Khả năng mở rộng và tích hợp tốt với Express.js."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Joi là một thư viện validation dữ liệu, nó không tự động tương tác hay kết nối với cơ sở dữ liệu. Việc tương tác với DB là nhiệm vụ của các tầng khác như Model hoặc Service."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Schema Validation Cơ bản",
+        "description": "Tạo một schema Joi để validate một đối tượng `user` có hai trường: `email` (phải là một chuỗi email hợp lệ và bắt buộc) và `password` (phải là chuỗi, bắt buộc, và có ít nhất 6 ký tự).",
+        "starterCode": "import Joi from 'joi';\n\nconst userSchema = Joi.object({\n  // Viết code của bạn ở đây\n});\n\nexport default userSchema;",
+        "solution": "import Joi from 'joi';\n\nconst userSchema = Joi.object({\n  email: Joi.string().email().required(),\n  password: Joi.string().min(6).required()\n});\n\nexport default userSchema;",
+        "testCases": "1. Hợp lệ: { email: 'test@example.com', password: '123456' }.\n2. Không hợp lệ: email không đúng định dạng.\n3. Không hợp lệ: thiếu trường password.\n4. Không hợp lệ: password ngắn hơn 6 ký tự."
+      },
+      {
+        "title": "Bài 2: Thêm Quy tắc và Làm sạch Dữ liệu",
+        "description": "Mở rộng schema từ Bài 1. Thêm trường `username` là một chuỗi, bắt buộc, chỉ chứa ký tự chữ và số, có độ dài từ 3 đến 30 ký tự. Đồng thời, hãy đảm bảo `username` được chuyển thành chữ thường và `email` được làm sạch khoảng trắng ở đầu/cuối.",
+        "starterCode": "import Joi from 'joi';\n\nconst userSchema = Joi.object({\n  email: Joi.string().email().required(),\n  password: Joi.string().min(6).required(),\n  // Viết code của bạn ở đây\n});\n\nexport default userSchema;",
+        "solution": "import Joi from 'joi';\n\nconst userSchema = Joi.object({\n  email: Joi.string().email().trim().required(),\n  password: Joi.string().min(6).required(),\n  username: Joi.string().alphanum().min(3).max(30).lowercase().required()\n});\n\nexport default userSchema;",
+        "testCases": "1. Hợp lệ: { email: '  test@test.com ', username: 'MyUser123', password: 'password' } (email sẽ được trim, username sẽ thành 'myuser123').\n2. Không hợp lệ: username chứa ký tự đặc biệt (vd: 'my-user').\n3. Không hợp lệ: username quá ngắn."
+      },
+      {
+        "title": "Bài 3: Tùy chỉnh Thông báo Lỗi",
+        "description": "Tạo một schema cho `product` có trường `productName` (chuỗi, bắt buộc, từ 3-100 ký tự) và `price` (số, bắt buộc, lớn hơn 0). Hãy cung cấp các thông báo lỗi tùy chỉnh bằng tiếng Việt cho tất cả các quy tắc.",
+        "starterCode": "import Joi from 'joi';\n\nconst productSchema = Joi.object({\n  productName: Joi.string().required().min(3).max(100),\n  price: Joi.number().required().positive()\n  // Thêm .messages() vào đây\n});\n\nexport default productSchema;",
+        "solution": "import Joi from 'joi';\n\nconst productSchema = Joi.object({\n  productName: Joi.string().required().min(3).max(100).messages({\n    'string.base': 'Tên sản phẩm phải là một chuỗi',\n    'string.empty': 'Tên sản phẩm không được để trống',\n    'string.min': 'Tên sản phẩm phải có ít nhất 3 ký tự',\n    'string.max': 'Tên sản phẩm không được vượt quá 100 ký tự',\n    'any.required': 'Tên sản phẩm là trường bắt buộc'\n  }),\n  price: Joi.number().required().positive().messages({\n    'number.base': 'Giá phải là một con số',\n    'number.positive': 'Giá phải là một số dương',\n    'any.required': 'Giá là trường bắt buộc'\n  })\n});\n\nexport default productSchema;",
+        "testCases": "1. Hợp lệ: { productName: 'Sách Lập Trình', price: 150000 }.\n2. Không hợp lệ: { productName: 'Sách' } -> trả về lỗi min.\n3. Không hợp lệ: { price: -50 } -> trả về lỗi positive.\n4. Không hợp lệ: {} -> trả về lỗi required cho cả hai trường."
+      },
+      {
+        "title": "Bài 4: Viết Middleware Validation",
+        "description": "Viết một hàm middleware cho Express tên là `validateBoard` sử dụng schema từ bài học. Middleware này sẽ validate `req.body`. Nếu hợp lệ, gọi `next()`. Nếu không hợp lệ, tạo một đối tượng lỗi với `statusCode` là 422 và `message` là thông báo lỗi từ Joi, sau đó gọi `next(error)`. Sử dụng `abortEarly: false`.",
+        "starterCode": "import Joi from 'joi';\nimport { StatusCodes } from 'http-status-codes';\n\nconst boardSchema = Joi.object({\n  title: Joi.string().required().min(3).max(50).trim().strict(),\n  description: Joi.string().required().min(3).max(256).trim().strict()\n});\n\nconst validateBoard = async (req, res, next) => {\n  // Viết code của bạn ở đây\n};\n\nexport default validateBoard;",
+        "solution": "import Joi from 'joi';\nimport { StatusCodes } from 'http-status-codes';\n\nconst boardSchema = Joi.object({\n  title: Joi.string().required().min(3).max(50).trim().strict(),\n  description: Joi.string().required().min(3).max(256).trim().strict()\n});\n\nconst validateBoard = async (req, res, next) => {\n  try {\n    await boardSchema.validateAsync(req.body, { abortEarly: false });\n    next();\n  } catch (error) {\n    const customError = {\n      statusCode: StatusCodes.UNPROCESSABLE_ENTITY,\n      message: error.message\n    };\n    next(customError);\n  }\n};\n\nexport default validateBoard;",
+        "testCases": "1. Middleware sẽ gọi `next()` nếu `req.body` hợp lệ.\n2. Middleware sẽ gọi `next(error)` với `statusCode` 422 nếu `req.body` không hợp lệ.\n3. Thông báo lỗi phải chứa tất cả các lỗi nếu có nhiều trường sai."
+      },
+      {
+        "title": "Bài 5: Schema Phức tạp với Mảng và Đối tượng Lồng nhau",
+        "description": "Tạo một schema Joi để validate một `order`. Order này có `orderId` (chuỗi, bắt buộc), `customerInfo` (object chứa `name` và `email` bắt buộc), và `items` (một mảng các sản phẩm, không được rỗng). Mỗi sản phẩm trong mảng `items` phải là một object có `productId` (chuỗi, bắt buộc) và `quantity` (số nguyên, bắt buộc, tối thiểu là 1).",
+        "starterCode": "import Joi from 'joi';\n\nconst orderSchema = Joi.object({\n  // Viết code của bạn ở đây\n});\n\nexport default orderSchema;",
+        "solution": "import Joi from 'joi';\n\nconst orderSchema = Joi.object({\n  orderId: Joi.string().required(),\n  customerInfo: Joi.object({\n    name: Joi.string().required(),\n    email: Joi.string().email().required()\n  }).required(),\n  items: Joi.array().items(\n    Joi.object({\n      productId: Joi.string().required(),\n      quantity: Joi.number().integer().min(1).required()\n    })\n  ).min(1).required()\n});\n\nexport default orderSchema;",
+        "testCases": "1. Hợp lệ: một đối tượng order đầy đủ và đúng cấu trúc.\n2. Không hợp lệ: mảng `items` rỗng.\n3. Không hợp lệ: một item trong mảng có `quantity` là 0.\n4. Không hợp lệ: thiếu `customerInfo.email`."
+      }
+    ]
+  }
+}

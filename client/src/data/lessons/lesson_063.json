@@ -1,0 +1,213 @@
+{
+  "id": 63,
+  "title": "47. Tối ưu kết nối MongoDB Atlas vào dự án Back-end",
+  "category": "mongodb",
+  "categoryName": "MongoDB & Database",
+  "content": "# 47. Tối ưu kết nối MongoDB Atlas vào dự án Back-end\n\n## Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tìm hiểu cách tối ưu hóa việc kết nối từ một dự án Back-end sử dụng NodeJS tới cơ sở dữ liệu MongoDB Atlas. Mục tiêu chính là xây dựng một cấu trúc kết nối hiệu quả, dễ bảo trì và an toàn, thay vì giữ logic kết nối trực tiếp trong file server chính.\n\n## Kiến thức chi tiết\n\n### 1. Giới thiệu thư viện `mongodb`\n\nĐể tương tác với MongoDB từ NodeJS, chúng ta sử dụng driver chính thức do MongoDB cung cấp, đó là thư viện `mongodb`. Thư viện này cung cấp một API đầy đủ để thực hiện tất cả các thao tác với cơ sở dữ liệu.\n\n### 2. Sử dụng `MongoClient`\n\n`MongoClient` là class cốt lõi trong thư viện `mongodb` cho phép chúng ta khởi tạo và quản lý kết nối đến một MongoDB server (hoặc một cluster như MongoDB Atlas).\n\n### 3. Cấu trúc URI kết nối MongoDB Atlas\n\nChuỗi kết nối (URI) tới MongoDB Atlas có một định dạng chuẩn, chứa các thông tin quan trọng như tên người dùng, mật khẩu, địa chỉ cluster và các tùy chọn kết nối khác. Việc sử dụng biến môi trường để lưu trữ chuỗi URI này là một **best practice** để bảo mật thông tin nhạy cảm.\n\n### 4. Tách biệt logic kết nối\n\nThay vì viết code kết nối trực tiếp trong file `server.js`, chúng ta nên tạo một module riêng (ví dụ: `config/mongodb.js`) để quản lý việc kết nối và đóng kết nối. Điều này giúp mã nguồn trở nên sạch sẽ, dễ đọc và dễ bảo trì hơn.\n\n### 5. Xử lý kết nối và đóng kết nối an toàn\n\nViệc quản lý vòng đời của kết nối là rất quan trọng. Chúng ta cần đảm bảo rằng kết nối được thiết lập thành công trước khi ứng dụng bắt đầu nhận request và được đóng lại một cách an toàn khi ứng dụng dừng hoạt động. Điều này giúp tránh rò rỉ tài nguyên và đảm bảo tính toàn vẹn của dữ liệu.\n\n## Các bước thực hành\n\n1.  **Cài đặt thư viện `mongodb`:**\n\n    ```bash\n    npm install mongodb\n    ```\n\n2.  **Tạo file cấu hình kết nối (`config/mongodb.js`):**\n\n    ```javascript\n    import { MongoClient } from 'mongodb'\n    import { env } from '~/config/environment'\n\n    let dbInstance = null\n\n    export const connectDB = async () => {\n      const client = new MongoClient(env.MONGODB_URI, {\n        useUnifiedTopology: true,\n        useNewUrlParser: true\n      })\n\n      // Kết nối client đến server\n      await client.connect()\n\n      // Gán client sau khi connect thành công vào biến dbInstance\n      dbInstance = client.db(env.DATABASE_NAME)\n    }\n\n    // Hàm để lấy ra db instance sau khi đã connect thành công\n    export const getDB = () => {\n      if (!dbInstance) throw new Error('Must connect to Database first!')\n      return dbInstance\n    }\n    ```\n\n3.  **Sử dụng module kết nối trong file server chính (`server.js`):**\n\n    ```javascript\n    import { connectDB } from '~/config/mongodb'\n\n    connectDB().catch(console.log)\n\n    // ... Khởi tạo Express app và các logic khác\n    ```\n\n## Lưu ý quan trọng\n\n*   **Bảo mật chuỗi kết nối:** Luôn luôn sử dụng biến môi trường (`.env`) để lưu trữ chuỗi kết nối MongoDB Atlas và không bao giờ commit file `.env` lên Git.\n*   **Xử lý lỗi:** Cần có cơ chế xử lý lỗi kết nối đầy đủ để ứng dụng không bị crash khi không thể kết nối tới database.\n*   **Singleton Pattern:** Áp dụng Singleton Pattern để đảm bảo chỉ có một instance của `MongoClient` được tạo và sử dụng trong toàn bộ ứng dụng, giúp tối ưu hóa việc sử dụng tài nguyên.\n\n## Tài liệu tham khảo\n\n*   **Video bài học:** [47. Tối ưu kết nối MongoDB Atlas vào dự án Back-end | NodeJS + MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=BYpHB5LnRCQ)\n*   **GitHub Repository (Tham khảo):** [trungquandev/mern-stack-pro-boilerplate](https://github.com/trungquandev)\n*   **Tài liệu MongoDB NodeJS Driver:** [https://mongodb.github.io/node-mongodb-native/](https://mongodb.github.io/node-mongodb-native/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Thư viện nào được sử dụng để tương tác với MongoDB từ một ứng dụng NodeJS?",
+        "options": [
+          "mongoose",
+          "mongodb",
+          "mongojs",
+          "node-mongo"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Driver chính thức do MongoDB cung cấp để tương tác với cơ sở dữ liệu từ NodeJS là thư viện `mongodb`."
+      },
+      {
+        "question": "Class nào trong thư viện `mongodb` chịu trách nhiệm khởi tạo và quản lý kết nối đến MongoDB server?",
+        "options": [
+          "MongoServer",
+          "DbConnector",
+          "MongoClient",
+          "ConnectionManager"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`MongoClient` là class cốt lõi được sử dụng để thiết lập và quản lý các kết nối đến MongoDB."
+      },
+      {
+        "question": "Tại sao nên lưu trữ chuỗi kết nối (URI) MongoDB Atlas trong biến môi trường?",
+        "options": [
+          "Để dễ dàng thay đổi khi chuyển server.",
+          "Để tăng tốc độ kết nối.",
+          "Để bảo mật thông tin nhạy cảm như username và password.",
+          "Để tuân thủ quy định của MongoDB Atlas."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lưu chuỗi URI trong biến môi trường là một best practice để bảo vệ thông tin đăng nhập và các dữ liệu nhạy cảm khác, tránh việc commit chúng lên các hệ thống quản lý phiên bản như Git."
+      },
+      {
+        "question": "Lợi ích chính của việc tách logic kết nối database ra một module riêng (ví dụ: `config/mongodb.js`) là gì?",
+        "options": [
+          "Giúp giảm kích thước file server chính.",
+          "Làm cho mã nguồn sạch sẽ, dễ đọc và dễ bảo trì hơn.",
+          "Tăng hiệu suất của ứng dụng.",
+          "Là yêu cầu bắt buộc của thư viện `mongodb`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc tách biệt logic giúp mã nguồn được tổ chức tốt hơn, tuân thủ nguyên tắc Single Responsibility, từ đó dễ dàng hơn trong việc quản lý, bảo trì và tái sử dụng."
+      },
+      {
+        "question": "Hàm `connectDB` trong ví dụ thực hành có chức năng chính là gì?",
+        "options": [
+          "Tạo một database mới trên MongoDB Atlas.",
+          "Khởi tạo một `MongoClient`, kết nối đến server và gán instance của database vào một biến.",
+          "Kiểm tra xem kết nối có thành công hay không.",
+          "Đóng kết nối đến database."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hàm `connectDB` đóng gói toàn bộ quá trình kết nối, từ việc tạo client, thực hiện kết nối và lấy ra database instance để sử dụng trong ứng dụng."
+      },
+      {
+        "question": "Hàm `getDB` được sử dụng để làm gì?",
+        "options": [
+          "Để khởi tạo một kết nối mới.",
+          "Để lấy ra database instance đã được kết nối thành công.",
+          "Để lấy danh sách tất cả các database.",
+          "Để kiểm tra trạng thái của database."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hàm `getDB` hoạt động như một getter, cho phép các phần khác của ứng dụng truy cập vào database instance duy nhất đã được khởi tạo mà không cần kết nối lại."
+      },
+      {
+        "question": "Điều gì sẽ xảy ra nếu gọi hàm `getDB()` trước khi `connectDB()` được thực thi thành công?",
+        "options": [
+          "Hàm sẽ trả về `null`.",
+          "Ứng dụng sẽ tự động gọi `connectDB()`.",
+          "Một lỗi (`Error`) sẽ được ném ra.",
+          "Hàm sẽ đợi cho đến khi `connectDB()` hoàn tất."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trong implementation ví dụ, có một câu lệnh kiểm tra `if (!dbInstance) throw new Error(...)` để đảm bảo rằng database đã được kết nối trước khi được truy cập."
+      },
+      {
+        "question": "Mô hình thiết kế (Design Pattern) nào được áp dụng trong việc quản lý `dbInstance` để đảm bảo chỉ có một kết nối duy nhất trong toàn bộ ứng dụng?",
+        "options": [
+          "Factory Pattern",
+          "Observer Pattern",
+          "Singleton Pattern",
+          "Decorator Pattern"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc tạo một instance duy nhất (`dbInstance`) và cung cấp một điểm truy cập toàn cục (`getDB`) đến nó là đặc điểm của Singleton Pattern, giúp tối ưu hóa việc sử dụng tài nguyên."
+      },
+      {
+        "question": "Trong file `server.js`, tại sao lời gọi `connectDB()` được đặt trong một `.catch(console.log)`?",
+        "options": [
+          "Để ghi lại log mỗi khi kết nối thành công.",
+          "Để bắt và hiển thị bất kỳ lỗi nào xảy ra trong quá trình kết nối database.",
+          "Để tự động kết nối lại nếu có lỗi.",
+          "Đây là cú pháp bắt buộc của Javascript."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Vì `connectDB` là một hàm `async`, nó trả về một Promise. Sử dụng `.catch()` là một cách để xử lý các lỗi có thể xảy ra khi Promise đó bị từ chối (rejected), ví dụ như không thể kết nối đến database."
+      },
+      {
+        "question": "Biến `dbInstance` được khởi tạo với giá trị ban đầu là gì?",
+        "options": [
+          "`undefined`",
+          "`{}` (object rỗng)",
+          "`null`",
+          "`false`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Biến `dbInstance` được khởi tạo là `null` để biểu thị rằng chưa có kết nối nào được thiết lập. Sau khi kết nối thành công, nó sẽ được gán giá trị là database instance."
+      },
+      {
+        "question": "Trong đối tượng options của `MongoClient`, `useUnifiedTopology: true` có ý nghĩa gì?",
+        "options": [
+          "Bật chế độ bảo mật mới.",
+          "Sử dụng engine quản lý và giám sát server mới của MongoDB driver.",
+          "Cho phép sử dụng các ký tự Unicode trong query.",
+          "Tắt tất cả các thông báo cảnh báo."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tùy chọn `useUnifiedTopology: true` cho phép driver sử dụng engine quản lý kết nối mới, giúp xử lý việc khám phá server, giám sát và phục hồi sau lỗi một cách tốt hơn."
+      },
+      {
+        "question": "Lệnh `npm install mongodb` dùng để làm gì?",
+        "options": [
+          "Cài đặt môi trường chạy MongoDB trên máy local.",
+          "Cài đặt giao diện quản lý MongoDB.",
+          "Cài đặt MongoDB Atlas CLI.",
+          "Cài đặt thư viện MongoDB driver cho NodeJS vào dự án."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Đây là lệnh của Node Package Manager (npm) để tải và thêm thư viện `mongodb` vào danh sách các dependency của dự án, cho phép ứng dụng có thể sử dụng nó."
+      },
+      {
+        "question": "Phương thức nào của `MongoClient` được gọi để thực hiện kết nối đến server?",
+        "options": [
+          "`.start()`",
+          "`.open()`",
+          "`.init()`",
+          "`.connect()`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Phương thức `await client.connect()` được sử dụng để thiết lập kết nối vật lý từ client đến MongoDB server."
+      },
+      {
+        "question": "Sau khi kết nối thành công, làm thế nào để lấy ra một đối tượng database cụ thể?",
+        "options": [
+          "Sử dụng `client.db(DATABASE_NAME)`",
+          "Sử dụng `client.get(DATABASE_NAME)`",
+          "Sử dụng `client.database(DATABASE_NAME)`",
+          "Sử dụng `client.select(DATABASE_NAME)`"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Phương thức `.db()` của `MongoClient` instance được sử dụng để lấy về một đối tượng đại diện cho một database cụ thể trên server, thông qua tên của database đó."
+      },
+      {
+        "question": "Tại sao việc đóng kết nối (`close connection`) khi ứng dụng dừng lại là quan trọng?",
+        "options": [
+          "Để MongoDB Atlas không tính phí.",
+          "Để giải phóng tài nguyên và tránh rò rỉ kết nối (connection leaks).",
+          "Để lưu lại tất cả các thay đổi cuối cùng.",
+          "Để gửi thông báo cho admin."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đóng kết nối một cách an toàn giúp giải phóng các tài nguyên mà kết nối đang chiếm giữ trên cả client và server, đảm bảo ứng dụng hoạt động ổn định và hiệu quả."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo module kết nối cơ bản",
+        "description": "Hoàn thiện hàm `connectDB` để khởi tạo `MongoClient` và kết nối đến MongoDB URI được cung cấp qua biến môi trường. Gán kết quả của `client.db()` vào biến `dbInstance`.",
+        "starterCode": "import { MongoClient } from 'mongodb'\n\nconst MONGODB_URI = 'mongodb+srv://youruser:yourpassword@cluster0.mongodb.net/'\nconst DATABASE_NAME = 'my-database'\n\nlet dbInstance = null\n\nexport const connectDB = async () => {\n  const client = new MongoClient(MONGODB_URI, {\n    useUnifiedTopology: true,\n    useNewUrlParser: true\n  })\n\n  // Your code here\n  // 1. Kết nối client đến server\n  // 2. Gán database instance vào biến dbInstance\n}\n\nexport const getDB = () => {\n  if (!dbInstance) throw new Error('Must connect to Database first!')\n  return dbInstance\n}",
+        "solution": "import { MongoClient } from 'mongodb'\n\nconst MONGODB_URI = 'mongodb+srv://youruser:yourpassword@cluster0.mongodb.net/'\nconst DATABASE_NAME = 'my-database'\n\nlet dbInstance = null\n\nexport const connectDB = async () => {\n  const client = new MongoClient(MONGODB_URI, {\n    useUnifiedTopology: true,\n    useNewUrlParser: true\n  })\n\n  // Kết nối client đến server\n  await client.connect()\n\n  // Gán client sau khi connect thành công vào biến dbInstance\n  dbInstance = client.db(DATABASE_NAME)\n}\n\nexport const getDB = () => {\n  if (!dbInstance) throw new Error('Must connect to Database first!')\n  return dbInstance\n}",
+        "testCases": "Sau khi chạy `await connectDB()`, biến `dbInstance` không được là `null`. Gọi `getDB()` phải trả về một đối tượng database."
+      },
+      {
+        "title": "Bài 2: Tích hợp biến môi trường",
+        "description": "Sửa đổi module kết nối để đọc `MONGODB_URI` và `DATABASE_NAME` từ một đối tượng `env` giả lập, thay vì hard-code chúng.",
+        "starterCode": "import { MongoClient } from 'mongodb'\n\n// Giả lập biến môi trường\nconst env = {\n  MONGODB_URI: 'mongodb+srv://test:test@test.net/',\n  DATABASE_NAME: 'test-db'\n}\n\nlet dbInstance = null\n\nexport const connectDB = async () => {\n  // Your code here: Sử dụng các giá trị từ đối tượng env\n  const client = new MongoClient('HARD-CODED-URI', {\n    useUnifiedTopology: true,\n    useNewUrlParser: true\n  })\n\n  await client.connect()\n\n  dbInstance = client.db('HARD-CODED-DB-NAME')\n}\n\nexport const getDB = () => {\n  if (!dbInstance) throw new Error('Must connect to Database first!')\n  return dbInstance\n}",
+        "solution": "import { MongoClient } from 'mongodb'\n\nconst env = {\n  MONGODB_URI: 'mongodb+srv://test:test@test.net/',\n  DATABASE_NAME: 'test-db'\n}\n\nlet dbInstance = null\n\nexport const connectDB = async () => {\n  const client = new MongoClient(env.MONGODB_URI, {\n    useUnifiedTopology: true,\n    useNewUrlParser: true\n  })\n\n  await client.connect()\n\n  dbInstance = client.db(env.DATABASE_NAME)\n}\n\nexport const getDB = () => {\n  if (!dbInstance) throw new Error('Must connect to Database first!')\n  return dbInstance\n}",
+        "testCases": "Hàm `connectDB` phải sử dụng `env.MONGODB_URI` và `env.DATABASE_NAME` để kết nối. Không được chứa chuỗi hard-code."
+      },
+      {
+        "title": "Bài 3: Xây dựng hàm `getDB` an toàn",
+        "description": "Hoàn thiện hàm `getDB` để nó ném ra một lỗi với thông điệp \"Must connect to Database first!\" nếu `dbInstance` chưa được thiết lập (vẫn là `null`).",
+        "starterCode": "let dbInstance = null\n\n// Giả sử connectDB đã được định nghĩa ở trên\n\nexport const getDB = () => {\n  // Your code here\n  return dbInstance\n}",
+        "solution": "let dbInstance = null\n\n// Giả sử connectDB đã được định nghĩa ở trên\n\nexport const getDB = () => {\n  if (!dbInstance) throw new Error('Must connect to Database first!')\n  return dbInstance\n}",
+        "testCases": "Nếu `dbInstance` là `null`, gọi `getDB()` phải ném ra một `Error`. Nếu `dbInstance` có giá trị, hàm phải trả về giá trị đó."
+      },
+      {
+        "title": "Bài 4: Gọi kết nối từ file server",
+        "description": "Viết một hàm `startServer` mô phỏng việc khởi động server. Bên trong hàm này, hãy gọi hàm `connectDB` và xử lý lỗi kết nối bằng cách in ra console. Chỉ sau khi kết nối thành công, in ra thông báo \"Server started!\".",
+        "starterCode": "import { connectDB } from './mongodb' // Giả sử file mongodb.js tồn tại\n\nconst startServer = async () => {\n  console.log('Starting server...')\n  // Your code here\n  // 1. Gọi connectDB\n  // 2. Xử lý lỗi nếu có\n  // 3. In ra \"Server started!\" nếu thành công\n}\n\nstartServer()",
+        "solution": "import { connectDB } from './mongodb'\n\nconst startServer = async () => {\n  console.log('Starting server...')\n  try {\n    await connectDB()\n    console.log('Server started!')\n  } catch (error) {\n    console.error('Failed to connect to the database:', error)\n    process.exit(1) // Thoát ứng dụng nếu không kết nối được DB\n  }\n}\n\nstartServer()",
+        "testCases": "Nếu `connectDB` thành công, console phải in ra \"Server started!\". Nếu `connectDB` thất bại, console phải in ra thông báo lỗi và ứng dụng nên dừng lại."
+      },
+      {
+        "title": "Bài 5: Tối ưu Singleton Pattern",
+        "description": "Cải tiến module kết nối để đảm bảo `MongoClient` chỉ được khởi tạo một lần duy nhất, ngay cả khi `connectDB` được gọi nhiều lần. Gợi ý: kiểm tra `dbInstance` trước khi tạo client mới.",
+        "starterCode": "import { MongoClient } from 'mongodb'\nimport { env } from '~/config/environment'\n\nlet dbInstance = null\n\nexport const connectDB = async () => {\n  // Logic hiện tại sẽ tạo client mới mỗi lần gọi\n  const client = new MongoClient(env.MONGODB_URI)\n  await client.connect()\n  dbInstance = client.db(env.DATABASE_NAME)\n}\n\nexport const getDB = () => {\n  if (!dbInstance) throw new Error('Must connect to Database first!')\n  return dbInstance\n}",
+        "solution": "import { MongoClient } from 'mongodb'\nimport { env } from '~/config/environment'\n\nlet dbInstance = null\nlet client = null // Thêm biến để giữ client instance\n\nexport const connectDB = async () => {\n  // Nếu client đã được khởi tạo, không làm gì cả\n  if (dbInstance) return\n\n  client = new MongoClient(env.MONGODB_URI, {\n    useUnifiedTopology: true,\n    useNewUrlParser: true\n  })\n\n  await client.connect()\n  dbInstance = client.db(env.DATABASE_NAME)\n}\n\n// Thêm hàm đóng kết nối để quản lý tốt hơn\nexport const closeDB = async () => {\n  if (client) {\n    await client.close()\n  }\n}\n\nexport const getDB = () => {\n  if (!dbInstance) throw new Error('Must connect to Database first!')\n  return dbInstance\n}",
+        "testCases": "Gọi `connectDB()` nhiều lần liên tiếp sẽ không tạo ra các kết nối mới. Biến `client` và `dbInstance` chỉ được gán giá trị trong lần gọi đầu tiên."
+      }
+    ]
+  }
+}

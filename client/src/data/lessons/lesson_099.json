@@ -1,0 +1,213 @@
+{
+  "id": 99,
+  "title": "Bài học 90: Session 1 - Cấu hình Redux & Redux Toolkit & Thunk Middleware",
+  "category": "advanced",
+  "categoryName": "Nâng cao & Redux",
+  "content": "# Bài học 90: Session 1 - Cấu hình Redux & Redux Toolkit & Thunk Middleware\n\n## I. Mục tiêu bài học\n\nBài học này tập trung vào việc giới thiệu và hướng dẫn cấu hình **Redux** để quản lý trạng thái (state management) trong một ứng dụng React, đặc biệt là với sự hỗ trợ của **Redux Toolkit**. Sau khi hoàn thành bài học, người học sẽ có khả năng:\n\n*   Hiểu rõ các khái niệm cốt lõi của Redux: `store`, `reducer`, `action`, và `dispatch`.\n*   Nắm được lý do tại sao **Redux Toolkit** là phương pháp được khuyến nghị để viết logic Redux.\n*   Biết cách cài đặt và cấu hình Redux Toolkit trong một dự án React.\n*   Sử dụng `createSlice` để tạo ra các reducers và actions một cách hiệu quả.\n*   Hiểu vai trò của **Thunk Middleware** trong việc xử lý các tác vụ bất đồng bộ (asynchronous actions) như gọi API.\n*   Tạo và sử dụng `createAsyncThunk` để quản lý các trạng thái của một yêu cầu API (pending, fulfilled, rejected).\n\n## II. Kiến thức chi tiết\n\nDựa trên tiêu đề video và kiến thức chuyên môn, nội dung chính của bài học sẽ xoay quanh các chủ đề sau:\n\n### 1. Giới thiệu về Redux và State Management\n\n**Redux** là một thư viện JavaScript mã nguồn mở, có thể dự đoán được, dùng để quản lý trạng thái của ứng dụng. Nó thường được sử dụng cùng với các thư viện giao diện người dùng như React hoặc Angular. Redux giúp bạn viết các ứng dụng hoạt động một cách nhất quán, chạy trong các môi trường khác nhau (client, server, và native), và dễ dàng để kiểm thử.\n\nCác thành phần cốt lõi của Redux bao gồm:\n\n*   **Store**: Là một đối tượng duy nhất chứa toàn bộ trạng thái (state) của ứng dụng. Đây là \"nguồn chân lý\" (single source of truth).\n*   **Action**: Là các đối tượng JavaScript đơn giản mô tả những gì đã xảy ra. Chúng là cách duy nhất để gửi dữ liệu từ ứng dụng của bạn đến Redux store. Actions phải có một thuộc tính `type`.\n*   **Reducer**: Là các hàm thuần túy (pure functions) nhận vào trạng thái hiện tại và một action, sau đó trả về một trạng thái mới. Reducer mô tả cách trạng thái của ứng dụng thay đổi để đáp ứng với các actions.\n\nLuồng dữ liệu trong Redux là một chiều (unidirectional):\n\n1.  Giao diện người dùng (UI) dispatch một `action`.\n2.  `Reducer` nhận action và trạng thái hiện tại, sau đó trả về trạng thái mới.\n3.  `Store` lưu trạng thái mới.\n4.  UI được cập nhật dựa trên trạng thái mới từ store.\n\n### 2. Tại sao nên sử dụng Redux Toolkit?\n\nViết mã Redux theo cách truyền thống có thể dài dòng và phức tạp, đòi hỏi nhiều mã boilerplate. **Redux Toolkit (RTK)** được tạo ra để giải quyết những vấn đề này. Nó là bộ công cụ chính thức, được đề xuất bởi đội ngũ Redux, giúp đơn giản hóa và chuẩn hóa việc viết mã Redux.\n\nNhững lợi ích chính của Redux Toolkit:\n\n*   **Cấu hình đơn giản**: `configureStore` giúp đơn giản hóa việc thiết lập store, tự động kết hợp các reducers, và thêm các middleware phổ biến như `redux-thunk` theo mặc định.\n*   **Giảm mã boilerplate**: `createSlice` tự động tạo ra action creators và action types, giúp bạn viết ít mã hơn.\n*   **Tích hợp sẵn Redux Thunk**: Dễ dàng xử lý logic bất đồng bộ mà không cần cấu hình thêm.\n*   **Tích hợp Immer**: `createSlice` sử dụng thư viện Immer bên trong, cho phép bạn viết logic \"thay đổi\" trạng thái một cách trực tiếp trong reducers, giúp mã nguồn trở nên ngắn gọn và dễ đọc hơn.\n\n### 3. Thunk Middleware và Xử lý bất đồng bộ\n\nTrong các ứng dụng thực tế, chúng ta thường cần thực hiện các tác vụ bất đồng bộ, chẳng hạn như lấy dữ liệu từ một API. Reducers phải là các hàm thuần túy và không được chứa các side effects (như gọi API). Đây là lúc **middleware** phát huy tác dụng.\n\n**Redux Thunk** là một middleware cho phép các action creators của bạn trả về một hàm thay vì một đối tượng action. Hàm này nhận `dispatch` và `getState` làm đối số, cho phép bạn thực hiện logic bất đồng bộ và dispatch các actions khác khi cần thiết.\n\nRedux Toolkit đã tích hợp sẵn `redux-thunk`, vì vậy bạn có thể bắt đầu sử dụng nó ngay lập tức.\n\n### 4. `createAsyncThunk`\n\nĐể đơn giản hóa hơn nữa việc xử lý các yêu cầu API, Redux Toolkit cung cấp hàm `createAsyncThunk`. Hàm này sẽ tự động tạo ra một thunk để thực hiện một yêu cầu bất đồng bộ và dispatch các actions tương ứng với các giai đoạn của yêu cầu đó:\n\n*   **`pending`**: Trước khi yêu cầu bắt đầu.\n*   **`fulfilled`**: Khi yêu cầu thành công.\n*   **`rejected`**: Khi yêu cầu thất bại.\n\nBạn có thể lắng nghe các action này trong `extraReducers` của `createSlice` để cập nhật trạng thái của ứng dụng một cách phù hợp (ví dụ: hiển thị một spinner khi đang tải, hiển thị dữ liệu khi thành công, hoặc hiển thị thông báo lỗi khi thất bại).\n\n## III. Các bước thực hành\n\nPhần này sẽ hướng dẫn các bước cơ bản để tích hợp Redux Toolkit vào một dự án React.\n\n1.  **Cài đặt các thư viện cần thiết:**\n\n    ```bash\n    npm install @reduxjs/toolkit react-redux\n    # hoặc\n    yarn add @reduxjs/toolkit react-redux\n    ```\n\n2.  **Tạo Redux Store:**\n\n    Tạo một file `src/app/store.js` để cấu hình store.\n\n    ```javascript\n    import { configureStore } from '@reduxjs/toolkit';\n    // import counterReducer from '../features/counter/counterSlice';\n\n    export const store = configureStore({\n      reducer: {\n        // counter: counterReducer,\n      },\n    });\n    ```\n\n3.  **Kết nối Store với ứng dụng React:**\n\n    Trong file `src/index.js` hoặc `src/main.jsx`, bọc component `<App />` của bạn bằng `<Provider>` từ `react-redux`.\n\n    ```javascript\n    import React from 'react';\n    import ReactDOM from 'react-dom/client';\n    import App from './App';\n    import { store } from './app/store';\n    import { Provider } from 'react-redux';\n\n    const root = ReactDOM.createRoot(document.getElementById('root'));\n    root.render(\n      <React.StrictMode>\n        <Provider store={store}>\n          <App />\n        </Provider>\n      </React.StrictMode>\n    );\n    ```\n\n4.  **Tạo một Feature Slice:**\n\n    Tạo một file `src/features/counter/counterSlice.js` để quản lý trạng thái của một chức năng cụ thể.\n\n    ```javascript\n    import { createSlice } from '@reduxjs/toolkit';\n\n    const initialState = {\n      value: 0,\n    };\n\n    export const counterSlice = createSlice({\n      name: 'counter',\n      initialState,\n      reducers: {\n        increment: (state) => {\n          state.value += 1;\n        },\n        decrement: (state) => {\n          state.value -= 1;\n        },\n        incrementByAmount: (state, action) => {\n          state.value += action.payload;\n        },\n      },\n    });\n\n    // Action creators được tạo tự động cho mỗi case reducer function\n    export const { increment, decrement, incrementByAmount } = counterSlice.actions;\n\n    export default counterSlice.reducer;\n    ```\n\n5.  **Thêm Slice Reducer vào Store:**\n\n    Quay lại file `src/app/store.js` và thêm reducer từ slice vừa tạo.\n\n    ```javascript\n    import { configureStore } from '@reduxjs/toolkit';\n    import counterReducer from '../features/counter/counterSlice';\n\n    export const store = configureStore({\n      reducer: {\n        counter: counterReducer,\n      },\n    });\n    ```\n\n6.  **Sử dụng Redux State và Actions trong Components:**\n\n    Sử dụng hooks `useSelector` để đọc dữ liệu từ store và `useDispatch` để dispatch các actions.\n\n    ```javascript\n    import React from 'react';\n    import { useSelector, useDispatch } from 'react-redux';\n    import { decrement, increment } from './counterSlice';\n\n    export function Counter() {\n      const count = useSelector((state) => state.counter.value);\n      const dispatch = useDispatch();\n\n      return (\n        <div>\n          <div>\n            <button\n              aria-label=\"Increment value\"\n              onClick={() => dispatch(increment())}\n            >\n              Increment\n            </button>\n            <span>{count}</span>\n            <button\n              aria-label=\"Decrement value\"\n              onClick={() => dispatch(decrement())}\n            >\n              Decrement\n            </button>\n          </div>\n        </div>\n      );\n    }\n    ```\n\n## IV. Lưu ý quan trọng\n\n*   **Luôn luôn coi Redux Toolkit là lựa chọn hàng đầu** khi làm việc với Redux để tiết kiệm thời gian và công sức.\n*   **Không thay đổi trạng thái trực tiếp** bên ngoài các reducers được tạo bởi `createSlice`. Mặc dù Immer cho phép bạn viết mã trông giống như đang thay đổi trực tiếp, nó vẫn đảm bảo tính bất biến (immutability) của trạng thái.\n*   **Tổ chức các slices** theo từng chức năng (feature) để giữ cho mã nguồn của bạn có cấu trúc và dễ bảo trì.\n*   Khi làm việc với các tác vụ bất đồng bộ, hãy tận dụng `createAsyncThunk` để xử lý các trạng thái loading, success, và error một cách nhất quán.\n\n## V. Tài liệu tham khảo\n\n1.  [Redux Official Documentation](https://redux.js.org/)\n2.  [Redux Toolkit Official Documentation](https://redux-toolkit.js.org/)\n3.  [React Redux Official Documentation](https://react-redux.js.org/)\n4.  [Redux Thunk GitHub Repository](https://github.com/reduxjs/redux-thunk)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong Redux, đâu là \"nguồn chân lý duy nhất\" (single source of truth) chứa toàn bộ trạng thái của ứng dụng?",
+        "options": [
+          "A. Action",
+          "B. Reducer",
+          "C. Store",
+          "D. Middleware"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Store là một đối tượng duy nhất chứa toàn bộ trạng thái (state) của ứng dụng, được coi là nguồn chân lý duy nhất."
+      },
+      {
+        "question": "Hàm nào từ Redux Toolkit giúp đơn giản hóa việc thiết lập store và tự động tích hợp các middleware phổ biến như Redux Thunk?",
+        "options": [
+          "A. createStore",
+          "B. createSlice",
+          "C. applyMiddleware",
+          "D. configureStore"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`configureStore` là hàm của Redux Toolkit giúp đơn giản hóa việc cấu hình store, tự động kết hợp reducers và thêm các middleware cần thiết."
+      },
+      {
+        "question": "Chức năng chính của một Reducer trong Redux là gì?",
+        "options": [
+          "A. Thực hiện các lời gọi API bất đồng bộ.",
+          "B. Mô tả những gì đã xảy ra trong ứng dụng.",
+          "C. Nhận vào trạng thái hiện tại và một action, sau đó trả về một trạng thái mới.",
+          "D. Chứa toàn bộ trạng thái của ứng dụng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Reducers là các hàm thuần túy (pure functions) mô tả cách trạng thái của ứng dụng thay đổi để đáp ứng với các actions, bằng cách nhận trạng thái hiện tại và action để trả về trạng thái mới."
+      },
+      {
+        "question": "Tại sao Redux Toolkit (RTK) được khuyến nghị sử dụng thay vì viết Redux theo cách truyền thống?",
+        "options": [
+          "A. Vì nó bắt buộc sử dụng TypeScript.",
+          "B. Vì nó giúp giảm mã boilerplate, đơn giản hóa cấu hình và tích hợp sẵn các công cụ hữu ích.",
+          "C. Vì nó chỉ hoạt động với React.",
+          "D. Vì nó nhanh hơn Redux truyền thống về mặt hiệu năng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Redux Toolkit được tạo ra để giải quyết các vấn đề của Redux truyền thống như cấu hình phức tạp và nhiều mã boilerplate, giúp viết mã Redux hiệu quả và chuẩn hóa hơn."
+      },
+      {
+        "question": "Hàm `createSlice` từ Redux Toolkit sử dụng thư viện nào bên trong để cho phép viết logic \"thay đổi\" trạng thái một cách an toàn?",
+        "options": [
+          "A. Redux Saga",
+          "B. Lodash",
+          "C. Immer",
+          "D. Reselect"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`createSlice` sử dụng thư viện Immer, cho phép bạn viết logic reducer trông giống như đang thay đổi trực tiếp trạng thái, nhưng thực chất Immer sẽ tạo ra một trạng thái mới bất biến."
+      },
+      {
+        "question": "Mục đích chính của Redux Thunk Middleware là gì?",
+        "options": [
+          "A. Ghi log tất cả các actions được dispatch.",
+          "B. Cho phép viết logic bất đồng bộ (ví dụ: gọi API) trong action creators.",
+          "C. Tự động tạo ra các action creators.",
+          "D. Tối ưu hóa hiệu năng của component."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Redux Thunk là một middleware cho phép các action creators trả về một hàm thay vì một đối tượng action, giúp thực hiện các tác vụ bất đồng bộ và các side effects."
+      },
+      {
+        "question": "Khi sử dụng `createAsyncThunk`, action type nào sẽ được dispatch khi yêu cầu API thành công?",
+        "options": [
+          "A. pending",
+          "B. rejected",
+          "C. fulfilled",
+          "D. started"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`createAsyncThunk` tự động dispatch action có type là `fulfilled` khi promise mà nó trả về được giải quyết thành công."
+      },
+      {
+        "question": "Trong một component React, hook nào từ `react-redux` được dùng để đọc dữ liệu từ Redux store?",
+        "options": [
+          "A. useDispatch",
+          "B. useState",
+          "C. useEffect",
+          "D. useSelector"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`useSelector` là hook cho phép component của bạn trích xuất (đọc) dữ liệu từ trạng thái của Redux store."
+      },
+      {
+        "question": "Để cung cấp Redux store cho toàn bộ ứng dụng React, bạn cần làm gì?",
+        "options": [
+          "A. Gọi hàm `store.subscribe()` trong mỗi component.",
+          "B. Import store vào mỗi component.",
+          "C. Bọc component `<App />` gốc bằng component `<Provider>` từ `react-redux` và truyền store vào prop.",
+          "D. Truyền store như một prop xuống tất cả các component con."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cách chuẩn để kết nối Redux với React là sử dụng component `<Provider>` ở cấp cao nhất và truyền store vào đó, giúp tất cả component con có thể truy cập store."
+      },
+      {
+        "question": "Hàm `createSlice` tự động tạo ra những gì cho bạn?",
+        "options": [
+          "A. Chỉ reducer function.",
+          "B. Chỉ action creators.",
+          "C. Reducer function, action creators, và action types.",
+          "D. Middleware và store."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Một trong những ưu điểm lớn của `createSlice` là nó tự động tạo ra cả reducer, action creators và action types dựa trên tên slice và các reducers bạn định nghĩa."
+      },
+      {
+        "question": "Trong `createSlice`, bạn nên xử lý các actions được tạo bởi `createAsyncThunk` ở đâu?",
+        "options": [
+          "A. Trong thuộc tính `reducers`.",
+          "B. Trong thuộc tính `extraReducers`.",
+          "C. Trong một file riêng biệt.",
+          "D. Trực tiếp trong component."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`extraReducers` cho phép một slice reducer đáp ứng với các action types không được định nghĩa trong `reducers` của nó, đây là nơi lý tưởng để xử lý các actions từ `createAsyncThunk`."
+      },
+      {
+        "question": "Một `action` trong Redux về cơ bản là gì?",
+        "options": [
+          "A. Một hàm trả về trạng thái mới.",
+          "B. Một component React.",
+          "C. Một đối tượng JavaScript đơn giản có thuộc tính `type`.",
+          "D. Một class để quản lý trạng thái."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Actions là các đối tượng JavaScript đơn giản (plain objects) mô tả những gì đã xảy ra. Chúng là cách duy nhất để gửi dữ liệu đến store và phải có một thuộc tính `type`."
+      },
+      {
+        "question": "Hook nào từ `react-redux` được sử dụng để dispatch một action?",
+        "options": [
+          "A. `useSelector`",
+          "B. `useStore`",
+          "C. `useDispatch`",
+          "D. `useReducer`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useDispatch` là hook trả về một tham chiếu đến hàm `dispatch` của Redux store, cho phép bạn dispatch các actions khi cần."
+      },
+      {
+        "question": "Luồng dữ liệu (data flow) trong Redux được mô tả là gì?",
+        "options": [
+          "A. Hai chiều (Bi-directional)",
+          "B. Một chiều (Unidirectional)",
+          "C. Đa chiều (Multi-directional)",
+          "D. Tuần hoàn (Cyclic)"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Redux tuân thủ một luồng dữ liệu một chiều nghiêm ngặt: UI dispatch action, reducer xử lý action để tạo state mới, store lưu state mới, và UI cập nhật theo state mới."
+      },
+      {
+        "question": "Khi sử dụng `createSlice`, tại sao bạn có thể viết code trông giống như đang thay đổi trực tiếp `state` (ví dụ: `state.value += 1`)?",
+        "options": [
+          "A. Vì Redux Toolkit đã loại bỏ tính bất biến (immutability).",
+          "B. Vì đó chỉ là cú pháp cho phép, nhưng bên trong Immer sẽ xử lý để đảm bảo tính bất biến.",
+          "C. Vì JavaScript hiện đại cho phép thay đổi trực tiếp các đối tượng.",
+          "D. Vì điều này chỉ được phép trong môi trường development."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Redux Toolkit sử dụng Immer bên trong `createSlice`, cho phép bạn viết logic đơn giản hơn. Immer theo dõi các thay đổi \"nháp\" và tạo ra một trạng thái mới, bất biến dựa trên những thay đổi đó."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cấu hình Redux Store cơ bản",
+        "description": "Sử dụng hàm `configureStore` từ `@reduxjs/toolkit` để tạo một Redux store đơn giản. Store chưa cần có reducer nào.",
+        "starterCode": "import { configureStore } from '@reduxjs/toolkit';\n\n// TODO: Tạo và export Redux store\n",
+        "solution": "import { configureStore } from '@reduxjs/toolkit';\n\nexport const store = configureStore({\n  reducer: {},\n});\n",
+        "testCases": "Kiểm tra xem biến `store` đã được export hay chưa. Kiểm tra `store` có được tạo bởi `configureStore` với một object rỗng cho `reducer` hay không."
+      },
+      {
+        "title": "Bài 2: Tạo một Feature Slice",
+        "description": "Sử dụng `createSlice` để tạo một slice có tên là 'user'. Slice này nên có trạng thái ban đầu là `{ name: 'Guest', age: 0 }` và một reducer tên là `setUserName` nhận một `action` với `payload` là một chuỗi và cập nhật `state.name`.",
+        "starterCode": "import { createSlice } from '@reduxjs/toolkit';\n\nconst initialState = {\n  name: 'Guest',\n  age: 0,\n};\n\n// TODO: Tạo userSlice và export action, reducer\n",
+        "solution": "import { createSlice } from '@reduxjs/toolkit';\n\nconst initialState = {\n  name: 'Guest',\n  age: 0,\n};\n\nexport const userSlice = createSlice({\n  name: 'user',\n  initialState,\n  reducers: {\n    setUserName: (state, action) => {\n      state.name = action.payload;\n    },\n  },\n});\n\nexport const { setUserName } = userSlice.actions;\nexport default userSlice.reducer;\n",
+        "testCases": "Kiểm tra slice có tên là 'user'. Kiểm tra `initialState` có đúng không. Kiểm tra reducer `setUserName` có cập nhật `state.name` với `action.payload` hay không. Kiểm tra action và reducer đã được export."
+      },
+      {
+        "title": "Bài 3: Thêm Slice Reducer vào Store",
+        "description": "Import `userReducer` từ file slice bạn vừa tạo và thêm nó vào Redux store dưới key là `user`.",
+        "starterCode": "import { configureStore } from '@reduxjs/toolkit';\n// Giả sử userReducer được export default từ './userSlice'\nimport userReducer from './userSlice';\n\n// TODO: Cấu hình store với userReducer\n",
+        "solution": "import { configureStore } from '@reduxjs/toolkit';\nimport userReducer from './userSlice';\n\nexport const store = configureStore({\n  reducer: {\n    user: userReducer,\n  },\n});\n",
+        "testCases": "Kiểm tra store có được cấu hình với một reducer object. Kiểm tra reducer object có chứa key `user` với giá trị là `userReducer`."
+      },
+      {
+        "title": "Bài 4: Tạo một Thunk để fetch dữ liệu người dùng",
+        "description": "Sử dụng `createAsyncThunk` để tạo một thunk có tên `fetchUserById`. Thunk này sẽ giả lập việc gọi API bằng cách trả về một object `{ id: 1, name: 'John Doe' }` sau 1 giây. Hàm thunk nhận vào `userId` làm đối số.",
+        "starterCode": "import { createAsyncThunk } from '@reduxjs/toolkit';\n\nconst fetchAPI = (userId) => \n  new Promise((resolve) => \n    setTimeout(() => resolve({ id: userId, name: 'John Doe' }), 1000)\n  );\n\n// TODO: Tạo và export fetchUserById thunk\n",
+        "solution": "import { createAsyncThunk } from '@reduxjs/toolkit';\n\nconst fetchAPI = (userId) => \n  new Promise((resolve) => \n    setTimeout(() => resolve({ id: userId, name: 'John Doe' }), 1000)\n  );\n\nexport const fetchUserById = createAsyncThunk(\n  'users/fetchByIdStatus',\n  async (userId, thunkAPI) => {\n    const response = await fetchAPI(userId);\n    return response;\n  }\n);\n",
+        "testCases": "Kiểm tra `fetchUserById` có phải là một async thunk. Gọi thunk với một `userId` và kiểm tra xem nó có trả về đúng dữ liệu người dùng sau khi hoàn thành hay không."
+      },
+      {
+        "title": "Bài 5: Xử lý trạng thái của Thunk trong Slice",
+        "description": "Mở rộng `userSlice` từ Bài 2. Sử dụng `extraReducers` để xử lý 3 trạng thái của `fetchUserById` thunk: `pending`, `fulfilled`, và `rejected`. Khi `pending`, thêm một thuộc tính `status: 'loading'` vào state. Khi `fulfilled`, cập nhật `state.name` với tên người dùng từ payload và `status: 'succeeded'`. Khi `rejected`, cập nhật `status: 'failed'`.",
+        "starterCode": "import { createSlice } from '@reduxjs/toolkit';\nimport { fetchUserById } from './userThunk'; // Giả sử thunk ở file riêng\n\nconst initialState = {\n  name: 'Guest',\n  status: 'idle', // idle | loading | succeeded | failed\n};\n\nexport const userSlice = createSlice({\n  name: 'user',\n  initialState,\n  reducers: {},\n  // TODO: Thêm extraReducers để xử lý thunk\n});\n\nexport default userSlice.reducer;\n",
+        "solution": "import { createSlice } from '@reduxjs/toolkit';\nimport { fetchUserById } from './userThunk';\n\nconst initialState = {\n  name: 'Guest',\n  status: 'idle',\n};\n\nexport const userSlice = createSlice({\n  name: 'user',\n  initialState,\n  reducers: {},\n  extraReducers: (builder) => {\n    builder\n      .addCase(fetchUserById.pending, (state) => {\n        state.status = 'loading';\n      })\n      .addCase(fetchUserById.fulfilled, (state, action) => {\n        state.status = 'succeeded';\n        state.name = action.payload.name;\n      })\n      .addCase(fetchUserById.rejected, (state) => {\n        state.status = 'failed';\n      });\n  },\n});\n\nexport default userSlice.reducer;\n",
+        "testCases": "Dispatch action `fetchUserById.pending` và kiểm tra `state.status` là 'loading'. Dispatch `fetchUserById.fulfilled` với payload và kiểm tra `state.status` là 'succeeded' và `state.name` được cập nhật. Dispatch `fetchUserById.rejected` và kiểm tra `state.status` là 'failed'."
+      }
+    ]
+  }
+}

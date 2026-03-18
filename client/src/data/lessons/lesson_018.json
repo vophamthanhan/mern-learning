@@ -1,0 +1,213 @@
+{
+  "id": 18,
+  "title": "Buổi 9: Tính năng Logout, Refresh Token tự động với Axios Interceptors",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Buổi 9: Tính năng Logout, Refresh Token tự động với Axios Interceptors\n\n## I. Mục tiêu bài học\n\nVideo này là một phần của series MERN Stack Pro, tập trung vào việc xây dựng các tính năng xác thực nâng cao và chuyên nghiệp cho ứng dụng. Mục tiêu chính của bài học này bao gồm:\n\n*   **Triển khai tính năng Đăng xuất (Logout):** Xây dựng cơ chế cho phép người dùng đăng xuất khỏi ứng dụng một cách an toàn, bao gồm việc xóa thông tin xác thực phía client và vô hiệu hóa token phía server.\n*   **Hiểu và áp dụng cơ chế Refresh Token:** Nắm vững khái niệm về Access Token và Refresh Token, lý do tại sao cần sử dụng chúng và cách triển khai một luồng làm mới token tự động để duy trì trạng thái đăng nhập của người dùng mà không yêu cầu họ phải đăng nhập lại thường xuyên.\n*   **Sử dụng Axios Interceptors:** Học cách tận dụng Axios Interceptors để tự động hóa việc đính kèm Access Token vào mỗi request và xử lý logic làm mới token một cách thông minh, minh bạch mà không cần can thiệp vào code của từng component.\n*   **Nâng cao trải nghiệm người dùng (UX):** Đảm bảo người dùng có một trải nghiệm mượt mà, không bị gián đoạn bởi các vấn đề liên quan đến xác thực.\n*   **Bảo mật ứng dụng:** Tăng cường bảo mật bằng cách sử dụng các token có thời gian sống ngắn (Access Token) và cơ chế làm mới an toàn, đồng thời xử lý việc lưu trữ token một cách chính xác.\n\n## II. Kiến thức chi tiết\n\nĐây là phần kiến thức chuyên sâu, dựa trên tiêu đề video và kinh nghiệm thực tế với MERN stack, giải thích các khái niệm cốt lõi được đề cập.\n\n### 1. Luồng xác thực với Access Token và Refresh Token\n\nTrong các hệ thống xác thực hiện đại, việc chỉ sử dụng một Access Token có thời gian sống dài sẽ tiềm ẩn rủi ro bảo mật. Nếu token này bị đánh cắp, kẻ tấn công sẽ có quyền truy cập vào tài nguyên của người dùng trong một thời gian dài. Để giải quyết vấn đề này, chúng ta sử dụng một cặp token:\n\n*   **Access Token:**\n    *   Là một chuỗi JWT (JSON Web Token) được ký bởi server.\n    *   Có thời gian sống rất ngắn (ví dụ: 5-15 phút).\n    *   Được gửi kèm trong header `Authorization` của mỗi request tới các API yêu cầu xác thực.\n    *   Server sẽ xác minh chữ ký và thời hạn của token này để cấp quyền truy cập.\n\n*   **Refresh Token:**\n    *   Cũng là một chuỗi JWT hoặc một chuỗi ngẫu nhiên duy nhất.\n    *   Có thời gian sống dài hơn nhiều (ví dụ: 7 ngày, 30 ngày).\n    *   Được lưu trữ an toàn phía client (thường trong **HttpOnly Cookie** để chống lại tấn công XSS).\n    *   Mục đích duy nhất của nó là để yêu cầu một **Access Token** mới khi cái cũ hết hạn.\n\n**Luồng hoạt động chuẩn:**\n\n1.  **Đăng nhập:** Người dùng cung cấp thông tin đăng nhập. Server xác thực, tạo ra một cặp Access Token và Refresh Token, sau đó gửi về cho client.\n2.  **Lưu trữ Token:** Client lưu Access Token vào bộ nhớ (ví dụ: state của Redux/Context) và lưu Refresh Token vào HttpOnly Cookie.\n3.  **Truy cập tài nguyên:** Khi client gọi một API được bảo vệ, nó sẽ đính kèm Access Token vào header `Authorization: Bearer <token>`.\n4.  **Access Token hết hạn:** Khi Access Token hết hạn, server sẽ trả về lỗi `401 Unauthorized`.\n5.  **Làm mới Token:** Phía client (thông qua Axios Interceptor) sẽ tự động bắt lỗi `401`. Nó gửi một request đến endpoint `/refresh-token` kèm theo Refresh Token (trình duyệt tự động gửi cookie).\n6.  **Cấp Token mới:** Server nhận Refresh Token, xác minh tính hợp lệ của nó (kiểm tra trong database xem token có tồn tại và chưa bị thu hồi hay không). Nếu hợp lệ, server tạo một **Access Token mới** và gửi về cho client.\n7.  **Thử lại request:** Client nhận Access Token mới, cập nhật nó trong bộ nhớ và tự động thực hiện lại request ban đầu (vốn đã thất bại do lỗi 401). Lần này, request sẽ thành công.\n8.  **Đăng xuất (Logout):** Client gửi request đến endpoint `/logout`. Server sẽ xóa/vô hiệu hóa Refresh Token trong database và client sẽ xóa Access Token khỏi bộ nhớ và xóa cookie chứa Refresh Token.\n\n### 2. Axios Interceptors: Tự động hóa luồng xác thực\n\nAxios Interceptors là một công cụ mạnh mẽ cho phép chúng ta can thiệp vào các request trước khi chúng được gửi đi hoặc các response trước khi chúng được xử lý. Đây là nơi lý tưởng để triển khai logic xác thực một cách tập trung.\n\n#### a. Request Interceptor\n\nInterceptor này được thực thi trước mỗi request. Nhiệm vụ chính của nó là tự động đính kèm Access Token vào header.\n\n```javascript\n// axiosInstance.js\nimport axios from 'axios';\n\nconst axiosInstance = axios.create({\n  baseURL: 'https://api.yourdomain.com'\n});\n\n// Lấy access token từ state (ví dụ Redux, Zustand, etc.)\n// Lưu ý: Đây là code giả định, bạn cần thay thế bằng logic thực tế của mình\nconst getAccessToken = () => store.getState().auth.accessToken;\n\naxiosInstance.interceptors.request.use(\n  (config) => {\n    const accessToken = getAccessToken();\n    if (accessToken) {\n      config.headers['Authorization'] = `Bearer ${accessToken}`;\n    }\n    return config;\n  },\n  (error) => {\n    return Promise.reject(error);\n  }\n);\n\nexport default axiosInstance;\n```\n\n#### b. Response Interceptor\n\nĐây là phần quan trọng nhất, xử lý logic khi Access Token hết hạn.\n\n```javascript\n// axiosInstance.js (tiếp theo)\n\n// Biến để kiểm soát việc gọi API refresh token, tránh gọi nhiều lần đồng thời\nlet isRefreshing = false;\n// Hàng đợi chứa các request cần thực hiện lại sau khi refresh token thành công\nlet failedQueue = [];\n\nconst processQueue = (error, token = null) => {\n  failedQueue.forEach(prom => {\n    if (error) {\n      prom.reject(error);\n    } else {\n      prom.resolve(token);\n    }\n  });\n  failedQueue = [];\n};\n\naxiosInstance.interceptors.response.use(\n  (response) => {\n    return response;\n  },\n  async (error) => {\n    const originalRequest = error.config;\n\n    // Chỉ xử lý lỗi 401 và không phải là request refresh token bị lỗi\n    if (error.response.status === 401 && !originalRequest._retry) {\n      if (isRefreshing) {\n        // Nếu đang refresh token, thêm request vào hàng đợi\n        return new Promise(function(resolve, reject) {\n          failedQueue.push({ resolve, reject });\n        }).then(token => {\n          originalRequest.headers['Authorization'] = 'Bearer ' + token;\n          return axiosInstance(originalRequest);\n        }).catch(err => {\n          return Promise.reject(err);\n        });\n      }\n\n      originalRequest._retry = true;\n      isRefreshing = true;\n\n      try {\n        // Gọi API để lấy access token mới bằng refresh token\n        // Trình duyệt sẽ tự động gửi kèm httpOnly cookie chứa refresh token\n        const rs = await axios.post('https://api.yourdomain.com/v1/users/refresh-token');\n        const newAccessToken = rs.data.accessToken;\n\n        // Cập nhật access token mới vào store của bạn (Redux, etc.)\n        // store.dispatch(updateAccessToken(newAccessToken));\n\n        // Cập nhật header của request ban đầu và thực hiện lại nó\n        axiosInstance.defaults.headers.common['Authorization'] = 'Bearer ' + newAccessToken;\n        originalRequest.headers['Authorization'] = 'Bearer ' + newAccessToken;\n        \n        // Thực thi lại các request trong hàng đợi\n        processQueue(null, newAccessToken);\n\n        return axiosInstance(originalRequest);\n      } catch (_error) {\n        // Xử lý khi refresh token thất bại (ví dụ: refresh token hết hạn)\n        // Đẩy người dùng về trang đăng nhập\n        // store.dispatch(logoutUser());\n        processQueue(_error, null);\n        return Promise.reject(_error);\n      } finally {\n        isRefreshing = false;\n      }\n    }\n\n    return Promise.reject(error);\n  }\n);\n```\n\n**Lưu ý:** Đoạn code trên xử lý cả trường hợp có nhiều request xảy ra đồng thời khi token hết hạn. Nó đảm bảo rằng API refresh token chỉ được gọi một lần và tất cả các request thất bại sẽ được thực hiện lại sau khi có token mới.\n\n### 3. Triển khai tính năng Logout\n\nKhi người dùng click vào nút Logout, chúng ta cần thực hiện các hành động sau:\n\n1.  **Client-side:**\n    *   Gọi API `/logout` lên server.\n    *   Xóa Access Token đang được lưu trong state (Redux/Context).\n    *   Chuyển hướng người dùng về trang đăng nhập.\n\n2.  **Server-side (API `/logout`):**\n    *   Nhận Refresh Token từ HttpOnly cookie.\n    *   Tìm và xóa/vô hiệu hóa Refresh Token đó trong database. Điều này đảm bảo token đó không thể được sử dụng lại.\n    *   Xóa HttpOnly cookie chứa Refresh Token khỏi trình duyệt của người dùng bằng cách gửi lại cookie với thời gian hết hạn trong quá khứ.\n\n```javascript\n// Controller phía server (Express.js)\nconst logout = async (req, res) => {\n  try {\n    const refreshToken = req.cookies.refreshToken;\n    if (!refreshToken) {\n      return res.sendStatus(204); // No content\n    }\n\n    // Xóa refresh token trong DB\n    await userModel.updateRefreshToken(null, { refreshToken: refreshToken });\n\n    // Xóa cookie ở client\n    res.clearCookie('refreshToken', {\n      httpOnly: true,\n      secure: true, // Chỉ gửi cookie qua HTTPS\n      sameSite: 'strict' // Chống tấn công CSRF\n    });\n\n    return res.status(200).json({ message: 'Logged out successfully!' });\n  } catch (error) {\n    // ... xử lý lỗi\n  }\n};\n```\n\n## III. Các bước thực hành\n\n1.  **Cấu trúc Backend:**\n    *   Tạo một model `User` trong MongoDB có chứa một trường để lưu `refreshToken`.\n    *   Tạo các route: `POST /v1/users/login`, `POST /v1/users/logout`, `POST /v1/users/refresh-token`.\n    *   Viết logic cho các controller tương ứng.\n        *   `login`: Xác thực người dùng, tạo Access & Refresh token, lưu Refresh token vào DB và gửi về cho client.\n        *   `logout`: Xóa Refresh token trong DB, xóa cookie.\n        *   `refresh-token`: Xác thực Refresh token, tạo Access token mới.\n\n2.  **Cấu trúc Frontend:**\n    *   Tạo một file `axiosInstance.js` để cấu hình Axios với interceptors như đã trình bày ở trên.\n    *   Sử dụng `axiosInstance` này cho tất cả các lời gọi API trong ứng dụng.\n    *   Quản lý `accessToken` và trạng thái đăng nhập của người dùng bằng Redux Toolkit, Zustand hoặc React Context.\n    *   Tạo một component `Header` có chứa nút \"Logout\". Khi click, gọi action để thực hiện API logout và dọn dẹp state.\n    *   Tạo các `ProtectedRoute` để bao bọc các trang yêu cầu đăng nhập.\n\n3.  **Lưu trữ Token:**\n    *   **Access Token:** Lưu trong bộ nhớ của ứng dụng (biến, state). Không lưu trong `localStorage` vì dễ bị tấn công XSS.\n    *   **Refresh Token:** Sử dụng `HttpOnly` cookie. Đây là cách an toàn nhất vì nó không thể bị truy cập bởi JavaScript phía client, giúp ngăn chặn tấn công XSS đánh cắp refresh token.\n\n## IV. Lưu ý quan trọng\n\n*   **Bảo mật Refresh Token:** Luôn sử dụng `HttpOnly`, `Secure` (ở môi trường production) và `SameSite='strict'` cho cookie chứa Refresh Token để tối đa hóa bảo mật.\n*   **Thu hồi Refresh Token:** Khi người dùng đổi mật khẩu hoặc đăng xuất khỏi một thiết bị, hãy đảm bảo rằng bạn vô hiệu hóa tất cả các Refresh Token đang hoạt động của họ trong database.\n*   **Xử lý lỗi:** Luồng refresh token có thể thất bại (ví dụ: refresh token cũng hết hạn, hoặc đã bị thu hồi). Code của bạn cần xử lý trường hợp này một cách mượt mà, thường là bằng cách đăng xuất người dùng và yêu cầu họ đăng nhập lại.\n*   **CORS (Cross-Origin Resource Sharing):** Khi client và server của bạn ở 2 domain khác nhau, hãy chắc chắn rằng bạn đã cấu hình CORS phía server một cách chính xác để cho phép client gửi request và nhận cookie, đặc biệt là `credentials: true`.\n\n## V. Tài liệu tham khảo\n\n1.  [Playlist [FULL STACK] MERN PRO - TrungQuanDev](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n2.  [Blog cá nhân của tác giả TrungQuanDev](https://trungquandev.com/)\n3.  [GitHub của tác giả TrungQuanDev](https://github.com/trungquandev)\n4.  [Axios Interceptors Documentation](https://axios-http.com/docs/interceptors)\n5.  [JSON Web Tokens (JWT) Introduction](https://jwt.io/introduction)\n6.  [OWASP: Cross-Site Scripting (XSS) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n7.  [OWASP: Cross-Site Request Forgery (CSRF) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục đích chính của Refresh Token trong luồng xác thực là gì?",
+        "options": [
+          "Để thay thế hoàn toàn cho Access Token.",
+          "Để lấy một Access Token mới khi Access Token cũ hết hạn.",
+          "Để lưu trữ thông tin cá nhân của người dùng.",
+          "Để gửi kèm trong mỗi request tới server thay cho Access Token."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Refresh Token là một token có thời gian sống dài, được sử dụng duy nhất để yêu cầu một Access Token mới (có thời gian sống ngắn) khi nó hết hạn, giúp duy trì phiên đăng nhập của người dùng mà không cần đăng nhập lại."
+      },
+      {
+        "question": "Đâu là nơi lưu trữ an toàn nhất cho Refresh Token ở phía client để chống lại tấn công XSS (Cross-Site Scripting)?",
+        "options": [
+          "localStorage",
+          "sessionStorage",
+          "HttpOnly Cookie",
+          "State của Redux/Context"
+        ],
+        "correctAnswer": 2,
+        "explanation": "HttpOnly Cookie là lựa chọn an toàn nhất vì nó không thể được truy cập bởi JavaScript phía client, do đó ngăn chặn được các kịch bản tấn công XSS đánh cắp token."
+      },
+      {
+        "question": "Axios Interceptor loại nào được sử dụng để tự động đính kèm Access Token vào header của mỗi request được gửi đi?",
+        "options": [
+          "Response Interceptor",
+          "Request Interceptor",
+          "Error Interceptor",
+          "Data Interceptor"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Request Interceptor cho phép chúng ta can thiệp và chỉnh sửa một request trước khi nó được gửi đi. Đây là nơi lý tưởng để thêm header Authorization chứa Access Token."
+      },
+      {
+        "question": "Khi một Access Token hết hạn, server thường trả về mã trạng thái HTTP nào?",
+        "options": [
+          "200 OK",
+          "404 Not Found",
+          "403 Forbidden",
+          "401 Unauthorized"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Mã trạng thái 401 Unauthorized là tín hiệu chuẩn cho biết request không được xác thực, thường là do Access Token bị thiếu, không hợp lệ, hoặc đã hết hạn."
+      },
+      {
+        "question": "Trong đoạn code Response Interceptor được cung cấp, biến `isRefreshing` có vai trò gì?",
+        "options": [
+          "Để đếm số lần refresh token đã thất bại.",
+          "Để lưu trữ refresh token mới.",
+          "Để ngăn chặn việc gọi API refresh token nhiều lần đồng thời khi có nhiều request cùng lúc thất bại.",
+          "Để đánh dấu rằng người dùng đang trong quá trình làm mới trang."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`isRefreshing` hoạt động như một cờ (flag) để đảm bảo rằng trong trường hợp nhiều request API đồng thời thất bại do token hết hạn, chúng ta chỉ gọi API `/refresh-token` một lần duy nhất."
+      },
+      {
+        "question": "Hành động nào sau đây KHÔNG phải là trách nhiệm của server khi xử lý request tại endpoint `/logout`?",
+        "options": [
+          "Xóa/vô hiệu hóa Refresh Token trong cơ sở dữ liệu.",
+          "Xóa HttpOnly cookie chứa Refresh Token khỏi trình duyệt.",
+          "Xóa Access Token khỏi state quản lý của client (ví dụ: Redux).",
+          "Gửi về response xác nhận đăng xuất thành công."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Server không thể trực tiếp xóa Access Token khỏi state của client. Việc này phải được thực hiện bởi chính client sau khi nhận được phản hồi thành công từ API logout."
+      },
+      {
+        "question": "Thuộc tính nào của cookie giúp ngăn chặn tấn công CSRF (Cross-Site Request Forgery)?",
+        "options": [
+          "HttpOnly",
+          "Secure",
+          "Expires",
+          "SameSite='strict'"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Thuộc tính `SameSite='strict'` (hoặc `lax`) hạn chế việc trình duyệt gửi cookie theo các request từ các trang web khác, là một cơ chế phòng chống CSRF hiệu quả."
+      },
+      {
+        "question": "So với Access Token, Refresh Token thường có đặc điểm gì?",
+        "options": [
+          "Thời gian sống ngắn hơn.",
+          "Thời gian sống dài hơn.",
+          "Được gửi trong mỗi request API.",
+          "Được lưu trong localStorage."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Refresh Token được thiết kế để tồn tại lâu dài (vài ngày hoặc vài tuần) để có thể dùng lấy Access Token mới, trong khi Access Token có thời gian sống rất ngắn (vài phút) để giảm thiểu rủi ro khi bị lộ."
+      },
+      {
+        "question": "Trong Response Interceptor, `originalRequest._retry = true` được dùng để làm gì?",
+        "options": [
+          "Để báo cho server biết rằng đây là một request thử lại.",
+          "Để đánh dấu request này đã được thử lại, tránh rơi vào vòng lặp vô hạn khi refresh token cũng trả về lỗi 401.",
+          "Để xóa request gốc khỏi hàng đợi.",
+          "Để buộc request phải sử dụng phương thức POST."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cờ `_retry` là một cơ chế tùy chỉnh để đánh dấu rằng request này đã được xử lý bởi logic refresh token. Nếu request này lại thất bại với lỗi 401, interceptor sẽ biết không cần xử lý lại, tránh vòng lặp vô tận."
+      },
+      {
+        "question": "Khi cấu hình CORS cho phép client gửi thông tin xác thực (như cookie), lựa chọn nào là bắt buộc phía server?",
+        "options": [
+          "Access-Control-Allow-Origin: '*'",
+          "Access-Control-Allow-Methods: 'GET, POST'",
+          "Access-Control-Allow-Credentials: 'true'",
+          "Access-Control-Max-Age: '3600'"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để trình duyệt gửi cookie qua các request cross-origin, server phải trả về header `Access-Control-Allow-Credentials: 'true'` và client cũng phải bật tùy chọn tương ứng trong request (ví dụ: `withCredentials: true` trong Axios)."
+      },
+      {
+        "question": "Điều gì sẽ xảy ra nếu API `/refresh-token` thất bại (ví dụ: refresh token đã hết hạn)?",
+        "options": [
+          "Ứng dụng sẽ tiếp tục thử gọi lại API `/refresh-token`.",
+          "Người dùng sẽ được tự động đăng xuất và chuyển hướng đến trang đăng nhập.",
+          "Ứng dụng sẽ sử dụng Access Token cũ để thử lại request.",
+          "Người dùng sẽ thấy một trang lỗi 404."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu không thể lấy được Access Token mới, phiên làm việc của người dùng không thể tiếp tục. Luồng xử lý chuẩn là đăng xuất người dùng (xóa mọi dữ liệu xác thực còn lại ở client) và yêu cầu họ đăng nhập lại."
+      },
+      {
+        "question": "Tại sao không nên lưu Access Token trong `localStorage`?",
+        "options": [
+          "Vì `localStorage` có dung lượng giới hạn.",
+          "Vì `localStorage` sẽ bị xóa khi đóng trình duyệt.",
+          "Vì `localStorage` dễ bị tấn công bởi XSS, cho phép kẻ tấn công đánh cắp token.",
+          "Vì `localStorage` không hỗ trợ lưu trữ chuỗi JSON."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`localStorage` có thể được truy cập bởi bất kỳ đoạn mã JavaScript nào chạy trên trang, vì vậy nếu trang web của bạn có lỗ hổng XSS, kẻ tấn công có thể dễ dàng đọc và đánh cắp Access Token."
+      },
+      {
+        "question": "Trong luồng hoạt động chuẩn, client làm gì ngay sau khi nhận được cặp Access và Refresh Token từ server lúc đăng nhập?",
+        "options": [
+          "Gọi ngay một API được bảo vệ để kiểm tra token.",
+          "Lưu Access Token vào bộ nhớ (state) và Refresh Token vào HttpOnly Cookie.",
+          "Chuyển hướng người dùng đến trang chủ.",
+          "Giải mã Access Token để lấy thông tin người dùng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bước đầu tiên và quan trọng nhất sau khi đăng nhập là lưu trữ các token một cách chính xác và an toàn. Access Token được lưu vào state để dễ dàng truy cập, còn Refresh Token được trình duyệt xử lý để lưu vào HttpOnly Cookie."
+      },
+      {
+        "question": "Hàng đợi `failedQueue` trong code interceptor dùng để làm gì?",
+        "options": [
+          "Lưu trữ các API endpoint đã bị lỗi.",
+          "Lưu trữ các promise của những request bị thất bại trong khi đang chờ refresh token.",
+          "Lưu trữ danh sách người dùng không thể đăng nhập.",
+          "Lưu trữ các refresh token đã hết hạn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi nhiều request xảy ra cùng lúc và token hết hạn, chỉ một request kích hoạt việc refresh. Các request còn lại được đưa vào hàng đợi `failedQueue` và sẽ được thực thi lại sau khi có token mới."
+      },
+      {
+        "question": "Hành động nào của client sẽ khởi đầu cho quá trình đăng xuất?",
+        "options": [
+          "Xóa Access Token khỏi Redux state.",
+          "Gọi API `/logout` lên server.",
+          "Xóa cookie của trình duyệt.",
+          "Chuyển hướng về trang đăng nhập."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Quá trình đăng xuất nên bắt đầu bằng việc thông báo cho server qua một lời gọi API. Server sau đó sẽ vô hiệu hóa token phía backend. Các hành động còn lại ở client (xóa state, xóa cookie, chuyển hướng) sẽ diễn ra sau khi API call thành công."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Request Interceptor",
+        "description": "Viết một interceptor cho request của Axios để tự động thêm `Authorization` header chứa access token vào tất cả các request. Giả sử access token được lấy từ một hàm `getAccessToken()`.",
+        "starterCode": "import axios from 'axios';\n\nconst axiosInstance = axios.create({\n  baseURL: 'https://api.example.com'\n});\n\nconst getAccessToken = () => 'your_static_access_token'; // Giả lập hàm lấy token\n\n// VIẾT CODE CỦA BẠN TẠI ĐÂY\n\n\nexport default axiosInstance;",
+        "solution": "import axios from 'axios';\n\nconst axiosInstance = axios.create({\n  baseURL: 'https://api.example.com'\n});\n\nconst getAccessToken = () => 'your_static_access_token'; // Giả lập hàm lấy token\n\naxiosInstance.interceptors.request.use(\n  (config) => {\n    const accessToken = getAccessToken();\n    if (accessToken) {\n      config.headers['Authorization'] = `Bearer ${accessToken}`;\n    }\n    return config;\n  },\n  (error) => {\n    return Promise.reject(error);\n  }\n);\n\nexport default axiosInstance;",
+        "testCases": "Kiểm tra xem một request được gửi đi bằng `axiosInstance` có chứa header `Authorization: Bearer your_static_access_token` hay không."
+      },
+      {
+        "title": "Bài 2: Xử lý Logout phía Server",
+        "description": "Viết một controller cho Express.js để xử lý việc đăng xuất. Controller cần xóa cookie `refreshToken` ở client và trả về thông báo thành công. Giả sử bạn không cần xử lý logic database.",
+        "starterCode": "// Giả lập request và response object của Express\nconst req = {\n  cookies: {\n    refreshToken: 'some_refresh_token'\n  }\n};\nconst res = {\n  statusCode: null,\n  clearedCookie: null,\n  sentMessage: null,\n  status: function(code) { this.statusCode = code; return this; },\n  json: function(data) { this.sentMessage = data.message; return this; },\n  clearCookie: function(name) { this.clearedCookie = name; return this; }\n};\n\nconst logout = async (req, res) => {\n  // VIẾT CODE CỦA BẠN TẠI ĐÂY\n\n};\n\nlogout(req, res);",
+        "solution": "const req = {\n  cookies: {\n    refreshToken: 'some_refresh_token'\n  }\n};\nconst res = {\n  statusCode: null,\n  clearedCookie: null,\n  sentMessage: null,\n  status: function(code) { this.statusCode = code; return this; },\n  json: function(data) { this.sentMessage = data.message; return this; },\n  clearCookie: function(name) { this.clearedCookie = name; return this; }\n};\n\nconst logout = async (req, res) => {\n  res.clearCookie('refreshToken');\n  return res.status(200).json({ message: 'Logged out successfully!' });\n};\n\nlogout(req, res);",
+        "testCases": "Sau khi chạy hàm `logout`, kiểm tra xem `res.clearedCookie` có bằng `'refreshToken'` và `res.statusCode` có bằng `200` hay không."
+      },
+      {
+        "title": "Bài 3: Bắt lỗi 401 với Response Interceptor",
+        "description": "Viết một interceptor cho response của Axios. Interceptor này chỉ cần bắt lỗi có mã trạng thái 401 và log ra console một thông báo. Các lỗi khác thì bỏ qua.",
+        "starterCode": "import axios from 'axios';\n\nconst axiosInstance = axios.create();\n\n// VIẾT CODE CỦA BẠN TẠI ĐÂY\n\n\n// Đoạn code để test (không cần chỉnh sửa)\n// axiosInstance.interceptors.response.use(r => r, e => Promise.reject(e));\n// Giả lập một response lỗi 401\nconst error401 = { response: { status: 401 }, config: {} };\n// Giả lập một response lỗi 500\nconst error500 = { response: { status: 500 }, config: {} };\n\n// Lấy ra hàm xử lý lỗi của bạn để test\nconst errorHandler = axiosInstance.interceptors.response.handlers[0].rejected;\n\ntry {\n  errorHandler(error401);\n  errorHandler(error500);\n} catch (e) {}\n",
+        "solution": "import axios from 'axios';\n\nconst axiosInstance = axios.create();\n\naxiosInstance.interceptors.response.use(\n  (response) => {\n    return response;\n  },\n  (error) => {\n    if (error.response && error.response.status === 401) {\n      console.log('Access Token has expired! Need to refresh.');\n    }\n    return Promise.reject(error);\n  }\n);",
+        "testCases": "Chạy đoạn code test và kiểm tra xem console có log ra chuỗi `'Access Token has expired! Need to refresh.'` một lần duy nhất hay không."
+      },
+      {
+        "title": "Bài 4: Hoàn thiện Logic Logout phía Server",
+        "description": "Mở rộng bài 2. Viết lại controller logout cho Express.js. Lần này, ngoài việc xóa cookie, bạn cần gọi một hàm `db.invalidateToken(token)` để vô hiệu hóa refresh token trong cơ sở dữ liệu (giả lập).",
+        "starterCode": "// Giả lập DB và các object\nconst db = {\n  invalidated: null,\n  invalidateToken: function(token) { this.invalidated = token; }\n};\nconst req = { cookies: { refreshToken: 'abc-123' } };\nconst res = {\n  statusCode: null, clearedCookie: null, sentMessage: null,\n  status: function(code) { this.statusCode = code; return this; },\n  json: function(data) { this.sentMessage = data.message; return this; },\n  clearCookie: function(name) { this.clearedCookie = name; return this; }\n};\n\nconst logoutController = async (req, res) => {\n  // VIẾT CODE CỦA BẠN TẠI ĐÂY\n\n};\n\nlogoutController(req, res);",
+        "solution": "const db = {\n  invalidated: null,\n  invalidateToken: function(token) { this.invalidated = token; }\n};\nconst req = { cookies: { refreshToken: 'abc-123' } };\nconst res = {\n  statusCode: null, clearedCookie: null, sentMessage: null,\n  status: function(code) { this.statusCode = code; return this; },\n  json: function(data) { this.sentMessage = data.message; return this; },\n  clearCookie: function(name) { this.clearedCookie = name; return this; }\n};\n\nconst logoutController = async (req, res) => {\n  const { refreshToken } = req.cookies;\n  if (refreshToken) {\n    // Vô hiệu hóa token trong DB\n    db.invalidateToken(refreshToken);\n  }\n  // Xóa cookie phía client\n  res.clearCookie('refreshToken');\n  return res.status(200).json({ message: 'Logout successful' });\n};\n\nlogoutController(req, res);",
+        "testCases": "Sau khi chạy, kiểm tra `db.invalidated` có bằng `'abc-123'`, `res.clearedCookie` có bằng `'refreshToken'`, và `res.statusCode` có bằng `200`."
+      },
+      {
+        "title": "Bài 5: Response Interceptor với Logic Refresh Token",
+        "description": "Viết một response interceptor hoàn chỉnh. Khi gặp lỗi 401, nó sẽ gọi một hàm `refreshToken()` (giả lập) để lấy token mới, sau đó cập nhật header và thử lại request ban đầu. Bỏ qua phần xử lý hàng đợi cho nhiều request đồng thời để đơn giản hóa.",
+        "starterCode": "import axios from 'axios';\n\nconst axiosInstance = axios.create();\nlet retriedRequest = null;\n\n// Giả lập hàm gọi API refresh token\nconst refreshToken = async () => {\n  console.log('Refreshing token...');\n  return Promise.resolve({ accessToken: 'new_refreshed_token' });\n};\n\n// VIẾT CODE CỦA BẠN TẠI ĐÂY\n\n\n// ---- TEST CODE ----\nconst errorHandler = axiosInstance.interceptors.response.handlers[0].rejected;\nconst originalRequest = { \n  headers: { Authorization: 'Bearer old_expired_token' },\n  url: '/profile'\n};\nconst error401 = { response: { status: 401 }, config: originalRequest };\n// Ghi đè axiosInstance để bắt request thử lại\naxiosInstance.request = (config) => { retriedRequest = config; return Promise.resolve({ data: 'ok' }); };\n\n(async () => {\n  await errorHandler(error401);\n  console.log(retriedRequest.headers.Authorization); // Expected: Bearer new_refreshed_token\n})();",
+        "solution": "import axios from 'axios';\n\nconst axiosInstance = axios.create();\nlet retriedRequest = null;\n\nconst refreshToken = async () => {\n  console.log('Refreshing token...');\n  return Promise.resolve({ accessToken: 'new_refreshed_token' });\n};\n\naxiosInstance.interceptors.response.use(\n  response => response,\n  async (error) => {\n    const originalRequest = error.config;\n    // Thêm điều kiện `!originalRequest._retry` để tránh lặp vô hạn\n    if (error.response.status === 401 && !originalRequest._retry) {\n      originalRequest._retry = true; // Đánh dấu là đã thử lại\n      try {\n        const { accessToken } = await refreshToken();\n        axios.defaults.headers.common['Authorization'] = 'Bearer ' + accessToken;\n        originalRequest.headers['Authorization'] = 'Bearer ' + accessToken;\n        return axiosInstance(originalRequest);\n      } catch (refreshError) {\n        return Promise.reject(refreshError);\n      }\n    }\n    return Promise.reject(error);\n  }\n);",
+        "testCases": "Chạy đoạn code test. Kết quả mong đợi là console sẽ in ra chuỗi `Bearer new_refreshed_token`, cho thấy request ban đầu đã được thử lại với token mới."
+      }
+    ]
+  }
+}

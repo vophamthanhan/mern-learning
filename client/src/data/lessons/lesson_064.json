@@ -1,0 +1,213 @@
+{
+  "id": 64,
+  "title": "Bài học 48: Đóng kết nối MongoDB Atlas trong dự án Back-end",
+  "category": "mongodb",
+  "categoryName": "MongoDB & Database",
+  "content": "# Bài học 48: Đóng kết nối MongoDB Atlas trong dự án Back-end\n\n## 1. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tìm hiểu tầm quan trọng của việc đóng kết nối đến cơ sở dữ liệu MongoDB Atlas một cách an toàn và đúng đắn trong một ứng dụng back-end sử dụng NodeJS. Việc quản lý vòng đời của kết nối cơ sở dữ liệu là một khía cạnh cực kỳ quan trọng để đảm bảo ứng dụng hoạt động ổn định, hiệu quả và tránh các sự cố rò rỉ tài nguyên không đáng có. Chúng ta sẽ được hướng dẫn cách triển khai một cơ chế \"graceful shutdown\", cho phép ứng dụng hoàn thành các tác vụ đang dang dở và giải phóng tài nguyên (như kết nối database) một cách sạch sẽ trước khi kết thúc hoàn toàn.\n\n## 2. Kiến thức chi tiết\n\n### Tại sao phải đóng kết nối MongoDB?\n\nTrong môi trường phát triển, việc quên đóng kết nối có thể không gây ra hậu quả ngay lập tức. Tuy nhiên, trong môi trường production, nơi ứng dụng phải hoạt động liên tục và xử lý hàng ngàn yêu cầu, việc duy trì các kết nối không cần thiết sẽ dẫn đến nhiều vấn đề nghiêm trọng:\n\n*   **Rò rỉ tài nguyên (Resource Leaks):** Mỗi kết nối mở đến MongoDB đều tiêu tốn tài nguyên trên cả máy chủ ứng dụng và máy chủ cơ sở dữ liệu. Nếu không được đóng đúng cách, các kết nối này sẽ tích tụ theo thời gian, làm cạn kiệt bộ nhớ và các tài nguyên hệ thống khác, dẫn đến suy giảm hiệu năng và cuối cùng là sập ứng dụng.\n*   **Giới hạn kết nối của MongoDB Atlas:** Các gói dịch vụ của MongoDB Atlas (đặc biệt là gói miễn phí) có giới hạn về số lượng kết nối đồng thời. Nếu ứng dụng của bạn liên tục tạo ra các kếtesi mới mà không đóng các kết nối cũ, bạn sẽ nhanh chóng đạt đến giới hạn này, khiến các yêu cầu mới không thể kết nối đến cơ sở dữ liệu.\n*   **Mất dữ liệu:** Khi một ứng dụng bị tắt đột ngột (ví dụ, do lỗi hoặc do quá trình deploy), các thao tác ghi dữ liệu đang thực hiện có thể bị gián đoạn và không được hoàn thành, dẫn đến tình trạng mất mát hoặc không nhất quán dữ liệu.\n\n### Graceful Shutdown là gì?\n\n**Graceful Shutdown** là quá trình cho phép một ứng dụng kết thúc một cách có trật tự. Thay vì dừng lại ngay lập tức, ứng dụng sẽ thực hiện một loạt các bước dọn dẹp, bao gồm:\n\n1.  Ngừng chấp nhận các yêu cầu mới.\n2.  Hoàn thành việc xử lý các yêu cầu đang thực hiện.\n3.  Đóng các kết nối đến cơ sở dữ liệu, hàng đợi tin nhắn (message queues), và các dịch vụ bên ngoài khác.\n4.  Giải phóng các tài nguyên khác đang nắm giữ.\n\nViệc này đảm bảo rằng ứng dụng không để lại \"rác\" và dữ liệu luôn ở trạng thái nhất quán.\n\n### Sử dụng `async-exit-hook` để thực hiện Graceful Shutdown\n\nTrong video, tác giả giới thiệu thư viện `async-exit-hook` như một giải pháp hiệu quả để xử lý graceful shutdown trong NodeJS. Thư viện này cho phép bạn đăng ký các hàm (có thể là đồng bộ hoặc bất đồng bộ) sẽ được thực thi khi ứng dụng nhận được tín hiệu kết thúc (như `SIGINT` khi nhấn `Ctrl+C`, `SIGTERM` từ các công cụ quản lý tiến trình như PM2, hoặc các lỗi không được bắt `uncaughtException`).\n\nCơ chế hoạt động rất đơn giản: bạn đăng ký một hàm callback, và `async-exit-hook` sẽ đảm bảo hàm đó được gọi và hoàn thành trước khi tiến trình NodeJS thực sự thoát.\n\n## 3. Các bước thực hành\n\nĐể triển khai cơ chế đóng kết nối an toàn, chúng ta sẽ thực hiện các bước sau trong dự án back-end.\n\n### Bước 1: Cài đặt `async-exit-hook`\n\nMở terminal trong thư mục dự án và chạy lệnh sau để cài đặt thư viện:\n\n```bash\nyarn add async-exit-hook\n```\n\n### Bước 2: Tích hợp vào code\n\nTrong file chính khởi tạo server (thường là `server.js` hoặc `index.js`), chúng ta sẽ import thư viện và đăng ký hàm dọn dẹp.\n\nGiả sử chúng ta có một module quản lý kết nối MongoDB (`src/config/mongodb.js`) như sau:\n\n```javascript\n// src/config/mongodb.js\nimport { MongoClient } from 'mongodb'\nimport { env } from '~/config/environment'\n\nlet dbInstance = null\n\nexport const CONNECT_DB = async () => {\n  const client = new MongoClient(env.MONGODB_URI, {\n    useNewUrlParser: true,\n    useUnifiedTopology: true\n  })\n  await client.connect()\n  dbInstance = client.db(env.DATABASE_NAME)\n}\n\nexport const GET_DB = () => {\n  if (!dbInstance) throw new Error('Must connect to Database first!')\n  return dbInstance\n}\n\n// Hàm đóng kết nối\nexport const CLOSE_DB = async () => {\n  if (dbInstance) {\n    await dbInstance.client.close()\n    console.log('5. Đã ngắt kết nối tới MongoDB Cloud Atlas')\n  }\n}\n```\n\nBây giờ, trong file `server.js`, chúng ta sẽ sử dụng `async-exit-hook`:\n\n```javascript\n// server.js\nimport exitHook from 'async-exit-hook'\nimport { CONNECT_DB, CLOSE_DB } from '~/config/mongodb'\nimport { env } from '~/config/environment'\nimport { APIs_V1 } from '~/routes/v1'\nimport express from 'express'\n\nconst START_SERVER = () => {\n  const app = express()\n\n  app.use(express.json())\n  app.use('/v1', APIs_V1)\n\n  app.listen(env.APP_PORT, env.APP_HOST, () => {\n    console.log(`3. Hello ${env.AUTHOR}, Back-end Server is running successfully at Host: ${env.APP_HOST} and Port: ${env.APP_PORT}`)\n  })\n\n  // Đăng ký hàm callback để thực thi khi ứng dụng kết thúc\n  exitHook(() => {\n    console.log('4. Đang ngắt kết nối tới MongoDB Cloud Atlas...')\n    CLOSE_DB()\n  })\n}\n\n// Chỉ khi kết nối DB thành công thì mới Start Server\nCONNECT_DB()\n  .then(() => console.log('1. Connected to MongoDB Cloud Atlas!'))\n  .then(() => START_SERVER())\n  .catch(error => {\n    console.error(error)\n    process.exit(0)\n  })\n```\n\n### Bước 3: Kiểm tra hoạt động\n\n1.  Chạy server bằng lệnh `yarn dev`.\n2.  Quan sát các log khởi tạo, đảm bảo server đã kết nối thành công đến MongoDB.\n3.  Nhấn tổ hợp phím `Ctrl + C` trong terminal.\n4.  Bạn sẽ thấy các dòng log sau xuất hiện theo thứ tự, cho thấy hàm `CLOSE_DB` đã được gọi và thực thi thành công trước khi ứng dụng thoát:\n\n```\n4. Đang ngắt kết nối tới MongoDB Cloud Atlas...\n5. Đã ngắt kết nối tới MongoDB Cloud Atlas\n```\n\n## 4. Lưu ý quan trọng\n\n*   **Vấn đề trên Windows:** Như đã được đề cập trong phần bình luận của video, một số người dùng gặp khó khăn khi sử dụng `exit-hook` hoặc `async-exit-hook` trên môi trường Windows. Đôi khi, terminal của Windows sẽ hiển thị một thông báo \"Terminate batch job (Y/N)?\" và không truyền tín hiệu `SIGINT` đến tiến trình NodeJS ngay lập tức. Điều này có thể yêu cầu người dùng phải nhấn `Y` và `Enter`, hoặc có thể hook không được kích hoạt đúng cách. Làm việc trên môi trường Linux hoặc WSL (Windows Subsystem for Linux) thường cho trải nghiệm nhất quán hơn.\n*   **Thứ tự thực thi:** Đảm bảo rằng bạn gọi `CONNECT_DB` và chỉ sau khi kết nối thành công (`.then()`) thì mới gọi `START_SERVER`. Điều này ngăn server bắt đầu nhận yêu cầu trước khi nó sẵn sàng tương tác với cơ sở dữ liệu.\n*   **Sử dụng `async-exit-hook` cho các tác vụ bất đồng bộ:** Tên thư viện đã nói lên điều đó. Nếu hàm dọn dẹp của bạn là một hàm `async` (như `CLOSE_DB` của chúng ta), `async-exit-hook` sẽ đợi cho đến khi promise được giải quyết (resolved) rồi mới cho phép tiến trình thoát. Đây là ưu điểm lớn so với các thư viện chỉ hỗ trợ hàm đồng bộ.\n\n## 5. Tài liệu tham khảo\n\n1.  **Video bài học:** [48. Close MongoDB Atlas Connection in Back-end Project | NodeJS + MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=vtU6zUpouH0&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=55)\n2.  **Thư viện `async-exit-hook` trên npm:** [https://www.npmjs.com/package/async-exit-hook](https://www.npmjs.com/package/async-exit-hook)\n3.  **Stack Overflow:** [When to close MongoDB database connection in Nodejs](https://stackoverflow.com/questions/8373905/when-to-close-mongodb-database-connection-in-nodejs)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Tại sao việc đóng kết nối MongoDB Atlas lại quan trọng trong môi trường production?",
+        "options": [
+          "Để tiết kiệm chi phí băng thông mạng.",
+          "Để tránh rò rỉ tài nguyên, đạt giới hạn kết nối và nguy cơ mất dữ liệu.",
+          "Để tăng tốc độ truy vấn cho các user khác.",
+          "Vì MongoDB Atlas yêu cầu đóng kết nối sau mỗi truy vấn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trong môi trường production, việc không đóng kết nối dẫn đến rò rỉ tài nguyên (resource leaks), làm cạn kiệt bộ nhớ, nhanh chóng đạt giới hạn kết nối của gói dịch vụ và có thể gây mất dữ liệu khi ứng dụng tắt đột ngột."
+      },
+      {
+        "question": "Graceful Shutdown là gì?",
+        "options": [
+          "Là quá trình khởi động lại server một cách nhanh chóng.",
+          "Là một kỹ thuật để tối ưu hóa tốc độ kết nối đến database.",
+          "Là quá trình cho phép ứng dụng kết thúc một cách có trật tự, thực hiện các bước dọn dẹp trước khi thoát.",
+          "Là một tính năng của MongoDB giúp tự động đóng các kết nối không hoạt động."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Graceful Shutdown là quá trình cho phép một ứng dụng kết thúc một cách có trật tự, bao gồm việc ngừng nhận yêu cầu mới, hoàn thành các yêu cầu đang xử lý và đóng các kết nối (như database) một cách sạch sẽ."
+      },
+      {
+        "question": "Thư viện nào được giới thiệu trong bài học để thực hiện Graceful Shutdown trong NodeJS?",
+        "options": [
+          "graceful-fs",
+          "node-cleanup",
+          "async-exit-hook",
+          "shutdown-manager"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học giới thiệu và hướng dẫn sử dụng thư viện `async-exit-hook` để xử lý graceful shutdown, cho phép đăng ký các hàm callback (đồng bộ hoặc bất đồng bộ) sẽ chạy khi ứng dụng thoát."
+      },
+      {
+        "question": "Lệnh nào dùng để cài đặt thư viện `async-exit-hook` bằng yarn?",
+        "options": [
+          "yarn install async-exit-hook",
+          "yarn add async-exit-hook",
+          "yarn global add async-exit-hook",
+          "yarn require async-exit-hook"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lệnh chính xác để thêm một thư viện vào dự án sử dụng yarn là `yarn add <tên-thư-viện>`, trong trường hợp này là `yarn add async-exit-hook`."
+      },
+      {
+        "question": "Trong đoạn code ví dụ, hàm `CLOSE_DB` được gọi ở đâu để đảm bảo nó được thực thi khi ứng dụng kết thúc?",
+        "options": [
+          "Bên trong hàm `START_SERVER`.",
+          "Trong một `try...catch` block.",
+          "Như một hàm callback bên trong `exitHook()`.",
+          "Ngay sau khi gọi hàm `CONNECT_DB`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hàm `CLOSE_DB` được truyền vào `exitHook` như một hàm callback. `async-exit-hook` sẽ đảm bảo hàm này được gọi và hoàn thành trước khi tiến trình NodeJS thoát."
+      },
+      {
+        "question": "Tín hiệu nào sau đây thường được kích hoạt khi người dùng nhấn `Ctrl + C` trong terminal?",
+        "options": [
+          "SIGKILL",
+          "SIGTERM",
+          "SIGHUP",
+          "SIGINT"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`SIGINT` (Signal Interrupt) là tín hiệu được gửi đến một tiến trình khi người dùng nhấn `Ctrl + C` trong terminal, yêu cầu tiến trình đó dừng lại. `async-exit-hook` lắng nghe tín hiệu này."
+      },
+      {
+        "question": "Ưu điểm chính của `async-exit-hook` so với các thư viện chỉ hỗ trợ hàm đồng bộ là gì?",
+        "options": [
+          "Nó chạy nhanh hơn.",
+          "Nó có thể đợi một hàm `async` (promise) hoàn thành trước khi cho phép tiến trình thoát.",
+          "Nó tương thích với nhiều phiên bản NodeJS hơn.",
+          "Nó cung cấp nhiều tùy chọn cấu hình hơn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Ưu điểm lớn của `async-exit-hook` là nó sẽ đợi cho đến khi promise từ một hàm `async` được giải quyết (resolved) rồi mới cho phép tiến trình thoát, điều này rất quan trọng cho các tác vụ dọn dẹp bất đồng bộ như đóng kết nối database."
+      },
+      {
+        "question": "Tại sao nên gọi `START_SERVER` chỉ sau khi `CONNECT_DB` đã thực hiện thành công?",
+        "options": [
+          "Để giảm thời gian khởi động của server.",
+          "Để ngăn server bắt đầu nhận yêu cầu trước khi nó sẵn sàng tương tác với cơ sở dữ liệu.",
+          "Vì `START_SERVER` cần thông tin trả về từ `CONNECT_DB`.",
+          "Để tuân thủ quy tắc của thư viện Express."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc này đảm bảo rằng server chỉ bắt đầu hoạt động và chấp nhận các yêu cầu từ client khi đã có kết nối ổn định đến cơ sở dữ liệu, tránh được các lỗi liên quan đến việc không thể truy vấn DB."
+      },
+      {
+        "question": "Vấn đề tiềm ẩn nào khi sử dụng `exit-hook` trên môi trường Windows được đề cập trong bài học?",
+        "options": [
+          "Thư viện không thể cài đặt được trên Windows.",
+          "Terminal có thể hỏi \"Terminate batch job (Y/N)?\" và không truyền tín hiệu `SIGINT` ngay lập tức.",
+          "Nó gây ra lỗi `uncaughtException` trên Windows.",
+          "Nó làm chậm hiệu năng của ứng dụng NodeJS trên Windows."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học lưu ý rằng trên Windows, terminal có thể chặn tín hiệu `SIGINT` và yêu cầu xác nhận từ người dùng, khiến cho hook không được kích hoạt một cách tự động và nhất quán như trên Linux."
+      },
+      {
+        "question": "Trong module `mongodb.js`, hàm `GET_DB` làm gì?",
+        "options": [
+          "Tạo một kết nối mới đến database.",
+          "Trả về một instance của `MongoClient`.",
+          "Kiểm tra và trả về instance của database đã được kết nối (`dbInstance`).",
+          "Đóng kết nối đến database."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hàm `GET_DB` kiểm tra xem `dbInstance` đã tồn tại chưa. Nếu chưa, nó sẽ báo lỗi. Nếu đã tồn tại, nó sẽ trả về instance đó để các module khác có thể sử dụng mà không cần kết nối lại."
+      },
+      {
+        "question": "Mục đích của việc export hàm `CLOSE_DB` là gì?",
+        "options": [
+          "Để các file test có thể gọi và kiểm thử nó.",
+          "Để file `server.js` có thể import và sử dụng nó trong `exitHook`.",
+          "Để có thể tái sử dụng trong các dự án khác.",
+          "Chỉ là một quy ước code tốt, không có mục đích cụ thể."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hàm `CLOSE_DB` cần được export để các module khác, cụ thể là file `server.js`, có thể import và gọi nó khi cần thiết, chẳng hạn như trong callback của `exitHook`."
+      },
+      {
+        "question": "Nếu `CONNECT_DB` thất bại, hành động nào sẽ xảy ra theo đoạn code ví dụ?",
+        "options": [
+          "Ứng dụng sẽ thử kết nối lại sau 5 giây.",
+          "Server vẫn sẽ khởi động nhưng sẽ báo lỗi khi có truy vấn database.",
+          "Lỗi sẽ được ghi ra console và tiến trình sẽ kết thúc (`process.exit(0)`).",
+          "Ứng dụng sẽ bỏ qua lỗi và tiếp tục chạy."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trong khối `.catch`, code sẽ `console.error(error)` và sau đó gọi `process.exit(0)` để chấm dứt hoàn toàn ứng dụng, vì không có kết nối database thì ứng dụng không thể hoạt động đúng."
+      },
+      {
+        "question": "Biến `dbInstance` trong `mongodb.js` được khởi tạo với giá trị gì?",
+        "options": [
+          "Một object rỗng `{}`",
+          "`undefined`",
+          "`null`",
+          "Một chuỗi rỗng `''`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Biến `dbInstance` được khai báo là `let dbInstance = null`. Nó sẽ giữ giá trị `null` cho đến khi hàm `CONNECT_DB` kết nối thành công và gán lại giá trị cho nó."
+      },
+      {
+        "question": "Trong hàm `CLOSE_DB`, câu lệnh `await dbInstance.client.close()` thực hiện điều gì?",
+        "options": [
+          "Đóng kết nối của client hiện tại đến server Express.",
+          "Đóng kết nối của `MongoClient` đến server MongoDB.",
+          "Xóa database instance khỏi bộ nhớ.",
+          "Gửi một tín hiệu đóng đến tiến trình NodeJS."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`dbInstance` là một đối tượng database của MongoDB. `dbInstance.client` tham chiếu đến `MongoClient` đã tạo ra nó. Do đó, `dbInstance.client.close()` là phương thức để đóng kết nối TCP đến máy chủ MongoDB."
+      },
+      {
+        "question": "Môi trường nào được đề xuất để có trải nghiệm nhất quán hơn khi làm việc với các exit hook trong NodeJS?",
+        "options": [
+          "Windows PowerShell",
+          "MacOS Terminal",
+          "Linux hoặc WSL (Windows Subsystem for Linux)",
+          "Git Bash"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề cập rằng do các vấn đề tiềm ẩn trên terminal của Windows, việc phát triển trên môi trường Linux hoặc WSL thường mang lại trải nghiệm nhất quán và đáng tin cậy hơn cho các tính năng như graceful shutdown."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo hàm kết nối và đóng kết nối cơ bản",
+        "description": "Viết một module JavaScript export hai hàm `async`: `connect` và `close`. Hàm `connect` sẽ mô phỏng việc kết nối đến DB và trả về một đối tượng client giả lập. Hàm `close` sẽ nhận client đó và mô phỏng việc đóng kết nối.",
+        "starterCode": "const MOCK_DB_URI = 'mongodb://fake-uri:27017';\n\n// Đối tượng client giả lập\nconst mockClient = {\n  connected: false,\n  uri: ''\n};\n\nexport const connect = async (uri) => {\n  console.log(`Connecting to ${uri}...`);\n  // Viết code ở đây: gán connected = true, uri = uri và trả về client\n  await new Promise(resolve => setTimeout(resolve, 500)); // Giả lập độ trễ mạng\n  \n  return mockClient;\n};\n\nexport const close = async (client) => {\n  // Viết code ở đây: kiểm tra nếu client tồn tại và connected = true thì gán lại connected = false và log ra thông báo\n  if (client && client.connected) {\n    \n    console.log('Connection closed.');\n  }\n};",
+        "solution": "const MOCK_DB_URI = 'mongodb://fake-uri:27017';\n\nconst mockClient = {\n  connected: false,\n  uri: ''\n};\n\nexport const connect = async (uri) => {\n  console.log(`Connecting to ${uri}...`);\n  await new Promise(resolve => setTimeout(resolve, 500));\n  mockClient.connected = true;\n  mockClient.uri = uri;\n  console.log('Connected successfully!');\n  return mockClient;\n};\n\nexport const close = async (client) => {\n  if (client && client.connected) {\n    client.connected = false;\n    console.log('Connection closed.');\n  }\n};",
+        "testCases": "1. Gọi `connect(MOCK_DB_URI)` phải trả về object có `connected: true`. 2. Sau khi kết nối, gọi `close(client)` phải log ra 'Connection closed.' và client.connected phải là `false`."
+      },
+      {
+        "title": "Bài 2: Cài đặt và sử dụng `async-exit-hook`",
+        "description": "Tạo một file `server.js`. Sử dụng `async-exit-hook` để gọi một hàm `cleanup` khi ứng dụng thoát. Hàm `cleanup` chỉ cần log ra một thông báo.",
+        "starterCode": "// Giả sử bạn đã cài đặt async-exit-hook\nimport exitHook from 'async-exit-hook';\n\nconst cleanup = () => {\n  // Viết code ở đây: log ra thông báo \"Cleaning up before exit...\"\n};\n\n// Viết code ở đây: đăng ký hàm cleanup với exitHook\n\nconsole.log('Server is running. Press Ctrl+C to exit.');\n\n// Giữ cho tiến trình chạy để có thể test\nsetInterval(() => {}, 1000);",
+        "solution": "import exitHook from 'async-exit-hook';\n\nconst cleanup = () => {\n  console.log('Cleaning up before exit...');\n};\n\nexitHook(cleanup);\n\nconsole.log('Server is running. Press Ctrl+C to exit.');\n\nsetInterval(() => {}, 1000);",
+        "testCases": "Chạy file `server.js`. Khi nhấn `Ctrl+C`, console phải hiển thị thông báo 'Cleaning up before exit...' trước khi tiến trình thực sự kết thúc."
+      },
+      {
+        "title": "Bài 3: Tích hợp `async-exit-hook` với hàm đóng kết nối bất đồng bộ",
+        "description": "Kết hợp kiến thức từ Bài 1 và 2. Tạo một hàm `async` tên là `disconnectFromDB` để mô phỏng việc đóng kết nối (có độ trễ). Sử dụng `async-exit-hook` để đảm bảo hàm này được gọi và hoàn thành trước khi ứng dụng thoát.",
+        "starterCode": "import exitHook from 'async-exit-hook';\n\nconst disconnectFromDB = async () => {\n  console.log('Disconnecting from DB...');\n  // Viết code ở đây: Giả lập độ trễ 1 giây bằng Promise và setTimeout\n  console.log('Disconnected successfully.');\n};\n\n// Viết code ở đây: Đăng ký hàm disconnectFromDB với exitHook\n\nconsole.log('Application is running. Connected to a mock DB.');\nconsole.log('Press Ctrl+C to test graceful shutdown.');\n\nsetInterval(() => {}, 1000);",
+        "solution": "import exitHook from 'async-exit-hook';\n\nconst disconnectFromDB = async () => {\n  console.log('Disconnecting from DB...');\n  await new Promise(resolve => setTimeout(resolve, 1000));\n  console.log('Disconnected successfully.');\n};\n\nexitHook(disconnectFromDB);\n\nconsole.log('Application is running. Connected to a mock DB.');\nconsole.log('Press Ctrl+C to test graceful shutdown.');\n\nsetInterval(() => {}, 1000);",
+        "testCases": "Khi chạy file và nhấn `Ctrl+C`, console phải hiển thị 'Disconnecting from DB...', đợi 1 giây, sau đó hiển thị 'Disconnected successfully.' rồi mới thoát."
+      },
+      {
+        "title": "Bài 4: Xây dựng module DB hoàn chỉnh (Singleton Pattern)",
+        "description": "Tái cấu trúc code từ bài 1 để tạo một module quản lý DB theo Singleton Pattern, tương tự như trong bài học. Module phải export các hàm `CONNECT_DB`, `GET_DB`, và `CLOSE_DB`.",
+        "starterCode": "let dbInstance = null;\n\nexport const CONNECT_DB = async () => {\n  // Viết code ở đây: nếu dbInstance chưa tồn tại, tạo một object giả lập, gán cho dbInstance và log ra thông báo.\n  // Giả lập kết nối thành công sau 500ms.\n};\n\nexport const GET_DB = () => {\n  // Viết code ở đây: nếu dbInstance không tồn tại, throw Error. Ngược lại, trả về dbInstance.\n};\n\nexport const CLOSE_DB = async () => {\n  // Viết code ở đây: nếu dbInstance tồn tại, gán nó về null và log ra thông báo đã đóng kết nối.\n};",
+        "solution": "let dbInstance = null;\n\nexport const CONNECT_DB = async () => {\n  if (!dbInstance) {\n    await new Promise(resolve => setTimeout(resolve, 500));\n    dbInstance = { name: 'MockDB', version: '1.0' };\n    console.log('Connected to MockDB!');\n  }\n};\n\nexport const GET_DB = () => {\n  if (!dbInstance) throw new Error('Must connect to Database first!');\n  return dbInstance;\n};\n\nexport const CLOSE_DB = async () => {\n  if (dbInstance) {\n    await new Promise(resolve => setTimeout(resolve, 200));\n    dbInstance = null;\n    console.log('Disconnected from MockDB.');\n  }\n};",
+        "testCases": "1. Gọi `GET_DB` trước khi kết nối phải throw error. 2. Gọi `CONNECT_DB`, sau đó `GET_DB` phải trả về object. 3. Gọi `CLOSE_DB` phải log ra thông báo. 4. Sau khi đóng, gọi `GET_DB` lại phải throw error."
+      },
+      {
+        "title": "Bài 5: Hoàn thiện kịch bản Start Server và Graceful Shutdown",
+        "description": "Tích hợp module DB từ Bài 4 vào một file `server.js`. File này phải kết nối đến DB, sau đó khởi động một server giả lập. Sử dụng `async-exit-hook` để gọi `CLOSE_DB` khi thoát. Xử lý cả trường hợp kết nối DB thành công và thất bại.",
+        "starterCode": "import exitHook from 'async-exit-hook';\nimport { CONNECT_DB, CLOSE_DB } from './db.js'; // Giả sử file từ bài 4 tên là db.js\n\nconst START_SERVER = () => {\n  console.log('Server starting...');\n  console.log('Server is running!');\n};\n\n// Viết code ở đây: \n// 1. Đăng ký hook để gọi CLOSE_DB khi thoát.\n// 2. Gọi CONNECT_DB.\n// 3. Nếu thành công, gọi START_SERVER.\n// 4. Nếu thất bại, log lỗi và thoát tiến trình (process.exit).",
+        "solution": "import exitHook from 'async-exit-hook';\nimport { CONNECT_DB, CLOSE_DB } from './db.js';\n\nconst START_SERVER = () => {\n  console.log('Server starting...');\n  console.log('Server is running! Press Ctrl+C to exit.');\n};\n\n// 1. Đăng ký hook\nexitHook(async () => {\n  console.log('Exit signal received. Closing DB connection...');\n  await CLOSE_DB();\n  console.log('Cleanup finished.');\n});\n\n// 2. Kết nối và khởi động server\nCONNECT_DB()\n  .then(() => {\n    console.log('DB connection successful.');\n    // 3. Nếu thành công\n    START_SERVER();\n  })\n  .catch(error => {\n    // 4. Nếu thất bại\n    console.error('Failed to connect to DB:', error);\n    process.exit(1);\n  });",
+        "testCases": "1. Chạy file, phải thấy log kết nối DB thành công rồi server khởi động. 2. Nhấn `Ctrl+C`, phải thấy log đóng kết nối DB trước khi thoát. 3. Sửa file `db.js` để `CONNECT_DB` luôn thất bại, chạy lại file `server.js` phải thấy log lỗi và tiến trình tự thoát."
+      }
+    ]
+  }
+}

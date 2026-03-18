@@ -1,0 +1,213 @@
+{
+  "id": 23,
+  "title": "Bài 12: Hiểu rõ cách triển khai Dark Mode & Light Mode trong MUI",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài 12: Hiểu rõ cách triển khai Dark Mode & Light Mode trong MUI\n\n## Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ cùng nhau tìm hiểu chi tiết về cách triển khai hai chế độ giao diện Sáng (Light Mode) và Tối (Dark Mode) trong một ứng dụng ReactJS sử dụng thư viện Material-UI (MUI). Việc cung cấp lựa chọn giao diện cho người dùng không chỉ là một xu hướng thiết kế hiện đại mà còn giúp cải thiện trải nghiệm người dùng, đặc biệt là trong các điều kiện ánh sáng khác nhau.\n\nSau khi hoàn thành bài học, bạn sẽ có khả năng:\n\n*   Hiểu rõ khái niệm Theming trong Material-UI.\n*   Biết cách tạo và tùy chỉnh một theme với hai chế độ `light` và `dark`.\n*   Tích hợp chức năng chuyển đổi giao diện vào ứng dụng ReactJS một cách linh hoạt.\n*   Lưu trữ lựa chọn của người dùng để duy trì trạng thái giao diện giữa các phiên làm việc.\n\n## Kiến thức chi tiết\n\n### 1. Theming trong Material-UI\n\nMaterial-UI cung cấp một hệ thống Theming mạnh mẽ cho phép chúng ta tùy chỉnh giao diện của các component một cách nhất quán. Trái tim của hệ thống này là hàm `createTheme` và component `ThemeProvider`.\n\n*   **`createTheme`**: Hàm này được sử dụng để tạo ra một đối tượng theme. Chúng ta có thể truyền vào một object chứa các giá trị tùy chỉnh cho màu sắc, font chữ, khoảng cách, và nhiều thuộc tính khác. Đặc biệt, chúng ta có thể định nghĩa hai bảng màu (palette) khác nhau cho chế độ `light` và `dark`.\n\n*   **`ThemeProvider`**: Component này sẽ nhận vào một đối tượng theme và cung cấp nó cho tất cả các component con bên trong nó thông qua React Context. Bất kỳ component nào của Material-UI được render bên trong `ThemeProvider` đều có thể truy cập và sử dụng các giá trị từ theme.\n\n### 2. Tạo Theme với Light Mode và Dark Mode\n\nĐể triển khai hai chế độ giao diện, chúng ta cần định nghĩa một theme có chứa cả hai `palette`.\n\n```javascript\nimport { createTheme } from '@mui/material/styles';\n\nconst lightTheme = createTheme({\n  palette: {\n    mode: 'light',\n    primary: {\n      main: '#1976d2',\n    },\n    secondary: {\n      main: '#dc004e',\n    },\n  },\n});\n\nconst darkTheme = createTheme({\n  palette: {\n    mode: 'dark',\n    primary: {\n      main: '#90caf9',\n    },\n    secondary: {\n      main: '#f48fb1',\n    },\n  },\n});\n```\n\nTrong ví dụ trên, chúng ta đã tạo ra hai theme riêng biệt. Tuy nhiên, một cách tiếp cận tốt hơn là tạo một hàm có thể trả về theme tương ứng dựa trên chế độ được chọn.\n\n```javascript\nimport { createTheme } from '@mui/material/styles';\n\nconst getDesignTokens = (mode) => ({\n  palette: {\n    mode,\n    ...(mode === 'light'\n      ? {\n          // palette values for light mode\n          primary: { main: '#1976d2' },\n          divider: '#E5E5E5',\n          background: {\n            default: '#FFFFFF',\n            paper: '#F5F5F5',\n          },\n          text: {\n            primary: '#212121',\n            secondary: '#757575',\n          },\n        }\n      : {\n          // palette values for dark mode\n          primary: { main: '#90caf9' },\n          divider: '#424242',\n          background: {\n            default: '#121212',\n            paper: '#1E1E1E',\n          },\n          text: {\n            primary: '#FFFFFF',\n            secondary: '#BDBDBD',\n          },\n        }),\n  },\n});\n\nconst theme = (mode) => createTheme(getDesignTokens(mode));\n```\n\n### 3. Tích hợp vào ứng dụng ReactJS\n\nBây giờ, chúng ta sẽ tích hợp theme vào ứng dụng ReactJS và tạo chức năng chuyển đổi.\n\n**Bước 1: Tạo một Context để quản lý chế độ giao diện**\n\n```javascript\n// ColorModeContext.js\nimport React from 'react';\n\nexport const ColorModeContext = React.createContext({ toggleColorMode: () => {} });\n```\n\n**Bước 2: Cập nhật App component**\n\n```javascript\n// App.js\nimport React from 'react';\nimport { ThemeProvider } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport { ColorModeContext } from './ColorModeContext';\nimport { useMode } from './useMode'; // Custom hook để quản lý state\nimport MyApp from './MyApp'; // Component chứa giao diện chính\n\nfunction App() {\n  const [theme, colorMode] = useMode();\n\n  return (\n    <ColorModeContext.Provider value={colorMode}>\n      <ThemeProvider theme={theme}>\n        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}\n        <CssBaseline />\n        <MyApp />\n      </ThemeProvider>\n    </ColorModeContext.Provider>\n  );\n}\n\nexport default App;\n```\n\n**Bước 3: Tạo custom hook `useMode`**\n\nCustom hook này sẽ quản lý state của chế độ giao diện (`light` hoặc `dark`) và cung cấp hàm để chuyển đổi nó.\n\n```javascript\n// useMode.js\nimport React from 'react';\nimport { createTheme } from '@mui/material/styles';\nimport { getDesignTokens } from './theme'; // Import hàm getDesignTokens\n\nexport const useMode = () => {\n  const [mode, setMode] = React.useState('light');\n\n  const colorMode = React.useMemo(\n    () => ({\n      toggleColorMode: () => {\n        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));\n      },\n    }),\n    [],\n  );\n\n  const theme = React.useMemo(() => createTheme(getDesignTokens(mode)), [mode]);\n\n  return [theme, colorMode];\n};\n```\n\n**Bước 4: Tạo nút chuyển đổi giao diện**\n\nTrong component `MyApp` hoặc bất kỳ component nào khác, chúng ta có thể sử dụng `ColorModeContext` để truy cập hàm `toggleColorMode`.\n\n```javascript\n// MyApp.js\nimport React from 'react';\nimport { useTheme } from '@mui/material/styles';\nimport IconButton from '@mui/material/IconButton';\nimport Box from '@mui/material/Box';\nimport Brightness4Icon from '@mui/icons-material/Brightness4';\nimport Brightness7Icon from '@mui/icons-material/Brightness7';\nimport { ColorModeContext } from './ColorModeContext';\n\nfunction MyApp() {\n  const theme = useTheme();\n  const colorMode = React.useContext(ColorModeContext);\n\n  return (\n    <Box\n      sx={{\n        display: 'flex',\n        width: '100%',\n        alignItems: 'center',\n        justifyContent: 'center',\n        bgcolor: 'background.default',\n        color: 'text.primary',\n        borderRadius: 1,\n        p: 3,\n      }}\n    >\n      {theme.palette.mode} mode\n      <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color=\"inherit\">\n        {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}\n      </IconButton>\n    </Box>\n  );\n}\n\nexport default MyApp;\n```\n\n## Các bước thực hành\n\n1.  **Khởi tạo dự án ReactJS**: Sử dụng `create-react-app` hoặc `Vite` để tạo một dự án ReactJS mới.\n2.  **Cài đặt Material-UI**: Cài đặt các gói cần thiết: `@mui/material`, `@mui/styled-engine-sc`, `styled-components`, `@mui/icons-material`.\n3.  **Tạo cấu trúc file**: Tạo các file `theme.js`, `ColorModeContext.js`, `useMode.js` như đã hướng dẫn ở trên.\n4.  **Cập nhật `App.js`**: Bọc toàn bộ ứng dụng trong `ColorModeContext.Provider` và `ThemeProvider`.\n5.  **Tạo component giao diện**: Xây dựng các component giao diện của bạn và sử dụng nút chuyển đổi để thay đổi theme.\n6.  **Lưu trữ lựa chọn**: (Nâng cao) Sử dụng `localStorage` để lưu lại lựa chọn chế độ của người dùng và tự động áp dụng khi họ quay lại trang.\n\n## Lưu ý quan trọng\n\n*   **`CssBaseline`**: Component này rất quan trọng. Nó giúp chuẩn hóa CSS trên các trình duyệt khác nhau và áp dụng màu nền và màu chữ mặc định từ theme của bạn.\n*   **Tùy chỉnh sâu hơn**: Bạn có thể tùy chỉnh gần như mọi thứ trong theme, từ `typography` (font chữ), `spacing` (khoảng cách), `breakpoints` (cho responsive design), cho đến `shape` (độ bo góc của component).\n*   **Hiệu suất**: Việc sử dụng `React.useMemo` trong custom hook `useMode` là rất quan trọng để tránh việc tạo lại đối tượng `theme` và hàm `colorMode` một cách không cần thiết mỗi khi component re-render.\n\n## Tài liệu tham khảo\n\n*   [Material-UI Theming](https://mui.com/customization/theming/)\n*   [Material-UI Dark Mode](https://mui.com/customization/dark-mode/)\n*   [React Context](https://reactjs.org/docs/context.html)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Hàm nào trong Material-UI được sử dụng để tạo ra một đối tượng theme tùy chỉnh?",
+        "options": [
+          "A. makeTheme",
+          "B. createMuiTheme",
+          "C. createTheme",
+          "D. buildTheme"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hàm `createTheme` là hàm chính được sử dụng để tạo và tùy chỉnh các đối tượng theme trong Material-UI, cho phép định nghĩa các giá trị như bảng màu, font chữ, v.v."
+      },
+      {
+        "question": "Component nào của Material-UI dùng để cung cấp một theme cho các component con của nó?",
+        "options": [
+          "A. ThemeContext",
+          "B. ThemeProvider",
+          "C. StyleProvider",
+          "D. MuiProvider"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`ThemeProvider` là một component nhận vào một đối tượng theme và truyền nó xuống cây component React thông qua Context API, giúp các component con có thể truy cập các giá trị của theme."
+      },
+      {
+        "question": "Thuộc tính nào trong đối tượng `palette` của theme được dùng để xác định chế độ giao diện là 'light' hay 'dark'?",
+        "options": [
+          "A. theme",
+          "B. type",
+          "C. variant",
+          "D. mode"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Thuộc tính `mode` trong `palette` được thiết lập thành 'light' hoặc 'dark' để xác định bảng màu nào sẽ được áp dụng cho các component."
+      },
+      {
+        "question": "Tại sao việc sử dụng `React.useMemo` trong custom hook `useMode` lại quan trọng?",
+        "options": [
+          "A. Để tạo lại theme mỗi khi component re-render.",
+          "B. Để ngăn việc tạo lại đối tượng theme và hàm `colorMode` một cách không cần thiết.",
+          "C. Để lưu trữ theme vào localStorage.",
+          "D. Để tải theme một cách bất đồng bộ."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`React.useMemo` giúp tối ưu hóa hiệu suất bằng cách ghi nhớ (memoize) các giá trị đã tính toán, tránh việc tạo lại đối tượng `theme` và hàm `colorMode` trong mỗi lần re-render, trừ khi các dependency của nó (trong trường hợp này là `mode`) thay đổi."
+      },
+      {
+        "question": "Component `CssBaseline` trong Material-UI có vai trò chính là gì?",
+        "options": [
+          "A. Thêm các style CSS tùy chỉnh vào component.",
+          "B. Cung cấp một nền tảng CSS nhất quán và chuẩn hóa trên các trình duyệt.",
+          "C. Tự động chuyển đổi giữa light và dark mode.",
+          "D. Ghi đè tất cả các style mặc định của trình duyệt."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`CssBaseline` giúp chuẩn hóa CSS, loại bỏ các sự khác biệt về style mặc định giữa các trình duyệt và áp dụng các style nền tảng từ theme, như màu nền và màu chữ."
+      },
+      {
+        "question": "Để truy cập hàm `toggleColorMode` từ `ColorModeContext` trong một component con, ta nên sử dụng hook nào của React?",
+        "options": [
+          "A. useState",
+          "B. useEffect",
+          "C. useContext",
+          "D. useTheme"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hook `useContext` của React cho phép các component con đăng ký và đọc giá trị từ một Context gần nhất trong cây component. Trong trường hợp này, nó được dùng để truy cập `ColorModeContext`."
+      },
+      {
+        "question": "Trong hàm `getDesignTokens(mode)`, logic nào được sử dụng để trả về cấu hình palette cho light mode hoặc dark mode?",
+        "options": [
+          "A. Một câu lệnh switch-case.",
+          "B. Một toán tử ba ngôi (ternary operator) kiểm tra giá trị của `mode`.",
+          "C. Một vòng lặp for.",
+          "D. Một câu lệnh if-else lồng nhau."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Ví dụ trong bài học sử dụng toán tử ba ngôi `(mode === 'light' ? { ... } : { ... })` để trả về các giá trị palette tương ứng một cách ngắn gọn và hiệu quả."
+      },
+      {
+        "question": "Hook `useTheme()` từ `@mui/material/styles` trả về cái gì?",
+        "options": [
+          "A. Một hàm để thay đổi theme.",
+          "B. Đối tượng theme hoàn chỉnh hiện tại.",
+          "C. Tên của chế độ hiện tại ('light' hoặc 'dark').",
+          "D. Một đối tượng chứa các hàm tiện ích về theme."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hook `useTheme` cung cấp quyền truy cập vào đối tượng theme đầy đủ được cung cấp bởi `ThemeProvider`, cho phép bạn sử dụng các giá trị của theme trực tiếp trong component của mình."
+      },
+      {
+        "question": "Làm thế nào để lưu lựa chọn chế độ giao diện của người dùng để nó được duy trì giữa các lần truy cập?",
+        "options": [
+          "A. Sử dụng React State.",
+          "B. Sử dụng `sessionStorage`.",
+          "C. Sử dụng `localStorage`.",
+          "D. Sử dụng Redux."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học gợi ý sử dụng `localStorage` để lưu trữ lựa chọn của người dùng. Khi người dùng quay lại, ứng dụng có thể đọc giá trị từ `localStorage` để khôi phục lại chế độ giao diện đã chọn."
+      },
+      {
+        "question": "Khi triển khai nút chuyển đổi giao diện, biểu tượng (icon) nào thường được sử dụng để đại diện cho việc chuyển sang Dark Mode?",
+        "options": [
+          "A. Brightness7Icon",
+          "B. Brightness4Icon",
+          "C. DarkModeIcon",
+          "D. LightModeIcon"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trong ví dụ của Material-UI, `Brightness4Icon` (hình mặt trăng) thường được hiển thị khi đang ở light mode, và khi nhấn vào nó sẽ chuyển sang dark mode."
+      },
+      {
+        "question": "Ngoài `palette`, thuộc tính nào khác có thể được tùy chỉnh trong theme của Material-UI?",
+        "options": [
+          "A. Chỉ có `palette` và `spacing`.",
+          "B. Chỉ có `palette`.",
+          "C. `typography`, `spacing`, `breakpoints`, `shape`.",
+          "D. `components`, `state`, `events`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hệ thống theming của MUI rất linh hoạt, cho phép tùy chỉnh sâu rộng nhiều khía cạnh của giao diện như `typography` (font chữ), `spacing` (khoảng cách), `breakpoints` (cho responsive), và `shape` (độ bo góc)."
+      },
+      {
+        "question": "Trong custom hook `useMode`, `React.useMemo` được sử dụng để tạo ra đối tượng theme. Mảng dependency của nó chứa gì?",
+        "options": [
+          "A. `[theme]`",
+          "B. `[]` (mảng rỗng)",
+          "C. `[mode]`",
+          "D. `[colorMode]`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đối tượng theme cần được tạo lại mỗi khi `mode` thay đổi. Do đó, `[mode]` được truyền vào làm mảng dependency cho `React.useMemo` để nó chỉ tính toán lại giá trị khi `mode` có sự thay đổi."
+      },
+      {
+        "question": "Mục đích của việc tạo ra `ColorModeContext` là gì?",
+        "options": [
+          "A. Để lưu trữ đối tượng theme.",
+          "B. Để cung cấp hàm `toggleColorMode` cho các component con mà không cần truyền props qua nhiều cấp.",
+          "C. Để định nghĩa các màu sắc cho light và dark mode.",
+          "D. Để thay thế cho `ThemeProvider`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "React Context (`ColorModeContext`) được tạo ra để giải quyết vấn đề \"prop drilling\". Nó cho phép các component con truy cập trực tiếp vào hàm `toggleColorMode` mà không cần component cha phải truyền nó xuống qua nhiều lớp component trung gian."
+      },
+      {
+        "question": "Trong ví dụ `MyApp.js`, làm thế nào component biết được chế độ hiện tại là 'dark' hay 'light' để hiển thị icon phù hợp?",
+        "options": [
+          "A. Bằng cách đọc state cục bộ của component.",
+          "B. Bằng cách kiểm tra `theme.palette.mode`.",
+          "C. Bằng cách gọi một hàm từ context.",
+          "D. Bằng cách đọc từ `localStorage`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Component sử dụng hook `useTheme()` để lấy đối tượng theme hiện tại, sau đó kiểm tra giá trị của `theme.palette.mode` để quyết định hiển thị `Brightness7Icon` hay `Brightness4Icon`."
+      },
+      {
+        "question": "Cách tiếp cận nào được coi là tốt hơn khi định nghĩa theme cho light và dark mode?",
+        "options": [
+          "A. Tạo hai đối tượng theme riêng biệt và chuyển đổi giữa chúng.",
+          "B. Tạo một hàm duy nhất nhận `mode` làm tham số và trả về cấu hình theme tương ứng.",
+          "C. Viết tất cả các style inline trong component.",
+          "D. Sử dụng các file CSS riêng biệt cho mỗi chế độ."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học đề xuất cách tiếp cận tạo một hàm (ví dụ: `getDesignTokens`) nhận `mode` làm đối số. Cách này giúp mã nguồn gọn gàng, dễ quản lý và tái sử dụng hơn so với việc định nghĩa hai đối tượng theme hoàn toàn riêng biệt."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Theme cơ bản",
+        "description": "Sử dụng hàm `createTheme` từ `@mui/material/styles` để tạo ra hai đối tượng theme riêng biệt: một cho light mode và một cho dark mode. Cả hai theme chỉ cần định nghĩa thuộc tính `mode` trong `palette`.",
+        "starterCode": "import { createTheme } from '@mui/material/styles';\n\n// TODO: Tạo lightTheme với mode: 'light'\nconst lightTheme = null;\n\n// TODO: Tạo darkTheme với mode: 'dark'\nconst darkTheme = null;\n\nconsole.log('Light theme mode:', lightTheme?.palette?.mode);\nconsole.log('Dark theme mode:', darkTheme?.palette?.mode);",
+        "solution": "import { createTheme } from '@mui/material/styles';\n\nconst lightTheme = createTheme({\n  palette: {\n    mode: 'light',\n  },\n});\n\nconst darkTheme = createTheme({\n  palette: {\n    mode: 'dark',\n  },\n});\n\nconsole.log('Light theme mode:', lightTheme.palette.mode);\nconsole.log('Dark theme mode:', darkTheme.palette.mode);",
+        "testCases": "Kiểm tra output của console.log. Phải in ra 'Light theme mode: light' và 'Dark theme mode: dark'."
+      },
+      {
+        "title": "Bài 2: Hàm tạo Theme linh hoạt",
+        "description": "Viết một hàm tên là `getDesignTokens` nhận vào một tham số `mode` ('light' hoặc 'dark'). Hàm này sẽ trả về một object cấu hình theme. Nếu mode là 'light', `background.default` là '#FFFFFF'. Nếu mode là 'dark', `background.default` là '#121212'.",
+        "starterCode": "const getDesignTokens = (mode) => {\n  // TODO: Trả về object cấu hình theme dựa trên mode\n  return {};\n};\n\nconst lightConfig = getDesignTokens('light');\nconst darkConfig = getDesignTokens('dark');\n\nconsole.log(lightConfig.palette.background.default);\nconsole.log(darkConfig.palette.background.default);",
+        "solution": "const getDesignTokens = (mode) => ({\n  palette: {\n    mode,\n    ...(mode === 'light'\n      ? {\n          background: {\n            default: '#FFFFFF',\n          },\n        }\n      : {\n          background: {\n            default: '#121212',\n          },\n        }),\n  },\n});\n\nconst lightConfig = getDesignTokens('light');\nconst darkConfig = getDesignTokens('dark');\n\nconsole.log(lightConfig.palette.background.default);\nconsole.log(darkConfig.palette.background.default);",
+        "testCases": "Kiểm tra output của console.log. Phải in ra '#FFFFFF' và sau đó là '#121212'."
+      },
+      {
+        "title": "Bài 3: Tạo Context cho Chế độ Màu",
+        "description": "Tạo một React Context mới có tên `ColorModeContext`. Context này nên có giá trị mặc định là một object chứa một hàm rỗng tên là `toggleColorMode`.",
+        "starterCode": "import React from 'react';\n\n// TODO: Tạo và export ColorModeContext\n\nexport const ColorModeContext = null; // Thay thế null bằng code của bạn",
+        "solution": "import React from 'react';\n\nexport const ColorModeContext = React.createContext({ toggleColorMode: () => {} });",
+        "testCases": "Kiểm tra xem `ColorModeContext` có phải là một đối tượng React Context hợp lệ và có giá trị mặc định đúng như yêu cầu hay không."
+      },
+      {
+        "title": "Bài 4: Hoàn thiện Custom Hook `useMode`",
+        "description": "Hoàn thiện custom hook `useMode` để quản lý trạng thái của chế độ giao diện. Hook này cần sử dụng `React.useState` để theo dõi `mode`, và `React.useMemo` để tạo ra `colorMode` và `theme`. Hàm `toggleColorMode` phải có khả năng chuyển đổi giữa 'light' và 'dark'.",
+        "starterCode": "import React from 'react';\nimport { createTheme } from '@mui/material/styles';\n\nconst getDesignTokens = (mode) => ({ palette: { mode } });\n\nexport const useMode = () => {\n  const [mode, setMode] = React.useState('light');\n\n  // TODO: Sử dụng useMemo để tạo colorMode object\n  const colorMode = {};\n\n  // TODO: Sử dụng useMemo để tạo theme object\n  const theme = {};\n\n  return [theme, colorMode];\n};",
+        "solution": "import React from 'react';\nimport { createTheme } from '@mui/material/styles';\n\nconst getDesignTokens = (mode) => ({ palette: { mode } });\n\nexport const useMode = () => {\n  const [mode, setMode] = React.useState('light');\n\n  const colorMode = React.useMemo(\n    () => ({\n      toggleColorMode: () => {\n        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));\n      },\n    }),\n    [],\n  );\n\n  const theme = React.useMemo(() => createTheme(getDesignTokens(mode)), [mode]);\n\n  return [theme, colorMode];\n};",
+        "testCases": "Hook phải trả về một mảng gồm 2 phần tử. Phần tử đầu tiên là một đối tượng theme MUI. Phần tử thứ hai là một object có chứa hàm `toggleColorMode`. Khi gọi hàm này, giá trị `mode` trong theme phải được thay đổi."
+      },
+      {
+        "title": "Bài 5: Tạo Nút Chuyển Đổi Giao Diện",
+        "description": "Tạo một component React đơn giản tên `ThemeToggleButton`. Component này sử dụng hook `useTheme` để lấy theme hiện tại và `useContext` để lấy `colorMode` từ `ColorModeContext`. Hiển thị một nút (IconButton) mà khi nhấn vào sẽ gọi hàm `colorMode.toggleColorMode`. Hiển thị tên của chế độ hiện tại (ví dụ: 'light mode').",
+        "starterCode": "import React from 'react';\nimport { useTheme } from '@mui/material/styles';\nimport IconButton from '@mui/material/IconButton';\nimport Box from '@mui/material/Box';\nimport { ColorModeContext } from './ColorModeContext'; // Giả sử file này tồn tại\n\nfunction ThemeToggleButton() {\n  // TODO: Lấy theme và colorMode\n  const theme = null;\n  const colorMode = null;\n\n  return (\n    <Box>\n      {/* TODO: Hiển thị chế độ hiện tại và nút bấm */}\n    </Box>\n  );\n}\n\nexport default ThemeToggleButton;",
+        "solution": "import React from 'react';\nimport { useTheme } from '@mui/material/styles';\nimport IconButton from '@mui/material/IconButton';\nimport Box from '@mui/material/Box';\nimport Brightness4Icon from '@mui/icons-material/Brightness4';\nimport Brightness7Icon from '@mui/icons-material/Brightness7';\nimport { ColorModeContext } from './ColorModeContext';\n\nfunction ThemeToggleButton() {\n  const theme = useTheme();\n  const colorMode = React.useContext(ColorModeContext);\n\n  return (\n    <Box>\n      {theme.palette.mode} mode\n      <IconButton onClick={colorMode.toggleColorMode} color=\"inherit\">\n        {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}\n      </IconButton>\n    </Box>\n  );\n}\n\nexport default ThemeToggleButton;",
+        "testCases": "Component phải render ra text chứa tên chế độ hiện tại (ví dụ: 'light mode'). Khi nhấn vào IconButton, text này phải được cập nhật sang chế độ còn lại (ví dụ: 'dark mode')."
+      }
+    ]
+  }
+}

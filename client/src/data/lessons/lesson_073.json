@@ -1,0 +1,213 @@
+{
+  "id": 73,
+  "title": "BÀI 56: TỔ CHỨC BIẾN MÔI TRƯỜNG (ENV) ĐÚNG CÁCH TRONG DỰ ÁN NODEJS",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# BÀI 56: TỔ CHỨC BIẾN MÔI TRƯỜNG (ENV) ĐÚNG CÁCH TRONG DỰ ÁN NODEJS\n\n## I. MỤC TIÊU BÀI HỌC\n\nVideo này tập trung hướng dẫn cách tổ chức và quản lý các biến môi trường (environment variables) một cách chuyên nghiệp và an toàn trong một dự án Node.js, đặc biệt là trong bối cảnh xây dựng ứng dụng MERN Stack. Việc quản lý tốt biến môi trường là một kỹ năng cực kỳ quan trọng, giúp đảm bảo tính bảo mật, linh hoạt và dễ dàng bảo trì cho ứng dụng.\n\n## II. KIẾN THỨC CHI TIẾT\n\n### 1. Biến Môi Trường (Environment Variables) là gì?\n\nBiến môi trường là những biến được định nghĩa bên ngoài mã nguồn của ứng dụng. Chúng chứa các thông tin cấu hình có thể thay đổi tùy theo môi trường triển khai (development, testing, production). Ví dụ:\n\n*   **Thông tin kết nối cơ sở dữ liệu:** `DB_HOST`, `DB_USER`, `DB_PASSWORD`\n*   **Khóa bí mật (secret keys):** `JWT_SECRET`, `API_KEY`\n*   **Cổng chạy của ứng dụng:** `PORT`\n*   **Tên miền của ứng dụng:** `APP_DOMAIN`\n\n### 2. Tại sao phải sử dụng Biến Môi Trường?\n\n*   **Bảo mật:** Tách biệt các thông tin nhạy cảm (như mật khẩu, API keys) ra khỏi mã nguồn. Điều này giúp ngăn chặn việc vô tình để lộ thông tin khi chia sẻ code hoặc commit lên các kho chứa công khai như GitHub.\n*   **Linh hoạt:** Dễ dàng thay đổi cấu hình ứng dụng cho các môi trường khác nhau mà không cần phải sửa đổi code. Ví dụ, bạn có thể sử dụng một cơ sở dữ liệu cục bộ trong môi trường `development` và một cơ sở dữ liệu trên cloud (như MongoDB Atlas) trong môi trường `production`.\n*   **Dễ dàng quản lý:** Tập trung tất cả các biến cấu hình vào một nơi, giúp việc quản lý và cập nhật trở nên đơn giản hơn.\n\n### 3. Cách tiếp cận sai lầm (Hard-coding)\n\nNhiều lập trình viên mới thường mắc phải sai lầm là \"hard-code\" các giá trị cấu hình trực tiếp vào trong code. Ví dụ:\n\n```javascript\nconst mongoose = require('mongoose');\n\nmongoose.connect('mongodb+srv://user:password@cluster0.mongodb.net/mydatabase');\n```\n\nCách làm này tiềm ẩn rất nhiều rủi ro:\n\n*   **Lộ thông tin nhạy cảm:** Bất kỳ ai có quyền truy cập vào mã nguồn đều có thể thấy được thông tin đăng nhập cơ sở dữ liệu.\n*   **Khó thay đổi:** Khi cần thay đổi thông tin kết nối, bạn phải tìm và sửa ở nhiều nơi trong code.\n*   **Không thể tái sử dụng:** Khó khăn khi muốn triển khai ứng dụng trên nhiều môi trường khác nhau.\n\n### 4. Cách tiếp cận đúng: Sử dụng file `.env` và thư viện `dotenv`\n\nĐây là phương pháp phổ biến và được khuyến khích trong cộng đồng Node.js.\n\n#### a. Thư viện `dotenv`\n\n`dotenv` là một thư viện Node.js giúp tải các biến môi trường từ một file có tên là `.env` vào đối tượng `process.env` của Node.js. `process.env` là một đối tượng toàn cục chứa tất cả các biến môi trường của tiến trình đang chạy.\n\n#### b. Cấu trúc file `.env`\n\nFile `.env` là một file văn bản đơn giản, chứa các cặp `KEY=VALUE` trên mỗi dòng. Ví dụ:\n\n```\nDB_HOST=localhost\nDB_USER=root\nDB_PASSWORD=secret\nPORT=8080\n```\n\n**QUAN TRỌNG:** Luôn luôn thêm file `.env` vào file `.gitignore` để đảm bảo nó không bị commit lên kho chứa mã nguồn.\n\n```\n# .gitignore\n\n.env\n```\n\n#### c. Tích hợp `dotenv` vào dự án\n\n**Bước 1: Cài đặt `dotenv`**\n\n```bash\n$ npm install dotenv\n# hoặc\n$ yarn add dotenv\n```\n\n**Bước 2: Sử dụng trong code**\n\nỞ file khởi tạo của ứng dụng (thường là `server.js` hoặc `index.js`), bạn cần import và cấu hình `dotenv` ngay từ đầu:\n\n```javascript\nconst express = require('express');\nrequire('dotenv').config(); // Nạp các biến môi trường từ file .env\n\nconst app = express();\nconst PORT = process.env.PORT || 3000;\n\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});\n```\n\nSau khi gọi `require('dotenv').config()`, tất cả các biến trong file `.env` sẽ được nạp vào `process.env`. Bạn có thể truy cập chúng thông qua `process.env.TEN_BIEN`.\n\n### 5. Tổ chức biến môi trường cho nhiều môi trường (Development, Production)\n\nTrong thực tế, bạn sẽ cần các cấu hình khác nhau cho các môi trường khác nhau. Có nhiều cách để quản lý việc này, video đề cập đến một cách tiếp cận linh hoạt và dễ bảo trì:\n\n#### a. Tạo file cấu hình riêng\n\nThay vì truy cập trực tiếp `process.env` ở khắp mọi nơi trong code, chúng ta nên tạo một file cấu hình tập trung (ví dụ: `src/config/environment.js`) để quản lý tất cả các biến môi trường. File này sẽ export một đối tượng chứa các giá trị đã được xử lý.\n\n```javascript\n// src/config/environment.js\n\nrequire('dotenv').config();\n\nconst env = {\n  MONGODB_URI: process.env.MONGODB_URI,\n  DATABASE_NAME: process.env.DATABASE_NAME,\n  APP_HOST: process.env.APP_HOST,\n  APP_PORT: process.env.APP_PORT\n};\n\nmodule.exports = env;\n```\n\n#### b. Sử dụng file `.env` khác nhau cho mỗi môi trường\n\nBạn có thể tạo các file `.env` khác nhau cho mỗi môi trường:\n\n*   `.env.development`: Chứa cấu hình cho môi trường phát triển.\n*   `.env.production`: Chứa cấu hình cho môi trường sản phẩm.\n\nSau đó, bạn có thể sử dụng một biến môi trường hệ thống như `NODE_ENV` để quyết định file `.env` nào sẽ được nạp.\n\n```javascript\n// server.js\nconst path = require('path');\n\n// Xác định file .env cần nạp dựa trên NODE_ENV\nconst envFile = `.env.${process.env.NODE_ENV || 'development'}`;\nrequire('dotenv').config({ path: path.resolve(process.cwd(), envFile) });\n\n// ... phần còn lại của code\n```\n\nKhi chạy ứng dụng, bạn sẽ đặt biến `NODE_ENV` tương ứng:\n\n```bash\n# Chạy ở môi trường development (mặc định)\n$ node server.js\n\n# Chạy ở môi trường production\n$ NODE_ENV=production node server.js\n```\n\n## III. CÁC BƯỚC THỰC HÀNH\n\n1.  **Khởi tạo dự án Node.js:** Tạo một dự án Node.js mới với `npm init -y`.\n2.  **Cài đặt các thư viện cần thiết:** `express`, `mongoose`, `dotenv`.\n3.  **Tạo file `.env`:** Tạo file `.env` ở thư mục gốc của dự án và thêm các biến môi trường cần thiết (ví dụ: `MONGODB_URI`, `PORT`).\n4.  **Thêm `.env` vào `.gitignore`:** Đảm bảo file `.env` không bị commit lên Git.\n5.  **Tạo file cấu hình:** Tạo file `src/config/environment.js` để quản lý và export các biến môi trường.\n6.  **Cập nhật file `server.js`:** Import file cấu hình và sử dụng các biến môi trường từ đó để kết nối cơ sở dữ liệu và khởi chạy server.\n7.  **Kiểm tra:** Chạy ứng dụng và đảm bảo rằng nó có thể đọc được các biến từ file `.env` và hoạt động chính xác.\n\n## IV. LƯU Ý QUAN TRỌNG\n\n*   **Không bao giờ commit file `.env` lên Git.** Đây là quy tắc bảo mật quan trọng nhất.\n*   **Sử dụng file `.env.example`:** Tạo một file `.env.example` không chứa các giá trị nhạy cảm, chỉ chứa danh sách các biến môi trường cần thiết cho dự án. File này sẽ được commit lên Git để các thành viên khác trong nhóm biết cần phải cấu hình những biến nào.\n*   **Ưu tiên biến môi trường hệ thống:** `dotenv` sẽ không ghi đè lên các biến môi trường đã được định nghĩa ở cấp độ hệ điều hành. Điều này hữu ích khi triển khai ứng dụng lên các dịch vụ cloud (như Heroku, AWS), nơi bạn có thể cấu hình biến môi trường trực tiếp trên giao diện của nhà cung cấp dịch vụ.\n*   **Tên biến:** Nên sử dụng quy ước đặt tên `UPPERCASE_WITH_UNDERSCORES` cho các biến môi trường.\n\n## V. TÀI LIỆU THAM KHẢO\n\n1.  [dotenv - npm](https://www.npmjs.com/package/dotenv)\n2.  [Working with Environment Variables in Node.js - Twilio](https://www.twilio.com/blog/working-with-environment-variables-in-node-js)\n3.  [Best practices for Node.js environment variables - LogRocket Blog](https://blog.logrocket.com/best-practices-for-node-js-environment-variables/)\n4.  [GitHub Repo của khóa học (nếu có)](https://github.com/trungquandev/mern-stack-pro-series)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Biến môi trường (Environment Variables) trong Node.js là gì?",
+        "options": [
+          "Là các biến được định nghĩa cứng (hard-coded) bên trong mã nguồn ứng dụng.",
+          "Là các biến được định nghĩa bên ngoài mã nguồn, chứa thông tin cấu hình thay đổi theo môi trường triển khai.",
+          "Là các biến chỉ được sử dụng trong môi trường development để gỡ lỗi.",
+          "Là các thư viện ngoài giúp quản lý state của ứng dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Biến môi trường là những biến được định nghĩa bên ngoài mã nguồn của ứng dụng, cho phép cấu hình ứng dụng một cách linh hoạt cho các môi trường khác nhau (development, production, testing) mà không cần thay đổi code."
+      },
+      {
+        "question": "Tại sao việc tách biệt thông tin nhạy cảm (như mật khẩu, API keys) ra khỏi mã nguồn lại quan trọng?",
+        "options": [
+          "Để làm cho mã nguồn ngắn gọn và dễ đọc hơn.",
+          "Để tăng hiệu suất của ứng dụng vì không phải đọc file cấu hình.",
+          "Để ngăn chặn việc vô tình để lộ thông tin khi chia sẻ code hoặc commit lên các kho chứa công khai.",
+          "Để dễ dàng thay đổi các giá trị này trong quá trình chạy ứng dụng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lý do chính để sử dụng biến môi trường là bảo mật. Việc tách thông tin nhạy cảm ra khỏi code giúp ngăn ngừa rò rỉ bảo mật khi mã nguồn được chia sẻ hoặc lưu trữ trên các nền tảng công cộng như GitHub."
+      },
+      {
+        "question": "Thư viện nào được sử dụng phổ biến trong Node.js để tải các biến môi trường từ file `.env`?",
+        "options": [
+          "env-loader",
+          "config.js",
+          "dotenv",
+          "process-env"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`dotenv` là một thư viện phổ biến giúp tự động tải các biến môi trường từ một file `.env` vào đối tượng `process.env` của Node.js, giúp việc quản lý cấu hình trở nên đơn giản."
+      },
+      {
+        "question": "Lệnh nào dùng để cài đặt thư viện `dotenv` cho một dự án Node.js?",
+        "options": [
+          "npm install env",
+          "npm install dotenv",
+          "npm get dotenv",
+          "npm config dotenv"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để sử dụng thư viện `dotenv`, bạn cần cài đặt nó vào dự án của mình thông qua npm (Node Package Manager) bằng lệnh `npm install dotenv`."
+      },
+      {
+        "question": "Trong file `.env`, định dạng đúng để khai báo một biến là gì?",
+        "options": [
+          "KEY: VALUE",
+          "KEY = VALUE",
+          "KEY=VALUE",
+          "\\\nexport KEY=VALUE"
+        ],
+        "correctAnswer": 2,
+        "explanation": "File `.env` sử dụng định dạng `KEY=VALUE` đơn giản để định nghĩa các biến môi trường. Mỗi biến được khai báo trên một dòng riêng."
+      },
+      {
+        "question": "File `.env` nên được xử lý như thế nào khi làm việc với Git?",
+        "options": [
+          "Commit file `.env` lên Git để các thành viên khác có thể sử dụng.",
+          "Thêm file `.env` vào file `.gitignore` để không commit nó lên Git.",
+          "Đổi tên file `.env` thành `.env.prod` trước khi commit.",
+          "Chỉ commit file `.env` khi làm việc một mình."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Vì file `.env` chứa các thông tin nhạy cảm, nó không bao giờ được commit lên kho chứa mã nguồn. Luôn thêm `.env` vào `.gitignore` là một quy tắc bảo mật quan trọng."
+      },
+      {
+        "question": "Làm thế nào để nạp các biến từ file `.env` vào ứng dụng Node.js bằng thư viện `dotenv`?",
+        "options": [
+          "Tự động nạp mà không cần gọi hàm nào.",
+          "Gọi `require('dotenv').load()` ở đầu ứng dụng.",
+          "Gọi `require('dotenv').config()` ở đầu ứng dụng.",
+          "Gọi `dotenv.parse()` và gán cho `process.env`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hàm `require('dotenv').config()` sẽ đọc file `.env` của bạn, phân tích cú pháp nội dung, gán nó vào `process.env`, và trả về một đối tượng với các khóa và giá trị đã phân tích."
+      },
+      {
+        "question": "Đối tượng nào trong Node.js chứa tất cả các biến môi trường của tiến trình đang chạy?",
+        "options": [
+          "`global.env`",
+          "`process.env`",
+          "`system.env`",
+          "`node.env`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`process.env` là một đối tượng toàn cục trong Node.js, nó chứa tất cả các biến môi trường có sẵn cho tiến trình hiện tại khi nó được khởi chạy."
+      },
+      {
+        "question": "Mục đích của việc tạo file `.env.example` là gì?",
+        "options": [
+          "Để sao lưu các giá trị trong file `.env`.",
+          "Để cung cấp một ví dụ về các biến môi trường cần thiết cho dự án mà không chứa giá trị nhạy cảm.",
+          "Để sử dụng làm file cấu hình chính trong môi trường production.",
+          "Để kiểm tra xem thư viện `dotenv` có hoạt động đúng không."
+        ],
+        "correctAnswer": 1,
+        "explanation": "File `.env.example` đóng vai trò là một bản mẫu, liệt kê tất cả các biến môi trường mà ứng dụng cần để chạy. Nó được commit lên Git để các nhà phát triển khác biết cần phải thiết lập những biến nào trong file `.env` cục bộ của họ."
+      },
+      {
+        "question": "Làm thế nào để quản lý các biến môi trường cho các môi trường khác nhau (ví dụ: development và production)?",
+        "options": [
+          "Sử dụng cùng một file `.env` cho tất cả các môi trường.",
+          "Tạo các file `.env` khác nhau (ví dụ: `.env.development`, `.env.production`) và nạp file tương ứng dựa trên biến `NODE_ENV`.",
+          "Hard-code các giá trị khác nhau trong code và sử dụng câu lệnh `if-else`.",
+          "Lưu tất cả các cấu hình trong một file JSON duy nhất."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một cách tiếp cận phổ biến là tạo các file `.env` riêng biệt cho mỗi môi trường và sử dụng biến `NODE_ENV` để xác định file nào sẽ được nạp khi ứng dụng khởi động, giúp quản lý cấu hình một cách linh hoạt."
+      },
+      {
+        "question": "Khi sử dụng `dotenv`, nếu một biến đã tồn tại trong môi trường hệ thống, `dotenv` sẽ làm gì?",
+        "options": [
+          "Ghi đè lên biến môi trường hệ thống bằng giá trị từ file `.env`.",
+          "Bỏ qua giá trị từ file `.env` và giữ lại giá trị của biến môi trường hệ thống.",
+          "Ném ra một lỗi và dừng ứng dụng.",
+          "Hợp nhất cả hai giá trị lại với nhau."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`dotenv` sẽ không ghi đè lên các biến môi trường đã được định nghĩa ở cấp độ hệ điều hành. Điều này cho phép các cấu hình từ hệ thống (ví dụ trên các nền tảng đám mây) được ưu tiên."
+      },
+      {
+        "question": "Quy ước đặt tên phổ biến cho các biến trong file `.env` là gì?",
+        "options": [
+          "camelCase",
+          "PascalCase",
+          "kebab-case",
+          "UPPERCASE_WITH_UNDERSCORES"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Theo quy ước, tên biến môi trường thường được viết bằng chữ in hoa, với các từ được phân tách bằng dấu gạch dưới (ví dụ: `DB_HOST`, `API_KEY`)."
+      },
+      {
+        "question": "Trong đoạn code `const PORT = process.env.PORT || 3000;`, số `3000` có ý nghĩa gì?",
+        "options": [
+          "Là giá trị mặc định sẽ được sử dụng nếu biến `PORT` không được định nghĩa trong `process.env`.",
+          "Là số cổng tối đa mà ứng dụng có thể sử dụng.",
+          "Là giá trị bắt buộc cho biến `PORT`.",
+          "Là một giá trị tạm thời chỉ dùng trong lúc gỡ lỗi."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Toán tử `||` (OR) trong JavaScript cung cấp một cách để thiết lập giá trị mặc định. Nếu `process.env.PORT` là `undefined` hoặc `null`, biến `PORT` sẽ được gán giá trị `3000`."
+      },
+      {
+        "question": "Cách tiếp cận 'hard-coding' cấu hình có nhược điểm lớn nhất là gì?",
+        "options": [
+          "Làm tăng kích thước của file mã nguồn.",
+          "Gây khó khăn cho việc gỡ lỗi.",
+          "Làm lộ thông tin nhạy cảm và khó thay đổi cấu hình cho các môi trường khác nhau.",
+          "Làm giảm hiệu suất của ứng dụng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hard-coding các giá trị nhạy cảm trực tiếp vào code là một rủi ro bảo mật lớn và làm cho việc quản lý cấu hình giữa các môi trường trở nên rất khó khăn và dễ xảy ra lỗi."
+      },
+      {
+        "question": "Để sử dụng một file `.env` cụ thể, ví dụ `.env.staging`, bạn sẽ cấu hình `dotenv` như thế nào?",
+        "options": [
+          "`require('dotenv').config();`",
+          "`require('dotenv').config({ file: '.env.staging' });`",
+          "`require('dotenv').config({ path: './.env.staging' });`",
+          "`require('dotenv').load('.env.staging');`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bạn có thể chỉ định đường dẫn đến file `.env` mong muốn bằng cách truyền một đối tượng tùy chọn với thuộc tính `path` vào hàm `config()`, ví dụ: `require('dotenv').config({ path: './.env.staging' })`."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cài đặt và sử dụng dotenv cơ bản",
+        "description": "Tạo một file server đơn giản, đọc biến `PORT` từ file `.env` và khởi chạy server trên cổng đó. Nếu biến `PORT` không tồn tại, hãy sử dụng cổng `3000` làm mặc định.",
+        "starterCode": "// server.js\nconst express = require('express');\n\n// TODO: Nạp các biến môi trường từ file .env\n\nconst app = express();\n\n// TODO: Lấy giá trị PORT từ process.env, nếu không có thì dùng 3000\nconst PORT = 3000;\n\napp.get('/', (req, res) => {\n  res.send('Hello World!');\n});\n\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});\n",
+        "solution": "// server.js\nconst express = require('express');\nrequire('dotenv').config(); // Nạp các biến môi trường\n\nconst app = express();\n\nconst PORT = process.env.PORT || 3000; // Lấy PORT hoặc dùng giá trị mặc định\n\napp.get('/', (req, res) => {\n  res.send('Hello World!');\n});\n\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});\n\n// .env file content:\n// PORT=8080",
+        "testCases": "1. Cài đặt `express` và `dotenv`.\n2. Tạo file `.env` với `PORT=8080`.\n3. Chạy `node server.js`.\n4. Server phải log ra 'Server is running on port 8080'.\n5. Xóa biến `PORT` khỏi file `.env` và chạy lại.\n6. Server phải log ra 'Server is running on port 3000'."
+      },
+      {
+        "title": "Bài 2: Tạo module cấu hình tập trung",
+        "description": "Tạo một file cấu hình `src/config/environment.js` để đọc và export các biến môi trường `DB_HOST`, `DB_USER`, và `DB_PASSWORD`. Sau đó, import và log các biến này trong file `server.js`.",
+        "starterCode": "// src/config/environment.js\nrequire('dotenv').config();\n\nconst env = {\n  // TODO: Export các biến DB_HOST, DB_USER, DB_PASSWORD từ process.env\n};\n\nmodule.exports = env;\n\n// server.js\n// TODO: Import module cấu hình và log ra các giá trị",
+        "solution": "// src/config/environment.js\nrequire('dotenv').config();\n\nconst env = {\n  DB_HOST: process.env.DB_HOST,\n  DB_USER: process.env.DB_USER,\n  DB_PASSWORD: process.env.DB_PASSWORD\n};\n\nmodule.exports = env;\n\n// server.js\nconst config = require('./src/config/environment');\n\nconsole.log('Database Host:', config.DB_HOST);\nconsole.log('Database User:', config.DB_USER);\nconsole.log('Database Password:', config.DB_PASSWORD);\n\n// .env file content:\n// DB_HOST=localhost\n// DB_USER=admin\n// DB_PASSWORD=supersecret",
+        "testCases": "1. Tạo cấu trúc thư mục `src/config`.\n2. Tạo file `.env` với các biến DB.\n3. Chạy `node server.js`.\n4. Console phải log ra đúng các giá trị từ file `.env`."
+      },
+      {
+        "title": "Bài 3: Quản lý cấu hình cho nhiều môi trường",
+        "description": "Viết một đoạn script để nạp file `.env.development` hoặc `.env.production` tùy thuộc vào giá trị của biến môi trường `NODE_ENV`. Log ra tên môi trường đang chạy.",
+        "starterCode": "// server.js\nconst path = require('path');\n\n// TODO: Xác định file .env cần nạp dựa trên process.env.NODE_ENV\n// Mặc định là 'development'\n\n// TODO: Nạp file .env tương ứng\n\nconsole.log(`Running in ${process.env.NODE_ENV || 'development'} mode`);\nconsole.log(`Database URI: ${process.env.MONGODB_URI}`);",
+        "solution": "// server.js\nconst path = require('path');\n\nconst envFile = `.env.${process.env.NODE_ENV || 'development'}`;\nrequire('dotenv').config({ path: path.resolve(process.cwd(), envFile) });\n\nconsole.log(`Running in ${process.env.NODE_ENV || 'development'} mode`);\nconsole.log(`Database URI: ${process.env.MONGODB_URI}`);\n\n// .env.development file content:\n// MONGODB_URI=mongodb://localhost:27017/dev_db\n\n// .env.production file content:\n// MONGODB_URI=mongodb+srv://prod_user:prod_pass@cluster.mongodb.net/prod_db",
+        "testCases": "1. Tạo 2 file: `.env.development` và `.env.production` với các giá trị `MONGODB_URI` khác nhau.\n2. Chạy `node server.js`. Console phải log 'Running in development mode' và URI của dev_db.\n3. Chạy `NODE_ENV=production node server.js`. Console phải log 'Running in production mode' và URI của prod_db."
+      },
+      {
+        "title": "Bài 4: Sử dụng file .env.example",
+        "description": "Tạo một file `.env.example` liệt kê các biến cần thiết cho ứng dụng. Sau đó, viết một script nhỏ để kiểm tra xem tất cả các biến trong `.env.example` đã được định nghĩa trong file `.env` hay chưa. Nếu thiếu, hãy báo lỗi.",
+        "starterCode": "// check-env.js\nconst fs = require('fs');\nrequire('dotenv').config();\n\n// TODO: Đọc nội dung file .env.example\n// TODO: Lấy danh sách các biến cần thiết\n// TODO: Kiểm tra xem từng biến có tồn tại trong process.env không\n// TODO: Nếu thiếu, log ra lỗi và thoát tiến trình",
+        "solution": "// check-env.js\nconst fs = require('fs');\nrequire('dotenv').config();\n\nconst exampleEnv = fs.readFileSync('.env.example', 'utf-8');\nconst requiredVars = exampleEnv.split('\n').filter(line => line && !line.startsWith('#')).map(line => line.split('=')[0]);\n\nlet missing = false;\nrequiredVars.forEach(varName => {\n  if (!process.env[varName]) {\n    console.error(`Missing required environment variable: ${varName}`);\n    missing = true;\n  }\n});\n\nif (missing) {\n  process.exit(1);\n} else {\n  console.log('All required environment variables are set.');\n}\n\n// .env.example file content:\n// PORT=\n// API_KEY=\n\n// .env file content:\n// PORT=5000",
+        "testCases": "1. Tạo file `.env.example` với `PORT=` và `API_KEY=`.\n2. Tạo file `.env` chỉ có `PORT=5000`.\n3. Chạy `node check-env.js`. Script phải báo lỗi thiếu biến `API_KEY` và thoát với mã lỗi 1.\n4. Thêm `API_KEY=somekey` vào file `.env` và chạy lại. Script phải báo thành công."
+      },
+      {
+        "title": "Bài 5: Tích hợp biến môi trường vào kết nối MongoDB",
+        "description": "Viết một ứng dụng Express hoàn chỉnh kết nối tới MongoDB sử dụng các biến môi trường từ file `.env` cho chuỗi kết nối (`MONGODB_URI`) và tên cơ sở dữ liệu (`DATABASE_NAME`).",
+        "starterCode": "// server.js\nconst express = require('express');\nconst mongoose = require('mongoose');\nrequire('dotenv').config();\n\nconst app = express();\nconst PORT = process.env.PORT || 3000;\n\n// TODO: Lấy MONGODB_URI và DATABASE_NAME từ process.env\n\n// TODO: Kết nối tới MongoDB bằng mongoose\n// mongoose.connect(MONGODB_URI, { dbName: DATABASE_NAME, ... }) ...\n\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});",
+        "solution": "// server.js\nconst express = require('express');\nconst mongoose = require('mongoose');\nrequire('dotenv').config();\n\nconst app = express();\nconst PORT = process.env.PORT || 3000;\n\nconst MONGODB_URI = process.env.MONGODB_URI;\nconst DATABASE_NAME = process.env.DATABASE_NAME;\n\nif (!MONGODB_URI || !DATABASE_NAME) {\n  console.error('Missing MONGODB_URI or DATABASE_NAME in .env file');\n  process.exit(1);\n}\n\nmongoose.connect(MONGODB_URI, {\n  dbName: DATABASE_NAME,\n  useNewUrlParser: true,\n  useUnifiedTopology: true\n})\n.then(() => console.log('Connected to MongoDB successfully!'))\n.catch(err => console.error('MongoDB connection error:', err));\n\napp.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});\n\n// .env file content:\n// PORT=3001\n// MONGODB_URI=mongodb://localhost:27017\n// DATABASE_NAME=quiz_app_db",
+        "testCases": "1. Cài đặt `express`, `mongoose`, `dotenv`.\n2. Chạy một instance MongoDB cục bộ.\n3. Tạo file `.env` với các biến `PORT`, `MONGODB_URI`, `DATABASE_NAME`.\n4. Chạy `node server.js`.\n5. Console phải log 'Connected to MongoDB successfully!' và 'Server is running on port 3001'."
+      }
+    ]
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "id": 17,
+  "title": "Bài học 9: Cách Import chuẩn các Component của MUI để tối ưu dự án",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài học 9: Cách Import chuẩn các Component của MUI để tối ưu dự án\n\n## Mục tiêu bài học\n\nBài học này sẽ giúp bạn:\n\n*   Hiểu rõ các cách import component trong thư viện Material-UI (MUI) cho dự án ReactJS.\n*   Phân biệt được ưu và nhược điểm của từng phương pháp import.\n*   Nắm vững cách import tối ưu nhằm giảm kích thước bundle, tăng tốc độ tải trang và cải thiện hiệu năng tổng thể của ứng dụng.\n\n## Kiến thức chi tiết\n\nKhi làm việc với một thư viện UI component lớn như Material-UI, cách chúng ta import các component có ảnh hưởng trực tiếp đến kích thước của file JavaScript cuối cùng (bundle size) và do đó ảnh hưởng đến hiệu năng của ứng dụng. Có hai cách chính để import component từ MUI:\n\n### 1. Import từ gói chính (Default Import)\n\nĐây là cách import phổ biến và thường thấy trong các ví dụ đơn giản. Bạn sẽ import tất cả các component cần thiết trực tiếp từ gói `@mui/material`.\n\n**Ví dụ:**\n\n```javascript\nimport { Button, TextField, Box } from '@mui/material';\n\nfunction MyComponent() {\n  return (\n    <Box>\n      <TextField label=\"Username\" />\n      <Button variant=\"contained\">Submit</Button>\n    </Box>\n  );\n}\n```\n\n*   **Ưu điểm:** Cú pháp ngắn gọn, tiện lợi khi cần dùng nhiều component trong cùng một file.\n*   **Nhược điểm:** Cách import này có thể kéo theo toàn bộ thư viện `@mui/material` vào bundle của bạn, ngay cả khi bạn chỉ sử dụng một vài component. Điều này là do các công cụ build (như Webpack) đời cũ không thể thực hiện \"tree-shaking\" (loại bỏ code không sử dụng) một cách hiệu quả với cấu trúc export của gói chính. Kết quả là bundle size sẽ lớn không cần thiết, làm chậm thời gian tải trang ban đầu.\n\n### 2. Import trực tiếp từ đường dẫn của component (Path Import)\n\nĐây là phương pháp được khuyến nghị cho các dự án thực tế và trong môi trường production. Thay vì import từ gói chung, bạn sẽ import từng component từ file cụ thể của nó.\n\n**Ví dụ:**\n\n```javascript\nimport Button from '@mui/material/Button';\nimport TextField from '@mui/material/TextField';\nimport Box from '@mui/material/Box';\n\nfunction MyComponent() {\n  return (\n    <Box>\n      <TextField label=\"Username\" />\n      <Button variant=\"contained\">Submit</Button>\n    </Box>\n  );\n}\n```\n\n*   **Ưu điểm:** Cách import này giúp các công cụ build hiện đại (như Webpack 4+, Rollup) thực hiện **tree-shaking** một cách triệt để. Tree-shaking là một quá trình phân tích code và loại bỏ những phần code không được sử dụng. Khi bạn import trực tiếp từ đường dẫn, công cụ build sẽ biết chính xác bạn chỉ cần code của `Button`, `TextField`, và `Box`, và sẽ không đưa các component khác (như `AppBar`, `Card`, `Dialog`...) vào bundle cuối cùng. Điều này giúp giảm đáng kể bundle size.\n*   **Nhược điểm:** Cú pháp có thể dài dòng hơn một chút nếu bạn cần import nhiều component.\n\n## Các bước thực hành\n\nĐể thấy rõ sự khác biệt, bạn có thể thử nghiệm trên dự án của mình:\n\n1.  **Cài đặt công cụ phân tích bundle:** Sử dụng các công cụ như `source-map-explorer` hoặc `webpack-bundle-analyzer`.\n    ```bash\n    npm install --save-dev source-map-explorer\n    ```\n2.  **Build ứng dụng với 2 cách import:**\n    *   Lần 1: Sử dụng default import.\n    *   Lần 2: Refactor code để sử dụng path import.\n3.  **So sánh kết quả:** Chạy công cụ phân tích trên file bundle của mỗi lần build và quan sát sự khác biệt về kích thước của gói `@mui/material`.\n\n## Lưu ý quan trọng\n\n*   **Luôn ưu tiên Path Import:** Trong các dự án thực tế, hãy tập thói quen luôn sử dụng cách import trực tiếp từ đường dẫn để đảm bảo hiệu năng tốt nhất.\n*   **Cấu hình Babel:** Đối với một số dự án, bạn có thể cần cấu hình plugin `babel-plugin-import` để tự động chuyển đổi từ default import sang path import trong quá trình build. Tuy nhiên, với các phiên bản mới của Create React App và các công cụ build hiện đại, việc này thường không còn cần thiết.\n*   **Import Icons:** Vấn đề tối ưu import đặc biệt quan trọng với các icon. Thay vì import từ `@mui/icons-material`, hãy import trực tiếp icon bạn cần:\n    ```javascript\n    // Tốt\n    import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';\n\n    // Không tốt\n    import { AccessAlarm } from '@mui/icons-material';\n    ```\n\n## Tài liệu tham khảo\n\n1.  [Minimizing bundle size - Material UI](https://mui.com/material-ui/guides/minimizing-bundle-size/)\n2.  [How to optimize the imports in reactjs - material ui - Stack Overflow](https://stackoverflow.com/questions/73983181/how-to-optimize-the-imports-in-reactjs)\n3.  [Sử dụng Material-UI trong dự án dùng reactjs - Viblo](https://viblo.asia/p/su-dung-material-ui-trong-du-an-dung-reactjs-XL6lAgamKek)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Phương pháp import component nào từ Material-UI (MUI) được khuyến nghị để tối ưu hiệu năng dự án trong môi trường production?",
+        "options": [
+          "Import từ gói chính (ví dụ: `import { Button } from '@mui/material';`)",
+          "Import trực tiếp từ đường dẫn của component (ví dụ: `import Button from '@mui/material/Button';`)",
+          "Cả hai cách đều như nhau về hiệu năng.",
+          "Sử dụng một file trung gian để export tất cả các component cần dùng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Import trực tiếp từ đường dẫn của component (Path Import) cho phép các công cụ build như Webpack thực hiện tree-shaking hiệu quả, loại bỏ code không sử dụng và giảm đáng kể kích thước bundle cuối cùng."
+      },
+      {
+        "question": "Khái niệm \"tree-shaking\" trong quá trình build dự án JavaScript là gì?",
+        "options": [
+          "Là một kỹ thuật để sắp xếp lại cấu trúc thư mục của dự án.",
+          "Là quá trình tự động xóa các file log không cần thiết.",
+          "Là quá trình phân tích và loại bỏ những đoạn code không được sử dụng khỏi bundle cuối cùng.",
+          "Là một công cụ để kiểm tra lỗi cú pháp trong code."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tree-shaking là một quá trình tối ưu hóa quan trọng, giúp giảm kích thước ứng dụng bằng cách loại bỏ code \"chết\" (dead code) mà không ảnh hưởng đến chức năng."
+      },
+      {
+        "question": "Nhược điểm chính của việc sử dụng Default Import (import từ gói `@mui/material`) là gì?",
+        "options": [
+          "Cú pháp dài dòng và khó nhớ hơn.",
+          "Có thể làm tăng kích thước bundle một cách không cần thiết.",
+          "Không tương thích với các phiên bản React mới.",
+          "Yêu cầu cấu hình Babel phức tạp."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi sử dụng default import, các công cụ build đời cũ có thể không thực hiện tree-shaking hiệu quả, dẫn đến việc toàn bộ thư viện MUI bị đưa vào bundle, làm tăng kích thước và chậm thời gian tải trang."
+      },
+      {
+        "question": "Công cụ nào sau đây có thể được sử dụng để phân tích kích thước bundle của một dự án React?",
+        "options": [
+          "ESLint",
+          "Prettier",
+          "React DevTools",
+          "webpack-bundle-analyzer"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`webpack-bundle-analyzer` hoặc `source-map-explorer` là những công cụ phổ biến giúp lập trình viên trực quan hóa kích thước các phần khác nhau trong bundle, từ đó xác định các thư viện lớn và tối ưu chúng."
+      },
+      {
+        "question": "Khi cần sử dụng component `Card` và `CardContent` từ MUI, cách import nào sau đây là tối ưu nhất?",
+        "options": [
+          "`import { Card, CardContent } from '@mui/material';`",
+          "`import Card from '@mui/material/Card';\nimport CardContent from '@mui/material/CardContent';`",
+          "`import { Card, CardContent } from '@mui';`",
+          "`import * as MUI from '@mui/material';`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Import trực tiếp từ đường dẫn cụ thể của từng component (`@mui/material/Card` và `@mui/material/CardContent`) đảm bảo rằng chỉ code của hai component này được thêm vào bundle."
+      },
+      {
+        "question": "Tại sao việc tối ưu import các icon từ `@mui/icons-material` lại đặc biệt quan trọng?",
+        "options": [
+          "Vì các icon có chứa logic phức tạp.",
+          "Vì thư viện icon rất lớn và việc import không tối ưu sẽ kéo theo hàng ngàn icon không cần thiết.",
+          "Vì các icon thường xuyên được cập nhật.",
+          "Vì import icon sai cách sẽ gây ra lỗi runtime."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thư viện `@mui/icons-material` chứa một số lượng rất lớn các icon. Import từ gói chính (`@mui/icons-material`) sẽ làm bundle phình to một cách đáng kể, do đó phải luôn import trực tiếp từng icon cần thiết."
+      },
+      {
+        "question": "Đâu là cách import đúng và tối ưu cho `AccessAlarmIcon`?",
+        "options": [
+          "`import { AccessAlarmIcon } from '@mui/icons-material';`",
+          "`import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';`",
+          "`import { Icons } from '@mui/icons-material'; const { AccessAlarmIcon } = Icons;`",
+          "`import * as Icons from '@mui/icons-material';`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tương tự như component, icon cũng cần được import trực tiếp từ đường dẫn file của nó để tận dụng tree-shaking."
+      },
+      {
+        "question": "Ưu điểm của phương pháp Default Import (`import { ... } from '@mui/material';`) là gì?",
+        "options": [
+          "Giảm kích thước bundle.",
+          "Tăng tốc độ build.",
+          "Cú pháp ngắn gọn và tiện lợi khi dùng nhiều component.",
+          "Tự động thực hiện tree-shaking."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mặc dù không được khuyến nghị cho production vì vấn đề hiệu năng, cú pháp của default import ngắn gọn hơn, giúp viết code nhanh hơn khi cần nhiều component trong một file."
+      },
+      {
+        "question": "Trong bối cảnh các công cụ build hiện đại như Webpack 4+, tại sao Path Import vẫn được khuyến nghị?",
+        "options": [
+          "Vì nó là cú pháp mới của JavaScript.",
+          "Vì nó đảm bảo tree-shaking hoạt động một cách triệt để và đáng tin cậy nhất.",
+          "Vì default import đã bị loại bỏ.",
+          "Vì nó giúp code dễ đọc hơn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mặc dù các bundler hiện đại đã thông minh hơn, việc sử dụng Path Import là cách rõ ràng và chắc chắn nhất để báo cho bundler biết chính xác module nào cần được bao gồm, đảm bảo tối ưu hóa triệt để."
+      },
+      {
+        "question": "Plugin `babel-plugin-import` có công dụng gì?",
+        "options": [
+          "Tự động format code theo chuẩn.",
+          "Tự động chuyển đổi cú pháp default import sang path import trong quá trình build.",
+          "Thêm các polyfill cho trình duyệt cũ.",
+          "Phân tích và báo cáo lỗi trong code React."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`babel-plugin-import` là một công cụ giúp tự động hóa việc tối ưu import, nó sẽ biến đổi `import { Button } from '@mui/material';` thành `import Button from '@mui/material/Button';` lúc build, giúp lập trình viên không cần thay đổi code thủ công."
+      },
+      {
+        "question": "Hành động nào sau đây KHÔNG giúp giảm bundle size của một ứng dụng React sử dụng MUI?",
+        "options": [
+          "Sử dụng path import thay vì default import.",
+          "Sử dụng `webpack-bundle-analyzer` để tìm các gói lớn.",
+          "Import trực tiếp các icon cần dùng.",
+          "Viết tất cả các component trong cùng một file."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Việc viết tất cả các component trong cùng một file không liên quan đến cách thư viện được import và tối ưu, và cũng là một thực hành không tốt về cấu trúc code."
+      },
+      {
+        "question": "Lệnh nào dùng để cài đặt công cụ `source-map-explorer`?",
+        "options": [
+          "`npm install source-map-explorer`",
+          "`npm install --save-dev source-map-explorer`",
+          "`npm create source-map-explorer`",
+          "`npx source-map-explorer`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Công cụ này là một dependency cho môi trường phát triển (dev dependency), vì vậy cờ `--save-dev` được sử dụng để chỉ cài đặt nó cho môi trường phát triển, không bao gồm trong bundle production."
+      },
+      {
+        "question": "Tác động chính của việc có bundle size lớn là gì?",
+        "options": [
+          "Gây lỗi khi biên dịch code.",
+          "Làm tăng thời gian tải trang ban đầu của ứng dụng.",
+          "Khiến ứng dụng tiêu thụ nhiều RAM hơn khi chạy.",
+          "Hạn chế số lượng component có thể sử dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bundle size càng lớn, trình duyệt càng mất nhiều thời gian để tải xuống, phân tích và thực thi file JavaScript, dẫn đến thời gian tải trang lần đầu (First Contentful Paint) bị kéo dài, ảnh hưởng xấu đến trải nghiệm người dùng."
+      },
+      {
+        "question": "Phát biểu nào sau đây là ĐÚNG về hiệu năng khi dùng MUI?",
+        "options": [
+          "Cách bạn import component không ảnh hưởng đến hiệu năng.",
+          "Luôn ưu tiên default import để code ngắn gọn.",
+          "Path import là một thực hành tốt để đảm bảo ứng dụng có hiệu năng cao.",
+          "Chỉ cần tối ưu import cho icon, còn component thì không cần thiết."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tối ưu hóa cách import là một trong những yếu tố nền tảng để xây dựng một ứng dụng nhanh và nhẹ khi sử dụng các thư viện component lớn như MUI. Path import là chìa khóa cho việc này."
+      },
+      {
+        "question": "Nếu một dự án đang dùng Create React App phiên bản mới, việc sử dụng `babel-plugin-import` có còn cần thiết không?",
+        "options": [
+          "Rất cần thiết, nếu không sẽ không thể build được.",
+          "Hoàn toàn không cần thiết vì Create React App không hỗ trợ Babel.",
+          "Thường là không cần thiết, vì các công cụ build hiện đại đã xử lý tốt tree-shaking với path import.",
+          "Bắt buộc phải dùng để tương thích với MUI."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đã đề cập rằng với các phiên bản mới của Create React App và các công cụ build hiện đại, việc cấu hình thêm `babel-plugin-import` thường không còn cần thiết, miễn là bạn tuân thủ việc sử dụng path import trong code của mình."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Chuyển đổi Default Import sang Path Import",
+        "description": "Trong component `LoginForm` dưới đây, các component `Button` và `TextField` của MUI đang được import theo cách chưa tối ưu. Hãy sửa lại code để sử dụng phương pháp import được khuyến nghị.",
+        "starterCode": "import React from 'react';\nimport { Button, TextField, Box } from '@mui/material';\n\nfunction LoginForm() {\n  return (\n    <Box component=\"form\" noValidate autoComplete=\"off\">\n      <TextField label=\"Email\" variant=\"outlined\" margin=\"normal\" fullWidth />\n      <TextField label=\"Password\" type=\"password\" variant=\"outlined\" margin=\"normal\" fullWidth />\n      <Button variant=\"contained\" color=\"primary\" fullWidth>Login</Button>\n    </Box>\n  );\n}\n\nexport default LoginForm;",
+        "solution": "import React from 'react';\nimport Button from '@mui/material/Button';\nimport TextField from '@mui/material/TextField';\nimport Box from '@mui/material/Box';\n\nfunction LoginForm() {\n  return (\n    <Box component=\"form\" noValidate autoComplete=\"off\">\n      <TextField label=\"Email\" variant=\"outlined\" margin=\"normal\" fullWidth />\n      <TextField label=\"Password\" type=\"password\" variant=\"outlined\" margin=\"normal\" fullWidth />\n      <Button variant=\"contained\" color=\"primary\" fullWidth>Login</Button>\n    </Box>\n  );\n}\n\nexport default LoginForm;",
+        "testCases": "Code sau khi sửa phải import `Button`, `TextField`, và `Box` từ các đường dẫn riêng biệt (`@mui/material/Button`, `@mui/material/TextField`, `@mui/material/Box`). Component phải render đúng và không có lỗi."
+      },
+      {
+        "title": "Bài 2: Import và sử dụng Icon một cách tối ưu",
+        "description": "Tạo một component `IconButton` đơn giản hiển thị một `Button` của MUI chứa icon `Delete`. Hãy đảm bảo cả `Button` và `DeleteIcon` đều được import một cách tối ưu nhất.",
+        "starterCode": "import React from 'react';\n\n// Hãy import Button và DeleteIcon tại đây\n\nfunction DeleteButton() {\n  // Code để render Button với DeleteIcon\n  return null;\n}\n\nexport default DeleteButton;",
+        "solution": "import React from 'react';\nimport Button from '@mui/material/Button';\nimport DeleteIcon from '@mui/icons-material/Delete';\n\nfunction DeleteButton() {\n  return (\n    <Button variant=\"outlined\" startIcon={<DeleteIcon />}>\n      Delete\n    </Button>\n  );\n}\n\nexport default DeleteButton;",
+        "testCases": "Component phải import `Button` từ `@mui/material/Button` và `DeleteIcon` từ `@mui/icons-material/Delete`. Giao diện phải hiển thị một nút có chữ \"Delete\" và biểu tượng thùng rác."
+      },
+      {
+        "title": "Bài 3: Xây dựng một Card Profile đơn giản",
+        "description": "Xây dựng một component `ProfileCard` sử dụng các component `Card`, `CardContent`, `Typography`, và `Avatar` của MUI. Tất cả các component phải được import bằng phương pháp path import để đảm bảo hiệu năng.",
+        "starterCode": "import React from 'react';\n\n// Import các component cần thiết từ MUI tại đây\n\nfunction ProfileCard() {\n  // Code để render Card profile\n  return null;\n}\n\nexport default ProfileCard;",
+        "solution": "import React from 'react';\nimport Card from '@mui/material/Card';\nimport CardContent from '@mui/material/CardContent';\nimport Typography from '@mui/material/Typography';\nimport Avatar from '@mui/material/Avatar';\nimport Box from '@mui/material/Box';\n\nfunction ProfileCard() {\n  return (\n    <Card sx={{ maxWidth: 345 }}>\n      <CardContent>\n        <Box sx={{ display: 'flex', alignItems: 'center' }}>\n          <Avatar sx={{ width: 56, height: 56, mr: 2 }}>M</Avatar>\n          <div>\n            <Typography gutterBottom variant=\"h5\" component=\"div\">\n              Manus AI\n            </Typography>\n            <Typography variant=\"body2\" color=\"text.secondary\">\n              MERN Stack Instructor\n            </Typography>\n          </div>\n        </Box>\n      </CardContent>\n    </Card>\n  );\n}\n\nexport default ProfileCard;",
+        "testCases": "Kiểm tra file code đảm bảo các component `Card`, `CardContent`, `Typography`, `Avatar`, `Box` được import từ đường dẫn riêng của chúng. Giao diện hiển thị một card profile với avatar và text."
+      },
+      {
+        "title": "Bài 4: Refactor một component phức tạp",
+        "description": "Component `Header` dưới đây đang sử dụng cả hai cách import. Hãy xác định và sửa lại tất cả các dòng import chưa tối ưu sang path import.",
+        "starterCode": "import React from 'react';\nimport { AppBar, Toolbar, Typography } from '@mui/material';\nimport IconButton from '@mui/material/IconButton';\nimport MenuIcon from '@mui/icons-material/Menu'; // Import này đã tối ưu\n\nfunction Header() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar>\n        <IconButton size=\"large\" edge=\"start\" color=\"inherit\" aria-label=\"menu\" sx={{ mr: 2 }}>\n          <MenuIcon />\n        </IconButton>\n        <Typography variant=\"h6\" component=\"div\" sx={{ flexGrow: 1 }}>\n          News\n        </Typography>\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default Header;",
+        "solution": "import React from 'react';\nimport AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport Typography from '@mui/material/Typography';\nimport IconButton from '@mui/material/IconButton';\nimport MenuIcon from '@mui/icons-material/Menu';\n\nfunction Header() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar>\n        <IconButton size=\"large\" edge=\"start\" color=\"inherit\" aria-label=\"menu\" sx={{ mr: 2 }}>\n          <MenuIcon />\n        </IconButton>\n        <Typography variant=\"h6\" component=\"div\" sx={{ flexGrow: 1 }}>\n          News\n        </Typography>\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default Header;",
+        "testCases": "Dòng `import { AppBar, Toolbar, Typography } from '@mui/material';` phải được thay thế bằng ba dòng import riêng lẻ cho từng component từ đường dẫn tương ứng của chúng. Các import khác đã tối ưu phải được giữ nguyên."
+      },
+      {
+        "title": "Bài 5: Giải thích lựa chọn import",
+        "description": "Tạo một component `RegistrationForm` sử dụng `TextField`, `Button`, `Checkbox`, và `FormControlLabel`. Sau khi viết code, thêm một comment ở đầu file giải thích tại sao bạn lại chọn phương pháp import đó cho các component này.",
+        "starterCode": "import React from 'react';\n\n// Thêm comment giải thích và import các component tại đây\n\nfunction RegistrationForm() {\n  // Code render form\n  return null;\n}\n\nexport default RegistrationForm;",
+        "solution": "import React from 'react';\n\n// Giải thích: Sử dụng path import (import trực tiếp từ đường dẫn) cho từng component.\n// Lý do: Phương pháp này cho phép công cụ build (như Webpack) thực hiện \"tree-shaking\",\n// loại bỏ các component không sử dụng từ bundle cuối cùng. Điều này giúp giảm đáng kể\n// kích thước file JavaScript, dẫn đến tải trang nhanh hơn và cải thiện hiệu năng tổng thể.\nimport TextField from '@mui/material/TextField';\nimport Button from '@mui/material/Button';\nimport Checkbox from '@mui/material/Checkbox';\nimport FormControlLabel from '@mui/material/FormControlLabel';\nimport Box from '@mui/material/Box';\n\nfunction RegistrationForm() {\n  return (\n    <Box component=\"form\">\n      <TextField label=\"Full Name\" margin=\"normal\" fullWidth />\n      <TextField label=\"Email\" margin=\"normal\" fullWidth />\n      <FormControlLabel control={<Checkbox />} label=\"I agree to the terms and conditions\" />\n      <Button variant=\"contained\" sx={{ mt: 2 }} fullWidth>Register</Button>\n    </Box>\n  );\n}\n\nexport default RegistrationForm;",
+        "testCases": "File phải chứa một comment giải thích rõ ràng về lợi ích của path import (tree-shaking, giảm bundle size). Tất cả các component (`TextField`, `Button`, `Checkbox`, `FormControlLabel`, `Box`) phải được import bằng path import. Form phải được render đúng."
+      }
+    ]
+  }
+}

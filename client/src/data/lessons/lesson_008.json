@@ -1,0 +1,213 @@
+{
+  "id": 8,
+  "title": "Bài 4: JSX là gì? Hiểu Tường Tận về JSX",
+  "category": "react-basics",
+  "categoryName": "React Cơ bản",
+  "content": "# Bài 4: JSX là gì? Hiểu Tường Tận về JSX\n\n## Mục tiêu bài học\n\n- Hiểu rõ khái niệm về JSX (JavaScript XML) và tại sao nó được sử dụng trong React.\n- Nắm vững cú pháp cơ bản của JSX và cách nhúng các biểu thức JavaScript vào trong JSX.\n- Biết cách sử dụng các thuộc tính trong JSX và sự khác biệt so với HTML.\n- Hiểu về cách render các danh sách (arrays) trong JSX và tầm quan trọng của thuộc tính `key`.\n- Phân biệt được sự khác nhau giữa JSX và HTML.\n\n## Kiến thức chi tiết\n\n### 1. JSX là gì?\n\nJSX là viết tắt của **JavaScript XML**. Nó là một phần mở rộng cú pháp cho JavaScript, cho phép chúng ta viết mã trông giống như HTML ngay bên trong các file JavaScript. JSX không phải là một ngôn ngữ riêng biệt, cũng không phải là một phần của đặc tả JavaScript chính thức. Nó được tạo ra bởi Facebook và được sử dụng rộng rãi trong thư viện React để mô tả giao diện người dùng (UI) nên trông như thế nào.\n\n**Ví dụ về JSX:**\n\n```jsx\nconst element = <h1>Xin chào, TrungQuanDev!</h1>;\n```\n\nĐoạn mã trên trông giống như HTML, nhưng thực chất nó là JavaScript. Trình duyệt không thể hiểu trực tiếp JSX. Do đó, chúng ta cần một công cụ gọi là **transpiler** (trình biên dịch), phổ biến nhất là **Babel**, để chuyển đổi mã JSX thành các lệnh gọi hàm JavaScript thông thường mà trình duyệt có thể hiểu được.\n\nĐoạn mã JSX trên sau khi được Babel biên dịch sẽ trở thành:\n\n```javascript\nconst element = React.createElement(\n  'h1',\n  null,\n  'Xin chào, TrungQuanDev!'\n);\n```\n\n`React.createElement()` là một hàm của React, nó tạo ra một đối tượng đại diện cho một phần tử DOM. React sau đó sẽ sử dụng đối tượng này để tạo và cập nhật DOM thực tế trên trang web.\n\n### 2. Tại sao nên sử dụng JSX?\n\n- **Dễ đọc và dễ viết hơn:** Giao diện người dùng thường có cấu trúc phân cấp. JSX cho phép chúng ta mô tả cấu trúc này một cách trực quan, giống như cách chúng ta viết HTML. Điều này làm cho mã nguồn dễ đọc và dễ bảo trì hơn so với việc tạo UI bằng các lệnh gọi hàm `React.createElement()` lồng nhau phức tạp.\n- **Gần gũi với HTML:** Hầu hết các nhà phát triển web đã quen thuộc với HTML. JSX cho phép họ tận dụng kiến thức này để bắt đầu với React một cách nhanh chóng.\n- **Thông báo lỗi hữu ích:** JSX giúp hiển thị các thông báo lỗi và cảnh báo rõ ràng hơn. Ví dụ, nếu bạn quên đóng một thẻ, Babel sẽ báo lỗi ngay tại giai đoạn biên dịch, thay vì gây ra lỗi khó hiểu lúc chạy ứng dụng.\n- **Tối ưu hóa:** Babel có thể thực hiện các tối ưu hóa hiệu suất trong quá trình biên dịch mã JSX.\n\n### 3. Nhúng biểu thức JavaScript vào JSX\n\nMột trong những tính năng mạnh mẽ nhất của JSX là khả năng nhúng bất kỳ biểu thức JavaScript nào vào bên trong nó. Chúng ta thực hiện điều này bằng cách đặt biểu thức vào trong cặp dấu ngoặc nhọn `{}`.\n\n**Ví dụ:**\n\n```jsx\nconst name = 'TrungQuanDev';\nconst element = <h1>Xin chào, {name}!</h1>;\n\nfunction formatName(user) {\n  return user.firstName + ' ' + user.lastName;\n}\n\nconst user = {\n  firstName: 'Quan',\n  lastName: 'Trung'\n};\n\nconst element2 = <h1>Xin chào, {formatName(user)}!</h1>;\n```\n\nBên trong `{}` bạn có thể đặt bất kỳ biểu thức JavaScript hợp lệ nào: một biến, một lời gọi hàm, một phép toán, v.v.\n\n### 4. Thuộc tính trong JSX\n\nJSX cũng cho phép chúng ta chỉ định các thuộc tính cho các phần tử, tương tự như HTML. Tuy nhiên, có một vài điểm khác biệt quan trọng:\n\n- **Quy ước đặt tên:** Vì JSX là JavaScript, các tên thuộc tính sử dụng quy ước `camelCase`. Ví dụ, thuộc tính `class` trong HTML sẽ trở thành `className` trong JSX, và `tabindex` sẽ trở thành `tabIndex`.\n\n  ```jsx\n  // Sai (sử dụng class như HTML)\n  // const element = <div class=\"greeting\">Xin chào!</div>;\n\n  // Đúng (sử dụng className)\n  const element = <div className=\"greeting\">Xin chào!</div>;\n  ```\n\n- **Giá trị thuộc tính:**\n  - Nếu giá trị là một chuỗi ký tự (string literal), hãy đặt nó trong dấu ngoặc kép `\"\"`.\n  - Nếu giá trị là một biểu thức JavaScript, hãy đặt nó trong dấu ngoặc nhọn `{}`.\n\n  ```jsx\n  const element = <img src={user.avatarUrl}></img>;\n  ```\n\n### 5. JSX phải có một phần tử gốc (Root Element)\n\nMột biểu thức JSX phải trả về một phần tử duy nhất. Điều này có nghĩa là nếu bạn có nhiều phần tử ở cùng một cấp, bạn phải bọc chúng trong một phần tử cha.\n\n**Ví dụ:**\n\n```jsx\n// Sai: Trả về hai phần tử\n// const element = (\n//   <h1>Xin chào!</h1>\n//   <p>Rất vui được gặp bạn.</p>\n// );\n\n// Đúng: Bọc trong một thẻ div\nconst element = (\n  <div>\n    <h1>Xin chào!</h1>\n    <p>Rất vui được gặp bạn.</p>\n  </div>\n);\n\n// Hoặc sử dụng React.Fragment (hoặc cú pháp viết tắt <>...</>)\nconst element2 = (\n  <>\n    <h1>Xin chào!</h1>\n    <p>Rất vui được gặp bạn.</p>\n  </>\n);\n```\n\n`React.Fragment` cho phép chúng ta nhóm một danh sách các phần tử con mà không cần thêm một node không cần thiết vào DOM.\n\n### 6. Render danh sách\n\nĐể hiển thị một danh sách các phần tử, chúng ta thường sử dụng hàm `map()` của JavaScript để lặp qua một mảng và trả về một phần tử JSX cho mỗi mục trong mảng.\n\n**Ví dụ:**\n\n```jsx\nconst numbers = [1, 2, 3, 4, 5];\nconst listItems = numbers.map((number) =>\n  <li>{number}</li>\n);\n\nconst element = <ul>{listItems}</ul>;\n```\n\n**Thuộc tính `key`:**\n\nKhi bạn tạo một danh sách các phần tử, React yêu cầu bạn cung cấp một thuộc tính `key` duy nhất cho mỗi phần tử trong danh sách. `key` là một chuỗi hoặc số đặc biệt giúp React xác định phần tử nào đã thay đổi, được thêm vào hoặc bị xóa. Điều này giúp React cập nhật UI một cách hiệu quả hơn.\n\n- `key` phải là duy nhất **trong số các anh em của nó** (siblings).\n- Tốt nhất là sử dụng một ID duy nhất từ dữ liệu của bạn làm `key`.\n- **Không nên** sử dụng chỉ số của mảng (index) làm `key` nếu thứ tự của các mục có thể thay đổi. Điều này có thể gây ra các vấn đề về hiệu suất và lỗi không mong muốn trong trạng thái của component.\n\n**Ví dụ với `key`:**\n\n```jsx\nconst todos = [\n  { id: 'a', text: 'Học React' },\n  { id: 'b', text: 'Xây dựng dự án' },\n  { id: 'c', text: 'Triển khai ứng dụng' }\n];\n\nconst todoItems = todos.map((todo) =>\n  <li key={todo.id}>\n    {todo.text}\n  </li>\n);\n```\n\n## Các bước thực hành\n\n1.  **Tạo một dự án React mới:** Sử dụng `create-react-app` hoặc Vite để tạo một dự án React.\n    ```bash\n    npx create-react-app jsx-practice\n    cd jsx-practice\n    ```\n2.  **Mở file `src/App.js`** và xóa nội dung mặc định.\n3.  **Thử nghiệm các khái niệm JSX:**\n    - Tạo một biến chứa tên của bạn và hiển thị nó trong một thẻ `h1`.\n    - Tạo một đối tượng `user` với các thuộc tính `firstName`, `lastName`, `avatarUrl` và hiển thị thông tin này.\n    - Tạo một mảng các công việc cần làm (todos) và hiển thị chúng dưới dạng một danh sách `<ul>`, nhớ sử dụng `key`.\n\n**File `src/App.js` mẫu:**\n\n```jsx\nimport React from 'react';\nimport './App.css';\n\nfunction App() {\n  const myName = 'Your Name';\n\n  const user = {\n    firstName: 'TrungQuan',\n    lastName: 'Dev',\n    avatarUrl: 'https://i.imgur.com/7v10KAg.png' // Một URL ảnh bất kỳ\n  };\n\n  const todos = [\n    { id: 1, text: 'Tìm hiểu về JSX' },\n    { id: 2, text: 'Thực hành viết component' },\n    { id: 3, text: 'Nghỉ ngơi' }\n  ];\n\n  return (\n    <div className=\"App\">\n      <header className=\"App-header\">\n        <h1>Xin chào, {myName}!</h1>\n        \n        <div>\n          <h2>Thông tin người dùng:</h2>\n          <p>Họ và tên: {user.firstName} {user.lastName}</p>\n          <img src={user.avatarUrl} alt=\"Avatar\" width=\"100\" />\n        </div>\n\n        <div>\n          <h2>Danh sách công việc:</h2>\n          <ul>\n            {todos.map(todo => (\n              <li key={todo.id}>{todo.text}</li>\n            ))}\n          </ul>\n        </div>\n      </header>\n    </div>\n  );\n}\n\nexport default App;\n\n```\n\n4.  **Chạy ứng dụng:**\n    ```bash\n    npm start\n    ```\n    Mở trình duyệt và xem kết quả tại `http://localhost:3000`.\n\n## Lưu ý quan trọng\n\n- **JSX không phải là HTML:** Mặc dù trông giống nhau, nhưng có những khác biệt quan trọng (ví dụ: `className` vs `class`, quy ước `camelCase`).\n- **Luôn đóng các thẻ:** Trong JSX, mọi thẻ phải được đóng. Các thẻ tự đóng như `<img>` phải kết thúc bằng `/>`.\n- **Babel là bắt buộc:** Bạn không thể chạy JSX trực tiếp trên trình duyệt mà không có bước biên dịch.\n- **Sử dụng `key` một cách khôn ngoan:** Việc chọn `key` đúng cách rất quan trọng để đảm bảo hiệu suất và sự ổn định của ứng dụng.\n\n## Tài liệu tham khảo\n\n- [React Docs: Introducing JSX](https://react.dev/learn/writing-markup-with-jsx)\n- [React Docs: Rendering Lists](https://react.dev/learn/rendering-lists)\n- [W3Schools: React JSX](https://www.w3schools.com/react/react_jsx.asp)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "JSX là viết tắt của từ gì?",
+        "options": [
+          "JavaScript XML",
+          "Java Syntax Extension",
+          "JSON Scripting eXchange",
+          "JavaScript eXtension"
+        ],
+        "correctAnswer": 0,
+        "explanation": "JSX là viết tắt của JavaScript XML, một phần mở rộng cú pháp cho JavaScript cho phép viết mã giống HTML trong các tệp JavaScript."
+      },
+      {
+        "question": "Công cụ nào được sử dụng để chuyển đổi mã JSX thành mã JavaScript mà trình duyệt có thể hiểu được?",
+        "options": [
+          "Webpack",
+          "Babel",
+          "Node.js",
+          "NPM"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Babel là một trình biên dịch (transpiler) phổ biến được sử dụng để chuyển đổi mã JSX thành các lệnh gọi hàm React.createElement() mà trình duyệt có thể hiểu."
+      },
+      {
+        "question": "Trong JSX, làm thế nào để nhúng một biến JavaScript có tên `userName` vào trong một thẻ `<h1>`?",
+        "options": [
+          "<h1>{userName}</h1>",
+          "<h1>{{userName}}</h1>",
+          "<h1>[userName]</h1>",
+          "<h1>${userName}</h1>"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Để nhúng một biểu thức JavaScript vào JSX, chúng ta đặt biểu thức đó vào trong cặp dấu ngoặc nhọn {}."
+      },
+      {
+        "question": "Thuộc tính `class` trong HTML được viết như thế nào trong JSX?",
+        "options": [
+          "class",
+          "jsx-class",
+          "className",
+          "styleClass"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vì JSX là JavaScript, các tên thuộc tính sử dụng quy ước camelCase. Do đó, `class` trong HTML trở thành `className` trong JSX để tránh xung đột với từ khóa `class` của JavaScript."
+      },
+      {
+        "question": "Điều gì sẽ xảy ra nếu một biểu thức JSX cố gắng trả về nhiều phần tử ở cùng một cấp mà không có phần tử cha bao bọc?",
+        "options": [
+          "Chỉ phần tử đầu tiên được render.",
+          "Tất cả các phần tử được render bình thường.",
+          "Ứng dụng sẽ bị lỗi biên dịch (compile error).",
+          "Nó sẽ tự động được bọc trong một thẻ `<div>`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Một biểu thức JSX phải trả về một phần tử gốc duy nhất. Nếu không, nó sẽ gây ra lỗi biên dịch. Bạn có thể sử dụng `<div>`, `React.Fragment`, hoặc `<>` để bọc các phần tử."
+      },
+      {
+        "question": "Đâu là cách đúng để viết một thẻ `<img>` trong JSX?",
+        "options": [
+          "<img>",
+          "<img />",
+          "<img></img>",
+          "<img src='path'>"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trong JSX, mọi thẻ phải được đóng. Các thẻ tự đóng như `<img>` hoặc `<br>` phải kết thúc bằng `/>`."
+      },
+      {
+        "question": "Mục đích chính của thuộc tính `key` khi render một danh sách trong React là gì?",
+        "options": [
+          "Để tạo kiểu cho các phần tử trong danh sách.",
+          "Để thêm một ID duy nhất vào phần tử DOM.",
+          "Giúp React xác định các phần tử đã thay đổi, được thêm hoặc xóa một cách hiệu quả.",
+          "Để xử lý các sự kiện nhấp chuột trên phần tử."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `key` giúp React theo dõi danh tính của mỗi phần tử trong danh sách, cho phép cập nhật DOM hiệu quả hơn khi danh sách thay đổi."
+      },
+      {
+        "question": "Tại sao không nên sử dụng chỉ số (index) của mảng làm `key` nếu thứ tự các mục có thể thay đổi?",
+        "options": [
+          "Vì nó làm giảm hiệu suất render.",
+          "Vì nó có thể gây ra lỗi không mong muốn về trạng thái của component và cập nhật UI không chính xác.",
+          "Vì nó không phải là một chuỗi (string).",
+          "Vì nó không đủ duy nhất."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu thứ tự các mục thay đổi, việc sử dụng index làm key có thể khiến React nhầm lẫn giữa các phần tử, dẫn đến việc hiển thị sai dữ liệu hoặc mất trạng thái của component."
+      },
+      {
+        "question": "Đoạn mã JSX `const element = <h1>{5 + 5}</h1>;` sẽ hiển thị gì trên trình duyệt?",
+        "options": [
+          "<h1>{5 + 5}</h1>",
+          "<h1>10</h1>",
+          "<h1>5 + 5</h1>",
+          "Lỗi"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Biểu thức JavaScript bên trong dấu ngoặc nhọn `{}` sẽ được tính toán. `5 + 5` bằng `10`, vì vậy kết quả render ra sẽ là 10 bên trong thẻ h1."
+      },
+      {
+        "question": "Đâu là cú pháp viết tắt cho `React.Fragment`?",
+        "options": [
+          "<>...</>",
+          "<div>...</div>",
+          "<fragment>...</fragment>",
+          "<block>...</block>"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Cú pháp `<>...</>` là cách viết tắt cho `<React.Fragment>...</React.Fragment>`, cho phép nhóm các phần tử mà không cần thêm một node thừa vào DOM."
+      },
+      {
+        "question": "Làm thế nào để gán một chuỗi ký tự (string literal) cho một thuộc tính trong JSX?",
+        "options": [
+          "attribute={value}",
+          "attribute='value'",
+          "attribute=`value`",
+          "Tất cả các cách trên đều đúng"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi gán một giá trị chuỗi ký tự trực tiếp, bạn nên sử dụng dấu ngoặc kép `\"` hoặc ngoặc đơn `'`. Dấu ngoặc nhọn `{}` được dùng cho các biểu thức JavaScript."
+      },
+      {
+        "question": "Mã JSX sau khi được Babel biên dịch sẽ trở thành gì?\n`const element = <p>Hello</p>;`",
+        "options": [
+          "React.createElement('p', null, 'Hello')",
+          "document.createElement('p').innerText = 'Hello'",
+          "React.create('p', 'Hello')",
+          "Nó vẫn là `<p>Hello</p>`"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Babel chuyển đổi cú pháp JSX thành các lệnh gọi hàm `React.createElement()`. Tham số đầu tiên là loại phần tử, thứ hai là props, và thứ ba là các con của nó."
+      },
+      {
+        "question": "Thuộc tính nào sau đây tuân thủ đúng quy ước đặt tên `camelCase` trong JSX?",
+        "options": [
+          "onclick",
+          "tab-index",
+          "background-color",
+          "tabIndex"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Các thuộc tính trong JSX sử dụng quy ước đặt tên camelCase. Do đó, `tabindex` trong HTML sẽ trở thành `tabIndex` trong JSX."
+      },
+      {
+        "question": "Sự khác biệt chính giữa JSX và HTML là gì?",
+        "options": [
+          "JSX có thể chạy trực tiếp trên trình duyệt, còn HTML thì không.",
+          "JSX là JavaScript, trong khi HTML là một ngôn ngữ đánh dấu.",
+          "JSX không hỗ trợ thuộc tính, còn HTML thì có.",
+          "Không có sự khác biệt nào."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mặc dù có cú pháp tương tự, JSX về cơ bản là một phần mở rộng của JavaScript và cần được biên dịch. HTML là một ngôn ngữ đánh dấu tiêu chuẩn mà trình duyệt có thể hiểu trực tiếp."
+      },
+      {
+        "question": "Trong đoạn mã sau, `key` nên được đặt ở đâu?\n`numbers.map((number) => <div><li>{number}</li></div>)`",
+        "options": [
+          "Trên thẻ `<li>`",
+          "Trên thẻ `<div>`",
+          "Trên cả hai thẻ",
+          "Không cần `key`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thuộc tính `key` phải được đặt trên phần tử ngoài cùng được trả về bởi hàm `map`. Trong trường hợp này, đó là thẻ `<div>`."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Hiển thị tên người dùng",
+        "description": "Tạo một component React trả về một thẻ `h1` hiển thị giá trị của biến `userName`.",
+        "starterCode": "function UserGreeting() {\n  const userName = 'Alice';\n  // Viết code của bạn ở đây\n  return null; \n}",
+        "solution": "function UserGreeting() {\n  const userName = 'Alice';\n  return <h1>Xin chào, {userName}!</h1>;\n}",
+        "testCases": "Component nên render ra một thẻ H1 với nội dung 'Xin chào, Alice!'"
+      },
+      {
+        "title": "Bài 2: Hiển thị thông tin sản phẩm",
+        "description": "Tạo một component hiển thị thông tin từ một đối tượng `product`. Sử dụng `product.name` cho nội dung thẻ `<h2>` và `product.imageUrl` cho thuộc tính `src` của thẻ `<img>`. Thêm `className` là `'product-image'` cho thẻ `<img>`.",
+        "starterCode": "function ProductDisplay() {\n  const product = { \n    name: 'Laptop Pro', \n    imageUrl: 'https://example.com/laptop.png' \n  };\n  // Viết code của bạn ở đây\n  return null;\n}",
+        "solution": "function ProductDisplay() {\n  const product = { \n    name: 'Laptop Pro', \n    imageUrl: 'https://example.com/laptop.png' \n  };\n  return (\n    <div>\n      <h2>{product.name}</h2>\n      <img src={product.imageUrl} alt={product.name} className='product-image' />\n    </div>\n  );\n}",
+        "testCases": "Component nên render một thẻ h2 với nội dung 'Laptop Pro' và một thẻ img với src và className chính xác."
+      },
+      {
+        "title": "Bài 3: Sử dụng React.Fragment",
+        "description": "Tạo một component trả về một thẻ `<h1>` và một thẻ `<p>` nằm cạnh nhau ở cùng một cấp, sử dụng cú pháp viết tắt của `React.Fragment`.",
+        "starterCode": "function Article() {\n  // Viết code của bạn ở đây\n  return null;\n}",
+        "solution": "function Article() {\n  return (\n    <>\n      <h1>Tiêu đề bài viết</h1>\n      <p>Đây là nội dung bài viết.</p>\n    </>\n  );\n}",
+        "testCases": "Component nên render một thẻ h1 và một thẻ p mà không có thẻ div cha bao bọc trong DOM."
+      },
+      {
+        "title": "Bài 4: Render một danh sách công việc",
+        "description": "Cho một mảng các đối tượng `todos`. Hãy render một danh sách không có thứ tự (`<ul>`) các công việc. Mỗi công việc là một thẻ `<li>` và phải có một thuộc tính `key` duy nhất sử dụng `todo.id`.",
+        "starterCode": "function TodoList() {\n  const todos = [\n    { id: 'td1', text: 'Học JSX' },\n    { id: 'td2', text: 'Viết code' },\n    { id: 'td3', text: 'Uống cà phê' }\n  ];\n  // Viết code của bạn ở đây\n  return null;\n}",
+        "solution": "function TodoList() {\n  const todos = [\n    { id: 'td1', text: 'Học JSX' },\n    { id: 'td2', text: 'Viết code' },\n    { id: 'td3', text: 'Uống cà phê' }\n  ];\n  return (\n    <ul>\n      {todos.map(todo => (\n        <li key={todo.id}>{todo.text}</li>\n      ))}\n    </ul>\n  );\n}",
+        "testCases": "Component nên render một danh sách ul với 3 thẻ li. Mỗi thẻ li phải có thuộc tính key và nội dung tương ứng."
+      },
+      {
+        "title": "Bài 5: Component Card Người Dùng",
+        "description": "Tạo một component `UserCard` nhận vào một prop `user`. Component này nên hiển thị ảnh đại diện, tên đầy đủ và trạng thái online/offline của người dùng. Nếu `user.isOnline` là `true`, hiển thị chữ 'Online' với màu xanh; ngược lại, hiển thị 'Offline' với màu xám. Sử dụng toán tử ba ngôi cho logic này.",
+        "starterCode": "function UserCard({ user }) {\n  // const user = {\n  //   name: 'John Doe',\n  //   avatarUrl: 'https://example.com/avatar.png',\n  //   isOnline: true\n  // };\n  // Viết code của bạn ở đây\n  return null;\n}",
+        "solution": "function UserCard({ user }) {\n  return (\n    <div className='user-card'>\n      <img src={user.avatarUrl} alt={user.name} />\n      <h3>{user.name}</h3>\n      <p style={{ color: user.isOnline ? 'green' : 'gray' }}>\n        {user.isOnline ? 'Online' : 'Offline'}\n      </p>\n    </div>\n  );\n}",
+        "testCases": "Khi user.isOnline là true, chữ 'Online' có màu xanh. Khi user.isOnline là false, chữ 'Offline' có màu xám. Tên và avatar phải được hiển thị chính xác."
+      }
+    ]
+  }
+}

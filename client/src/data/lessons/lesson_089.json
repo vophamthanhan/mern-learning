@@ -1,0 +1,213 @@
+{
+  "id": 89,
+  "title": "Bài học 75: Viết 2 APIs tạo Column & Card trong ứng dụng Trello (phần 2)",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Bài học 75: Viết 2 APIs tạo Column & Card trong ứng dụng Trello (phần 2)\n\n## I. Mục tiêu bài học\n\nVideo này là phần tiếp theo trong chuỗi video hướng dẫn xây dựng ứng dụng Trello-clone bằng MERN Stack. Mục tiêu chính của bài học này là hoàn thiện hai API quan trọng: một để tạo mới một **Column** và một để tạo mới một **Card** trong một Column cụ thể. Qua đó, người học sẽ nắm vững hơn về cách xử lý logic ở các tầng Service và Model trong kiến trúc Back-end, cũng như cách tương tác với cơ sở dữ liệu MongoDB.\n\n## II. Kiến thức chi tiết\n\n### 1. Tổng quan về kiến trúc\n\nBài học tiếp tục tuân thủ theo kiến trúc đã được xây dựng ở các video trước, bao gồm các tầng:\n\n*   **Route:** Tiếp nhận request từ client.\n*   **Controller:** Điều hướng request, gọi đến service tương ứng và trả về response.\n*   **Service:** Chứa toàn bộ logic xử lý nghiệp vụ chính của ứng dụng.\n*   **Model:** Định nghĩa cấu trúc dữ liệu (schema) và tương tác trực tiếp với cơ sở dữ liệu MongoDB.\n*   **Validation:** Kiểm tra và xác thực dữ liệu đầu vào từ client.\n\n### 2. API tạo mới Column\n\n- **Route:** `POST /v1/columns`\n- **Controller (`columnController.js`):**\n    - Gọi hàm `createNew` từ `columnService`.\n    - Trả về kết quả cho client với status code `201 (Created)`.\n- **Service (`columnService.js`):**\n    - Nhận dữ liệu `req.body` từ Controller.\n    - Gọi hàm `createNew` của `columnModel` để tạo một column mới trong database.\n    - **Logic quan trọng:** Sau khi tạo column thành công, cần phải cập nhật lại mảng `columnOrderIds` trong document của **Board** tương ứng. Điều này đảm bảo thứ tự của các column sẽ được duy trì đúng.\n        - Sử dụng hàm `pushColumnOrderIds` được tạo trong `boardModel`.\n        - Hàm này sẽ nhận `column` vừa được tạo, tìm đến `board` chứa nó và dùng toán tử `$push` của MongoDB để thêm `_id` của column mới vào cuối mảng `columnOrderIds`.\n    - Trả về column vừa được tạo.\n- **Model (`columnModel.js`):**\n    - Định nghĩa `columnSchema` với các trường cần thiết (ví dụ: `boardId`, `title`, `cardOrderIds`, `cards`).\n    - Cung cấp hàm `createNew` để lưu một document mới vào collection `columns`.\n- **Model (`boardModel.js`):**\n    - Bổ sung hàm `pushColumnOrderIds` để cập nhật mảng `columnOrderIds`.\n\n### 3. API tạo mới Card\n\n- **Route:** `POST /v1/cards`\n- **Controller (`cardController.js`):**\n    - Tương tự như column, gọi hàm `createNew` từ `cardService`.\n- **Service (`cardService.js`):**\n    - Nhận dữ liệu `req.body` từ Controller.\n    - Gọi hàm `createNew` của `cardModel` để tạo một card mới.\n    - **Logic quan trọng:** Tương tự như khi tạo column, sau khi tạo card thành công, cần cập nhật lại mảng `cardOrderIds` trong document của **Column** chứa nó.\n        - Sử dụng hàm `pushCardOrderIds` được tạo trong `columnModel`.\n        - Hàm này sẽ nhận `card` vừa được tạo, tìm đến `column` chứa nó và dùng toán tử `$push` để thêm `_id` của card mới vào cuối mảng `cardOrderIds`.\n    - Trả về card vừa được tạo.\n- **Model (`cardModel.js`):**\n    - Định nghĩa `cardSchema` với các trường như `boardId`, `columnId`, `title`.\n- **Model (`columnModel.js`):**\n    - Bổ sung hàm `pushCardOrderIds` để cập nhật mảng `cardOrderIds`.\n\n### 4. Xử lý bất đồng bộ và trả về kết quả\n\nMột điểm cần lưu ý trong video là cách xử lý kết quả trả về từ database. Khi sử dụng các phương thức như `findOneAndUpdate` của Mongoose, kết quả trả về (nếu không có tùy chọn `{ new: true }`) sẽ là document *trước* khi được cập nhật. Trong video, tác giả đã gặp phải vấn đề này và debug để tìm ra `result.value` mới là document đã được cập nhật. Tuy nhiên, cách xử lý tốt hơn và được khuyến nghị là thêm tùy chọn `{ returnDocument: 'after' }` (hoặc `{ new: true }`) vào câu lệnh query để đảm bảo luôn nhận được document mới nhất.\n\n## III. Các bước thực hành\n\n1.  **Tạo Card Model và Route:**\n    *   Tạo file `src/models/card.model.js` định nghĩa schema cho Card.\n    *   Tạo file `src/routes/v1/card.route.js` định nghĩa route `POST /`.\n    *   Tạo file `src/controllers/card.controller.js` và `src/services/card.service.js`.\n    *   Import và sử dụng card route trong file `src/routes/v1/index.js`.\n\n2.  **Hoàn thiện API tạo Column:**\n    *   Trong `columnService.js`, sau khi gọi `columnModel.createNew`, lấy kết quả `createdColumn`.\n    *   Gọi `boardModel.pushColumnOrderIds(createdColumn)` để cập nhật mảng `columnOrderIds` của Board.\n    *   Trong `boardModel.js`, tạo hàm `pushColumnOrderIds` sử dụng `findOneAndUpdate` với toán tử `$push`.\n\n3.  **Hoàn thiện API tạo Card:**\n    *   Trong `cardService.js`, sau khi gọi `cardModel.createNew`, lấy kết quả `createdCard`.\n    *   Gọi `columnModel.pushCardOrderIds(createdCard)` để cập nhật mảng `cardOrderIds` của Column.\n    *   Trong `columnModel.js`, tạo hàm `pushCardOrderIds` tương tự như đã làm với Board.\n\n4.  **Test API bằng Postman:**\n    *   Gửi request `POST` đến `/v1/columns` với body chứa `boardId` và `title` để tạo column mới.\n    *   Kiểm tra trong MongoDB Compass và kết quả trả về để đảm bảo column được tạo và `columnOrderIds` trong board đã được cập nhật.\n    *   Gửi request `POST` đến `/v1/cards` với body chứa `boardId`, `columnId` và `title` để tạo card mới.\n    *   Kiểm tra để đảm bảo card được tạo và `cardOrderIds` trong column đã được cập nhật.\n\n## IV. Lưu ý quan trọng\n\n*   **Tính toàn vẹn dữ liệu:** Việc cập nhật các mảng `...OrderIds` ngay sau khi tạo mới một document là cực kỳ quan trọng để đảm bảo tính nhất quán và toàn vẹn của dữ liệu, tránh trường hợp dữ liệu bị \"mồ côi\" (orphan data).\n*   **Giao dịch (Transaction):** Trong một ứng dụng thực tế phức tạp hơn, việc tạo một column/card và cập nhật mảng order của document cha nên được thực hiện trong một **giao dịch (transaction)**. Điều này đảm bảo rằng hoặc cả hai thao tác cùng thành công, hoặc cả hai cùng thất bại, tránh tình trạng dữ liệu không nhất quán khi một trong hai thao tác gặp lỗi.\n*   **Tùy chọn `returnDocument`:** Luôn sử dụng `{ returnDocument: 'after' }` hoặc `{ new: true }` khi dùng các hàm cập nhật của Mongoose để chắc chắn rằng bạn đang làm việc với dữ liệu mới nhất.\n*   **Tách biệt logic:** Việc tuân thủ nghiêm ngặt kiến trúc các tầng giúp code dễ đọc, dễ bảo trì và mở rộng hơn rất nhiều.\n\n## V. Tài liệu tham khảo\n\n*   **Source Code (GitHub):**\n    *   [trungquandev/nodejs-express-mongodb-rest-api-boilerplate](https://github.com/trungquandev/nodejs-express-mongodb-rest-api-boilerplate)\n    *   [duynghiadev/Trello-API](https://github.com/duynghiadev/Trello-API)\n*   **Tài liệu Mongoose:**\n    *   [Model.findOneAndUpdate()](https://mongoosejs.com/docs/api/model.html#Model.findOneAndUpdate())\n    *   [Update Operators: $push](https://docs.mongodb.com/manual/reference/operator/update/push/)\n*   **Playlist YouTube:**\n    *   [[FULL STACK] MERN PRO - TrungQuanDev](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của việc cập nhật mảng `columnOrderIds` trong Board sau khi tạo một Column mới là gì?",
+        "options": [
+          "Để lưu trữ tên của Column mới.",
+          "Để đảm bảo thứ tự của các Column được duy trì chính xác.",
+          "Để kích hoạt cơ chế validation của Board.",
+          "Để liên kết Column với các Card mặc định."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc cập nhật mảng `columnOrderIds` trong Board là để duy trì đúng thứ tự hiển thị của các cột, đảm bảo tính nhất quán của giao diện người dùng."
+      },
+      {
+        "question": "Trong kiến trúc MERN được mô tả, tầng nào chịu trách nhiệm chính cho việc xử lý logic nghiệp vụ của ứng dụng?",
+        "options": [
+          "Controller",
+          "Model",
+          "Route",
+          "Service"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Tầng Service là nơi chứa toàn bộ logic xử lý nghiệp vụ chính của ứng dụng, tách biệt với việc điều hướng request (Controller) hay tương tác cơ sở dữ liệu (Model)."
+      },
+      {
+        "question": "Toán tử nào của MongoDB được sử dụng để thêm một ID mới vào cuối mảng `columnOrderIds` hoặc `cardOrderIds`?",
+        "options": [
+          "$add",
+          "$push",
+          "$insert",
+          "$append"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Toán tử `$push` được sử dụng trong MongoDB để thêm một phần tử vào cuối một mảng."
+      },
+      {
+        "question": "Khi tạo một Card mới, mảng `cardOrderIds` trong document nào cần được cập nhật?",
+        "options": [
+          "Board",
+          "User",
+          "Column",
+          "Card"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sau khi tạo một Card, `cardOrderIds` trong document của Column chứa nó cần được cập nhật để duy trì thứ tự các card trong cột đó."
+      },
+      {
+        "question": "Tùy chọn nào trong Mongoose/MongoDB đảm bảo rằng phương thức `findOneAndUpdate` trả về document *sau* khi đã được cập nhật?",
+        "options": [
+          "{ updated: true }",
+          "{ returnOriginal: false }",
+          "{ new: true } hoặc { returnDocument: 'after' }",
+          "{ fetch: 'new' }"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để nhận được document mới nhất sau khi cập nhật, cần sử dụng tùy chọn `{ new: true }` (trong Mongoose) hoặc `{ returnDocument: 'after' }`."
+      },
+      {
+        "question": "Hiện tượng \"dữ liệu mồ côi\" (orphan data) có thể xảy ra khi nào?",
+        "options": [
+          "Khi tạo một document mới mà không có ID.",
+          "Khi một document được tạo nhưng không được cập nhật vào mảng tham chiếu của document cha.",
+          "Khi xóa một document cha mà không xóa các document con.",
+          "Khi sử dụng sai kiểu dữ liệu cho một trường trong schema."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Dữ liệu mồ côi xảy ra khi một thực thể (như Card hoặc Column) được tạo ra nhưng không được liên kết đúng cách với thực thể cha của nó (Column hoặc Board), khiến nó không thể được truy cập hoặc quản lý."
+      },
+      {
+        "question": "Tại sao nên sử dụng Giao dịch (Transaction) khi thực hiện nhiều thao tác ghi vào cơ sở dữ liệu có liên quan đến nhau?",
+        "options": [
+          "Để tăng tốc độ thực thi các câu lệnh.",
+          "Để đảm bảo tất cả các thao tác cùng thành công hoặc cùng thất bại, duy trì tính toàn vẹn dữ liệu.",
+          "Để giảm tải cho máy chủ cơ sở dữ liệu.",
+          "Để bỏ qua các bước xác thực dữ liệu."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Giao dịch đảm bảo tính nguyên tử (atomicity), nghĩa là một chuỗi các thao tác được coi là một đơn vị duy nhất. Nếu bất kỳ thao tác nào trong giao dịch thất bại, tất cả các thao tác khác sẽ được hoàn tác, ngăn ngừa tình trạng dữ liệu không nhất quán."
+      },
+      {
+        "question": "Trong API tạo Column, hàm `pushColumnOrderIds` được định nghĩa ở Model nào?",
+        "options": [
+          "columnModel",
+          "cardModel",
+          "boardModel",
+          "userModel"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hàm `pushColumnOrderIds` được định nghĩa trong `boardModel` vì nó chịu trách nhiệm cập nhật mảng `columnOrderIds` của một Board cụ thể."
+      },
+      {
+        "question": "HTTP status code nào thường được trả về khi một tài nguyên được tạo thành công?",
+        "options": [
+          "200 OK",
+          "201 Created",
+          "204 No Content",
+          "400 Bad Request"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Status code `201 Created` là câu trả lời chuẩn cho biết một hoặc nhiều tài nguyên mới đã được tạo thành công trên máy chủ."
+      },
+      {
+        "question": "Tầng nào trong kiến trúc chịu trách nhiệm kiểm tra và xác thực dữ liệu đầu vào từ client?",
+        "options": [
+          "Controller",
+          "Service",
+          "Model",
+          "Validation"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Tầng Validation được thiết kế riêng để xác thực dữ liệu đầu vào, đảm bảo rằng dữ liệu gửi từ client là hợp lệ trước khi được xử lý bởi các tầng khác."
+      },
+      {
+        "question": "Phương thức HTTP nào được sử dụng cho route tạo mới Column và Card?",
+        "options": [
+          "GET",
+          "PUT",
+          "POST",
+          "DELETE"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phương thức `POST` được sử dụng để gửi dữ liệu đến máy chủ để tạo một tài nguyên mới."
+      },
+      {
+        "question": "Trong hàm `pushCardOrderIds` của `columnModel`, phương thức nào của Mongoose được sử dụng để tìm và cập nhật document?",
+        "options": [
+          "findOne",
+          "updateOne",
+          "findByIdAndUpdate",
+          "findOneAndUpdate"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bài học đề cập đến việc sử dụng `findOneAndUpdate` để tìm một document dựa trên một điều kiện và cập nhật nó. Đây là phương thức phù hợp để tìm column chứa card và cập nhật mảng `cardOrderIds`."
+      },
+      {
+        "question": "Dữ liệu nào được truyền vào `req.body` khi gửi request tạo một Card mới?",
+        "options": [
+          "Chỉ `title` của Card.",
+          "`boardId`, `columnId`, và `title`.",
+          "Chỉ `boardId` và `columnId`.",
+          "Toàn bộ object Card đã có `_id`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để tạo một Card mới, client cần cung cấp thông tin về `boardId` và `columnId` để xác định vị trí của nó, cùng với `title` là nội dung của card."
+      },
+      {
+        "question": "Lợi ích chính của việc tách biệt logic giữa các tầng (Route, Controller, Service, Model) là gì?",
+        "options": [
+          "Giảm số lượng file trong dự án.",
+          "Làm cho ứng dụng chạy nhanh hơn.",
+          "Giúp code dễ đọc, dễ bảo trì và dễ mở rộng.",
+          "Tự động tạo tài liệu API."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc tuân thủ nghiêm ngặt kiến trúc các tầng giúp mã nguồn trở nên có tổ chức, mỗi tầng có một trách nhiệm rõ ràng, từ đó dễ dàng hơn cho việc bảo trì, gỡ lỗi và phát triển các tính năng mới."
+      },
+      {
+        "question": "Sau khi `columnModel.createNew` được gọi thành công trong `columnService`, hành động tiếp theo là gì?",
+        "options": [
+          "Trả về kết quả ngay lập tức cho controller.",
+          "Gọi `boardModel.pushColumnOrderIds` để cập nhật Board.",
+          "Tạo một card mặc định cho column đó.",
+          "Xóa column vừa tạo để kiểm tra."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Logic quan trọng sau khi tạo column là phải cập nhật lại mảng `columnOrderIds` trong document của Board tương ứng để đảm bảo tính nhất quán dữ liệu."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo Card Model",
+        "description": "Định nghĩa Mongoose Schema và Model cho `Card`. Schema cần bao gồm các trường `boardId`, `columnId`, `title` (đều là bắt buộc) và tự động có timestamps.",
+        "starterCode": "const mongoose = require('mongoose');\n\nconst cardSchema = new mongoose.Schema({\n  // Viết code của bạn ở đây\n});\n\nmodule.exports = mongoose.model('Card', cardSchema);",
+        "solution": "const mongoose = require('mongoose');\n\nconst cardSchema = new mongoose.Schema({\n  boardId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Board' },\n  columnId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Column' },\n  title: { type: String, required: true, trim: true }\n}, { timestamps: true });\n\nmodule.exports = mongoose.model('Card', cardSchema);",
+        "testCases": "1. Model có thể được import thành công.\n2. Tạo một card với đầy đủ `boardId`, `columnId`, `title` thành công.\n3. Tạo một card thiếu `boardId` sẽ báo lỗi validation.\n4. Trường `createdAt` và `updatedAt` được tự động tạo."
+      },
+      {
+        "title": "Hoàn thiện Card Service",
+        "description": "Viết hàm `createNew` trong `cardService`. Hàm này nhận dữ liệu card từ controller, gọi đến `cardModel.createNew` để lưu vào DB, sau đó gọi một hàm (giả định là `columnModel.pushCardOrderIds`) để cập nhật column chứa nó, và cuối cùng trả về card đã tạo.",
+        "starterCode": "const cardModel = require('../models/card.model');\nconst columnModel = require('../models/column.model');\n\nconst createNew = async (data) => {\n  try {\n    // Viết code của bạn ở đây\n\n    // Giả định hàm này đã tồn tại trong columnModel\n    // await columnModel.pushCardOrderIds(createdCard);\n\n    return createdCard;\n  } catch (error) { throw error; }\n};\n\nmodule.exports = { createNew };",
+        "solution": "const cardModel = require('../models/card.model');\nconst columnModel = require('../models/column.model');\n\nconst createNew = async (data) => {\n  try {\n    const createdCard = await cardModel.create(data);\n\n    // Cập nhật mảng cardOrderIds trong column tương ứng\n    await columnModel.pushCardOrderIds(createdCard);\n\n    return createdCard;\n  } catch (error) { throw error; }\n};\n\nmodule.exports = { createNew };",
+        "testCases": "1. Hàm `createNew` trả về một object card khi tạo thành công.\n2. `cardModel.create` được gọi với đúng dữ liệu.\n3. `columnModel.pushCardOrderIds` được gọi sau khi card được tạo."
+      },
+      {
+        "title": "Viết hàm `pushColumnOrderIds` cho Board Model",
+        "description": "Trong `boardModel.js`, thêm một phương thức tĩnh (static method) tên là `pushColumnOrderIds`. Phương thức này nhận một object `column`, sử dụng `findOneAndUpdate` để tìm Board có `_id` trùng với `column.boardId` và `$push` `column._id` vào mảng `columnOrderIds`. Nhớ trả về document đã được cập nhật.",
+        "starterCode": "const mongoose = require('mongoose');\n\nconst boardSchema = new mongoose.Schema({\n  // ... các trường khác\n  columnOrderIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Column' }]\n});\n\n// Viết code của bạn ở đây\n\nmodule.exports = mongoose.model('Board', boardSchema);",
+        "solution": "const mongoose = require('mongoose');\n\nconst boardSchema = new mongoose.Schema({\n  title: { type: String, required: true },\n  columnOrderIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Column' }]\n});\n\nboardSchema.statics.pushColumnOrderIds = async function(column) {\n  try {\n    const result = await this.findOneAndUpdate(\n      { _id: column.boardId },\n      { $push: { columnOrderIds: column._id } },\n      { new: true } // hoặc { returnDocument: 'after' }\n    );\n    return result;\n  } catch (error) { throw error; }\n};\n\nmodule.exports = mongoose.model('Board', boardSchema);",
+        "testCases": "1. Tìm một board và push columnId mới vào `columnOrderIds` thành công.\n2. Phương thức trả về document board đã được cập nhật (có chứa columnId mới).\n3. Nếu boardId không tồn tại, phương thức không gây lỗi và trả về null."
+      },
+      {
+        "title": "Viết hàm `pushCardOrderIds` cho Column Model",
+        "description": "Tương tự bài 3, trong `columnModel.js`, thêm một phương thức tĩnh `pushCardOrderIds`. Phương thức này nhận một object `card`, sử dụng `findOneAndUpdate` để tìm Column có `_id` trùng với `card.columnId` và `$push` `card._id` vào mảng `cardOrderIds`. Sử dụng tùy chọn để trả về document mới nhất.",
+        "starterCode": "const mongoose = require('mongoose');\n\nconst columnSchema = new mongoose.Schema({\n  // ... các trường khác\n  cardOrderIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Card' }]\n});\n\n// Viết code của bạn ở đây\n\nmodule.exports = mongoose.model('Column', columnSchema);",
+        "solution": "const mongoose = require('mongoose');\n\nconst columnSchema = new mongoose.Schema({\n  boardId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Board' },\n  title: { type: String, required: true },\n  cardOrderIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Card' }]\n});\n\ncolumnSchema.statics.pushCardOrderIds = async function(card) {\n  try {\n    const result = await this.findOneAndUpdate(\n      { _id: card.columnId },\n      { $push: { cardOrderIds: card._id } },\n      { new: true }\n    );\n    return result;\n  } catch (error) { throw error; }\n};\n\nmodule.exports = mongoose.model('Column', columnSchema);",
+        "testCases": "1. Tìm một column và push cardId mới vào `cardOrderIds` thành công.\n2. Phương thức trả về document column đã được cập nhật.\n3. Nếu columnId không tồn tại, phương thức trả về null."
+      },
+      {
+        "title": "Tích hợp API vào Route",
+        "description": "Trong file `src/routes/v1/index.js`, import các file route cho `column` và `card`, sau đó sử dụng chúng với các tiền tố tương ứng (`/columns` và `/cards`).",
+        "starterCode": "const express = require('express');\nconst router = express.Router();\n\n// Viết code của bạn ở đây\n\nmodule.exports = router;",
+        "solution": "const express = require('express');\nconst router = express.Router();\nconst columnRoutes = require('./column.route');\nconst cardRoutes = require('./card.route');\n\n// API for columns\nrouter.use('/columns', columnRoutes);\n\n// API for cards\nrouter.use('/cards', cardRoutes);\n\nmodule.exports = router;",
+        "testCases": "1. Request đến `/v1/columns` được điều hướng đến `columnRoutes`.\n2. Request đến `/v1/cards` được điều hướng đến `cardRoutes`.\n3. File không có lỗi cú pháp."
+      }
+    ]
+  }
+}

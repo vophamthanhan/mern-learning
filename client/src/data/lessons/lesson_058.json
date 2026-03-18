@@ -1,0 +1,213 @@
+{
+  "id": 58,
+  "title": "Bài 42: Tips Thiết kế cơ sở dữ liệu NoSQL | MongoDB Database",
+  "category": "mongodb",
+  "categoryName": "MongoDB & Database",
+  "content": "# Bài 42: Tips Thiết kế cơ sở dữ liệu NoSQL | MongoDB Database\n\n## I. Mục tiêu bài học\n\nVideo này nhằm mục đích cung cấp cho người học những kiến thức và kinh nghiệm thực tế trong việc thiết kế cơ sở dữ liệu NoSQL, đặc biệt là với MongoDB. Sau khi hoàn thành bài học, người học có thể:\n\n*   Hiểu rõ các khái niệm cốt lõi của cơ sở dữ liệu NoSQL và MongoDB.\n*   Nắm được các nguyên tắc và phương pháp hay nhất (best practices) khi thiết kế schema cho MongoDB.\n*   Phân biệt và áp dụng các kỹ thuật như embedding và referencing một cách hiệu quả.\n*   Biết cách tối ưu hóa hiệu suất truy vấn thông qua việc đánh chỉ mục (indexing).\n*   Tự tin đưa ra các quyết định thiết kế CSDL phù hợp với yêu cầu của ứng dụng.\n\n## II. Kiến thức chi tiết\n\n### 1. Tổng quan về NoSQL và MongoDB\n\n#### a. NoSQL là gì?\n\n**NoSQL**, viết tắt của **\"Not Only SQL\"** hoặc **\"None-Relational SQL\"**, là một loại cơ sở dữ liệu không tuân theo mô hình quan hệ truyền thống của CSDL SQL. Thay vì lưu trữ dữ liệu trong các bảng có cấu trúc cố định (schema-on-write), NoSQL cho phép lưu trữ dữ liệu phi cấu trúc hoặc bán cấu trúc một cách linh hoạt (schema-on-read).\n\n*   **Ưu điểm:**\n    *   **Tính linh hoạt (Flexibility):** Dễ dàng thay đổi cấu trúc dữ liệu mà không cần định nghĩa lại toàn bộ schema.\n    *   **Khả năng mở rộng (Scalability):** Thường được thiết kế để mở rộng theo chiều ngang (horizontal scaling), cho phép xử lý lượng dữ liệu khổng lồ (Big Data) và lưu lượng truy cập cao.\n    *   **Hiệu suất cao:** Tối ưu hóa cho các hoạt động cụ thể như ghi (write) hoặc đọc (read) tốc độ cao.\n*   **Nhược điểm:**\n    *   **Tính nhất quán (Consistency):** Một số hệ thống NoSQL hy sinh tính nhất quán mạnh (strong consistency) để đổi lấy hiệu suất và tính sẵn sàng cao (high availability), tuân theo định lý CAP (Consistency, Availability, Partition tolerance).\n    *   **Không có ràng buộc phức tạp:** Thiếu các ràng buộc toàn vẹn dữ liệu phức tạp và các phép `JOIN` như trong CSDL quan hệ.\n\n#### b. MongoDB là gì?\n\n**MongoDB** là một hệ quản trị CSDL NoSQL mã nguồn mở, phổ biến, thuộc loại **hướng tài liệu (document-oriented)**. Dữ liệu trong MongoDB được lưu trữ dưới dạng các tài liệu BSON (Binary JSON), một định dạng nhị phân tương tự JSON.\n\n*   **Cấu trúc:** Database → Collections → Documents.\n    *   **Collection:** Tương đương với một bảng (table) trong CSDL quan hệ.\n    *   **Document:** Tương đương với một hàng (row), là một cấu trúc gồm các cặp `key:value`.\n\n*   **Ưu điểm của MongoDB:**\n    *   **Schema linh hoạt:** Các document trong cùng một collection không nhất thiết phải có cùng cấu trúc.\n    *   **Truy vấn mạnh mẽ:** Hỗ trợ truy vấn theo trường, truy vấn dải (range query), và tìm kiếm văn bản (text search).\n    *   **Dễ dàng mở rộng:** Hỗ trợ sharding để phân tán dữ liệu trên nhiều máy chủ.\n    *   **Hiệu suất cao:** Sử dụng bộ nhớ trong (in-memory) để tăng tốc độ truy vấn.\n\n### 2. Tips Thiết kế Cơ sở dữ liệu NoSQL với MongoDB\n\nThiết kế CSDL NoSQL đòi hỏi một tư duy khác biệt so với CSDL quan hệ. Thay vì chuẩn hóa dữ liệu để tránh trùng lặp, chúng ta thường **phi chuẩn hóa (denormalization)** để tối ưu cho việc đọc.\n\n#### a. Embedding (Nhúng) vs. Referencing (Tham chiếu)\n\nĐây là quyết định quan trọng nhất khi thiết kế schema trong MongoDB.\n\n*   **Embedding (Nhúng):** Lưu trữ dữ liệu liên quan bên trong một tài liệu duy nhất. Đây là cách tiếp cận **phi chuẩn hóa**.\n\n    ```json\n    // Ví dụ: Thông tin người dùng và các địa chỉ của họ được nhúng chung\n    {\n      \"_id\": \"user123\",\n      \"name\": \"TrungQuanDev\",\n      \"email\": \"trungquandev@gmail.com\",\n      \"addresses\": [\n        { \"street\": \"123 Nguyen Hue\", \"city\": \"Da Nang\" },\n        { \"street\": \"456 Le Loi\", \"city\": \"Ho Chi Minh\" }\n      ]\n    }\n    ```\n\n    *   **Khi nào nên dùng:**\n        *   Mối quan hệ \"chứa\" (contains) hoặc \"một-ít\" (one-to-few).\n        *   Dữ liệu liên quan thường được truy vấn cùng nhau.\n        *   Ưu tiên tốc độ đọc (chỉ cần một truy vấn để lấy tất cả dữ liệu).\n\n*   **Referencing (Tham chiếu):** Lưu trữ các tài liệu liên quan trong các collection riêng biệt và kết nối chúng bằng cách sử dụng ID tham chiếu. Đây là cách tiếp cận **chuẩn hóa**.\n\n    ```json\n    // Collection: users\n    {\n      \"_id\": \"user123\",\n      \"name\": \"TrungQuanDev\",\n      \"email\": \"trungquandev@gmail.com\"\n    }\n\n    // Collection: orders\n    {\n      \"_id\": \"order456\",\n      \"user_id\": \"user123\", // Tham chiếu đến user\n      \"total\": 100\n    }\n    ```\n\n    *   **Khi nào nên dùng:**\n        *   Mối quan hệ \"một-nhiều\" (one-to-many) với số lượng \"nhiều\" rất lớn.\n        *   Dữ liệu liên quan thường được truy vấn riêng biệt.\n        *   Tránh tài liệu quá lớn (MongoDB có giới hạn 16MB cho mỗi document).\n        *   Cần cập nhật các phần dữ liệu một cách độc lập.\n\n#### b. Lựa chọn Pattern phù hợp\n\nMongoDB có nhiều design pattern đã được chứng minh hiệu quả:\n\n*   **Attribute Pattern:** Nhóm các trường có liên quan với nhau vào một sub-document. Hữu ích khi có nhiều trường và một số ít được truy vấn thường xuyên.\n*   **Extended Reference Pattern:** Sao chép một vài trường thường dùng từ document \"một\" sang document \"nhiều\" để tránh phải `JOIN` (sử dụng `$lookup`).\n*   **Subset Pattern:** Chỉ lưu một tập con (subset) của dữ liệu trong document chính để xử lý các document lớn. Dữ liệu đầy đủ được lưu ở một collection khác.\n\n#### c. Tối ưu hóa với Indexing (Đánh chỉ mục)\n\nIndex giúp MongoDB tìm kiếm dữ liệu nhanh hơn rất nhiều. Nếu không có index, MongoDB sẽ phải quét toàn bộ collection (collection scan).\n\n*   **Các loại index phổ biến:**\n    *   **Single Field Index:** Index trên một trường duy nhất.\n    *   **Compound Index:** Index trên nhiều trường. Thứ tự các trường trong compound index rất quan trọng.\n    *   **Text Index:** Dành cho tìm kiếm văn bản.\n    *   **Geospatial Index:** Dành cho truy vấn dữ liệu vị trí địa lý.\n\n*   **Lưu ý khi tạo index:**\n    *   Chỉ index các trường thường được dùng để truy vấn.\n    *   Index làm tăng thời gian ghi (write) và tốn dung lượng lưu trữ.\n    *   Sử dụng `explain()` để phân tích hiệu suất truy vấn và xem liệu index có được sử dụng hay không.\n\n## III. Các bước thực hành\n\n1.  **Phân tích yêu cầu ứng dụng:** Xác định các đối tượng dữ liệu chính và mối quan hệ giữa chúng. Quan trọng nhất là xác định các mẫu truy cập dữ liệu (data access patterns): Dữ liệu nào thường được đọc cùng nhau? Tần suất đọc/ghi là bao nhiêu?\n2.  **Lựa chọn giữa Embedding và Referencing:** Dựa trên phân tích ở bước 1, quyết định xem nên nhúng dữ liệu hay tham chiếu cho từng mối quan hệ.\n    *   *Bài tập:* Thử thiết kế schema cho một blog đơn giản với các đối tượng: `User`, `Post`, `Comment`. Một `Post` có nhiều `Comment`. Nên nhúng `Comment` vào `Post` hay tham chiếu?\n3.  **Áp dụng Design Patterns:** Xem xét các pattern như Attribute, Extended Reference để tối ưu hóa schema.\n4.  **Xác định và tạo Indexes:** Dựa trên các truy vấn thường xuyên, xác định các trường cần đánh index để tăng tốc độ đọc.\n5.  **Kiểm tra và tinh chỉnh:** Sử dụng `explain()` để kiểm tra hiệu quả của index và tinh chỉnh schema nếu cần.\n\n## IV. Lưu ý quan trọng\n\n*   **Thiết kế schema dựa trên nhu cầu truy vấn của ứng dụng,** không phải dựa trên cấu trúc dữ liệu thuần túy như trong SQL.\n*   **Embedding không phải lúc nào cũng tốt.** Nó có thể dẫn đến các document quá lớn và làm chậm việc cập nhật nếu dữ liệu nhúng thay đổi thường xuyên.\n*   **Lạm dụng `$lookup` (tương tự `JOIN`) có thể làm giảm hiệu suất.** Hãy cố gắng thiết kế schema để hạn chế việc phải dùng `$lookup`.\n*   **Thứ tự các trường trong Compound Index ảnh hưởng lớn đến hiệu suất.** Hãy tuân theo quy tắc ESR (Equality, Sort, Range) khi thiết kế compound index.\n*   **Luôn theo dõi hiệu suất** và sẵn sàng điều chỉnh schema khi ứng dụng phát triển và yêu cầu thay đổi.\n\n## V. Tài liệu tham khảo\n\n1.  [Một cái nhìn tổng quan nhất về NoSQL và MongoDB - TrungQuanDev Blog](https://trungquandev.com/mot-cai-nhin-tong-quan-ve-nosql-va-mongodb/)\n2.  [MongoDB Documentation: Data Modeling Introduction](https://www.mongodb.com/docs/manual/core/data-modeling-introduction/)\n3.  [MongoDB Documentation: Data Model Design](https://www.mongodb.com/docs/manual/data-modeling/)\n4.  [Video: 42. Tips Thiết kế cơ sở dữ liệu NoSQL | MongoDB Database | NodeJS | TrungQuanDev](https://www.youtube.com/watch?v=a1dogHmrm1c)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Định nghĩa nào mô tả chính xác nhất về cơ sở dữ liệu NoSQL?",
+        "options": [
+          "Một cơ sở dữ liệu chỉ sử dụng ngôn ngữ truy vấn SQL.",
+          "Một loại cơ sở dữ liệu không tuân theo mô hình quan hệ truyền thống, cho phép lưu trữ dữ liệu phi cấu trúc một cách linh hoạt.",
+          "Một phiên bản nâng cấp của cơ sở dữ liệu SQL với hiệu suất cao hơn.",
+          "Một cơ sở dữ liệu chỉ dành cho việc lưu trữ dữ liệu dạng văn bản."
+        ],
+        "correctAnswer": 1,
+        "explanation": "NoSQL, viết tắt của \"Not Only SQL\", là một loại cơ sở dữ liệu không tuân theo mô hình quan hệ, được thiết kế để linh hoạt với dữ liệu phi cấu trúc hoặc bán cấu trúc."
+      },
+      {
+        "question": "MongoDB thuộc loại cơ sở dữ liệu NoSQL nào?",
+        "options": [
+          "Key-Value Store",
+          "Column-Family Store",
+          "Graph Database",
+          "Document-Oriented Database"
+        ],
+        "correctAnswer": 3,
+        "explanation": "MongoDB là một hệ quản trị CSDL NoSQL hướng tài liệu (document-oriented), lưu trữ dữ liệu dưới dạng các tài liệu BSON (Binary JSON)."
+      },
+      {
+        "question": "Trong MongoDB, một \"Collection\" tương đương với khái niệm nào trong CSDL quan hệ?",
+        "options": [
+          "Hàng (Row)",
+          "Bảng (Table)",
+          "Cột (Column)",
+          "Cơ sở dữ liệu (Database)"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một Collection trong MongoDB chứa các document và có thể được xem như tương đương với một Bảng (Table) trong CSDL quan hệ."
+      },
+      {
+        "question": "Quyết định thiết kế quan trọng nhất khi làm việc với schema trong MongoDB là gì?",
+        "options": [
+          "Chọn tên cho collection",
+          "Sử dụng `_id` mặc định hay tự định nghĩa",
+          "Lựa chọn giữa Embedding (nhúng) và Referencing (tham chiếu)",
+          "Quyết định số lượng trường trong một document"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc lựa chọn giữa nhúng dữ liệu liên quan vào một document duy nhất (Embedding) hay lưu chúng ở collection riêng và tham chiếu (Referencing) là quyết định cốt lõi, ảnh hưởng lớn đến hiệu suất và khả năng mở rộng."
+      },
+      {
+        "question": "Khi nào nên sử dụng kỹ thuật Embedding (Nhúng) trong MongoDB?",
+        "options": [
+          "Khi có mối quan hệ \"một-nhiều\" (one-to-many) với số lượng \"nhiều\" rất lớn.",
+          "Khi dữ liệu liên quan thường được cập nhật một cách độc lập.",
+          "Khi có mối quan hệ \"một-ít\" (one-to-few) và dữ liệu thường được truy vấn cùng nhau.",
+          "Khi cần tránh document vượt quá giới hạn 16KB."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Embedding là lựa chọn tốt cho mối quan hệ \"một-ít\" (one-to-few) hoặc \"chứa\", khi dữ liệu liên quan thường được đọc cùng lúc, giúp tối ưu tốc độ đọc bằng cách giảm số lượng truy vấn."
+      },
+      {
+        "question": "Kỹ thuật Referencing (Tham chiếu) được ưu tiên sử dụng trong trường hợp nào?",
+        "options": [
+          "Để tối ưu hóa tốc độ đọc bằng mọi giá.",
+          "Khi có mối quan hệ \"một-nhiều\" với số lượng \"nhiều\" rất lớn, hoặc khi các phần dữ liệu cần được cập nhật độc lập.",
+          "Khi muốn lưu tất cả dữ liệu vào một document duy nhất.",
+          "Khi dữ liệu không có mối quan hệ với nhau."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Referencing phù hợp cho các mối quan hệ \"một-nhiều\" lớn để tránh document quá lớn (giới hạn 16MB) và cho phép các phần dữ liệu được truy vấn hoặc cập nhật riêng biệt."
+      },
+      {
+        "question": "Mục đích chính của việc đánh chỉ mục (Indexing) trong MongoDB là gì?",
+        "options": [
+          "Để giảm dung lượng lưu trữ của database.",
+          "Để tăng tốc độ các thao tác ghi (write).",
+          "Để tăng tốc độ truy vấn dữ liệu bằng cách tránh quét toàn bộ collection.",
+          "Để thực thi các ràng buộc toàn vẹn dữ liệu phức tạp."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Index giúp MongoDB xác định vị trí của dữ liệu một cách nhanh chóng, tránh phải thực hiện collection scan (quét toàn bộ collection), từ đó cải thiện đáng kể hiệu suất truy vấn."
+      },
+      {
+        "question": "Điều gì sẽ xảy ra nếu bạn thực hiện một truy vấn trên một trường không được đánh chỉ mục (index)?",
+        "options": [
+          "MongoDB sẽ báo lỗi.",
+          "MongoDB sẽ tự động tạo một index cho trường đó.",
+          "MongoDB sẽ thực hiện một \"collection scan\", quét qua tất cả các document trong collection.",
+          "Truy vấn sẽ trả về kết quả rỗng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Nếu không có index hỗ trợ, MongoDB buộc phải quét toàn bộ collection để tìm các document phù hợp, việc này rất chậm và không hiệu quả trên các collection lớn."
+      },
+      {
+        "question": "Một Compound Index (Chỉ mục phức hợp) là gì?",
+        "options": [
+          "Một index được tạo trên một trường duy nhất.",
+          "Một index được tạo trên nhiều trường.",
+          "Một index chỉ dành cho tìm kiếm văn bản.",
+          "Một index tự động được tạo bởi MongoDB."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Compound Index là một chỉ mục được định nghĩa trên nhiều trường, giúp tăng tốc các truy vấn lọc theo tất cả hoặc một phần các trường đó. Thứ tự các trường trong index rất quan trọng."
+      },
+      {
+        "question": "Nhược điểm của việc tạo quá nhiều index là gì?",
+        "options": [
+          "Làm giảm tốc độ đọc (read).",
+          "Làm tăng thời gian ghi (write) và tốn thêm dung lượng lưu trữ.",
+          "Gây ra lỗi khi truy vấn dữ liệu.",
+          "Hạn chế khả năng mở rộng của database."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mỗi khi có thao tác ghi (insert, update, delete), MongoDB cũng phải cập nhật các index liên quan. Do đó, càng nhiều index thì thao tác ghi càng chậm và càng tốn dung lượng để lưu trữ các index đó."
+      },
+      {
+        "question": "Mục đích của việc sử dụng lệnh `explain()` trong MongoDB là gì?",
+        "options": [
+          "Để xóa một collection.",
+          "Để hiển thị chi tiết nội dung của một document.",
+          "Để phân tích kế hoạch thực thi và hiệu suất của một truy vấn, bao gồm cả việc nó có sử dụng index hay không.",
+          "Để tạo một bản sao của database."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lệnh `explain()` cung cấp thông tin chi tiết về cách MongoDB thực thi một truy vấn, giúp lập trình viên phân tích và tối ưu hóa hiệu suất, ví dụ như kiểm tra xem index có được sử dụng hiệu quả không."
+      },
+      {
+        "question": "Nguyên tắc cốt lõi khi thiết kế schema trong NoSQL là gì?",
+        "options": [
+          "Luôn chuẩn hóa dữ liệu để tránh trùng lặp.",
+          "Thiết kế schema dựa trên cấu trúc dữ liệu thuần túy, không quan tâm đến cách truy vấn.",
+          "Thiết kế schema dựa trên nhu cầu và các mẫu truy cập dữ liệu (data access patterns) của ứng dụng.",
+          "Luôn sử dụng embedding vì nó nhanh hơn."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khác với SQL, thiết kế schema trong NoSQL (và MongoDB) nên đi từ nhu cầu của ứng dụng. Bạn cần phân tích xem ứng dụng sẽ đọc và ghi dữ liệu như thế nào để cấu trúc schema cho hiệu quả nhất."
+      },
+      {
+        "question": "Giới hạn kích thước cho một document trong MongoDB là bao nhiêu?",
+        "options": [
+          "1MB",
+          "16MB",
+          "64MB",
+          "Không có giới hạn"
+        ],
+        "correctAnswer": 1,
+        "explanation": "MongoDB có giới hạn kích thước tối đa cho mỗi document là 16 megabytes. Đây là một yếu tố quan trọng cần cân nhắc khi quyết định sử dụng embedding cho các mảng dữ liệu lớn."
+      },
+      {
+        "question": "Mục đích của \"Extended Reference Pattern\" là gì?",
+        "options": [
+          "Luôn sử dụng `$lookup` để lấy dữ liệu liên quan.",
+          "Nhúng toàn bộ document liên quan vào document chính.",
+          "Sao chép một vài trường thường dùng từ document này sang document khác để tránh phải dùng `$lookup`.",
+          "Xóa bỏ hoàn toàn các tham chiếu giữa các collection."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Extended Reference Pattern là một kỹ thuật phi chuẩn hóa (denormalization), nơi bạn sao chép một số trường cần thiết từ document ở phía \"một\" sang các document ở phía \"nhiều\". Điều này giúp tránh được các thao tác `$lookup` tốn kém khi cần hiển thị thông tin tổng hợp."
+      },
+      {
+        "question": "Quy tắc ESR khi thiết kế Compound Index là viết tắt của gì?",
+        "options": [
+          "Equality, Speed, Range",
+          "Equality, Sort, Range",
+          "Embed, Sort, Reference",
+          "Equality, Sort, Read"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Quy tắc ESR (Equality, Sort, Range) là một phương pháp hay để xác định thứ tự các trường trong một compound index. Các trường dùng cho truy vấn so sánh bằng (Equality) nên đặt trước, tiếp theo là các trường dùng để sắp xếp (Sort), và cuối cùng là các trường dùng cho truy vấn theo khoảng (Range)."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Thiết kế Document cho Người dùng",
+        "description": "Hãy thiết kế một cấu trúc document JSON cho một người dùng (user) trong MongoDB. Document cần chứa các thông tin sau: tên (name), email, mật khẩu (password - đã được hash), và một mảng chứa các sở thích (hobbies).",
+        "starterCode": "// Bắt đầu thiết kế cấu trúc JSON của bạn tại đây\n{\n  \n}",
+        "solution": "{\n  \"name\": \"TrungQuanDev\",\n  \"email\": \"trungquandev@gmail.com\",\n  \"password\": \"a1b2c3d4e5f6...\",\n  \"hobbies\": [\"Coding\", \"Reading\", \"Traveling\"]\n}",
+        "testCases": "Kiểm tra xem document có chứa các trường `name`, `email`, `password`, và `hobbies` không. Kiểm tra xem `hobbies` có phải là một mảng các chuỗi (array of strings) không."
+      },
+      {
+        "title": "Lựa chọn: Embedding cho Blog Post và Comments",
+        "description": "Bạn đang thiết kế schema cho một blog. Một bài viết (Post) có thể có nhiều bình luận (Comments). Giả sử rằng số lượng bình luận cho mỗi bài viết thường không quá lớn và chúng luôn được hiển thị cùng với bài viết. Hãy chọn chiến lược Embedding và viết cấu trúc document cho một `Post` chứa các `Comments` được nhúng vào.",
+        "starterCode": "// Thiết kế cấu trúc JSON cho một Post với các Comment được nhúng\n{\n  \"_id\": \"postId1\",\n  \"title\": \"Giới thiệu về MongoDB\",\n  \"content\": \"Nội dung bài viết...\",\n  \"author_id\": \"authorId123\",\n  \"comments\": [\n    // Thêm các comment được nhúng vào đây\n  ]\n}",
+        "solution": "{\n  \"_id\": \"postId1\",\n  \"title\": \"Giới thiệu về MongoDB\",\n  \"content\": \"Nội dung bài viết...\",\n  \"author_id\": \"authorId123\",\n  \"comments\": [\n    {\n      \"user_id\": \"userId456\",\n      \"username\": \"UserA\",\n      \"text\": \"Bài viết rất hay!\",\n      \"timestamp\": \"2023-10-27T10:00:00Z\"\n    },\n    {\n      \"user_id\": \"userId789\",\n      \"username\": \"UserB\",\n      \"text\": \"Cảm ơn tác giả.\",\n      \"timestamp\": \"2023-10-27T11:30:00Z\"\n    }\n  ]\n}",
+        "testCases": "Kiểm tra xem trường `comments` có phải là một mảng các object không. Mỗi object comment phải chứa các thông tin cơ bản như `user_id`, `username`, `text`, và `timestamp`. Giải thích tại sao embedding là lựa chọn tốt trong trường hợp này (tối ưu cho việc đọc, mối quan hệ one-to-few)."
+      },
+      {
+        "title": "Áp dụng Extended Reference Pattern",
+        "description": "Bạn có hai collection: `products` và `orders`. Một đơn hàng (`order`) sẽ tham chiếu đến một sản phẩm (`product`). Để tránh phải dùng `$lookup` mỗi khi hiển thị danh sách đơn hàng, hãy áp dụng \"Extended Reference Pattern\". Sửa đổi schema của `orders` để nó chứa thêm `product_name` và `product_price` được sao chép từ collection `products`.",
+        "starterCode": "// Collection: products\n{\n  \"_id\": \"prod123\",\n  \"name\": \"Laptop Pro\",\n  \"price\": 1500,\n  \"stock\": 50\n}\n\n// Collection: orders (cần sửa đổi)\n{\n  \"_id\": \"order456\",\n  \"user_id\": \"user789\",\n  \"product_id\": \"prod123\",\n  \"quantity\": 2\n}",
+        "solution": "// Collection: products (không đổi)\n{\n  \"_id\": \"prod123\",\n  \"name\": \"Laptop Pro\",\n  \"price\": 1500,\n  \"stock\": 50\n}\n\n// Collection: orders (đã áp dụng pattern)\n{\n  \"_id\": \"order456\",\n  \"user_id\": \"user789\",\n  \"product_id\": \"prod123\",\n  \"product_name\": \"Laptop Pro\", // trường được sao chép\n  \"product_price\": 1500, // trường được sao chép\n  \"quantity\": 2\n}",
+        "testCases": "Kiểm tra xem schema của `orders` có chứa thêm các trường `product_name` và `product_price` bên cạnh `product_id` không. Giải thích lợi ích của việc này (tránh được truy vấn `$lookup` tốn kém, tăng tốc độ đọc) và nhược điểm (dữ liệu có thể không nhất quán nếu không được cập nhật đồng bộ)."
+      },
+      {
+        "title": "Tạo Compound Index",
+        "description": "Một ứng dụng thương mại điện tử thường xuyên có truy vấn tìm kiếm sản phẩm theo `category` (so sánh bằng), sau đó sắp xếp theo `price` (thứ tự tăng dần). Hãy viết lệnh trong `mongo` shell để tạo một Compound Index phù hợp cho truy vấn này trên collection `products`.",
+        "starterCode": "// Viết lệnh tạo Compound Index tại đây\ndb.products.createIndex(...);",
+        "solution": "db.products.createIndex({ \"category\": 1, \"price\": 1 });",
+        "testCases": "Kiểm tra xem lệnh có đúng cú pháp `createIndex` không. Index phải được tạo trên hai trường. Trường `category` phải đứng trước `price` theo quy tắc ESR (Equality trước, sau đó đến Sort). `1` biểu thị cho việc sắp xếp tăng dần."
+      },
+      {
+        "title": "Phân tích Schema: Người dùng và Đơn hàng",
+        "description": "Một người dùng (`User`) có thể có rất nhiều đơn hàng (`Order`), có thể lên tới hàng nghìn đơn hàng trong suốt cuộc đời của họ. Dữ liệu chi tiết của mỗi đơn hàng ít khi được xem cùng lúc với thông tin cá nhân của người dùng. Dựa trên các nguyên tắc đã học, hãy quyết định nên dùng Embedding hay Referencing cho mối quan hệ này. Viết ra cấu trúc schema cho cả hai collection `users` và `orders`.",
+        "starterCode": "// Phân tích và thiết kế schema cho users và orders\n\n// Collection: users\n{\n  ...\n}\n\n// Collection: orders\n{\n  ...\n}",
+        "solution": "// Chiến lược được chọn: Referencing (Tham chiếu)\n\n// Collection: users\n{\n  \"_id\": \"user123\",\n  \"name\": \"Nguyen Van A\",\n  \"email\": \"nguyenvana@example.com\"\n}\n\n// Collection: orders\n{\n  \"_id\": \"order789\",\n  \"user_id\": \"user123\", // Tham chiếu đến user\n  \"order_date\": \"2023-10-27T14:00:00Z\",\n  \"total_amount\": 500,\n  \"items\": [\n    { \"product_id\": \"prod1\", \"quantity\": 1 },\n    { \"product_id\": \"prod5\", \"quantity\": 3 }\n  ]\n}",
+        "testCases": "Kiểm tra xem có hai schema riêng biệt cho `users` và `orders` không. Schema `orders` phải chứa một trường tham chiếu đến `users` (ví dụ: `user_id`). Giải thích tại sao Referencing là lựa chọn tối ưu: mối quan hệ \"một-nhiều\" (one-to-many) với số lượng \"nhiều\" rất lớn, tránh tạo ra document `user` khổng lồ vượt quá 16MB, và dữ liệu đơn hàng thường được truy vấn độc lập với thông tin người dùng."
+      }
+    ]
+  }
+}

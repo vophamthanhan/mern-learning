@@ -1,0 +1,213 @@
+{
+  "id": 80,
+  "title": "Bài học 62: What's wrong with CORS? | Many people misunderstand CORS",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Bài học 62: What's wrong with CORS? | Many people misunderstand CORS\n\n## I. Mục tiêu bài học\n\nVideo này nhằm mục đích giải thích một cách chi tiết và sâu sắc về CORS (Cross-Origin Resource Sharing), một khái niệm mà nhiều lập trình viên, đặc biệt là các bạn mới vào nghề, thường hiểu sai. Mục tiêu chính bao gồm:\n\n-   **Làm rõ bản chất của CORS:** Hiểu rằng CORS không phải là một \"lỗi\" mà là một cơ chế bảo mật của trình duyệt.\n-   **Phân biệt Same-Origin Policy và CORS:** Nắm vững khái niệm Same-Origin Policy (SOP) là nền tảng và CORS là cách để \"nới lỏng\" chính sách này một cách có kiểm soát.\n-   **Giải thích các hiểu lầm phổ biến:** Phân tích tại sao các công cụ như Postman không gặp lỗi CORS và tại sao lỗi này chỉ xuất hiện khi gọi API từ trình duyệt.\n-   **Hướng dẫn cấu hình CORS phía Back-end:** Cung cấp các bước thực hành chi tiết để cấu hình CORS một cách chính xác trong một ứng dụng NodeJS/Express, cho phép Front-end từ một origin khác có thể truy cập tài nguyên.\n\n## II. Kiến thức chi tiết\n\n### 1. Nền tảng: Same-Origin Policy (SOP)\n\nTrước khi tìm hiểu về CORS, chúng ta cần nắm vững **Chính sách Cùng Nguồn Gốc (Same-Origin Policy - SOP)**. Đây là một chính sách bảo mật cốt lõi được tích hợp trong tất cả các trình duyệt web hiện đại.\n\n> **Định nghĩa:** Một \"origin\" (nguồn gốc) được định nghĩa bởi sự kết hợp của ba yếu tố: **scheme** (giao thức, ví dụ: `http`, `httpshttps`), **hostname** (tên miền, ví dụ: `trungquandev.com`), và **port** (cổng, ví dụ: `80`, `443`).\n\nSOP quy định rằng một trang web tại một origin chỉ có thể tự do truy cập tài nguyên (ví dụ: gọi API, đọc nội dung iframe) từ chính origin đó. Bất kỳ yêu cầu nào đến một origin khác (khác scheme, hostname, hoặc port) đều được coi là \"cross-origin\" và sẽ bị trình duyệt chặn lại vì lý do bảo mật. Chính sách này giúp ngăn chặn các cuộc tấn công độc hại, ví dụ như một trang web xấu không thể đọc được dữ liệu nhạy cảm từ tài khoản ngân hàng của bạn đang mở ở một tab khác.\n\n| URL Yêu Cầu | URL Đích | Cùng Nguồn Gốc? | Lý Do | \n| :--- | :--- | :--- | :--- | \n| `http://example.com/app/` | `http://example.com/api/` | Có | Cùng scheme, host, port | \n| `http://example.com/app/` | `https://example.com/api/` | Không | Khác scheme (http vs https) | \n| `http://example.com/app/` | `http://www.example.com/api/` | Không | Khác hostname | \n| `http://example.com/app/` | `http://example.com:8080/api/` | Không | Khác port (80 vs 8080) | \n\n### 2. CORS (Cross-Origin Resource Sharing) là gì?\n\nKhi các ứng dụng web ngày càng phức tạp (ví dụ: kiến trúc microservices, ứng dụng trang đơn - SPA), nhu cầu gọi tài nguyên từ các origin khác nhau trở nên phổ biến. CORS ra đời như một giải pháp.\n\n**CORS không phải là lỗi.** Nó là một cơ chế dựa trên HTTP-header, cho phép server chỉ định bất kỳ origin nào khác (ngoài origin của chính nó) được phép tải tài nguyên. Nói cách khác, CORS là một cách để **server back-end thông báo cho trình duyệt** rằng: \"Này trình duyệt, tôi cho phép các yêu cầu từ origin `http://localhost:3000` truy cập tài nguyên của tôi. Đừng chặn nó.\"\n\n### 3. Tại sao Postman, cURL không bị lỗi CORS?\n\nĐây là một trong những hiểu lầm lớn nhất. Lỗi CORS **chỉ do trình duyệt thực thi**. Các công cụ như Postman, cURL, hoặc các kịch bản back-end khác không phải là trình duyệt và chúng không triển khai Same-Origin Policy. Do đó, chúng có thể gửi yêu cầu đến bất kỳ origin nào mà không bị chặn. Vấn đề không nằm ở server, mà nằm ở **cơ chế bảo mật của trình duyệt** nơi ứng dụng front-end của bạn đang chạy.\n\n### 4. Luồng hoạt động của CORS\n\nCORS hoạt động thông qua việc trao đổi các HTTP header giữa trình duyệt và server. Có hai loại yêu cầu chính:\n\n#### a. Yêu cầu đơn giản (Simple Requests)\n\nMột yêu cầu được coi là \"đơn giản\" nếu nó thỏa mãn TẤT CẢ các điều kiện sau:\n\n-   Method là `GET`, `HEAD`, hoặc `POST`.\n-   Header chỉ chứa các mục an toàn như `Accept`, `Accept-Language`, `Content-Language`, `Content-Type` (với một số giá trị nhất định).\n\nKhi một yêu cầu đơn giản được gửi đi, trình duyệt sẽ tự động thêm header `Origin` vào yêu cầu. Server nhận được yêu cầu, kiểm tra header `Origin` và quyết định có cho phép hay không. Nếu cho phép, server sẽ trả về response với header `Access-Control-Allow-Origin` chứa giá trị của origin được phép (hoặc `*` để cho phép tất cả).\n\n#### b. Yêu cầu Preflight (Preflighted Requests)\n\nBất kỳ yêu cầu nào không phải là \"yêu cầu đơn giản\" (ví dụ: sử dụng method `PUT`, `DELETE`, hoặc có các header tùy chỉnh như `Authorization`) đều phải trải qua một yêu cầu \"kiểm tra\" gọi là **preflight request**.\n\n1.  **Yêu cầu OPTIONS:** Trước khi gửi yêu cầu chính, trình duyệt sẽ tự động gửi một yêu cầu với method là `OPTIONS` đến server. Yêu cầu này chứa các header như `Access-Control-Request-Method` (method của yêu cầu chính) và `Access-Control-Request-Headers` (các header sẽ được gửi).\n2.  **Phản hồi từ Server:** Server nhận yêu cầu `OPTIONS`, kiểm tra và nếu chấp nhận, sẽ phản hồi lại với các header `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods`, `Access-Control-Allow-Headers`.\n3.  **Gửi yêu cầu chính:** Nếu phản hồi từ yêu cầu `OPTIONS` hợp lệ, trình duyệt mới tiếp tục gửi yêu cầu chính (ví dụ: `PUT`, `DELETE`). Nếu không, trình duyệt sẽ báo lỗi CORS và hủy yêu cầu chính.\n\n## III. Các bước thực hành\n\nTrong video, tác giả hướng dẫn cấu hình CORS cho một ứng dụng ExpressJS bằng thư viện `cors`.\n\n### Bước 1: Cài đặt thư viện `cors`\n\n```bash\n# Sử dụng npm\nnpm install cors\n\n# Hoặc sử dụng yarn\nyarn add cors\n```\n\n### Bước 2: Sử dụng `cors` trong ứng dụng Express\n\nCách đơn giản nhất là cho phép tất cả các origin, nhưng cách này **không được khuyến khích trong môi trường production** vì lý do bảo mật.\n\n```javascript\nimport express from 'express'\nimport cors from 'cors'\n\nconst app = express()\n\n// Sử dụng cors middleware\n// Cách 1: Cho phép tất cả các origin (không an toàn cho production)\napp.use(cors())\n\n// ... Các route khác của bạn\n```\n\n### Bước 3: Cấu hình chi tiết cho `cors` (Best Practice)\n\nTrong thực tế, bạn nên chỉ định rõ những origin nào được phép truy cập. Đây là cách làm an toàn và được khuyến nghị.\n\n```javascript\nimport express from 'express'\nimport cors from 'cors'\n\nconst app = express()\n\n// Định nghĩa các origin được phép\nconst whitelist = ['http://localhost:3000', 'http://example.com']\n\nconst corsOptions = {\n  origin: function (origin, callback) {\n    // Cho phép các yêu cầu không có origin (ví dụ: Postman, mobile apps)\n    if (!origin) {\n      return callback(null, true)\n    }\n    if (whitelist.indexOf(origin) !== -1) {\n      callback(null, true)\n    } else {\n      callback(new Error(`${origin} not allowed by CORS.`))\n    }\n  },\n  // Một số tùy chọn khác bạn có thể muốn cấu hình\n  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Các method được phép\n  credentials: true, // Cho phép gửi cookie\n  allowedHeaders: ['Content-Type', 'Authorization'] // Các header được phép\n}\n\n// Sử dụng cors middleware với cấu hình chi tiết\napp.use(cors(corsOptions))\n\n// ... Các route khác của bạn\n```\n\n## IV. Lưu ý quan trọng\n\n-   **CORS là bạn, không phải thù:** Hãy coi CORS như một người bảo vệ cho ứng dụng của bạn, không phải một lỗi phiền phức. Hiểu đúng về nó sẽ giúp bạn xây dựng các ứng dụng an toàn hơn.\n-   **Không bao giờ dùng `origin: '*'` trong production:** Việc cho phép tất cả các origin có thể tạo ra lỗ hổng bảo mật nghiêm trọng. Luôn sử dụng một danh sách trắng (whitelist) các domain cụ thể.\n-   **Lỗi CORS luôn xuất hiện ở phía client (trình duyệt):** Nếu bạn gặp lỗi CORS, hãy kiểm tra console của trình duyệt. Lỗi sẽ không xuất hiện trong log của server back-end.\n-   **Kiểm tra cấu hình server:** Đảm bảo rằng server của bạn đang trả về đúng các header `Access-Control-*` cần thiết.\n\n## V. Tài liệu tham khảo\n\n1.  [Video 62. What's wrong with CORS? | Many people misunderstand CORS | TrungQuanDev](https://www.youtube.com/watch?v=iYgAWJ2Djkw)\n2.  [Cross-Origin Resource Sharing (CORS) - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)\n3.  [trungquandev-public-utilities-algorithms - GitHub](https://github.com/trungquandev/trungquandev-public-utilities-algorithms)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Chính sách nào của trình duyệt ngăn chặn các yêu cầu từ một origin khác theo mặc định?",
+        "options": [
+          "Cross-Origin Resource Sharing (CORS)",
+          "Same-Origin Policy (SOP)",
+          "Content Security Policy (CSP)",
+          "Access-Control-Allow-Origin Policy"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Same-Origin Policy (SOP) là một chính sách bảo mật cốt lõi của trình duyệt, quy định rằng một trang web chỉ có thể truy cập tài nguyên từ chính origin của nó. CORS là cơ chế để nới lỏng chính sách này."
+      },
+      {
+        "question": "Một 'origin' (nguồn gốc) được định nghĩa bởi sự kết hợp của ba yếu tố nào?",
+        "options": [
+          "Scheme, Hostname, và Path",
+          "Scheme, Hostname, và Port",
+          "Protocol, Domain, và URL",
+          "Hostname, Port, và IP Address"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một origin được định nghĩa bởi sự kết hợp của scheme (giao thức như http, https), hostname (tên miền), và port (cổng)."
+      },
+      {
+        "question": "Tại sao các công cụ như Postman hoặc cURL không gặp lỗi CORS?",
+        "options": [
+          "Vì chúng tự động thêm header 'Access-Control-Allow-Origin: *' vào mọi yêu cầu.",
+          "Vì chúng chạy trên server, không phải trình duyệt, và không thực thi Same-Origin Policy.",
+          "Vì chúng chỉ gửi được các 'yêu cầu đơn giản' (Simple Requests).",
+          "Vì server back-end luôn tin tưởng các yêu cầu từ Postman."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lỗi CORS là do trình duyệt thực thi chính sách Same-Origin. Các công cụ như Postman, cURL không phải là trình duyệt nên chúng không bị ràng buộc bởi chính sách này."
+      },
+      {
+        "question": "Khi nào một 'Preflight Request' được trình duyệt tự động gửi đi?",
+        "options": [
+          "Khi gửi yêu cầu GET tới một origin khác.",
+          "Khi yêu cầu không phải là 'yêu cầu đơn giản', ví dụ như dùng method PUT, DELETE hoặc có header tùy chỉnh.",
+          "Mỗi khi một yêu cầu cross-origin được thực hiện.",
+          "Chỉ khi server yêu cầu xác thực bằng header 'Authorization'."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Preflight request (sử dụng method OPTIONS) được gửi trước yêu cầu chính khi yêu cầu đó không đủ điều kiện là 'yêu cầu đơn giản', ví dụ như sử dụng các method nguy hiểm (PUT, DELETE) hoặc header không chuẩn."
+      },
+      {
+        "question": "Header nào server cần trả về để cho phép một origin cụ thể truy cập tài nguyên?",
+        "options": [
+          "Origin",
+          "Access-Control-Allow-Methods",
+          "Access-Control-Allow-Origin",
+          "Access-Control-Request-Headers"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Server phải trả về header 'Access-Control-Allow-Origin' với giá trị là origin được phép (ví dụ: 'http://localhost:3000') hoặc '*' để thông báo cho trình duyệt rằng yêu cầu là hợp lệ."
+      },
+      {
+        "question": "Trong thư viện `cors` của Express, cách cấu hình nào sau đây được coi là KHÔNG an toàn cho môi trường production?",
+        "options": [
+          "app.use(cors({ origin: 'http://my-trusted-site.com' }))",
+          "app.use(cors({ origin: false }))",
+          "app.use(cors())",
+          "app.use(cors({ origin: ['http://site1.com', 'http://site2.com'] }))"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`app.use(cors())` tương đương với việc cho phép tất cả các origin (`origin: '*'`), tạo ra một lỗ hổng bảo mật tiềm tàng vì bất kỳ trang web nào cũng có thể gửi yêu cầu đến API của bạn từ trình duyệt."
+      },
+      {
+        "question": "URL nào sau đây được coi là 'cross-origin' so với `http://example.com/app/`?",
+        "options": [
+          "`http://example.com/api/`",
+          "`http://example.com/app/page2`",
+          "`https://example.com/app/`",
+          "Tất cả các câu trên đều sai"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`https://example.com/app/` khác 'scheme' (giao thức) so với `http://example.com/app/` (https vs http), do đó nó là một origin khác."
+      },
+      {
+        "question": "Mục đích của Preflight Request (sử dụng method OPTIONS) là gì?",
+        "options": [
+          "Để lấy dữ liệu chính từ server.",
+          "Để kiểm tra xem server có hiểu và chấp nhận yêu cầu chính sắp được gửi đi hay không.",
+          "Để xóa cache của trình duyệt trước khi gửi yêu cầu mới.",
+          "Để lấy danh sách tất cả các origin được phép."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Preflight request là một cơ chế an toàn, cho phép trình duyệt 'hỏi' server xem yêu cầu phức tạp (ví dụ: PUT với header Authorization) có được phép hay không trước khi thực sự gửi nó đi."
+      },
+      {
+        "question": "Trong cấu hình `corsOptions` của Express, thuộc tính `credentials: true` có ý nghĩa gì?",
+        "options": [
+          "Yêu cầu client phải gửi username và password.",
+          "Cho phép server gửi thông tin xác thực về cho client.",
+          "Cho phép client gửi các thông tin như cookie hoặc header Authorization trong yêu cầu cross-origin.",
+          "Bắt buộc phải sử dụng giao thức HTTPS."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi `credentials: true` được bật, nó cho phép trình duyệt gửi các thông tin nhạy cảm như cookie và header Authorization cùng với yêu cầu cross-origin. Server cũng phải trả về header `Access-Control-Allow-Credentials: true`."
+      },
+      {
+        "question": "Lỗi CORS xuất hiện ở đâu?",
+        "options": [
+          "Trong log của server Back-end.",
+          "Trong cửa sổ console của trình duyệt phía Client.",
+          "Trong log của công cụ Postman.",
+          "Trong file cấu hình của database."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lỗi CORS là do trình duyệt chặn yêu cầu, vì vậy thông báo lỗi sẽ luôn xuất hiện trong console của trình duyệt, không phải ở phía server."
+      },
+      {
+        "question": "Để cho phép các method `GET`, `POST`, và `PUT` trong một yêu cầu cross-origin, server cần trả về header nào trong phản hồi preflight?",
+        "options": [
+          "`Access-Control-Allow-Origin: *`",
+          "`Access-Control-Request-Method: GET, POST, PUT`",
+          "`Allowed-Methods: GET, POST, PUT`",
+          "`Access-Control-Allow-Methods: GET, POST, PUT`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Header `Access-Control-Allow-Methods` được server sử dụng để chỉ định những method HTTP nào được phép cho các yêu cầu cross-origin."
+      },
+      {
+        "question": "Một yêu cầu được coi là 'Simple Request' nếu thỏa mãn điều kiện nào sau đây?",
+        "options": [
+          "Method là PUT hoặc DELETE.",
+          "Content-Type là 'application/json'.",
+          "Method là GET, HEAD, hoặc POST và không có header tùy chỉnh.",
+          "Yêu cầu có chứa header 'Authorization'."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Yêu cầu đơn giản bị giới hạn ở các method GET, HEAD, POST và chỉ một số header nhất định. Bất kỳ yếu tố nào khác, như method PUT hoặc header tùy chỉnh, sẽ biến nó thành một yêu cầu cần preflight."
+      },
+      {
+        "question": "Khi cấu hình `cors` trong Express, việc sử dụng một `whitelist` (danh sách trắng) các origin có mục đích gì?",
+        "options": [
+          "Để chặn tất cả các yêu cầu từ bên ngoài.",
+          "Để chỉ cho phép các yêu cầu từ những origin cụ thể, đáng tin cậy, tăng cường bảo mật.",
+          "Để ghi lại log của tất cả các origin đã truy cập.",
+          "Để cho phép tất cả các origin nhưng ưu tiên những origin trong danh sách."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sử dụng whitelist là một best practice trong bảo mật, đảm bảo rằng chỉ các ứng dụng front-end mà bạn tin tưởng mới có thể tương tác với API của bạn từ trình duyệt."
+      },
+      {
+        "question": "Nếu một yêu cầu cross-origin bị trình duyệt từ chối ở bước preflight, điều gì sẽ xảy ra tiếp theo?",
+        "options": [
+          "Trình duyệt vẫn gửi yêu cầu chính nhưng server sẽ từ chối.",
+          "Trình duyệt báo lỗi CORS trong console và hủy bỏ việc gửi yêu cầu chính.",
+          "Trình duyệt thử lại yêu cầu preflight sau một khoảng thời gian.",
+          "Trình duyệt gửi yêu cầu chính mà không có các header tùy chỉnh."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu phản hồi cho yêu cầu OPTIONS (preflight) không hợp lệ hoặc không được server cho phép, trình duyệt sẽ ngay lập tức dừng quá trình và báo lỗi CORS, yêu cầu chính sẽ không bao giờ được gửi đi."
+      },
+      {
+        "question": "Header `Origin` trong một yêu cầu HTTP có vai trò gì trong cơ chế CORS?",
+        "options": [
+          "Nó được server gửi đến để cho biết server đến từ origin nào.",
+          "Nó được trình duyệt tự động thêm vào để cho server biết yêu cầu đến từ origin nào.",
+          "Nó chỉ định origin mà client muốn nhận dữ liệu từ đó.",
+          "Nó là một header tùy chọn và không bắt buộc cho CORS."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trình duyệt tự động đính kèm header `Origin` vào mọi yêu cầu cross-origin. Server sẽ đọc header này để quyết định xem có nên cho phép yêu cầu hay không."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cấu hình CORS đơn giản nhất",
+        "description": "Trong file server Express, hãy import và sử dụng thư viện `cors` để cho phép TẤT CẢ các yêu cầu từ mọi origin.",
+        "starterCode": "import express from 'express';\n// import cors from 'cors'; // Bỏ comment dòng này\n\nconst app = express();\nconst port = 8080;\n\n// TODO: Thêm middleware cors tại đây để cho phép mọi origin\n\napp.get('/api/test', (req, res) => {\n  res.json({ message: 'CORS is enabled!' });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on port ${port}`);\n});",
+        "solution": "import express from 'express';\nimport cors from 'cors';\n\nconst app = express();\nconst port = 8080;\n\n// Sử dụng cors middleware để cho phép mọi origin\napp.use(cors());\n\napp.get('/api/test', (req, res) => {\n  res.json({ message: 'CORS is enabled!' });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on port ${port}`);\n});",
+        "testCases": "Sau khi chạy server, hãy thử gọi API GET '/api/test' từ một file HTML mở bằng trình duyệt (live server) trên một port khác (ví dụ: 5500). Yêu cầu phải thành công và không có lỗi CORS."
+      },
+      {
+        "title": "Bài 2: Chỉ cho phép một Origin cụ thể",
+        "description": "Cấu hình middleware `cors` để chỉ chấp nhận các yêu cầu đến từ origin `http://localhost:3000`.",
+        "starterCode": "import express from 'express';\nimport cors from 'cors';\n\nconst app = express();\nconst port = 8080;\n\n// TODO: Cấu hình cors để chỉ cho phép origin 'http://localhost:3000'\n\napp.get('/api/data', (req, res) => {\n  res.json({ data: 'This is protected data.' });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on port ${port}`);\n});",
+        "solution": "import express from 'express';\nimport cors from 'cors';\n\nconst app = express();\nconst port = 8080;\n\n// Cấu hình cors để chỉ cho phép origin 'http://localhost:3000'\napp.use(cors({ origin: 'http://localhost:3000' }));\n\napp.get('/api/data', (req, res) => {\n  res.json({ data: 'This is protected data.' });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on port ${port}`);\n});",
+        "testCases": "1. Gọi API từ `http://localhost:3000` -> Yêu cầu thành công. 2. Gọi API từ một origin khác (ví dụ: `http://localhost:5500`) -> Yêu cầu bị chặn bởi CORS."
+      },
+      {
+        "title": "Bài 3: Sử dụng Whitelist cho nhiều Origins",
+        "description": "Tạo một danh sách trắng (whitelist) chứa các origin: `http://localhost:3000` và `https://my-production-app.com`. Cấu hình `cors` để chỉ chấp nhận yêu cầu từ các origin trong whitelist đó.",
+        "starterCode": "import express from 'express';\nimport cors from 'cors';\n\nconst app = express();\nconst port = 8080;\n\nconst whitelist = []; // TODO: Thêm các origin được phép vào đây\n\nconst corsOptions = {\n  origin: function (origin, callback) {\n    // TODO: Viết logic kiểm tra origin có trong whitelist hay không\n  }\n};\n\napp.use(cors(corsOptions));\n\napp.get('/api/user', (req, res) => {\n  res.json({ user: 'Admin' });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on port ${port}`);\n});",
+        "solution": "import express from 'express';\nimport cors from 'cors';\n\nconst app = express();\nconst port = 8080;\n\nconst whitelist = ['http://localhost:3000', 'https://my-production-app.com'];\n\nconst corsOptions = {\n  origin: function (origin, callback) {\n    if (whitelist.indexOf(origin) !== -1 || !origin) {\n      callback(null, true);\n    } else {\n      callback(new Error('Not allowed by CORS'));\n    }\n  }\n};\n\napp.use(cors(corsOptions));\n\napp.get('/api/user', (req, res) => {\n  res.json({ user: 'Admin' });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on port ${port}`);\n});",
+        "testCases": "1. Gọi API từ `http://localhost:3000` -> Thành công. 2. Gọi API từ `https://my-production-app.com` -> Thành công. 3. Gọi API từ `http://some-other-site.com` -> Bị chặn."
+      },
+      {
+        "title": "Bài 4: Cấu hình Methods và Headers được phép",
+        "description": "Mở rộng cấu hình CORS từ bài 3. Ngoài việc kiểm tra origin, hãy cấu hình để chỉ cho phép các method `GET`, `POST`, `DELETE` và chỉ cho phép client gửi header `Authorization`.",
+        "starterCode": "import express from 'express';\nimport cors from 'cors';\n\nconst app = express();\nconst port = 8080;\n\nconst whitelist = ['http://localhost:3000'];\n\nconst corsOptions = {\n  origin: function (origin, callback) {\n    if (whitelist.indexOf(origin) !== -1 || !origin) {\n      callback(null, true);\n    } else {\n      callback(new Error('Not allowed by CORS'));\n    }\n  },\n  // TODO: Thêm cấu hình cho methods và allowedHeaders\n};\n\napp.use(cors(corsOptions));\n\napp.delete('/api/resource/:id', (req, res) => {\n  res.json({ message: `Resource ${req.params.id} deleted` });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on port ${port}`);\n});",
+        "solution": "import express from 'express';\nimport cors from 'cors';\n\nconst app = express();\nconst port = 8080;\n\nconst whitelist = ['http://localhost:3000'];\n\nconst corsOptions = {\n  origin: function (origin, callback) {\n    if (whitelist.indexOf(origin) !== -1 || !origin) {\n      callback(null, true);\n    } else {\n      callback(new Error('Not allowed by CORS'));\n    }\n  },\n  methods: ['GET', 'POST', 'DELETE'],\n  allowedHeaders: ['Content-Type', 'Authorization']\n};\n\napp.use(cors(corsOptions));\n\napp.delete('/api/resource/:id', (req, res) => {\n  res.json({ message: `Resource ${req.params.id} deleted` });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on port ${port}`);\n});",
+        "testCases": "1. Gửi yêu cầu DELETE từ `http://localhost:3000` với header `Authorization` -> Thành công (sau preflight). 2. Gửi yêu cầu PUT -> Bị chặn vì method không được phép. 3. Gửi yêu cầu DELETE mà không có header `Authorization` -> Thành công (nhưng logic ứng dụng có thể từ chối sau đó)."
+      },
+      {
+        "title": "Bài 5: Hoàn thiện Logic kiểm tra Origin",
+        "description": "Dựa theo best practice trong bài học, hãy hoàn thiện hàm `origin` trong `corsOptions`. Hàm này phải: 1. Cho phép các yêu cầu không có origin (ví dụ: Postman, mobile apps). 2. Kiểm tra xem origin của yêu cầu có nằm trong whitelist hay không. 3. Nếu không hợp lệ, gọi callback với một đối tượng Error chứa thông báo lỗi rõ ràng.",
+        "starterCode": "import express from 'express';\nimport cors from 'cors';\n\nconst app = express();\nconst port = 8080;\n\nconst whitelist = ['http://localhost:3000', 'https://my-app.com'];\n\nconst corsOptions = {\n  origin: function (origin, callback) {\n    // Yêu cầu: Viết lại hoàn toàn logic này theo best practice\n    // 1. Nếu request không có origin (server-to-server, Postman), cho phép.\n    // 2. Nếu origin có trong whitelist, cho phép.\n    // 3. Nếu không, từ chối với lỗi.\n    callback(null, true); // Dòng code tạm thời, cần thay thế\n  }\n};\n\napp.use(cors(corsOptions));\n\napp.get('/api/status', (req, res) => {\n  res.json({ status: 'OK' });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on port ${port}`);\n});",
+        "solution": "import express from 'express';\nimport cors from 'cors';\n\nconst app = express();\nconst port = 8080;\n\nconst whitelist = ['http://localhost:3000', 'https://my-app.com'];\n\nconst corsOptions = {\n  origin: function (origin, callback) {\n    // Cho phép các yêu cầu không có origin (ví dụ: Postman, mobile apps)\n    if (!origin) {\n      return callback(null, true);\n    }\n    // Kiểm tra origin có trong whitelist không\n    if (whitelist.indexOf(origin) !== -1) {\n      callback(null, true);\n    } else {\n      // Từ chối với lỗi nếu không có trong whitelist\n      callback(new Error(`${origin} not allowed by CORS.`));\n    }\n  }\n};\n\napp.use(cors(corsOptions));\n\napp.get('/api/status', (req, res) => {\n  res.json({ status: 'OK' });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on port ${port}`);\n});",
+        "testCases": "1. Gọi API bằng Postman (không có origin) -> Thành công. 2. Gọi API từ `http://localhost:3000` -> Thành công. 3. Gọi API từ `https://unauthorized-site.com` -> Bị chặn với lỗi CORS và server log ra lỗi 'Error: https://unauthorized-site.com not allowed by CORS.'"
+      }
+    ]
+  }
+}

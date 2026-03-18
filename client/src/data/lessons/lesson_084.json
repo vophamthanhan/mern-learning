@@ -1,0 +1,213 @@
+{
+  "id": 84,
+  "title": "Bài học 68: Ghép 2 APIs tạo Column & Card vào giao diện Trello (phần 1)",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Bài học 68: Ghép 2 APIs tạo Column & Card vào giao diện Trello (phần 1)\n\n## I. Mục tiêu bài học\n\nVideo này là phần tiếp theo trong series xây dựng ứng dụng Trello clone bằng MERN stack. Sau khi đã tạo thành công các API để quản lý Column và Card ở phía backend (trong các bài học trước), mục tiêu chính của bài học này là tích hợp các API đó vào giao diện người dùng phía frontend (ReactJS). Cụ thể, người học sẽ đạt được các mục tiêu sau:\n\n- **Tích hợp API tạo Column:** Học cách gọi API từ giao diện React để tạo một cột (column) mới và hiển thị nó ngay lập tức trên giao diện người dùng.\n- **Tích hợp API tạo Card:** Học cách gọi API để thêm một thẻ (card) mới vào một cột đã có và cập nhật giao diện.\n- **Quản lý State phía Frontend:** Rèn luyện kỹ năng quản lý trạng thái ứng dụng React một cách hiệu quả khi có sự tương tác giữa client và server.\n- **Xử lý tác vụ bất đồng bộ:** Hiểu rõ và xử lý các tác vụ bất đồng bộ khi làm việc với API, bao gồm cả việc xử lý khi gọi API thành công và khi có lỗi xảy ra.\n\n## II. Kiến thức chi tiết\n\nĐể tích hợp thành công API vào giao diện, chúng ta cần làm việc đồng thời trên cả frontend và backend. Video này tập trung vào việc \"ghép nối\" hai phần đã được xây dựng.\n\n### 1. Phía Frontend (ReactJS)\n\nPhía frontend sẽ chịu trách nhiệm gửi đi các yêu cầu (requests) đến API ở backend và xử lý các phản hồi (responses) nhận về để cập nhật giao diện.\n\n- **Sử dụng `axios` để gọi API:** Thư viện `axios` là một công cụ phổ biến và mạnh mẽ để thực hiện các HTTP request từ trình duyệt. Chúng ta sẽ sử dụng nó để gửi `POST` request đến backend.\n\n  *Code mẫu gọi API tạo Column:*\n  ```javascript\n  import axios from 'axios';\n\n  const createNewColumn = async (data) => {\n    const response = await axios.post('http://localhost:8017/v1/columns', data);\n    return response.data;\n  }\n  ```\n\n- **Quản lý State với `useState` và `useEffect`:**\n    - `useState`: Dùng để lưu trữ dữ liệu của các board, column và card. Khi dữ liệu này thay đổi (ví dụ: thêm một column mới), giao diện sẽ tự động được cập nhật.\n    - `useEffect`: Thường được dùng để gọi API lấy dữ liệu ban đầu của board (bao gồm các columns và cards) khi component được render lần đầu tiên.\n\n- **Xử lý Form và Input của người dùng:**\n    - Xây dựng các form đơn giản để người dùng có thể nhập tiêu đề cho column hoặc card mới.\n    - Lấy dữ liệu từ input của người dùng và sử dụng nó làm payload (dữ liệu gửi đi) cho API request.\n\n- **Cập nhật giao diện (Optimistic UI Update):**\n    - Một kỹ thuật nâng cao có thể được đề cập là \"Optimistic UI Update\". Thay vì chờ API trả về kết quả mới cập nhật giao diện, chúng ta có thể *tạm thời* cập nhật giao diện ngay lập tức với dữ liệu mới. Nếu API gọi thành công, mọi thứ giữ nguyên. Nếu thất bại, giao diện sẽ được rollback về trạng thái cũ. Điều này giúp cải thiện trải nghiệm người dùng, làm cho ứng dụng có vẻ nhanh và mượt mà hơn.\n\n### 2. Phía Backend (NodeJS & ExpressJS)\n\nPhía backend đã có sẵn 2 API được xây dựng từ bài 66. Bài này chỉ tập trung vào việc đảm bảo chúng hoạt động đúng và sẵn sàng nhận request từ frontend.\n\n- **API tạo Column (`POST /v1/columns`):**\n    - **Endpoint:** `/v1/columns`\n    - **Method:** `POST`\n    - **Request Body (Payload):** Cần chứa thông tin về `boardId` và `title` của column mới.\n      ```json\n      {\n        \"boardId\": \"60d5f3b4a1b2c3d4e5f6g7h8\",\n        \"title\": \"New Column Title\"\n      }\n      ```\n    - **Response:** Trả về đối tượng column vừa được tạo thành công trong database.\n\n- **API tạo Card (`POST /v1/cards`):**\n    - **Endpoint:** `/v1/cards`\n    - **Method:** `POST`\n    - **Request Body (Payload):** Cần chứa `boardId`, `columnId`, và `title` của card mới.\n      ```json\n      {\n        \"boardId\": \"60d5f3b4a1b2c3d4e5f6g7h8\",\n        \"columnId\": \"60d5f3b4a1b2c3d4e5f6g7h9\",\n        \"title\": \"New Card Title\"\n      }\n      ```\n    - **Response:** Trả về đối tượng card vừa được tạo.\n\n- **Cấu hình CORS (Cross-Origin Resource Sharing):** Đây là một bước cực kỳ quan trọng. Backend phải được cấu hình để cho phép các request từ một domain khác (cụ thể là địa chỉ của ứng dụng React, ví dụ `http://localhost:3000`). Nếu không có cấu hình này, trình duyệt sẽ chặn các request từ frontend.\n\n  *Code mẫu cấu hình CORS trong ExpressJS:*\n  ```javascript\n  import express from 'express';\n  import cors from 'cors';\n\n  const app = express();\n\n  app.use(cors()); // Cấu hình CORS cơ bản\n  // ... các middleware và route khác\n  ```\n\n## III. Các bước thực hành\n\nVideo sẽ hướng dẫn chi tiết các bước sau để tích hợp API vào giao diện:\n\n1.  **Thiết lập môi trường:** Đảm bảo cả server backend và client frontend đều đang chạy.\n2.  **Tổ chức lại cấu trúc code Frontend:**\n    - Tạo các file service riêng (ví dụ: `services/columnService.js`) để chứa các hàm gọi API, giúp code sạch sẽ và dễ quản lý hơn.\n3.  **Xây dựng giao diện thêm Column:**\n    - Tạo một nút \"Add New Column\".\n    - Khi nhấn vào, một form nhập liệu sẽ hiện ra cho phép người dùng nhập tiêu đề column.\n4.  **Xử lý sự kiện tạo Column:**\n    - Viết hàm xử lý sự kiện `onClick` hoặc `onSubmit` cho form.\n    - Trong hàm này, thu thập dữ liệu từ form, tạo object payload.\n    - Gọi hàm `createNewColumn` đã tạo ở service để gửi request đến backend.\n5.  **Cập nhật State và Giao diện:**\n    - Sau khi nhận được response thành công từ API (chứa dữ liệu column mới), cập nhật lại state của board.\n    - Thêm column mới vào mảng các columns đang được lưu trong state.\n    - React sẽ tự động render lại giao diện và hiển thị column mới.\n6.  **Lặp lại quy trình cho chức năng tạo Card:**\n    - Thực hiện các bước tương tự (tạo giao diện, xử lý sự kiện, gọi API, cập nhật state) cho chức năng thêm mới một Card vào một Column cụ thể.\n\n## IV. Lưu ý quan trọng\n\n- **Quản lý biến môi trường:** Các URL của API backend không nên được hard-code trực tiếp trong code. Thay vào đó, hãy lưu chúng vào các biến môi trường (ví dụ: file `.env`) để dễ dàng thay đổi giữa môi trường development và production.\n- **Xử lý lỗi (Error Handling):** Luôn bọc các lời gọi API trong khối `try...catch` để xử lý các trường hợp API trả về lỗi (ví dụ: server không phản hồi, dữ liệu gửi lên không hợp lệ). Khi có lỗi, cần thông báo cho người dùng một cách thân thiện.\n- **Phần 1 của video:** Tiêu đề video có ghi \"(phần 1)\", điều này cho thấy video có thể chỉ tập trung hoàn thành một phần của công việc, ví dụ như chỉ tích hợp xong API tạo Column. Phần tích hợp API tạo Card có thể sẽ được tiếp tục trong video \"(phần 2)\".\n\n## V. Tài liệu tham khảo\n\n- **Source Code trên GitHub:** Tác giả thường cung cấp link đến kho mã nguồn của dự án trong phần mô tả video. Đây là tài liệu tham khảo quý giá nhất.\n- **Tài liệu Axios:** [https://axios-http.com/docs/intro](https://axios-http.com/docs/intro)\n- **Tài liệu React Hooks:** [https://reactjs.org/docs/hooks-intro.html](https://reactjs.org/docs/hooks-intro.html)\n- **Blog của tác giả:** [https://trungquandev.com](https://trungquandev.com)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của bài học 68 là gì?",
+        "options": [
+          "A. Xây dựng backend API cho Column và Card từ đầu.",
+          "B. Tích hợp API tạo Column và Card đã có vào giao diện frontend ReactJS.",
+          "C. Tối ưu hóa database cho ứng dụng Trello.",
+          "D. Deploy ứng dụng MERN stack lên server production."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học tập trung vào việc \"ghép nối\" frontend và backend, cụ thể là tích hợp các API đã được xây dựng ở bài trước vào giao diện React."
+      },
+      {
+        "question": "Thư viện nào được sử dụng ở phía frontend để thực hiện các HTTP request?",
+        "options": [
+          "A. Fetch API",
+          "B. jQuery AJAX",
+          "C. axios",
+          "D. GraphQL"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề cập rõ ràng việc sử dụng `axios` để gửi `POST` request từ trình duyệt đến backend."
+      },
+      {
+        "question": "Phương thức HTTP nào được sử dụng cho API tạo mới một Column?",
+        "options": [
+          "A. GET",
+          "B. PUT",
+          "C. DELETE",
+          "D. POST"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Để tạo mới một tài nguyên trên server, phương thức `POST` là phương thức chuẩn được sử dụng. API endpoint là `POST /v1/columns`."
+      },
+      {
+        "question": "Payload (dữ liệu gửi đi) cho API tạo Column mới cần chứa những thông tin gì?",
+        "options": [
+          "A. Chỉ cần `title`.",
+          "B. `boardId` và `title`.",
+          "C. `boardId`, `title`, và `cardOrder`.",
+          "D. `userId` và `title`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Theo tài liệu, request body cho API tạo Column cần chứa `boardId` để biết column thuộc về board nào và `title` của column đó."
+      },
+      {
+        "question": "CORS là viết tắt của cụm từ gì và tại sao nó quan trọng trong bài học này?",
+        "options": [
+          "A. Cross-Origin Request Security, để bảo mật request.",
+          "B. Cross-Origin Resource Sharing, để cho phép frontend ở domain khác gọi API của backend.",
+          "C. Centralized Object Routing Service, để điều hướng các đối tượng.",
+          "D. Cross-Origin React Service, một dịch vụ của React để xử lý request."
+        ],
+        "correctAnswer": 1,
+        "explanation": "CORS (Cross-Origin Resource Sharing) là một cơ chế bắt buộc phải cấu hình ở backend để cho phép ứng dụng React (chạy ở domain khác, ví dụ localhost:3000) có thể gửi request đến server API (ví dụ localhost:8017)."
+      },
+      {
+        "question": "React Hook nào thường được dùng để gọi API lấy dữ liệu ban đầu của board khi component được render lần đầu tiên?",
+        "options": [
+          "A. `useState`",
+          "B. `useContext`",
+          "C. `useEffect`",
+          "D. `useReducer`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useEffect` với dependency array rỗng (`[]`) là hook lý tưởng để thực hiện các side effect như gọi API một lần khi component được mount."
+      },
+      {
+        "question": "Kỹ thuật \"Optimistic UI Update\" được mô tả trong bài học có tác dụng gì?",
+        "options": [
+          "A. Gửi nhiều request cùng lúc để tăng tốc độ.",
+          "B. Luôn cho rằng API sẽ thành công và không cần xử lý lỗi.",
+          "C. Cập nhật giao diện ngay lập tức mà không cần chờ API phản hồi, giúp cải thiện trải nghiệm người dùng.",
+          "D. Chỉ cập nhật giao diện khi API trả về lỗi."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Optimistic UI Update là một kỹ thuật nâng cao giúp ứng dụng có vẻ nhanh hơn bằng cách cập nhật UI một cách \"lạc quan\" trước khi nhận được xác nhận từ server."
+      },
+      {
+        "question": "Payload cho API tạo Card mới (`POST /v1/cards`) khác gì so với API tạo Column?",
+        "options": [
+          "A. Không có gì khác biệt.",
+          "B. Cần thêm `columnId` để biết card thuộc column nào.",
+          "C. Cần thêm `userId` để xác thực người dùng.",
+          "D. Không cần `boardId`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi tạo một Card, ngoài `boardId` và `title`, chúng ta cần chỉ định rõ `columnId` để server biết phải thêm card này vào cột nào."
+      },
+      {
+        "question": "Tại sao nên lưu URL của API backend vào biến môi trường (file `.env`) thay vì hard-code?",
+        "options": [
+          "A. Để code trông ngắn gọn hơn.",
+          "B. Để dễ dàng thay đổi URL giữa các môi trường khác nhau (development, production) mà không cần sửa code.",
+          "C. Đây là yêu cầu bắt buộc của React.",
+          "D. Để tăng cường bảo mật cho URL."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc sử dụng biến môi trường là một best practice giúp quản lý cấu hình ứng dụng một cách linh hoạt và an toàn, dễ dàng chuyển đổi giữa các môi trường."
+      },
+      {
+        "question": "Khi gọi API bằng `axios`, đoạn code nên được đặt trong khối nào để xử lý lỗi một cách hiệu quả?",
+        "options": [
+          "A. `if...else`",
+          "B. `switch...case`",
+          "C. `try...catch`",
+          "D. `Promise.all()`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Các lời gọi hàm bất đồng bộ (async/await) như `axios.post` nên được bọc trong `try...catch` để bắt và xử lý các lỗi có thể xảy ra trong quá trình request (lỗi mạng, lỗi server,...)."
+      },
+      {
+        "question": "Trong ExpressJS, câu lệnh nào dùng để kích hoạt CORS một cách cơ bản nhất?",
+        "options": [
+          "A. `app.use(cors())`",
+          "B. `app.enable('cors')`",
+          "C. `app.cors = true`",
+          "D. `app.get('/', { cors: true })`"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Sau khi import thư viện `cors`, chỉ cần gọi `app.use(cors())` là đã có thể cho phép các request từ mọi domain khác."
+      },
+      {
+        "question": "Hành động nào sau đây KHÔNG phải là trách nhiệm của phía Frontend trong bài học này?",
+        "options": [
+          "A. Gửi request tạo Column mới.",
+          "B. Cập nhật state của ứng dụng để hiển thị Column mới.",
+          "C. Xử lý logic trong database để lưu Column mới.",
+          "D. Hiển thị form cho người dùng nhập tiêu đề Column."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc xử lý logic và tương tác với database là trách nhiệm của phía Backend (NodeJS & ExpressJS). Frontend chỉ gửi yêu cầu và nhận kết quả."
+      },
+      {
+        "question": "Endpoint (URL) để tạo một Card mới là gì?",
+        "options": [
+          "A. `POST /v1/columns`",
+          "B. `GET /v1/cards`",
+          "C. `POST /v1/cards`",
+          "D. `PUT /v1/cards`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Theo mô tả trong bài học, endpoint để tạo một card mới là `POST /v1/cards`."
+      },
+      {
+        "question": "Việc tạo các file service riêng (ví dụ: `services/columnService.js`) có lợi ích gì?",
+        "options": [
+          "A. Làm cho ứng dụng chạy nhanh hơn.",
+          "B. Giúp code sạch sẽ, dễ quản lý và tái sử dụng các hàm gọi API.",
+          "C. Là cách duy nhất để gọi API trong React.",
+          "D. Giảm kích thước của bundle cuối cùng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tách biệt logic gọi API vào các service riêng là một practice tốt để giữ cho component chỉ tập trung vào việc hiển thị và quản lý UI, giúp code dễ đọc và bảo trì."
+      },
+      {
+        "question": "Phản hồi (response) thành công từ API `POST /v1/columns` thường chứa gì?",
+        "options": [
+          "A. Toàn bộ danh sách các column của board.",
+          "B. Một thông báo chuỗi \"Tạo thành công\".",
+          "C. Đối tượng column vừa được tạo trong database.",
+          "D. Không chứa gì cả (empty response)."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Một RESTful API tốt thường sẽ trả về đối tượng tài nguyên vừa được tạo để phía client có thể sử dụng ngay lập tức mà không cần gọi thêm một API khác để lấy dữ liệu."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Viết hàm gọi API tạo Column",
+        "description": "Sử dụng thư viện `axios`, hãy hoàn thiện hàm `createNewColumn` để gửi một `POST` request đến endpoint `http://localhost:8017/v1/columns` với dữ liệu được cung cấp.",
+        "starterCode": "import axios from 'axios';\n\nconst createNewColumn = async (data) => {\n  // Viết code của bạn ở đây\n  // Gợi ý: sử dụng axios.post\n};\n\nexport default createNewColumn;",
+        "solution": "import axios from 'axios';\n\nconst createNewColumn = async (data) => {\n  const response = await axios.post('http://localhost:8017/v1/columns', data);\n  return response.data;\n};\n\nexport default createNewColumn;",
+        "testCases": "Hàm phải trả về dữ liệu từ `response.data` sau khi gọi API thành công. Dữ liệu đầu vào `data` là một object, ví dụ: `{ boardId: 'some-id', title: 'New Column' }`."
+      },
+      {
+        "title": "Bài 2: Tạo Form nhập liệu cho Column mới",
+        "description": "Trong một component React, hãy sử dụng hook `useState` để quản lý giá trị của một ô input cho tiêu đề column mới. Hiển thị giá trị đó bên dưới ô input.",
+        "starterCode": "import React, { useState } from 'react';\n\nconst NewColumnForm = () => {\n  // Viết code của bạn ở đây\n\n  return (\n    <div>\n      <input\n        type=\"text\"\n        placeholder=\"Enter column title...\"\n        // Thêm các thuộc tính cần thiết\n      />\n      <p>Tiêu đề hiện tại: {/* Hiển thị giá trị state ở đây */}</p>\n    </div>\n  );\n};\n\nexport default NewColumnForm;",
+        "solution": "import React, { useState } from 'react';\n\nconst NewColumnForm = () => {\n  const [newColumnTitle, setNewColumnTitle] = useState('');\n\n  return (\n    <div>\n      <input\n        type=\"text\"\n        placeholder=\"Enter column title...\"\n        value={newColumnTitle}\n        onChange={(e) => setNewColumnTitle(e.target.value)}\n      />\n      <p>Tiêu đề hiện tại: {newColumnTitle}</p>\n    </div>\n  );\n};\n\nexport default NewColumnForm;",
+        "testCases": "Khi người dùng gõ vào ô input, nội dung text bên dưới thẻ `<p>` phải được cập nhật tương ứng."
+      },
+      {
+        "title": "Bài 3: Xử lý sự kiện Submit Form",
+        "description": "Dựa trên Bài 2, hãy viết một hàm `handleSubmit` để khi người dùng nhấn nút \"Thêm\", hàm này sẽ `console.log` ra object payload `{ boardId: 'board-id-1', title: '...' }` với title lấy từ state.",
+        "starterCode": "import React, { useState } from 'react';\n\nconst NewColumnForm = () => {\n  const [newColumnTitle, setNewColumnTitle] = useState('');\n\n  const handleSubmit = () => {\n    // Viết code của bạn ở đây\n  };\n\n  return (\n    <div>\n      <input\n        type=\"text\"\n        value={newColumnTitle}\n        onChange={(e) => setNewColumnTitle(e.target.value)}\n      />\n      <button onClick={handleSubmit}>Thêm</button>\n    </div>\n  );\n};\n\nexport default NewColumnForm;",
+        "solution": "import React, { useState } from 'react';\n\nconst NewColumnForm = () => {\n  const [newColumnTitle, setNewColumnTitle] = useState('');\n\n  const handleSubmit = () => {\n    if (!newColumnTitle) return; // Không làm gì nếu title rỗng\n    const newColumnData = {\n      boardId: 'board-id-1', // Hard-code for example\n      title: newColumnTitle\n    };\n    console.log(newColumnData);\n    setNewColumnTitle(''); // Xóa input sau khi thêm\n  };\n\n  return (\n    <div>\n      <input\n        type=\"text\"\n        value={newColumnTitle}\n        onChange={(e) => setNewColumnTitle(e.target.value)}\n      />\n      <button onClick={handleSubmit}>Thêm</button>\n    </div>\n  );\n};\n\nexport default NewColumnForm;",
+        "testCases": "Khi nhấn nút \"Thêm\", console của trình duyệt phải in ra một object có `boardId` và `title` tương ứng với giá trị trong ô input. Ô input phải được xóa sau khi nhấn nút."
+      },
+      {
+        "title": "Bài 4: Cập nhật State sau khi gọi API",
+        "description": "Giả sử bạn có một state `columns` là một mảng các object. Sau khi gọi API thành công và nhận về `newColumn` từ server, hãy cập nhật state `columns` bằng cách thêm `newColumn` vào cuối mảng.",
+        "starterCode": "import React, { useState } from 'react';\n\nconst ColumnList = () => {\n  const [columns, setColumns] = useState([{ _id: '1', title: 'Cột 1' }]);\n\n  const handleAddNewColumn = (newColumn) => {\n    // `newColumn` là object trả về từ API, ví dụ: { _id: '2', title: 'Cột 2' }\n    // Viết code của bạn ở đây để cập nhật state `columns`\n  };\n\n  return (\n    <div>\n      {/* Nút này chỉ để giả lập việc thêm mới */}\n      <button onClick={() => handleAddNewColumn({ _id: '2', title: 'Cột 2' })}>\n        Thêm Cột Mới (Giả lập)\n      </button>\n      <ul>\n        {columns.map(c => <li key={c._id}>{c.title}</li>)}\n      </ul>\n    </div>\n  );\n};\n\nexport default ColumnList;",
+        "solution": "import React, { useState } from 'react';\n\nconst ColumnList = () => {\n  const [columns, setColumns] = useState([{ _id: '1', title: 'Cột 1' }]);\n\n  const handleAddNewColumn = (newColumn) => {\n    setColumns([...columns, newColumn]);\n  };\n\n  return (\n    <div>\n      <button onClick={() => handleAddNewColumn({ _id: '2', title: 'Cột 2' })}>\n        Thêm Cột Mới (Giả lập)\n      </button>\n      <ul>\n        {columns.map(c => <li key={c._id}>{c.title}</li>)}\n      </ul>\n    </div>\n  );\n};\n\nexport default ColumnList;",
+        "testCases": "Khi nhấn nút \"Thêm Cột Mới (Giả lập)\", một mục danh sách mới có nội dung \"Cột 2\" phải xuất hiện trên giao diện."
+      },
+      {
+        "title": "Bài 5: Xử lý lỗi khi gọi API",
+        "description": "Sử dụng `try...catch`, hãy hoàn thiện hàm `callApi` bên dưới. Nếu `axios.post` chạy thành công, trả về `response.data`. Nếu có lỗi, hãy `alert` ra thông báo \"Đã có lỗi xảy ra!\" và trả về `null`.",
+        "starterCode": "import axios from 'axios';\n\nconst callApi = async (data) => {\n  // Viết code của bạn ở đây\n};\n\nexport default callApi;",
+        "solution": "import axios from 'axios';\n\nconst callApi = async (data) => {\n  try {\n    const response = await axios.post('http://localhost:8017/v1/columns', data);\n    return response.data;\n  } catch (error) {\n    console.error(\"API call failed:\", error);\n    alert('Đã có lỗi xảy ra!');\n    return null;\n  }\n};\n\nexport default callApi;",
+        "testCases": "Nếu API gọi thành công, hàm trả về dữ liệu. Nếu API gọi thất bại (ví dụ: sai URL, server sập), một hộp thoại alert phải hiện ra và hàm trả về `null`."
+      }
+    ]
+  }
+}

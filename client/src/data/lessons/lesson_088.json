@@ -1,0 +1,213 @@
+{
+  "id": 88,
+  "title": "Bài học 74: Xóa Column và Card - Code chi tiết từ Front-end đến Back-end",
+  "category": "backend",
+  "categoryName": "Backend & NodeJS",
+  "content": "# Bài học 74: Xóa Column và Card - Code chi tiết từ Front-end đến Back-end\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ cùng nhau triển khai một trong những tính năng quan trọng của bất kỳ ứng dụng quản lý công việc nào: chức năng **Xóa một Column (cột)** và **Xóa một Card (thẻ)**. Mục tiêu chính bao gồm:\n\n1.  **Hiểu rõ luồng xử lý dữ liệu đầy đủ (full-stack)**: Nắm bắt được cách một yêu cầu xóa từ người dùng trên giao diện (Front-end) được gửi đi, xử lý ở máy chủ (Back-end), và cập nhật lại trên cơ sở dữ liệu (Database) cũng như giao diện.\n2.  **Triển khai API phía Back-end**: Xây dựng các API endpoint bằng NodeJS/ExpressJS để xử lý logic xóa Column và Card một cách an toàn và hiệu quả.\n3.  **Tích hợp phía Front-end**: Sử dụng ReactJS để gọi các API đã xây dựng, cập nhật trạng thái (state) của ứng dụng và phản ánh thay đổi lên giao diện người dùng một cách mượt mà.\n4.  **Xử lý logic phụ thuộc**: Hiểu và xử lý các logic nghiệp vụ phức tạp liên quan, ví dụ như khi xóa một Column, cần phải xóa tất cả các Card nằm trong Column đó và cập nhật lại danh sách thứ tự các cột trong Board.\n\n## II. Kiến thức chi tiết\n\nĐây là một bài học chuyên sâu, đòi hỏi sự kết hợp kiến thức từ cả Front-end và Back-end. Dưới đây là phân tích chi tiết các thành phần.\n\n### 1. Phía Back-end (NodeJS, ExpressJS, MongoDB)\n\nPhía Back-end chịu trách nhiệm xây dựng API để Front-end có thể gọi và thực hiện các thao tác xóa trong cơ sở dữ liệu.\n\n#### a. Xây dựng API xóa Column\n\n-   **Route**: Định nghĩa một API endpoint mới để xử lý yêu cầu xóa Column. Thông thường, chúng ta sẽ sử dụng phương thức `DELETE` và truyền vào `id` của Column cần xóa.\n    -   `DELETE /v1/columns/:id`\n\n-   **Controller**: Tầng controller sẽ nhận yêu cầu từ route, trích xuất `id` từ params, gọi xuống tầng service để thực hiện logic và trả về kết quả cho client.\n\n    ```javascript\n    // columnController.js\n    const deleteColumn = async (req, res, next) => {\n      try {\n        const columnId = req.params.id;\n        const result = await columnService.deleteColumn(columnId);\n        res.status(200).json(result);\n      } catch (error) {\n        next(error);\n      }\n    };\n    ```\n\n-   **Service**: Đây là nơi chứa đựng logic nghiệp vụ chính. Khi xóa một Column, chúng ta cần thực hiện các bước sau:\n    1.  Tìm Column theo `id`.\n    2.  Xóa tất cả các `Card` có `columnId` tương ứng.\n    3.  Xóa `Column` đó.\n    4.  Cập nhật lại mảng `columnOrderIds` trong collection `Board` tương ứng (loại bỏ `id` của column vừa xóa).\n\n    ```javascript\n    // columnService.js\n    const deleteColumn = async (columnId) => {\n      // Tìm column để lấy boardId và cardOrderIds\n      const columnToDelete = await columnModel.findOneById(columnId);\n      if (!columnToDelete) {\n        throw new ApiError(404, 'Column not found!');\n      }\n\n      // 1. Xóa tất cả các Card thuộc Column\n      await cardModel.deleteMany({ _id: { $in: columnToDelete.cardOrderIds } });\n\n      // 2. Xóa Column\n      await columnModel.deleteOne({ _id: columnId });\n\n      // 3. Cập nhật lại mảng columnOrderIds trong Board\n      await boardModel.findOneAndUpdate(\n        { _id: columnToDelete.boardId },\n        { $pull: { columnOrderIds: columnId } }\n      );\n\n      return { message: 'Column and its cards deleted successfully!' };\n    };\n    ```\n\n#### b. Xây dựng API xóa Card\n\n-   **Route**: Tương tự, chúng ta định nghĩa route cho việc xóa Card.\n    -   `DELETE /v1/cards/:id`\n-   **Controller & Service**: Logic xóa Card đơn giản hơn. Chúng ta chỉ cần tìm Card theo `id`, xóa nó, và sau đó cập nhật lại mảng `cardOrderIds` trong `Column` chứa nó.\n\n### 2. Phía Front-end (ReactJS)\n\nPhía Front-end sẽ cung cấp giao diện cho người dùng tương tác và gọi API từ Back-end.\n\n-   **Thêm nút Xóa**: Trong component `Column` và `Card`, chúng ta thêm vào một nút (thường là icon thùng rác) để người dùng có thể click vào và thực hiện hành động xóa.\n\n-   **Hộp thoại xác nhận (Confirmation Dialog)**: Để tránh người dùng xóa nhầm, một thực hành tốt là hiển thị một hộp thoại xác nhận trước khi thực sự gửi yêu cầu xóa. Chúng ta có thể sử dụng các thư viện như `Material-UI Dialog` để làm việc này.\n\n-   **Gọi API**: Khi người dùng xác nhận xóa, chúng ta sẽ gọi API `DELETE` tương ứng từ Back-end bằng `axios` hoặc `fetch`.\n\n    ```javascript\n    // api/index.js\n    export const deleteColumnAPI = async (columnId) => {\n      const response = await axios.delete(`${API_ROOT}/v1/columns/${columnId}`);\n      return response.data;\n    };\n    ```\n\n-   **Cập nhật State**: Sau khi gọi API thành công, Back-end sẽ xử lý và trả về kết quả. Phía Front-end cần lắng nghe kết quả này và cập nhật lại `state` của ứng dụng (ví dụ: state trong Redux Toolkit hoặc state cục bộ của component) để loại bỏ Column/Card đã xóa khỏi giao diện mà không cần tải lại trang.\n\n## III. Các bước thực hành\n\n1.  **Back-end**: Bắt đầu bằng việc implement các route, controller, và service cho API xóa Column và Card như mô tả ở trên.\n2.  **Kiểm thử API**: Sử dụng Postman hoặc một công cụ tương tự để kiểm thử các API vừa viết, đảm bảo chúng hoạt động đúng logic (xóa được bản ghi, xóa các bản ghi phụ thuộc, cập nhật các mảng liên quan).\n3.  **Front-end**: Thêm các thành phần UI cần thiết (nút xóa, menu, dialog xác nhận) vào các component `Column` và `Card`.\n4.  **Tích hợp**: Viết các hàm để xử lý sự kiện click, gọi API xóa từ Back-end.\n5.  **Quản lý State**: Sau khi nhận được phản hồi thành công từ API, tiến hành cập nhật state của ứng dụng để loại bỏ phần tử đã xóa khỏi giao diện.\n6.  **Thông báo**: Sử dụng thư viện `react-toastify` để hiển thị thông báo (toast) cho người dùng biết hành động xóa đã thành công hay thất bại.\n\n## IV. Lưu ý quan trọng\n\n-   **Hard Delete vs. Soft Delete**: Trong video này, có khả năng tác giả đang sử dụng phương pháp **Hard Delete** (xóa vĩnh viễn khỏi database). Trong các dự án thực tế lớn, người ta thường ưu tiên **Soft Delete** (đánh dấu một trường, ví dụ `_destroy: true`, để ẩn bản ghi đi thay vì xóa hẳn) nhằm mục đích có thể khôi phục dữ liệu khi cần. Các bình luận trong video cũng có đề cập đến vấn đề này.\n-   **Tính toàn vẹn dữ liệu**: Logic xóa Column là một ví dụ điển hình về sự cần thiết phải đảm bảo tính toàn vẹn dữ liệu. Việc xóa một Column kéo theo nhiều hành động phụ thuộc (xóa Cards, cập nhật Board). Phải đảm bảo tất cả các bước này đều được thực hiện thành công.\n-   **Tối ưu hóa**: Khi xóa Column, thay vì xóa từng Card một trong vòng lặp, việc sử dụng `deleteMany` của MongoDB với toán tử `$in` sẽ hiệu quả hơn rất nhiều.\n-   **Phân quyền**: Trong một ứng dụng thực tế, cần phải kiểm tra xem người dùng hiện tại có quyền xóa Column/Card đó hay không trước khi thực hiện.\n\n## V. Tài liệu tham khảo\n\n1.  **Video bài học**: [74. Xóa Column và Card, code chi tiết từ FE tới BE | ReactJS, NodeJS, MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=PxJOWlpiEWA&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=82)\n2.  **Video bổ sung**: [74.1 Xóa Column Id trong Board (video bổ sung)](https://www.youtube.com/watch?v=IrGdh8aOwfU)\n3.  **GitHub Repository (Base Project)**: [trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n4.  **Blog TrungQuanDev**: [Lập trình MERN Stack buổi 18 - Ghép các API CRUD Columns/Cards](https://trungquandev.com/lap-trinh-mern-stack-buoi-18-ghep-cac-api-crud-columns-cards/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của bài học 74 là gì?",
+        "options": [
+          "Triển khai tính năng kéo-thả (Drag & Drop) cho Card và Column",
+          "Triển khai tính năng xóa Column và Card, bao gồm luồng xử lý full-stack từ Front-end đến Back-end",
+          "Tạo mới một Board, Column và Card trong ứng dụng Trello clone",
+          "Tối ưu hóa hiệu năng của ứng dụng bằng cách sử dụng Web Workers"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học 74 tập trung vào việc xây dựng chức năng xóa Column và Card, đi sâu vào luồng xử lý từ giao diện người dùng, qua máy chủ, đến cơ sở dữ liệu và cập nhật lại giao diện."
+      },
+      {
+        "question": "Phương thức HTTP nào thường được sử dụng cho một API endpoint có chức năng xóa tài nguyên?",
+        "options": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Theo chuẩn RESTful API, phương thức DELETE được sử dụng để yêu cầu máy chủ xóa một tài nguyên được chỉ định."
+      },
+      {
+        "question": "Đâu là định nghĩa route chính xác trong ExpressJS để xử lý yêu cầu xóa một column dựa trên ID của nó?",
+        "options": [
+          "router.get('/columns/:id')",
+          "router.post('/columns')",
+          "router.delete('/v1/columns/:id')",
+          "router.patch('/columns')"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để xóa một tài nguyên cụ thể, chúng ta sử dụng phương thức DELETE và truyền ID của tài nguyên đó qua URL parameter, ví dụ: `DELETE /v1/columns/:id`."
+      },
+      {
+        "question": "Trong kiến trúc được mô tả, tầng nào (layer) chịu trách nhiệm chính cho việc xử lý logic nghiệp vụ (business logic)?",
+        "options": [
+          "Route",
+          "Controller",
+          "Service",
+          "Model"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tầng Service là nơi chứa đựng các logic nghiệp vụ phức tạp, như việc xóa một Column phải kéo theo xóa các Card bên trong và cập nhật lại Board."
+      },
+      {
+        "question": "Khi xóa một Column, thứ tự các bước xử lý logic nào sau đây là đúng đắn nhất ở tầng Service?",
+        "options": [
+          "Xóa Column -> Xóa các Card thuộc Column -> Cập nhật mảng columnOrderIds trong Board",
+          "Tìm Column -> Xóa tất cả Card thuộc Column -> Xóa Column -> Cập nhật mảng columnOrderIds trong Board",
+          "Cập nhật mảng columnOrderIds trong Board -> Xóa Column -> Xóa các Card",
+          "Xóa các Card -> Cập nhật mảng columnOrderIds trong Board -> Xóa Column"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Logic đúng là phải tìm column, sau đó xử lý các dữ liệu phụ thuộc (xóa cards), rồi mới xóa bản thân column đó, và cuối cùng là cập nhật lại mảng tham chiếu trong board."
+      },
+      {
+        "question": "Lệnh nào của MongoDB là hiệu quả nhất để xóa nhiều documents (ví dụ: tất cả các Card trong một Column) cùng một lúc?",
+        "options": [
+          "deleteOne() trong một vòng lặp",
+          "remove()",
+          "deleteMany()",
+          "drop()"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng `deleteMany()` với toán tử `$in` để xóa tất cả các document có `_id` nằm trong một danh sách cho trước là cách tiếp cận hiệu quả nhất, giảm thiểu số lượng lệnh gọi đến database."
+      },
+      {
+        "question": "Mục đích chính của việc hiển thị hộp thoại xác nhận (Confirmation Dialog) ở phía Front-end trước khi xóa là gì?",
+        "options": [
+          "Để làm chậm hành động của người dùng",
+          "Để trang trí cho giao diện đẹp hơn",
+          "Để kiểm tra xem người dùng có quyền xóa hay không",
+          "Để ngăn người dùng vô tình xóa nhầm dữ liệu quan trọng"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Hộp thoại xác nhận là một UX pattern quan trọng để đảm bảo người dùng thực sự muốn thực hiện một hành động không thể hoàn tác (như xóa dữ liệu), tránh các sai sót đáng tiếc."
+      },
+      {
+        "question": "Toán tử nào của MongoDB được sử dụng để loại bỏ một phần tử khỏi một mảng trong một document?",
+        "options": [
+          "$push",
+          "$pull",
+          "$pop",
+          "$remove"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Toán tử `$pull` được dùng trong các lệnh cập nhật (findOneAndUpdate, updateOne) để xóa một hoặc nhiều phần tử khỏi một mảng mà khớp với một điều kiện cho trước."
+      },
+      {
+        "question": "Sự khác biệt cơ bản giữa \"Hard Delete\" và \"Soft Delete\" là gì?",
+        "options": [
+          "Hard Delete xóa dữ liệu nhanh hơn Soft Delete",
+          "Hard Delete xóa vĩnh viễn dữ liệu khỏi database, trong khi Soft Delete chỉ đánh dấu là đã xóa và có thể khôi phục",
+          "Soft Delete là một tính năng chỉ có trong MongoDB, còn Hard Delete có ở mọi database",
+          "Hard Delete chỉ xóa dữ liệu ở Front-end, còn Soft Delete xóa ở cả Back-end"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hard Delete (xóa cứng) là lệnh xóa vật lý, dữ liệu sẽ biến mất vĩnh viễn. Soft Delete (xóa mềm) là một kỹ thuật nghiệp vụ, thường thực hiện bằng cách cập nhật một trường (ví dụ: `_destroy: true`) để ẩn bản ghi đi, cho phép khôi phục sau này."
+      },
+      {
+        "question": "Trong React, sau khi gọi API xóa thành công và nhận được phản hồi từ server, bước quan trọng tiếp theo là gì?",
+        "options": [
+          "Tải lại toàn bộ trang web (reload page)",
+          "Gọi lại API GET để lấy dữ liệu mới nhất",
+          "Cập nhật lại state của ứng dụng để loại bỏ phần tử đã xóa khỏi giao diện",
+          "Không cần làm gì cả, giao diện sẽ tự động cập nhật"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để mang lại trải nghiệm người dùng tốt nhất (không cần tải lại trang), sau khi API thành công, Front-end cần cập nhật `state` (ví dụ trong Redux hoặc state cục bộ) để loại bỏ phần tử đã xóa, giao diện sẽ re-render và phản ánh thay đổi đó."
+      },
+      {
+        "question": "Tại sao việc xử lý dữ liệu phụ thuộc (dependent data) lại quan trọng khi xóa một \"Column\\?",
+        "options": [
+          "Để giữ cho giao diện không bị lỗi",
+          "Để đảm bảo tính toàn vẹn dữ liệu, tránh để lại dữ liệu \"mồ côi\" (orphaned data) trong database",
+          "Vì đó là yêu cầu của thư viện React",
+          "Để giảm tải cho server"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu chỉ xóa Column mà không xóa các Card bên trong nó, những Card đó sẽ trở thành dữ liệu \"mồ côi\", không còn được tham chiếu đến và gây ra sự không nhất quán trong CSDL. Đảm bảo tính toàn vẹn dữ liệu là một nguyên tắc thiết kế hệ thống quan trọng."
+      },
+      {
+        "question": "Trong một controller của Express, làm thế nào để lấy được giá trị `id` từ một request có URL là `DELETE /v1/columns/abc-123`?",
+        "options": [
+          "req.body.id",
+          "req.query.id",
+          "req.params.id",
+          "req.headers.id"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi một route được định nghĩa với parameter (ví dụ: `/:id`), Express sẽ phân tích URL và đưa giá trị tương ứng vào object `req.params`."
+      },
+      {
+        "question": "Thư viện `react-toastify` được đề cập trong bài học có vai trò gì?",
+        "options": [
+          "Gửi yêu cầu API lên server",
+          "Quản lý state của ứng dụng",
+          "Hiển thị các thông báo nhỏ (toast/snackbar) cho người dùng về kết quả của hành động",
+          "Tạo biểu đồ và đồ thị"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`react-toastify` là một thư viện phổ biến dùng để hiển thị các thông báo ngắn gọn (ví dụ: \"Xóa thành công!\", \"Có lỗi xảy ra!\") nhằm cung cấp phản hồi trực quan cho người dùng."
+      },
+      {
+        "question": "Trong đoạn code của `columnService.js`, nếu một `columnId` được truyền vào nhưng không tìm thấy Column tương ứng trong database, điều gì sẽ xảy ra?",
+        "options": [
+          "Hàm sẽ trả về `null`",
+          "Hệ thống sẽ bị sập (crash)",
+          "Một lỗi `ApiError` với status code 404 sẽ được ném ra",
+          "Hàm sẽ tự động tạo một Column mới"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đoạn code có xử lý trường hợp không tìm thấy Column bằng cách ném ra một `ApiError` với mã lỗi 404 (Not Found), đây là một cách xử lý lỗi chuẩn mực trong API."
+      },
+      {
+        "question": "Ngoài việc xóa các `Card` bên trong `Column`, document nào khác cần được cập nhật khi một `Column` bị xóa?",
+        "options": [
+          "Tất cả các document `User`",
+          "Document `Board` chứa `Column` đó",
+          "Không có document nào khác",
+          "Document `Card` của các `Column` khác"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Document `Board` chứa một mảng `columnOrderIds` để lưu thứ tự các cột. Khi một cột bị xóa, `id` của nó phải được loại bỏ khỏi mảng này để đảm bảo dữ liệu nhất quán."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Route Xóa Card",
+        "description": "Sử dụng Express Router, hãy định nghĩa một API endpoint mới sử dụng phương thức DELETE để xử lý yêu cầu xóa một Card dựa trên ID của nó.",
+        "starterCode": "import express from 'express'\n\nconst router = express.Router()\n\n// Yêu cầu: Định nghĩa route xóa card tại đây\n\nexport const cardRoutes = router\n",
+        "solution": "import express from 'express'\nimport { cardController } from '~/controllers/cardController'\n\nconst router = express.Router()\n\n// Định nghĩa route xóa card tại đây\nrouter.delete('/:id', cardController.deleteCard)\n\nexport const cardRoutes = router\n",
+        "testCases": "Gửi một request DELETE đến `/v1/cards/some-card-id` sẽ được router xử lý và chuyển đến controller tương ứng."
+      },
+      {
+        "title": "Bài 2: Viết Hàm Gọi API Xóa Column Phía Front-end",
+        "description": "Sử dụng thư viện `axios`, hãy viết một hàm bất đồng bộ (`async/await`) để gửi yêu cầu DELETE đến API xóa column và trả về dữ liệu từ server.",
+        "starterCode": "import axios from 'axios'\nimport { API_ROOT } from '~/utils/constants'\n\n/**\n * Yêu cầu: Hoàn thành hàm gọi API xóa column\n */\nexport const deleteColumnAPI = async (columnId) => {\n  // ... Viết code của bạn ở đây\n}\n",
+        "solution": "import axios from 'axios'\nimport { API_ROOT } from '~/utils/constants'\n\nexport const deleteColumnAPI = async (columnId) => {\n  const response = await axios.delete(`${API_ROOT}/v1/columns/${columnId}`)\n  return response.data\n}\n",
+        "testCases": "Khi gọi `deleteColumnAPI('some-column-id')`, một request `DELETE` sẽ được gửi đến URL `https://your-api-domain/v1/columns/some-column-id`."
+      },
+      {
+        "title": "Bài 3: Hoàn Thiện Controller Xóa Card",
+        "description": "Hoàn thành hàm controller `deleteCard` để nhận `cardId` từ request params, gọi đến `cardService` để thực hiện logic xóa, và trả về kết quả cho client với status code 200.",
+        "starterCode": "import { cardService } from '~/services/cardService'\n\nconst deleteCard = async (req, res, next) => {\n  try {\n    // Yêu cầu: Viết code xử lý tại đây\n    \n  } catch (error) {\n    next(error)\n  }\n}\n\nexport const cardController = {\n  deleteCard\n}\n",
+        "solution": "import { cardService } from '~/services/cardService'\n\nconst deleteCard = async (req, res, next) => {\n  try {\n    const cardId = req.params.id\n    const result = await cardService.deleteCard(cardId)\n    res.status(200).json(result)\n  } catch (error) {\n    next(error)\n  }\n}\n\nexport const cardController = {\n  deleteCard\n}\n",
+        "testCases": "Khi nhận request, controller trích xuất thành công `id` từ `req.params`, gọi `cardService.deleteCard` với `id` đó, và trả về kết quả từ service với mã 200."
+      },
+      {
+        "title": "Bài 4: Implement Service Logic Xóa Card",
+        "description": "Viết logic hoàn chỉnh cho hàm `deleteCard` trong tầng service. Hàm này cần tìm card, xóa nó, và sau đó cập nhật lại mảng `cardOrderIds` trong `Column` chứa nó.",
+        "starterCode": "import { cardModel } from '~/models/cardModel'\nimport { columnModel } from '~/models/columnModel'\n\nconst deleteCard = async (cardId) => {\n  // Yêu cầu: Viết logic xóa card và cập nhật column tại đây\n  \n  return { message: 'Card deleted successfully!' }\n}\n\nexport const cardService = {\n  deleteCard\n}\n",
+        "solution": "import { cardModel } from '~/models/cardModel'\nimport { columnModel } from '~/models/columnModel'\nimport { ApiError } from '~/utils/ApiError'\n\nconst deleteCard = async (cardId) => {\n  // 1. Tìm card để lấy columnId\n  const cardToDelete = await cardModel.findOneById(cardId)\n  if (!cardToDelete) {\n    throw new ApiError(404, 'Card not found!')\n  }\n\n  // 2. Xóa card\n  await cardModel.deleteOne({ _id: cardId })\n\n  // 3. Cập nhật lại mảng cardOrderIds trong Column chứa nó\n  await columnModel.findOneAndUpdate(\n    { _id: cardToDelete.columnId },\n    { $pull: { cardOrderIds: cardId } }\n  )\n\n  return { message: 'Card deleted successfully!' }\n}\n\nexport const cardService = {\n  deleteCard\n}\n",
+        "testCases": "Hàm hoạt động đúng nếu: 1. Ném lỗi 404 nếu card không tồn tại. 2. Xóa thành công card khỏi collection `cards`. 3. Loại bỏ thành công `cardId` khỏi mảng `cardOrderIds` của document `column` tương ứng."
+      },
+      {
+        "title": "Bài 5: Implement Service Logic Xóa Column (Nâng cao)",
+        "description": "Tái hiện lại logic hoàn chỉnh cho việc xóa một Column như đã mô tả trong bài học. Logic phải bao gồm: xóa tất cả các Card con, xóa chính Column đó, và cập nhật lại mảng `columnOrderIds` của Board.",
+        "starterCode": "import { boardModel } from '~/models/boardModel'\nimport { columnModel } from '~/models/columnModel'\nimport { cardModel } from '~/models/cardModel'\nimport { ApiError } from '~/utils/ApiError'\n\nconst deleteColumn = async (columnId) => {\n  // Yêu cầu: Viết logic xóa column và các dữ liệu phụ thuộc tại đây\n\n  return { message: 'Column and its cards deleted successfully!' }\n}\n\nexport const columnService = {\n  deleteColumn\n}\n",
+        "solution": "import { boardModel } from '~/models/boardModel'\nimport { columnModel } from '~/models/columnModel'\nimport { cardModel } from '~/models/cardModel'\nimport { ApiError } from '~/utils/ApiError'\n\nconst deleteColumn = async (columnId) => {\n  // 1. Tìm column để lấy boardId và cardOrderIds\n  const columnToDelete = await columnModel.findOneById(columnId)\n  if (!columnToDelete) {\n    throw new ApiError(404, 'Column not found!')\n  }\n\n  // 2. Xóa tất cả các Card thuộc Column\n  await cardModel.deleteMany({ _id: { $in: columnToDelete.cardOrderIds } })\n\n  // 3. Xóa Column\n  await columnModel.deleteOne({ _id: columnId })\n\n  // 4. Cập nhật lại mảng columnOrderIds trong Board\n  await boardModel.findOneAndUpdate(\n    { _id: columnToDelete.boardId },\n    { $pull: { columnOrderIds: columnId } }\n  )\n\n  return { message: 'Column and its cards deleted successfully!' }\n}\n\nexport const columnService = {\n  deleteColumn\n}\n",
+        "testCases": "Hàm hoạt động đúng nếu: 1. Ném lỗi 404 nếu column không tồn tại. 2. Xóa tất cả các card có ID trong `columnToDelete.cardOrderIds`. 3. Xóa document column. 4. Xóa `columnId` khỏi mảng `columnOrderIds` trong document board tương ứng."
+      }
+    ]
+  }
+}

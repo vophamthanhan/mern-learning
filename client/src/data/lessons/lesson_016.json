@@ -1,0 +1,213 @@
+{
+  "id": 16,
+  "title": "Buổi 8: Xử lý HttpOnly Cookie, AuthMiddleware, Redux Persist, Protected Routes",
+  "category": "advanced",
+  "categoryName": "Nâng cao & Redux",
+  "content": "# Buổi 8: Xử lý HttpOnly Cookie, AuthMiddleware, Redux Persist, Protected Routes\n\n## Mục tiêu bài học\n\nBài học này tập trung vào việc xây dựng một hệ thống xác thực và phân quyền an toàn, hoàn chỉnh cho ứng dụng MERN Stack. Các mục tiêu chính bao gồm:\n\n- **Bảo mật Token:** Hiểu và triển khai HttpOnly Cookie để lưu trữ JSON Web Tokens (JWT) một cách an toàn, ngăn chặn các cuộc tấn công XSS (Cross-Site Scripting).\n- **Xác thực phía Server:** Xây dựng một Middleware (AuthMiddleware) trong Node.js/Express để xác thực token từ mỗi yêu cầu (request) của người dùng.\n- **Quản lý trạng thái người dùng:** Sử dụng Redux Persist để duy trì trạng thái đăng nhập của người dùng trên client-side ngay cả khi họ tải lại trang.\n- **Bảo vệ trang:** Tạo các Protected Routes (Route được bảo vệ) trong React để chỉ cho phép những người dùng đã xác thực truy cập vào các trang hoặc tính năng nhất định.\n\n## Kiến thức chi tiết\n\n### 1. HttpOnly Cookie\n\n**HttpOnly Cookie là gì?**\n\nHttpOnly là một thuộc tính (attribute) có thể được thêm vào `Set-Cookie` HTTP response header. Khi một cookie có thuộc tính `HttpOnly`, nó sẽ không thể được truy cập thông qua JavaScript phía client (ví dụ: bằng `document.cookie`). Cookie này sẽ tự động được trình duyệt gửi kèm trong mỗi HTTP request đến server.\n\n**Tại sao lại sử dụng HttpOnly Cookie?**\n\nViệc lưu trữ JWT trong `localStorage` hoặc `sessionStorage` tiềm ẩn rủi ro bảo mật. Nếu ứng dụng của bạn có lỗ hổng XSS, kẻ tấn công có thể chèn mã JavaScript độc hại để đánh cắp token và mạo danh người dùng. Bằng cách sử dụng `HttpOnly` cookie, chúng ta giảm thiểu đáng kể nguy cơ này vì token không thể bị truy cập bởi mã JavaScript.\n\n**Triển khai trong Express.js:**\n\nĐể thiết lập một HttpOnly cookie trong Express, bạn cần sử dụng thư viện `cookie-parser`.\n\n```javascript\n// Cài đặt: npm install cookie-parser\n\nconst cookieParser = require('cookie-parser');\napp.use(cookieParser());\n\n// Trong logic đăng nhập\nres.cookie('accessToken', token, {\n  httpOnly: true, // Chỉ cho phép truy cập qua HTTP\n  secure: process.env.NODE_ENV === 'production', // Chỉ gửi qua HTTPS trong môi trường production\n  sameSite: 'strict', // Ngăn chặn tấn công CSRF\n  maxAge: 24 * 60 * 60 * 1000 // Thời gian sống của cookie (ví dụ: 1 ngày)\n});\n```\n\n### 2. AuthMiddleware (Authentication Middleware)\n\n**Middleware là gì?**\n\nTrong Express.js, middleware là các hàm có quyền truy cập vào đối tượng request (`req`), đối tượng response (`res`), và hàm `next` trong chu trình request-response của ứng dụng. Chúng có thể thực thi mã, thay đổi các đối tượng request và response, kết thúc chu trình, hoặc gọi hàm middleware tiếp theo.\n\n**Vai trò của AuthMiddleware:**\n\nAuthMiddleware đóng vai trò như một người gác cổng cho các API routes cần được bảo vệ. Nhiệm vụ của nó là:\n\n1.  Trích xuất token từ `HttpOnly` cookie của request.\n2.  Giải mã và xác thực (verify) token đó (sử dụng `jsonwebtoken`).\n3.  Nếu token hợp lệ, lấy thông tin người dùng (ví dụ: `userId`) từ payload của token.\n4.  Gắn thông tin người dùng vào đối tượng `req` để các controller phía sau có thể sử dụng.\n5.  Nếu token không hợp lệ hoặc không tồn tại, trả về lỗi 401 Unauthorized.\n\n**Code mẫu `authMiddleware.js`:**\n\n```javascript\nconst jwt = require('jsonwebtoken');\n\nconst authMiddleware = (req, res, next) => {\n  const token = req.cookies.accessToken;\n\n  if (!token) {\n    return res.status(401).json({ message: 'Unauthorized: No token provided' });\n  }\n\n  try {\n    const decoded = jwt.verify(token, process.env.JWT_SECRET);\n    req.user = decoded; // Gắn thông tin user vào request\n    next(); // Chuyển sang middleware/controller tiếp theo\n  } catch (error) {\n    return res.status(401).json({ message: 'Unauthorized: Invalid token' });\n  }\n};\n\nmodule.exports = authMiddleware;\n\n// Sử dụng middleware cho một route\nconst protectedRoute = require('./routes/protectedRoute');\napp.use('/api/protected', authMiddleware, protectedRoute);\n```\n\n### 3. Redux Persist\n\n**Vấn đề:**\n\nKhi sử dụng Redux để quản lý trạng thái trong ứng dụng React, toàn bộ state sẽ bị xóa sạch mỗi khi người dùng tải lại trang (F5) hoặc đóng tab. Điều này có nghĩa là thông tin đăng nhập của người dùng cũng sẽ mất, buộc họ phải đăng nhập lại.\n\n**Giải pháp: Redux Persist**\n\nRedux Persist là một thư viện giúp lưu trữ (persist) toàn bộ Redux store của bạn vào một bộ nhớ bền vững, chẳng hạn như `localStorage` của trình duyệt. Khi ứng dụng khởi động lại, nó sẽ tự động \"tái hydrat hóa\" (rehydrate) store từ dữ liệu đã lưu.\n\n**Triển khai với Redux Toolkit:**\n\n```javascript\n// Cài đặt: npm install redux-persist\n\nimport { configureStore, combineReducers } from '@reduxjs/toolkit';\nimport { persistStore, persistReducer } from 'redux-persist';\nimport storage from 'redux-persist/lib/storage'; // Mặc định là localStorage\nimport userReducer from './userSlice';\n\nconst persistConfig = {\n  key: 'root', // key cho persist store\n  storage,\n  whitelist: ['user'] // Chỉ persist reducer 'user'\n};\n\nconst rootReducer = combineReducers({ \n  user: userReducer,\n  // ...các reducer khác\n});\n\nconst persistedReducer = persistReducer(persistConfig, rootReducer);\n\nexport const store = configureStore({\n  reducer: persistedReducer,\n  middleware: (getDefaultMiddleware) =>\n    getDefaultMiddleware({\n      serializableCheck: false, // Tắt kiểm tra serializable để tương thích với redux-persist\n    }),\n});\n\nexport const persistor = persistStore(store);\n```\n\nTrong file `main.jsx` hoặc `index.js` của React:\n\n```javascript\nimport { PersistGate } from 'redux-persist/integration/react';\nimport { store, persistor } from './app/store';\n\nReactDOM.createRoot(document.getElementById('root')).render(\n  <Provider store={store}>\n    <PersistGate loading={null} persistor={persistor}>\n      <App />\n    </PersistGate>\n  </Provider>\n);\n```\n\n### 4. Protected Routes\n\n**Protected Routes là gì?**\n\nĐây là những routes trong ứng dụng React mà chỉ những người dùng đã đăng nhập mới có thể truy cập. Nếu một người dùng chưa đăng nhập cố gắng truy cập, họ sẽ được chuyển hướng đến trang đăng nhập.\n\n**Triển khai trong React:**\n\nChúng ta có thể tạo một component `ProtectedRoute` để kiểm tra trạng thái xác thực của người dùng từ Redux store.\n\n```javascript\nimport React from 'react';\nimport { useSelector } from 'react-redux';\nimport { Navigate, Outlet } from 'react-router-dom';\n\nconst ProtectedRoute = () => {\n  const { userInfo } = useSelector((state) => state.user);\n\n  // Kiểm tra xem thông tin người dùng có trong Redux store hay không\n  if (userInfo) {\n    return <Outlet />; // Nếu có, cho phép truy cập vào các route con\n  } else {\n    return <Navigate to=\"/login\" replace />; // Nếu không, chuyển hướng về trang đăng nhập\n  }\n};\n\nexport default ProtectedRoute;\n```\n\nSử dụng trong `App.js` với `react-router-dom`:\n\n```javascript\nimport { BrowserRouter as Router, Routes, Route } from 'react-router-dom';\nimport ProtectedRoute from './components/ProtectedRoute';\nimport Dashboard from './pages/Dashboard';\nimport Login from './pages/Login';\n\nfunction App() {\n  return (\n    <Router>\n      <Routes>\n        <Route path=\"/login\" element={<Login />} />\n        \n        {/* Các route được bảo vệ */}\n        <Route element={<ProtectedRoute />}>\n          <Route path=\"/dashboard\" element={<Dashboard />} />\n          {/* ...các route cần bảo vệ khác */}\n        </Route>\n      </Routes>\n    </Router>\n  );\n}\n```\n\n## Các bước thực hành\n\n1.  **Backend (Node.js/Express):**\n    *   Cài đặt `cookie-parser`.\n    *   Trong API đăng nhập, sau khi xác thực người dùng thành công, tạo JWT và gửi nó về client thông qua một `HttpOnly` cookie.\n    *   Tạo file `authMiddleware.js` để kiểm tra token từ cookie trong mỗi request.\n    *   Áp dụng `authMiddleware` cho tất cả các API routes cần bảo vệ.\n\n2.  **Frontend (React/Redux):**\n    *   Cài đặt `redux-persist`.\n    *   Cấu hình Redux store để sử dụng `persistReducer` và `persistStore`.\n    *   Bọc component `App` của bạn trong `PersistGate`.\n    *   Tạo component `ProtectedRoute` để kiểm tra trạng thái đăng nhập từ Redux store.\n    *   Trong `react-router-dom`, sử dụng `ProtectedRoute` để bọc các routes cần yêu cầu đăng nhập.\n    *   Khi người dùng đăng xuất, đảm bảo bạn dispatch một action để xóa thông tin người dùng khỏi Redux store và gọi `persistor.purge()` để xóa dữ liệu đã lưu trong `localStorage`.\n\n## Lưu ý quan trọng\n\n- **CORS (Cross-Origin Resource Sharing):** Khi làm việc với cookie qua các domain khác nhau (ví dụ: API ở `localhost:8080` và React app ở `localhost:3000`), bạn cần cấu hình CORS trên server để cho phép gửi credentials (bao gồm cả cookie). \n  ```javascript\n  app.use(cors({ origin: 'http://localhost:3000', credentials: true }));\n  ```\n- **HTTPS:** Trong môi trường production, luôn sử dụng HTTPS. Thuộc tính `secure: true` của cookie đảm bảo rằng cookie chỉ được gửi qua kết nối HTTPS, ngăn chặn việc bị nghe lén.\n- **Refresh Token:** Bài học này tập trung vào `accessToken`. Trong một hệ thống hoàn chỉnh, bạn nên triển khai thêm `refreshToken` để cải thiện bảo mật và trải nghiệm người dùng. `accessToken` có thời gian sống ngắn, trong khi `refreshToken` (cũng được lưu trong `HttpOnly` cookie) có thời gian sống dài hơn và được dùng để cấp mới `accessToken` khi nó hết hạn.\n- **Logout:** Khi người dùng đăng xuất, phía server cần phải xóa cookie bằng cách gửi lại một cookie cùng tên với nội dung rỗng và `maxAge` bằng 0.\n\n## Tài liệu tham khảo\n\n1.  [Using HTTP cookies - MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies)\n2.  [HttpOnly - OWASP Community](https://owasp.org/www-community/HttpOnly)\n3.  [Using middleware - Express.js](https://expressjs.com/en/guide/using-middleware.html)\n4.  [Persist State with Redux Persist - LogRocket Blog](https://blog.logrocket.com/persist-state-redux-persist-redux-toolkit-react/)\n5.  [Node.js API Authentication with JWT - Dev.to](https://dev.to/mrcyberwolf/node-js-api-authentication-with-jwt-json-web-token-auth-middleware-ggm)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Lợi ích chính của việc sử dụng HttpOnly cookie để lưu trữ JSON Web Tokens (JWT) là gì?",
+        "options": [
+          "Ngăn chặn các cuộc tấn công Cross-Site Scripting (XSS) đánh cắp token.",
+          "Tăng tốc độ truy vấn API bằng cách lưu token vào bộ nhớ đệm.",
+          "Cho phép JavaScript phía client dễ dàng truy cập và quản lý token.",
+          "Tự động làm mới token khi nó hết hạn."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Thuộc tính HttpOnly ngăn không cho JavaScript phía client truy cập vào cookie, do đó giảm thiểu đáng kể nguy cơ bị đánh cắp token thông qua các cuộc tấn công XSS."
+      },
+      {
+        "question": "Mục đích chính của một AuthMiddleware trong ứng dụng Express.js là gì?",
+        "options": [
+          "Ghi log tất cả các yêu cầu đến server.",
+          "Nén các phản hồi HTTP để cải thiện hiệu suất.",
+          "Xác thực token của người dùng trước khi cho phép truy cập vào các route được bảo vệ.",
+          "Phân tích cú pháp body của request (ví dụ: JSON, URL-encoded)."
+        ],
+        "correctAnswer": 2,
+        "explanation": "AuthMiddleware hoạt động như một người gác cổng, kiểm tra tính hợp lệ của token trong mỗi yêu cầu để đảm bảo chỉ những người dùng đã được xác thực mới có thể truy cập các tài nguyên được bảo vệ."
+      },
+      {
+        "question": "Thư viện Redux Persist giải quyết vấn đề gì trong ứng dụng React?",
+        "options": [
+          "Trạng thái Redux bị xóa sạch mỗi khi người dùng tải lại trang.",
+          "Việc gọi API không đồng bộ trong Redux.",
+          "Tối ưu hóa hiệu suất của các component React.",
+          "Quản lý các route phức tạp trong ứng dụng."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Redux Persist cho phép lưu trữ (persist) trạng thái của Redux store vào một bộ nhớ bền vững (như localStorage), do đó trạng thái không bị mất khi trang được tải lại."
+      },
+      {
+        "question": "Điều gì xảy ra khi một người dùng chưa được xác thực cố gắng truy cập vào một Protected Route trong React?",
+        "options": [
+          "Ứng dụng sẽ bị lỗi và hiển thị một trang trắng.",
+          "Người dùng sẽ thấy một thông báo lỗi 404 Not Found.",
+          "Người dùng sẽ được chuyển hướng đến trang đăng nhập.",
+          "Người dùng vẫn có thể truy cập trang nhưng một số tính năng sẽ bị vô hiệu hóa."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Logic của Protected Route là kiểm tra trạng thái xác thực. Nếu người dùng chưa đăng nhập, nó sẽ sử dụng component <Navigate> từ react-router-dom để chuyển hướng họ đến trang đăng nhập."
+      },
+      {
+        "question": "Trong Express.js, thuộc tính nào của cookie đảm bảo rằng nó chỉ được gửi qua kết nối HTTPS?",
+        "options": [
+          "httpOnly",
+          "sameSite",
+          "secure",
+          "maxAge"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `secure: true` chỉ thị cho trình duyệt chỉ gửi cookie nếu yêu cầu đang được thực hiện qua kết nối HTTPS, giúp ngăn chặn việc nghe lén token trên các mạng không an toàn."
+      },
+      {
+        "question": "Trong AuthMiddleware, hàm nào từ thư viện `jsonwebtoken` được sử dụng để giải mã và xác thực token?",
+        "options": [
+          "jwt.sign()",
+          "jwt.decode()",
+          "jwt.verify()",
+          "jwt.check()"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`jwt.verify(token, secret)` được sử dụng để kiểm tra chữ ký và tính hợp lệ của token. `jwt.decode()` chỉ giải mã mà không xác thực, còn `jwt.sign()` dùng để tạo token."
+      },
+      {
+        "question": "Khi cấu hình Redux Persist, thuộc tính `whitelist` trong `persistConfig` có chức năng gì?",
+        "options": [
+          "Liệt kê các reducer sẽ được lưu trữ bền vững.",
+          "Liệt kê các địa chỉ IP được phép truy cập store.",
+          "Liệt kê các action sẽ không được ghi lại.",
+          "Liệt kê các thành phần sẽ không được render lại."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`whitelist` là một mảng các chuỗi tên của reducer. Chỉ những reducer có tên trong danh sách này mới được Redux Persist lưu vào bộ nhớ bền vững."
+      },
+      {
+        "question": "Trong một component `ProtectedRoute`, component nào từ `react-router-dom` v6 được sử dụng để render các route con (nested routes) nếu người dùng đã được xác thực?",
+        "options": [
+          "Redirect",
+          "Route",
+          "Switch",
+          "Outlet"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Component `<Outlet />` hoạt động như một placeholder, nơi các route con khớp với URL sẽ được render. `ProtectedRoute` sẽ render `<Outlet />` nếu xác thực thành công."
+      },
+      {
+        "question": "Làm thế nào một HttpOnly cookie giúp ngăn chặn các cuộc tấn công XSS đánh cắp token?",
+        "options": [
+          "Nó mã hóa token bằng một thuật toán không thể bị bẻ khóa.",
+          "Nó ngăn không cho mã JavaScript (ví dụ: `document.cookie`) truy cập vào cookie.",
+          "Nó chỉ cho phép cookie được gửi từ cùng một tên miền.",
+          "Nó yêu cầu xác thực hai yếu tố để truy cập cookie."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bản chất của tấn công XSS là chèn mã JavaScript độc hại. Bằng cách đặt thuộc tính HttpOnly, trình duyệt sẽ không cho phép bất kỳ mã JavaScript nào đọc cookie, làm cho việc đánh cắp token trở nên vô ích."
+      },
+      {
+        "question": "Khi frontend (ví dụ: React app) và backend (ví dụ: Express API) chạy trên các origin khác nhau (ví dụ: localhost:3000 và localhost:8080), cấu hình CORS nào là cần thiết trên server để cho phép trình duyệt gửi cookie?",
+        "options": [
+          "app.use(cors({ methods: ['GET', 'POST'] }))",
+          "app.use(cors({ origin: '*', credentials: false }))",
+          "app.use(cors({ origin: 'http://localhost:3000', credentials: true }))",
+          "Không cần cấu hình CORS, trình duyệt sẽ tự động xử lý."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để gửi cookie qua các origin khác nhau, server phải chỉ định rõ origin được phép (ví dụ: `origin: 'http://localhost:3000'`) và đặt `credentials: true` để cho phép gửi thông tin xác thực (bao gồm cookie)."
+      },
+      {
+        "question": "Cách đúng đắn để xử lý việc đăng xuất của người dùng ở phía server khi sử dụng HttpOnly cookie là gì?",
+        "options": [
+          "Chỉ cần xóa token khỏi Redux store ở phía client.",
+          "Gửi lại cho client một cookie có cùng tên, nội dung rỗng và `maxAge` bằng 0.",
+          "Lưu trữ token đã hết hạn vào một danh sách đen trong cơ sở dữ liệu.",
+          "Không cần làm gì cả, cookie sẽ tự động hết hạn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Vì client không thể xóa HttpOnly cookie, server phải ra lệnh cho trình duyệt xóa nó bằng cách gửi một cookie mới có cùng tên, giá trị rỗng và thời gian hết hạn trong quá khứ (hoặc maxAge: 0)."
+      },
+      {
+        "question": "Quá trình Redux Persist tự động khôi phục lại Redux store từ `localStorage` khi ứng dụng khởi động được gọi là gì?",
+        "options": [
+          "Hydration (Tái hydrat hóa)",
+          "Serialization (Tuần tự hóa)",
+          "Normalization (Chuẩn hóa)",
+          "Memoization (Ghi nhớ)"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Quá trình lấy trạng thái đã được lưu trữ và áp dụng lại cho Redux store được gọi là \"rehydration\" hoặc \"tái hydrat hóa\", ngược lại với quá trình \"persist\" là lưu trạng thái."
+      },
+      {
+        "question": "Nếu hàm `jwt.verify()` trong AuthMiddleware thất bại (ví dụ: do token không hợp lệ), mã trạng thái HTTP nào nên được trả về?",
+        "options": [
+          "200 OK",
+          "404 Not Found",
+          "401 Unauthorized",
+          "500 Internal Server Error"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mã trạng thái 401 Unauthorized là câu trả lời tiêu chuẩn cho các yêu cầu không cung cấp thông tin xác thực hợp lệ hoặc thông tin xác thực đã hết hạn/không hợp lệ."
+      },
+      {
+        "question": "Component nào từ `redux-persist/integration/react` được sử dụng để bọc `App` nhằm trì hoãn việc render giao diện cho đến khi trạng thái bền vững được khôi phục?",
+        "options": [
+          "Provider",
+          "PersistGate",
+          "PersistStore",
+          "StorageGate"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`<PersistGate>` sẽ hiển thị một giao diện tải (nếu được cung cấp) và trì hoãn việc render phần còn lại của ứng dụng cho đến khi quá trình tái hydrat hóa từ bộ nhớ bền vững hoàn tất."
+      },
+      {
+        "question": "Trong React Router Dom v6, cách nào sau đây là đúng để định nghĩa một nhóm các route được bảo vệ?",
+        "options": [
+          "<ProtectedRoute><Route path=\"/dashboard\" ... /></ProtectedRoute>",
+          "<Route path=\"/dashboard\" component={ProtectedRoute} />",
+          "<Route element={<ProtectedRoute />}><Route path=\"/dashboard\" ... /></Route>",
+          "<Route render={() => <ProtectedRoute><Dashboard /></ProtectedRoute>} />"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trong v6, cách tiếp cận hiện đại là sử dụng layout routes. Một route cha không có `path` nhưng có `element` (ví dụ: `<ProtectedRoute />`) sẽ áp dụng logic của nó cho tất cả các route con được lồng bên trong nó."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Thiết lập HttpOnly Cookie khi Đăng nhập",
+        "description": "Hoàn thành hàm xử lý route `/login` trong Express.js. Sau khi xác thực người dùng thành công (giả định), hãy tạo một HttpOnly cookie có tên là `accessToken` để gửi về cho client.",
+        "starterCode": "const express = require('express');\nconst app = express();\nconst cookieParser = require('cookie-parser');\n\napp.use(cookieParser());\n\napp.post('/login', (req, res) => {\n  const user = { id: 1, username: 'testuser' }; // Giả lập người dùng đã xác thực\n  const token = 'mock_jwt_token_string'; // Giả lập JWT\n\n  // *** VIẾT CODE CỦA BẠN VÀO ĐÂY ***\n  // Yêu cầu: Thiết lập một HttpOnly cookie tên là 'accessToken'\n\n  res.status(200).json({ message: 'Logged in successfully' });\n});",
+        "solution": "res.cookie('accessToken', token, {\n  httpOnly: true, // Quan trọng nhất: ngăn truy cập từ JS\n  secure: process.env.NODE_ENV === 'production', // Chỉ gửi qua HTTPS ở môi trường production\n  sameSite: 'strict', // Chống tấn công CSRF\n  maxAge: 24 * 60 * 60 * 1000 // Thời gian sống: 1 ngày\n});",
+        "testCases": "Khi gọi API POST /login, response header `Set-Cookie` phải chứa `accessToken=mock_jwt_token_string;` và cờ `HttpOnly`."
+      },
+      {
+        "title": "Bài 2: Xây dựng AuthMiddleware cơ bản",
+        "description": "Viết một middleware cho Express.js có tên `authMiddleware`. Middleware này sẽ đọc token từ `req.cookies.accessToken`. Nếu không có token, trả về lỗi 401. Nếu có, giải mã nó bằng `jsonwebtoken`. Nếu giải mã thành công, gắn thông tin người dùng vào `req.user` và gọi `next()`. Nếu thất bại, trả về lỗi 401.",
+        "starterCode": "const jwt = require('jsonwebtoken');\nconst JWT_SECRET = 'your_super_secret_key'; // Sử dụng secret này để xác thực\n\nconst authMiddleware = (req, res, next) => {\n  const token = req.cookies.accessToken;\n\n  // *** VIẾT CODE CỦA BẠN VÀO ĐÂY ***\n\n};\n\nmodule.exports = authMiddleware;",
+        "solution": "if (!token) {\n  return res.status(401).json({ message: 'Unauthorized: No token provided' });\n}\n\ntry {\n  const decoded = jwt.verify(token, JWT_SECRET);\n  req.user = decoded; // Gắn payload đã giải mã vào request\n  next(); // Chuyển tiếp đến controller\n} catch (error) {\n  return res.status(401).json({ message: 'Unauthorized: Invalid token' });\n}",
+        "testCases": "Gửi request không có cookie `accessToken` phải nhận về lỗi 401. Gửi request với cookie chứa token không hợp lệ phải nhận về lỗi 401. Gửi request với token hợp lệ phải cho phép request được xử lý tiếp."
+      },
+      {
+        "title": "Bài 3: Cấu hình Redux Persist cho User Slice",
+        "description": "Cho một cấu hình Redux Toolkit store, hãy tích hợp `redux-persist` để chỉ lưu trữ bền vững `userSlice`. Đảm bảo tắt `serializableCheck` để tương thích.",
+        "starterCode": "import { configureStore, combineReducers } from '@reduxjs/toolkit';\nimport userReducer from './userSlice';\nimport postReducer from './postSlice'; // Một reducer khác không cần persist\n\n// *** VIẾT CODE CỦA BẠN VÀO ĐÂY ***\n// Yêu cầu: Tạo persistConfig, rootReducer và persistedReducer\n// Chỉ persist 'userReducer'\n\nexport const store = configureStore({\n  // reducer: ... // Sử dụng reducer đã được persist của bạn ở đây\n  // middleware: ... // Cấu hình middleware để tắt serializableCheck\n});\n\n// export const persistor = ...",
+        "solution": "import { persistStore, persistReducer } from 'redux-persist';\nimport storage from 'redux-persist/lib/storage';\n\nconst persistConfig = {\n  key: 'root',\n  storage,\n  whitelist: ['user'] // Chỉ persist reducer có tên là 'user'\n};\n\nconst rootReducer = combineReducers({ \n  user: userReducer,\n  posts: postReducer\n});\n\nconst persistedReducer = persistReducer(persistConfig, rootReducer);\n\nexport const store = configureStore({\n  reducer: persistedReducer,\n  middleware: (getDefaultMiddleware) =>\n    getDefaultMiddleware({\n      serializableCheck: false,\n    }),\n});\n\nexport const persistor = persistStore(store);",
+        "testCases": "Sau khi đăng nhập (trạng thái user trong Redux thay đổi), hãy tải lại trang. Trạng thái của `user` phải được giữ nguyên, trong khi trạng thái của `posts` (nếu có) sẽ được reset về giá trị ban đầu."
+      },
+      {
+        "title": "Bài 4: Tạo Component ProtectedRoute",
+        "description": "Tạo một component React tên là `ProtectedRoute`. Component này sẽ đọc thông tin người dùng từ Redux store (sử dụng `useSelector`). Nếu có thông tin người dùng, nó sẽ render các route con (sử dụng `<Outlet />`). Nếu không, nó sẽ chuyển hướng người dùng đến trang `/login`.",
+        "starterCode": "import React from 'react';\nimport { useSelector } from 'react-redux';\nimport { Navigate, Outlet } from 'react-router-dom';\n\nconst ProtectedRoute = () => {\n  // Giả sử slice của bạn tên là 'user' và chứa object 'userInfo'\n  const { userInfo } = useSelector((state) => state.user);\n\n  // *** VIẾT CODE CỦA BẠN VÀO ĐÂY ***\n  // Trả về <Outlet /> nếu đã đăng nhập, ngược lại <Navigate> đến /login\n\n};\n\nexport default ProtectedRoute;",
+        "solution": "if (userInfo) {\n  return <Outlet />;\n} else {\n  return <Navigate to=\"/login\" replace />;\n}",
+        "testCases": "Khi chưa đăng nhập, truy cập vào một URL được bọc bởi `ProtectedRoute` sẽ tự động chuyển hướng sang `/login`. Khi đã đăng nhập, truy cập vào URL đó sẽ hiển thị component tương ứng."
+      },
+      {
+        "title": "Bài 5: Xử lý Đăng xuất (Logout)",
+        "description": "Viết một hàm xử lý đăng xuất ở phía backend Express.js. Hàm này phải xóa `accessToken` cookie khỏi trình duyệt của người dùng.",
+        "starterCode": "const express = require('express');\nconst app = express();\n\napp.post('/logout', (req, res) => {\n  // *** VIẾT CODE CỦA BẠN VÀO ĐÂY ***\n  // Yêu cầu: Xóa cookie có tên là 'accessToken'\n\n  res.status(200).json({ message: 'Logged out successfully' });\n});",
+        "solution": "res.cookie('accessToken', '', {\n  httpOnly: true,\n  expires: new Date(0) // Đặt thời gian hết hạn trong quá khứ\n});",
+        "testCases": "Sau khi gọi API POST /logout, kiểm tra trong công cụ phát triển của trình duyệt. Cookie `accessToken` phải bị xóa hoặc giá trị của nó bị ghi đè thành rỗng và hết hạn ngay lập tức."
+      }
+    ]
+  }
+}

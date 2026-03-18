@@ -1,0 +1,213 @@
+{
+  "id": 19,
+  "title": "Bài 10: CSS Baseline - Nhất quán CSS trên các trình duyệt",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài 10: CSS Baseline - Nhất quán CSS trên các trình duyệt\n\n## 1. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tìm hiểu về một thành phần quan trọng trong Material-UI (MUI) là `CssBaseline`. Mục tiêu chính là hiểu rõ tại sao cần `CssBaseline`, nó giải quyết vấn đề gì, và cách tích hợp nó vào một dự án ReactJS để đảm bảo giao diện người dùng (UI) được hiển thị một cách nhất quán trên tất cả các trình duyệt.\n\n## 2. Kiến thức chi tiết\n\n### 2.1. Vấn đề về sự không nhất quán của CSS trên các trình duyệt\n\nMỗi trình duyệt web (Chrome, Firefox, Safari, Edge,...) có một bộ quy tắc CSS mặc định riêng, được gọi là \"user agent stylesheet\". Điều này dẫn đến việc các phần tử HTML cơ bản như `<h1>`, `<p>`, `<ul>`... có thể hiển thị khác nhau về kích thước font, lề (margin), đệm (padding), và các thuộc tính khác tùy thuộc vào trình duyệt người dùng đang sử dụng. Sự khác biệt này, dù nhỏ, cũng có thể phá vỡ layout và tạo ra trải nghiệm không đồng nhất cho người dùng.\n\n### 2.2. Giải pháp truyền thống: CSS Reset và Normalize.css\n\nĐể giải quyết vấn đề này, cộng đồng lập trình viên front-end đã tạo ra các giải pháp:\n\n*   **CSS Reset:** Một bộ quy tắc CSS nhằm loại bỏ hoàn toàn tất cả các style mặc định của trình duyệt, đưa mọi thứ về một điểm xuất phát chung (ví dụ: mọi margin, padding đều bằng 0). Cách này triệt để nhưng đôi khi lại quá \"cứng nhắc\", buộc lập trình viên phải định nghĩa lại style cho cả những phần tử cơ bản nhất.\n*   **Normalize.css:** Một cách tiếp cận nhẹ nhàng hơn. Thay vì xóa bỏ tất cả, `normalize.css` chỉ điều chỉnh các style mặc định để chúng hiển thị nhất quán trên các trình duyệt và sửa một số lỗi phổ biến. Nó giữ lại những mặc định hữu ích (ví dụ: kích thước heading) và chỉ can thiệp khi cần thiết.\n\n### 2.3. `CssBaseline` của Material-UI: Giải pháp hiện đại và tích hợp\n\nMaterial-UI cung cấp một giải pháp tương tự như `normalize.css` nhưng được tích hợp sâu hơn vào hệ sinh thái của nó, đó chính là component `<CssBaseline />`.\n\nKhi được sử dụng, `CssBaseline` thực hiện một loạt các tác vụ để tạo ra một nền tảng style vững chắc và nhất quán:\n\n*   **Loại bỏ Margin:** `CssBaseline` loại bỏ `margin` mặc định của thẻ `<body>`. Nếu không có nó, bạn có thể thấy một khoảng trắng không mong muốn xung quanh ứng dụng của mình.\n*   **Màu nền mặc định:** Nó áp dụng màu nền mặc định từ theme của Material-UI (`theme.palette.background.default`). Điều này rất hữu ích khi bạn triển khai chế độ Sáng/Tối (Light/Dark Mode), `CssBaseline` sẽ tự động cập nhật màu nền cho phù hợp.\n*   **Thiết lập `box-sizing`:** Thuộc tính `box-sizing` được đặt thành `border-box` cho tất cả các phần tử. Đây được coi là một \"best practice\" trong CSS hiện đại, giúp việc tính toán kích thước (width, height) của các box model trở nên dễ dàng và trực quan hơn. Kích thước của một phần tử sẽ bao gồm cả `padding` và `border`, không bị \"phình\" ra ngoài.\n*   **Chuẩn hóa Typography:** Áp dụng các style cơ bản cho văn bản dựa trên theme (`theme.typography.body1` cho `<body>`), đảm bảo sự đồng nhất về font chữ, kích thước và chiều cao dòng.\n*   **Cải thiện hiển thị font:** Bật tính năng làm mịn font (`font-smoothing`) để font chữ (đặc biệt là Roboto, font mặc định của MUI) hiển thị sắc nét và dễ đọc hơn.\n\n### 2.4. `ScopedCssBaseline`\n\nTrong trường hợp bạn đang tích hợp Material-UI vào một dự án đã tồn tại và không muốn áp dụng các thay đổi CSS toàn cục, bạn có thể sử dụng `ScopedCssBaseline`. Component này sẽ chỉ áp dụng các quy tắc chuẩn hóa cho các component con (children) của nó, tránh ảnh hưởng đến phần còn lại của trang web.\n\n## 3. Các bước thực hành\n\nĐể sử dụng `CssBaseline`, bạn chỉ cần import và đặt nó ở cấp cao nhất trong cây component của ứng dụng, thường là bên trong `ThemeProvider` và bên ngoài `App`.\n\n**Ví dụ trong file `main.jsx` (hoặc `index.js`):**\n\n```javascript\nimport React from 'react'\nimport ReactDOM from 'react-dom/client'\nimport App from './App.jsx'\n\nimport { Experimental_CssVarsProvider as CssVarsProvider } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport theme from './theme';\n\nReactDOM.createRoot(document.getElementById('root')).render(\n  <React.StrictMode>\n    <CssVarsProvider theme={theme}>\n      {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}\n      <CssBaseline />\n      <App />\n    </CssVarsProvider>\n  </React.StrictMode>,\n)\n```\n\nChỉ với thao tác đơn giản này, toàn bộ ứng dụng của bạn đã được hưởng lợi từ việc chuẩn hóa CSS, tạo tiền đề cho việc xây dựng giao diện nhất quán và chuyên nghiệp.\n\n## 4. Lưu ý quan trọng\n\n*   **Vị trí đặt component:** Luôn đặt `<CssBaseline />` ở gần gốc của ứng dụng. Vị trí tốt nhất là ngay sau `ThemeProvider` (hoặc `CssVarsProvider`) để nó có thể truy cập vào theme object.\n*   **Không cần thiết phải sử dụng cả hai:** Bạn không cần dùng `normalize.css` hay các thư viện reset khác nếu đã sử dụng `CssBaseline`.\n*   **Tùy chỉnh Scrollbar:** `CssBaseline` cũng có thể được sử dụng để tùy chỉnh thanh cuộn (scrollbar), đặc biệt hữu ích để tạo sự đồng nhất trong Dark Mode. Bạn có thể tìm hiểu thêm trong tài liệu của MUI.\n\n## 5. Tài liệu tham khảo\n\n*   **Video gốc:** [10. CSS Baseline - Nhất quán CSS trên các trình duyệt | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=VIDEO_14&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=14)\n*   **Tài liệu chính thức của Material-UI:** [Material-UI CSS Baseline](https://mui.com/material-ui/react-css-baseline/)\n*   **Normalize.css:** [https://necolas.github.io/normalize.css/](https://necolas.github.io/normalize.css/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Thành phần `CssBaseline` trong Material-UI (MUI) giải quyết vấn đề chính nào?",
+        "options": [
+          "Tối ưu hóa hiệu suất của ứng dụng React.",
+          "Thêm các thành phần giao diện mới vào thư viện.",
+          "Đảm bảo giao diện người dùng hiển thị nhất quán trên các trình duyệt khác nhau.",
+          "Quản lý trạng thái (state) của ứng dụng một cách hiệu quả."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`CssBaseline` được tạo ra để giải quyết sự không nhất quán về CSS mặc định giữa các trình duyệt, bằng cách áp dụng một bộ quy tắc CSS nền tảng, giúp các phần tử HTML hiển thị đồng nhất."
+      },
+      {
+        "question": "Đâu là điểm khác biệt chính giữa `CssBaseline` và một CSS Reset truyền thống?",
+        "options": [
+          "CSS Reset xóa bỏ hoàn toàn mọi style mặc định, trong khi `CssBaseline` điều chỉnh một cách nhẹ nhàng hơn, tương tự Normalize.css.",
+          "`CssBaseline` chỉ hoạt động trên trình duyệt Chrome.",
+          "CSS Reset chỉ áp dụng cho các thẻ `<h1>` và `<p>`.",
+          "`CssBaseline` không cần import vào dự án."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Không giống như CSS Reset loại bỏ triệt để mọi style, `CssBaseline` áp dụng một phương pháp tinh tế hơn bằng cách chuẩn hóa các style để chúng nhất quán và sửa các lỗi phổ biến, giữ lại các mặc định hữu ích."
+      },
+      {
+        "question": "Một trong những hành động mà `CssBaseline` thực hiện khi được thêm vào ứng dụng là gì?",
+        "options": [
+          "Thêm một đường viền màu đỏ cho tất cả các phần tử.",
+          "Loại bỏ `margin` mặc định của thẻ `<body>`.",
+          "Tăng kích thước font chữ của toàn bộ trang web lên 24px.",
+          "Tự động cài đặt font chữ Comic Sans."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`CssBaseline` loại bỏ `margin` mặc định của thẻ `<body>`, giúp loại bỏ các khoảng trắng không mong muốn xung quanh ứng dụng của bạn."
+      },
+      {
+        "question": "`CssBaseline` thiết lập thuộc tính `box-sizing` thành giá trị nào cho tất cả các phần tử?",
+        "options": [
+          "content-box",
+          "padding-box",
+          "border-box",
+          "inherit"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Nó đặt `box-sizing: border-box;` cho mọi phần tử. Đây là một \"best practice\" giúp việc tính toán kích thước (width/height) của phần tử bao gồm cả padding và border, làm cho layout dễ dự đoán hơn."
+      },
+      {
+        "question": "Khi sử dụng `CssBaseline` cùng với `ThemeProvider` của MUI, màu nền mặc định của `<body>` được lấy từ đâu?",
+        "options": [
+          "Một giá trị màu xám cố định (`#f0f0f0`).",
+          "Giá trị `theme.palette.primary.main`.",
+          "Giá trị `theme.palette.background.default`.",
+          "Luôn là màu trắng (`#ffffff`)."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`CssBaseline` tự động áp dụng màu nền từ theme hiện tại thông qua `theme.palette.background.default`, điều này rất hữu ích khi triển khai chế độ sáng/tối."
+      },
+      {
+        "question": "Vị trí tốt nhất để đặt component `<CssBaseline />` trong cây component của ứng dụng React là ở đâu?",
+        "options": [
+          "Bên trong component `App`.",
+          "Ở cấp cao nhất, ngay sau `ThemeProvider` (hoặc `CssVarsProvider`).",
+          "Trong file `index.html`.",
+          "Bên trong mỗi component con cần chuẩn hóa."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nên đặt `<CssBaseline />` ở cấp cao nhất, ngay sau `ThemeProvider` để nó có thể truy cập vào theme object và áp dụng các style nền tảng cho toàn bộ ứng dụng."
+      },
+      {
+        "question": "Khi nào bạn nên sử dụng `ScopedCssBaseline` thay vì `CssBaseline`?",
+        "options": [
+          "Khi bạn muốn áp dụng chuẩn hóa CSS cho toàn bộ ứng dụng.",
+          "Khi bạn muốn các style mạnh mẽ hơn `CssBaseline`.",
+          "Khi tích hợp MUI vào một dự án đã có và chỉ muốn chuẩn hóa CSS cho các component con của nó, tránh ảnh hưởng phần còn lại.",
+          "Khi dự án không sử dụng `ThemeProvider`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`ScopedCssBaseline` được thiết kế cho các trường hợp bạn chỉ muốn áp dụng các quy tắc chuẩn hóa của MUI cho một phần của ứng dụng, thay vì áp dụng toàn cục."
+      },
+      {
+        "question": "Nếu đã sử dụng `<CssBaseline />`, bạn có cần sử dụng thêm `normalize.css` không?",
+        "options": [
+          "Có, chúng bổ sung cho nhau.",
+          "Không, `CssBaseline` đã bao gồm các chức năng tương tự và được tích hợp sẵn.",
+          "Chỉ cần nếu bạn đang hỗ trợ trình duyệt Internet Explorer.",
+          "Có, nhưng chỉ cần cho các thành phần form."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bạn không cần dùng `normalize.css` hay các thư viện reset khác vì `CssBaseline` đã cung cấp một giải pháp chuẩn hóa tương tự, được xây dựng dựa trên `normalize.css` và tích hợp sâu với hệ sinh thái MUI."
+      },
+      {
+        "question": "Mục đích của việc `CssBaseline` bật tính năng `font-smoothing` là gì?",
+        "options": [
+          "Làm cho font chữ mờ đi.",
+          "Thay đổi font chữ mặc định thành Times New Roman.",
+          "Làm cho font chữ hiển thị sắc nét và dễ đọc hơn.",
+          "Tăng khoảng cách giữa các chữ cái."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tính năng `font-smoothing` (cụ thể là `antialiased`) được bật để cải thiện khả năng đọc của văn bản bằng cách làm cho các cạnh của ký tự trông mượt mà và sắc nét hơn trên màn hình."
+      },
+      {
+        "question": "Lợi ích của việc `CssBaseline` thiết lập `box-sizing: border-box` là gì?",
+        "options": [
+          "Làm cho các phần tử hiển thị nhanh hơn.",
+          "Việc tính toán chiều rộng và chiều cao của phần tử trở nên trực quan hơn vì nó đã bao gồm `padding` và `border`.",
+          "Tự động thêm `padding` và `border` cho tất cả các phần tử.",
+          "Chỉ cho phép sử dụng đơn vị `px` cho kích thước."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Với `border-box`, `width` và `height` của một phần tử sẽ bao gồm cả `padding` và `border`, giúp lập trình viên không phải cộng trừ các giá trị này khi thiết kế layout, làm cho quá trình này dễ dàng và ít lỗi hơn."
+      },
+      {
+        "question": "Phát biểu nào sau đây là ĐÚNG về `CssBaseline`?",
+        "options": [
+          "`CssBaseline` là một component trả phí của MUI.",
+          "`CssBaseline` áp dụng các style cơ bản cho typography dựa trên theme.",
+          "`CssBaseline` sẽ ghi đè tất cả các file CSS trong dự án của bạn.",
+          "`CssBaseline` chỉ có thể được sử dụng trong các class component của React."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`CssBaseline` áp dụng các style văn bản cơ bản (ví dụ: cho thẻ `<body>`) dựa trên các định nghĩa trong `theme.typography`, đảm bảo sự đồng nhất về font chữ và kích thước."
+      },
+      {
+        "question": "User agent stylesheet là gì?",
+        "options": [
+          "Là một file CSS do người dùng viết để tùy chỉnh trang web.",
+          "Là bộ quy tắc CSS mặc định riêng của mỗi trình duyệt.",
+          "Là một thư viện CSS phổ biến như Bootstrap.",
+          "Là một công cụ để kiểm tra hiệu suất CSS."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mỗi trình duyệt có một \"user agent stylesheet\" riêng, đây là bộ quy tắc CSS mặc định mà trình duyệt áp dụng cho các trang web trước khi bất kỳ CSS nào từ trang web đó được tải."
+      },
+      {
+        "question": "Trong đoạn code sau, `<CssBaseline />` được đặt ở đâu?\n```javascript\nReactDOM.createRoot(root).render(\n  <React.StrictMode>\n    <CssVarsProvider theme={theme}>\n      <App />\n    </CssVarsProvider>\n  </React.StrictMode>\n);\n```",
+        "options": [
+          "Bên trong `App`.",
+          "Bên ngoài `React.StrictMode`.",
+          "Nó chưa được thêm vào.",
+          "Sau `App`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trong đoạn code ví dụ, component `<CssBaseline />` chưa được thêm vào. Vị trí đúng của nó phải là bên trong `<CssVarsProvider>` và bên ngoài `<App />`."
+      },
+      {
+        "question": "Ngoài các chuẩn hóa cơ bản, `CssBaseline` còn có thể được dùng để làm gì?",
+        "options": [
+          "Tạo hiệu ứng animation.",
+          "Quản lý các API call.",
+          "Tùy chỉnh thanh cuộn (scrollbar).",
+          "Xác thực form."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tài liệu của MUI đề cập rằng `CssBaseline` cũng có thể được sử dụng để tùy chỉnh giao diện của thanh cuộn, giúp tạo ra sự đồng nhất về mặt thẩm mỹ, đặc biệt là trong chế độ tối."
+      },
+      {
+        "question": "Tại sao việc loại bỏ `margin` của `<body>` lại quan trọng?",
+        "options": [
+          "Để làm cho trang web tải nhanh hơn.",
+          "Vì `margin` của `<body>` thường gây ra các khoảng trắng không mong muốn xung quanh layout chính của ứng dụng.",
+          "Để tuân thủ các tiêu chuẩn về khả năng truy cập (accessibility).",
+          "Vì `margin` đã lỗi thời và được thay thế bằng `padding`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Các trình duyệt thường áp dụng một `margin` mặc định cho thẻ `<body>`, điều này có thể tạo ra một viền trắng khó chịu xung quanh ứng dụng của bạn. `CssBaseline` loại bỏ nó để bạn có toàn quyền kiểm soát không gian."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Thêm CssBaseline vào ứng dụng React",
+        "description": "Nhiệm vụ của bạn là thêm thành phần `CssBaseline` vào một ứng dụng React + MUI cơ bản để áp dụng các chuẩn hóa CSS toàn cục. Hãy đặt nó ở vị trí chính xác trong cây component.",
+        "starterCode": "import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport App from './App';\nimport { ThemeProvider, createTheme } from '@mui/material/styles';\n\nconst theme = createTheme();\n\nReactDOM.createRoot(document.getElementById('root')).render(\n  <React.StrictMode>\n    <ThemeProvider theme={theme}>\n      {/* TODO: Thêm CssBaseline vào đây */}\n      <App />\n    </ThemeProvider>\n  </React.StrictMode>\n);",
+        "solution": "import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport App from './App';\nimport { ThemeProvider, createTheme } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\n\nconst theme = createTheme();\n\nReactDOM.createRoot(document.getElementById('root')).render(\n  <React.StrictMode>\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      <App />\n    </ThemeProvider>\n  </React.StrictMode>\n);",
+        "testCases": "Sau khi thêm `CssBaseline`, hãy kiểm tra phần tử `<body>` trong công cụ phát triển của trình duyệt. `margin` của nó phải bằng 0. Giao diện của các thẻ heading và paragraph có thể thay đổi một chút để trở nên nhất quán hơn."
+      },
+      {
+        "title": "Bài 2: Quan sát hiệu ứng màu nền của CssBaseline",
+        "description": "Tạo một theme tùy chỉnh với màu nền (background default) khác màu trắng. Áp dụng theme và `CssBaseline` cho ứng dụng. Quan sát xem màu nền của trang có tự động thay đổi theo theme không.",
+        "starterCode": "import React from 'react';\nimport { ThemeProvider, createTheme } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport Box from '@mui/material/Box';\n\n// TODO: Tạo một theme với `background.default` là '#f5f5f5'\nconst theme = createTheme();\n\nexport default function App() {\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      <Box sx={{ p: 2 }}>Màu nền của trang này nên là màu xám nhạt.</Box>\n    </ThemeProvider>\n  );\n}",
+        "solution": "import React from 'react';\nimport { ThemeProvider, createTheme } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport Box from '@mui/material/Box';\n\nconst theme = createTheme({\n  palette: {\n    background: {\n      default: '#f5f5f5', // Màu xám rất nhạt\n    },\n  },\n});\n\nexport default function App() {\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      <Box sx={{ p: 2 }}>Màu nền của trang này nên là màu xám nhạt.</Box>\n    </ThemeProvider>\n  );\n}",
+        "testCases": "Chạy ứng dụng và kiểm tra màu nền của trang. Nó phải có mã màu là `#f5f5f5` thay vì màu trắng mặc định."
+      },
+      {
+        "title": "Bài 3: Minh họa tác dụng của box-sizing: border-box",
+        "description": "Tạo một component `div` có `width`, `padding` và `border`. Hiển thị hai phiên bản của nó: một bên trong `ScopedCssBaseline` và một bên ngoài. So sánh chiều rộng thực tế của hai `div` này trong trình duyệt.",
+        "starterCode": "import React from 'react';\nimport ScopedCssBaseline from '@mui/material/ScopedCssBaseline';\nimport Box from '@mui/material/Box';\n\nconst style = {\n  width: '200px',\n  padding: '20px',\n  border: '10px solid red',\n  backgroundColor: 'lightblue',\n  margin: '10px'\n};\n\nexport default function App() {\n  return (\n    <div>\n      <Box>Bên ngoài ScopedCssBaseline:</Box>\n      <div style={style}>Div 1</div>\n\n      {/* TODO: Bọc Div 2 trong ScopedCssBaseline */}\n      <Box sx={{ mt: 2 }}>Bên trong ScopedCssBaseline:</Box>\n      <div style={style}>Div 2</div>\n    </div>\n  );\n}",
+        "solution": "import React from 'react';\nimport ScopedCssBaseline from '@mui/material/ScopedCssBaseline';\nimport Box from '@mui/material/Box';\n\nconst style = {\n  width: '200px',\n  padding: '20px',\n  border: '10px solid red',\n  backgroundColor: 'lightblue',\n  margin: '10px'\n};\n\nexport default function App() {\n  return (\n    <div>\n      <Box>Bên ngoài ScopedCssBaseline (mặc định là content-box):</Box>\n      <div style={style}>Div 1</div>\n\n      <ScopedCssBaseline>\n        <div> {/* Thêm div hoặc Fragment bọc ngoài nếu cần */}\n          <Box sx={{ mt: 2 }}>Bên trong ScopedCssBaseline (border-box):</Box>\n          <div style={style}>Div 2</div>\n        </div>\n      </ScopedCssBaseline>\n    </div>\n  );\n}",
+        "testCases": "Sử dụng công cụ phát triển của trình duyệt để kiểm tra kích thước của hai `div`. Div 1 (bên ngoài) sẽ có chiều rộng tổng cộng là 200px (content) + 40px (padding) + 20px (border) = 260px. Div 2 (bên trong) sẽ có chiều rộng tổng cộng chính xác là 200px, vì padding và border đã được tính vào bên trong."
+      },
+      {
+        "title": "Bài 4: Sử dụng ScopedCssBaseline",
+        "description": "Hãy tưởng tượng bạn đang thêm một component MUI vào một trang web cũ không dùng MUI. Sử dụng `ScopedCssBaseline` để đảm bảo chỉ component MUI của bạn được chuẩn hóa, trong khi các phần tử `<h1>` và `<p>` bên ngoài không bị ảnh hưởng.",
+        "starterCode": "import React from 'react';\nimport ScopedCssBaseline from '@mui/material/ScopedCssBaseline';\nimport Button from '@mui/material/Button';\nimport Typography from '@mui/material/Typography';\n\nexport default function App() {\n  return (\n    <div>\n      <h1>Tiêu đề H1 bên ngoài</h1>\n      <p>Đây là đoạn văn bản bên ngoài component MUI.</p>\n      \n      {/* TODO: Đặt component MUI vào trong ScopedCssBaseline */}\n      <div>\n        <Typography variant=\"h4\">Tiêu đề H4 bên trong MUI</Typography>\n        <Button variant=\"contained\">Nút MUI</Button>\n      </div>\n    </div>\n  );\n}",
+        "solution": "import React from 'react';\nimport ScopedCssBaseline from '@mui/material/ScopedCssBaseline';\nimport Button from '@mui/material/Button';\nimport Typography from '@mui/material/Typography';\nimport Box from '@mui/material/Box';\n\nexport default function App() {\n  return (\n    <div>\n      <h1>Tiêu đề H1 bên ngoài</h1>\n      <p>Đây là đoạn văn bản bên ngoài component MUI.</p>\n      \n      <ScopedCssBaseline>\n        <Box sx={{ mt: 2, p: 2, border: '1px solid grey' }}>\n          <Typography variant=\"h4\">Tiêu đề H4 bên trong MUI</Typography>\n          <Button variant=\"contained\">Nút MUI</Button>\n        </Box>\n      </ScopedCssBaseline>\n    </div>\n  );\n}",
+        "testCases": "Kiểm tra trang. Thẻ `<h1>` và `<p>` bên ngoài sẽ giữ nguyên style mặc định của trình duyệt (ví dụ: có `margin`). Các thành phần bên trong `ScopedCssBaseline` sẽ được chuẩn hóa (ví dụ: không có `margin` không mong muốn, font chữ nhất quán)."
+      },
+      {
+        "title": "Bài 5: Tích hợp CssBaseline với Chế độ Sáng/Tối",
+        "description": "Xây dựng một ứng dụng đơn giản có thể chuyển đổi giữa chế độ sáng (light) và tối (dark). Sử dụng `CssBaseline` để tự động cập nhật màu nền của `<body>` khi chế độ thay đổi.",
+        "starterCode": "import React, { useState, useMemo } from 'react';\nimport { ThemeProvider, createTheme } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport Button from '@mui/material/Button';\nimport Box from '@mui/material/Box';\n\nexport default function App() {\n  const [mode, setMode] = useState('light');\n\n  const theme = useMemo(() => \n    createTheme({\n      palette: {\n        // TODO: Cấu hình palette với chế độ (mode)\n      },\n    }), [mode]);\n\n  const toggleColorMode = () => {\n    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));\n  };\n\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      <Box sx={{ p: 4 }}>\n        <Button onClick={toggleColorMode} variant=\"contained\">\n          Chuyển sang chế độ {mode === 'light' ? 'Tối' : 'Sáng'}\n        </Button>\n      </Box>\n    </ThemeProvider>\n  );\n}",
+        "solution": "import React, { useState, useMemo } from 'react';\nimport { ThemeProvider, createTheme } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport Button from '@mui/material/Button';\nimport Box from '@mui/material/Box';\n\nexport default function App() {\n  const [mode, setMode] = useState('light');\n\n  const theme = useMemo(() => \n    createTheme({\n      palette: {\n        mode, // Dòng này quan trọng!\n      },\n    }), [mode]);\n\n  const toggleColorMode = () => {\n    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));\n  };\n\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      <Box sx={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>\n        <Button onClick={toggleColorMode} variant=\"contained\">\n          Chuyển sang chế độ {mode === 'light' ? 'Tối' : 'Sáng'}\n        </Button>\n      </Box>\n    </ThemeProvider>\n  );\n}",
+        "testCases": "Chạy ứng dụng. Bấm vào nút. Màu nền của toàn bộ trang sẽ chuyển đổi giữa màu trắng/xám rất nhạt (chế độ sáng) và màu đen/xám đậm (chế độ tối). Điều này cho thấy `CssBaseline` đang đọc giá trị `theme.palette.background.default` thay đổi theo chế độ."
+      }
+    ]
+  }
+}

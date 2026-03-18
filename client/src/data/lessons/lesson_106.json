@@ -1,0 +1,213 @@
+{
+  "id": 106,
+  "title": "BÀI HỌC: FIX BUG KÉO THẢ KHI CẦN BÔI ĐEN TEXT BẰNG CHUỘT",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# BÀI HỌC: FIX BUG KÉO THẢ KHI CẦN BÔI ĐEN TEXT BẰNG CHUỘT\n\n## 1. MỤC TIÊU BÀI HỌC\n\nTrong các ứng dụng web hiện đại, tính năng kéo thả (drag and drop) mang lại trải nghiệm người dùng mượt mà và trực quan. Tuy nhiên, khi triển khai tính năng này, chúng ta thường gặp phải một xung đột phổ biến: hành động kéo thả vô tình được kích hoạt khi người dùng chỉ muốn bôi đen (select) một đoạn văn bản để sao chép hoặc thực hiện một hành động khác. Video \"64.1 Fix Bug kéo thả khi cần bôi đen Text bằng chuột\" của TrungQuanDev tập trung giải quyết triệt để vấn đề này trong một dự án MERN Stack sử dụng thư viện `dnd-kit`.\n\nMục tiêu chính của bài học này là hướng dẫn các lập trình viên cách xử lý xung đột giữa sự kiện kéo thả và sự kiện bôi đen văn bản, đảm bảo rằng cả hai tính năng có thể cùng tồn tại và hoạt động một cách chính xác, mang lại trải-nghiệm người dùng tốt nhất.\n\n## 2. KIẾN THỨC CHI TIẾT\n\n### 2.1. Nguyên nhân cốt lõi của vấn đề\n\nVấn đề phát sinh do sự chồng chéo trong việc xử lý sự kiện của trình duyệt. Cả hai hành động - kéo thả và bôi đen văn bản - đều bắt đầu bằng sự kiện `mousedown` trên một phần tử. Thư viện `dnd-kit` lắng nghe sự kiện này trên các phần tử được chỉ định là \"draggable\" để bắt đầu một phiên kéo thả. Đồng thời, trình duyệt cũng diễn giải hành động `mousedown` và di chuyển chuột (`mousemove`) là một nỗ lực để bôi đen văn bản.\n\nKhi một phần tử văn bản (ví dụ: tiêu đề của một Card trong ứng dụng Trello) nằm bên trong một phần tử có khả năng kéo thả, `dnd-kit` sẽ ưu tiên bắt sự kiện `mousedown`, ngăn chặn hành vi mặc định của trình duyệt là bôi đen văn bản. Kết quả là, thay vì có thể bôi đen văn bản, người dùng lại vô tình kéo cả Card đi nơi khác.\n\n### 2.2. Giải pháp được đề xuất trong video\n\nĐể giải quyết vấn đề này, tác giả TrungQuanDev đã đề xuất một giải pháp thông minh và hiệu quả, đó là sử dụng một thuộc tính `data-*` để \"đánh dấu\" các phần tử không nên kích hoạt hành động kéo thả. Cụ thể, giải pháp này dựa trên một tính năng của thư viện `dnd-kit` cho phép chúng ta tùy chỉnh điều kiện kích hoạt việc kéo thả.\n\nTrong video, tác giả đã sử dụng thuộc tính `data-no-dnd=\"true\"` trên các phần tử văn bản mà người dùng cần có khả năng bôi đen. Sau đó, trong phần cấu hình của `dnd-kit`, tác giả đã thêm một điều kiện để kiểm tra xem phần tử được click có chứa thuộc tính này hay không. Nếu có, hành động kéo thả sẽ không được kích hoạt, cho phép trình duyệt xử lý hành vi bôi đen văn bản mặc định.\n\n**Code mẫu minh họa:**\n\n```jsx\n// Trong component Card.jsx\n\nimport { useSortable } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction Card({ card }) {\n  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: card._id, data: { ...card } });\n\n  const dndKitCardStyles = {\n    transform: CSS.Translate.toString(transform),\n    transition,\n  };\n\n  return (\n    <Box\n      ref={setNodeRef}\n      style={dndKitCardStyles}\n      {...attributes}\n      {...listeners}\n    >\n      {/* Phần tử văn bản được thêm thuộc tính data-no-dnd=\"true\" */}\n      <Typography data-no-dnd=\"true\">{card.cardTitle}</Typography>\n    </Box>\n  );\n}\n```\n\n```jsx\n// Trong component Board.jsx, nơi cấu hình DndContext\n\nimport { DndContext, closestCorners, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';\n\nfunction Board() {\n  const mouseSensor = useSensor(MouseSensor, {\n    // Yêu cầu chuột di chuyển 10px trước khi kích hoạt sự kiện kéo\n    activationConstraint: {\n      distance: 10,\n    },\n  });\n\n  const touchSensor = useSensor(TouchSensor, {\n    // Nhấn giữ 250ms và di chuyển 5px để kích hoạt\n    activationConstraint: {\n      delay: 250,\n      tolerance: 5,\n    },\n  });\n\n  const sensors = useSensors(mouseSensor, touchSensor);\n\n  const handleDragStart = (event) => {\n    // ...\n  };\n\n  const handleDragOver = (event) => {\n    // ...\n  };\n\n  const handleDragEnd = (event) => {\n    // ...\n  };\n\n  return (\n    <DndContext\n      sensors={sensors}\n      collisionDetection={closestCorners}\n      onDragStart={handleDragStart}\n      onDragOver={handleDragOver}\n      onDragEnd={handleDragEnd}\n    >\n      {/* ...Phần còn lại của Board... */}\n    </DndContext>\n  );\n}\n```\n\nTrong video, tác giả đã chỉ ra rằng việc chỉ thêm `data-no-dnd=\"true\"` là chưa đủ. Chúng ta cần phải tùy chỉnh `MouseSensor` để nó không \"chụp\" sự kiện `mousedown` ngay lập tức. Bằng cách thêm `activationConstraint`, chúng ta yêu cầu người dùng phải di chuyển chuột một khoảng cách nhất định (ví dụ: 10px) trước khi `dnd-kit` coi đó là một hành động kéo. Điều này tạo ra một \"cửa sổ\" đủ để trình duyệt nhận diện hành động bôi đen văn bản.\n\n## 3. CÁC BƯỚC THỰC HÀNH\n\n1.  **Xác định các phần tử cần bôi đen:** Trong dự án của bạn, hãy xác định tất cả các phần tử văn bản mà người dùng có thể muốn bôi đen (ví dụ: tiêu đề card, mô tả, bình luận, v.v.).\n\n2.  **Thêm thuộc tính `data-no-dnd`:** Thêm thuộc tính `data-no-dnd=\"true\"` vào các phần tử đã xác định ở bước 1.\n\n3.  **Cấu hình `MouseSensor`:** Trong phần cấu hình `DndContext`, tạo một `MouseSensor` tùy chỉnh với `activationConstraint`. Đặt một giá trị `distance` hợp lý (ví dụ: 10) để tạo độ trễ cho việc kích hoạt kéo thả.\n\n4.  **Kiểm tra:** Chạy ứng dụng và kiểm tra kỹ lưỡng. Bạn sẽ có thể bôi đen văn bản trên các phần tử đã được đánh dấu mà không kích hoạt hành động kéo thả. Đồng thời, hành động kéo thả vẫn phải hoạt động bình thường trên các phần tử khác.\n\n## 4. LƯU Ý QUAN TRỌNG\n\n*   **Chọn giá trị `distance` phù hợp:** Giá trị `distance` trong `activationConstraint` cần được cân nhắc kỹ. Nếu quá nhỏ, người dùng vẫn có thể vô tình kích hoạt kéo thả. Nếu quá lớn, tính năng kéo thả có thể cảm thấy chậm chạp và không nhạy.\n*   **Kiểm tra trên nhiều trình duyệt:** Đảm bảo rằng giải pháp của bạn hoạt động nhất quán trên các trình duyệt phổ biến như Chrome, Firefox, và Safari.\n*   **Tối ưu hóa cho thiết bị cảm ứng:** Đối với thiết bị di động, hãy sử dụng `TouchSensor` với các ràng buộc kích hoạt (`delay` và `tolerance`) phù hợp để mang lại trải nghiệm tốt nhất.\n*   **Khả năng tiếp cận (Accessibility):** Hãy nhớ rằng không phải tất cả người dùng đều có thể sử dụng chuột. Đảm bảo rằng ứng dụng của bạn vẫn có thể sử dụng được bằng bàn phím. `dnd-kit` cung cấp các tính năng hỗ trợ tốt cho khả năng tiếp cận.\n\n## 5. TÀI LIỆU THAM KHẢO\n\n1.  [Video 64.1 Fix Bug kéo thả khi cần bôi đen Text bằng chuột | NodeJS + MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=F8h0vsSwtqs&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=72)\n2.  [Tài liệu chính thức của dnd-kit](https://dndkit.com/)\n3.  [GitHub Repository của TrungQuanDev](https://github.com/trungquandev)\n4.  [Blog của TrungQuanDev](https://trungquandev.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Nguyên nhân chính gây ra xung đột giữa hành động kéo thả và bôi đen văn bản trong thư viện dnd-kit là gì?",
+        "options": [
+          "Do thư viện dnd-kit không hỗ trợ bôi đen văn bản.",
+          "Do cả hai hành động cùng bắt đầu bằng sự kiện `mousedown`, và dnd-kit ưu tiên xử lý sự kiện này.",
+          "Do trình duyệt mặc định vô hiệu hóa việc bôi đen văn bản khi có một thư viện kéo thả đang hoạt động.",
+          "Do cần phải cấu hình riêng một component để cho phép bôi đen văn bản."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Vấn đề phát sinh do sự chồng chéo trong việc xử lý sự kiện. Cả kéo thả và bôi đen văn bản đều bắt đầu bằng `mousedown`. dnd-kit lắng nghe sự kiện này và ưu tiên nó, ngăn chặn hành vi bôi đen văn bản mặc định của trình duyệt."
+      },
+      {
+        "question": "Giải pháp được đề xuất trong bài học để giải quyết xung đột giữa kéo thả và bôi đen text là gì?",
+        "options": [
+          "Sử dụng một thư viện khác thay thế cho dnd-kit.",
+          "Tắt hoàn toàn tính năng kéo thả trên các phần tử chứa văn bản.",
+          "Sử dụng thuộc tính `data-no-dnd` và cấu hình `activationConstraint` cho `MouseSensor`.",
+          "Viết một đoạn mã JavaScript riêng để xử lý sự kiện `mousedown`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Giải pháp hiệu quả là kết hợp việc \"đánh dấu\" các phần tử không kéo thả bằng thuộc tính `data-no-dnd` và tạo một độ trễ cho việc kích hoạt kéo bằng `activationConstraint` của `MouseSensor`."
+      },
+      {
+        "question": "Thuộc tính `data-no-dnd=\"true\"` nên được đặt ở đâu?",
+        "options": [
+          "Trên component `DndContext`.",
+          "Trên phần tử cha có khả năng kéo thả (draggable element).",
+          "Trên các phần tử văn bản mà người dùng cần có khả năng bôi đen.",
+          "Trong file CSS chung của dự án."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `data-no-dnd=\"true\"` được thêm vào các phần tử con (như `Typography`, `p`, `h1`) bên trong một mục có thể kéo, để chỉ định rằng việc nhấp vào chính các phần tử này không nên bắt đầu một thao tác kéo."
+      },
+      {
+        "question": "Mục đích của việc cấu hình `activationConstraint` cho `MouseSensor` là gì?",
+        "options": [
+          "Để tăng tốc độ phản hồi của hành động kéo thả.",
+          "Để yêu cầu người dùng phải di chuyển chuột một khoảng cách nhất định trước khi hành động kéo được kích hoạt.",
+          "Để chỉ cho phép kéo thả theo một trục nhất định (ngang hoặc dọc).",
+          "Để thay đổi con trỏ chuột khi thực hiện kéo thả."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`activationConstraint` với thuộc tính `distance` tạo ra một \"cửa sổ\" thời gian và không gian, cho phép trình duyệt nhận diện hành động bôi đen văn bản (thường là di chuyển chuột ít) trước khi dnd-kit kích hoạt hành động kéo."
+      },
+      {
+        "question": "Trong đoạn code `const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } });`, con số `10` có ý nghĩa gì?",
+        "options": [
+          "Hành động kéo sẽ được kích hoạt sau khi nhấn giữ chuột 10 mili giây.",
+          "Hành động kéo sẽ được kích hoạt nếu chuột di chuyển một khoảng cách là 10px.",
+          "Hành động kéo sẽ bị hủy nếu kéo xa hơn 10px.",
+          "Chỉ có thể kéo tối đa 10 phần tử cùng một lúc."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thuộc tính `distance: 10` trong `activationConstraint` quy định rằng người dùng phải di chuyển con trỏ chuột ít nhất 10 pixels sau khi nhấn xuống thì hành động kéo mới được bắt đầu."
+      },
+      {
+        "question": "Điều gì sẽ xảy ra nếu giá trị `distance` trong `activationConstraint` được đặt quá lớn?",
+        "options": [
+          "Tính năng bôi đen văn bản sẽ không hoạt động.",
+          "Hiệu suất của ứng dụng sẽ giảm đáng kể.",
+          "Tính năng kéo thả sẽ cảm thấy chậm chạp, không nhạy và khó sử dụng.",
+          "Không có ảnh hưởng gì đến trải nghiệm người dùng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Nếu `distance` quá lớn, người dùng sẽ phải kéo một đoạn dài trên màn hình chỉ để bắt đầu hành động kéo, làm cho tính năng này có vẻ không phản hồi và khó chịu khi sử dụng."
+      },
+      {
+        "question": "Để tối ưu hóa cho thiết bị cảm ứng, chúng ta nên sử dụng sensor nào và cấu hình thuộc tính gì?",
+        "options": [
+          "`MouseSensor` với `activationConstraint.distance`.",
+          "`TouchSensor` với `activationConstraint` bao gồm `delay` và `tolerance`.",
+          "`KeyboardSensor` để cho phép kéo bằng bàn phím.",
+          "`PointerSensor` mà không cần cấu hình gì thêm."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đối với thiết bị cảm ứng, `TouchSensor` là lựa chọn phù hợp. Cấu hình `delay` (thời gian nhấn giữ) và `tolerance` (phạm vi di chuyển) trong `activationConstraint` giúp phân biệt giữa một cú chạm, cuộn trang và bắt đầu kéo."
+      },
+      {
+        "question": "Trong component `Card.jsx` của ví dụ, thuộc tính nào của `useSortable` được dùng để áp dụng style cho việc kéo thả?",
+        "options": [
+          "`attributes`",
+          "`listeners`",
+          "`setNodeRef`",
+          "`transform` và `transition`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Giá trị `transform` và `transition` từ hook `useSortable` được sử dụng với `CSS.Translate.toString()` để tạo ra các style inline, giúp di chuyển và tạo hiệu ứng mượt mà cho card khi được kéo."
+      },
+      {
+        "question": "Tại sao việc chỉ thêm thuộc tính `data-no-dnd=\"true\"` là chưa đủ để giải quyết vấn đề?",
+        "options": [
+          "Vì `dnd-kit` không tự động nhận diện thuộc tính này.",
+          "Vì trình duyệt vẫn ưu tiên hành động bôi đen văn bản.",
+          "Vì `MouseSensor` mặc định sẽ \"chụp\" sự kiện `mousedown` ngay lập tức, không cho trình duyệt cơ hội xử lý.",
+          "Vì cần phải khai báo thuộc tính này trong `DndContext`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mặc dù `data-no-dnd` có thể được dùng để viết logic tùy chỉnh, nhưng vấn đề cốt lõi là `MouseSensor` mặc định kích hoạt quá nhanh. Do đó, cần phải kết hợp với `activationConstraint` để trì hoãn việc kích hoạt này."
+      },
+      {
+        "question": "Hook nào của `dnd-kit` được sử dụng để lấy các thuộc tính và trình lắng nghe sự kiện cho một mục có thể sắp xếp?",
+        "options": [
+          "`useDraggable`",
+          "`useDroppable`",
+          "`useSortable`",
+          "`useSensor`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useSortable` là một hook tiện ích được xây dựng trên `useDraggable` và `useDroppable`, cung cấp mọi thứ cần thiết (`attributes`, `listeners`, `setNodeRef`, `transform`, `transition`) để làm cho một phần tử vừa có thể kéo vừa có thể là một mục tiêu thả trong một danh sách có thể sắp xếp."
+      },
+      {
+        "question": "Trong `DndContext`, ngoài `sensors`, thuộc tính nào được dùng để xử lý logic khi một mục được kéo qua một mục tiêu khác?",
+        "options": [
+          "`onDragStart`",
+          "`onDragEnd`",
+          "`onDragOver`",
+          "`collisionDetection`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`onDragOver` là trình xử lý sự kiện được gọi khi một mục đang được kéo di chuyển qua một vùng có thể thả (droppable area). Đây là nơi thường xử lý logic sắp xếp lại các mục trong danh sách."
+      },
+      {
+        "question": "Việc kiểm tra giải pháp trên nhiều trình duyệt khác nhau quan trọng vì sao?",
+        "options": [
+          "Mỗi trình duyệt có thể có cách triển khai API kéo thả riêng.",
+          "Để đảm bảo tính nhất quán trong việc xử lý sự kiện và hành vi mặc định của trình duyệt.",
+          "Để chắc chắn rằng file CSS hoạt động chính xác ở mọi nơi.",
+          "Vì một số trình duyệt không hỗ trợ thư viện dnd-kit."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Các trình duyệt có thể có những khác biệt nhỏ trong cách chúng diễn giải các sự kiện chuột và cảm ứng, cũng như hành vi mặc định. Kiểm tra chéo đảm bảo rằng giải pháp của bạn mang lại trải nghiệm người dùng nhất quán trên Chrome, Firefox, Safari, v.v."
+      },
+      {
+        "question": "Thuộc tính `listeners` từ hook `useSortable` nên được rải (spread) vào đâu?",
+        "options": [
+          "Vào phần tử cha ngoài cùng của component.",
+          "Vào phần tử mà bạn muốn người dùng nhấp vào để bắt đầu kéo.",
+          "Vào thẻ `<img>` bên trong card.",
+          "Không cần sử dụng thuộc tính này."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thuộc tính `listeners` chứa các trình xử lý sự kiện (`onMouseDown`, `onTouchStart`, v.v.) cần thiết để `dnd-kit` phát hiện khi nào người dùng bắt đầu kéo. Nó nên được áp dụng cho phần tử mà bạn muốn trở thành \"tay cầm\" kéo, thường là toàn bộ phần tử card."
+      },
+      {
+        "question": "Ngoài `distance`, `activationConstraint` của `TouchSensor` còn có thể cấu hình những gì?",
+        "options": [
+          "`speed` và `velocity`",
+          "`pressure` và `radius`",
+          "`delay` và `tolerance`",
+          "`angle` và `rotation`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đối với `TouchSensor`, `delay` (thời gian phải nhấn giữ trước khi kéo) và `tolerance` (khoảng cách di chuyển được phép trong thời gian delay) là hai thuộc tính quan trọng để phân biệt giữa việc nhấn giữ để kéo và các tương tác khác như cuộn."
+      },
+      {
+        "question": "Làm thế nào để đảm bảo khả năng tiếp cận (Accessibility) khi sử dụng `dnd-kit`?",
+        "options": [
+          "Chỉ sử dụng chuột để kéo thả.",
+          "Sử dụng `KeyboardSensor` và đảm bảo các hành động có thể thực hiện bằng bàn phím.",
+          "Thêm các nhãn ARIA một cách thủ công.",
+          "Khả năng tiếp cận không phải là vấn đề với các ứng dụng web hiện đại."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`dnd-kit` có hỗ trợ mạnh mẽ cho khả năng tiếp cận, bao gồm cả `KeyboardSensor`, cho phép người dùng sử dụng bàn phím (ví dụ: phím cách, phím mũi tên) để thực hiện các thao tác kéo thả, điều này rất quan trọng đối với những người dùng không thể sử dụng chuột."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Đánh dấu phần tử không kéo",
+        "description": "Trong component `Card` dưới đây, hãy thêm thuộc tính `data-no-dnd` vào phần tử `p` chứa tiêu đề của card để ngăn nó kích hoạt hành động kéo thả.",
+        "starterCode": "import React from 'react';\n\nfunction Card({ title }) {\n  return (\n    <div className=\"card\">\n      <p className=\"card-title\">{title}</p>\n      <small>Description</small>\n    </div>\n  );\n}",
+        "solution": "import React from 'react';\n\nfunction Card({ title }) {\n  return (\n    <div className=\"card\">\n      <p className=\"card-title\" data-no-dnd=\"true\">{title}</p>\n      <small>Description</small>\n    </div>\n  );\n}",
+        "testCases": "Kiểm tra xem phần tử `p` có class `card-title` có chứa thuộc tính `data-no-dnd` với giá trị là `true` hay không."
+      },
+      {
+        "title": "Bài 2: Cấu hình MouseSensor",
+        "description": "Hoàn thành việc khai báo `mouseSensor` bằng cách sử dụng hook `useSensor` từ `dnd-kit`. Cấu hình `activationConstraint` để hành động kéo chỉ được kích hoạt sau khi chuột đã di chuyển một khoảng cách là 15 pixels.",
+        "starterCode": "import { useSensor, MouseSensor } from '@dnd-kit/core';\n\nfunction Board() {\n  // Khai báo mouseSensor tại đây\n  const mouseSensor = null; // Thay thế dòng này\n\n  // ...\n  return <div>Board Content</div>;\n}",
+        "solution": "import { useSensor, MouseSensor } from '@dnd-kit/core';\n\nfunction Board() {\n  const mouseSensor = useSensor(MouseSensor, {\n    activationConstraint: {\n      distance: 15,\n    },\n  });\n\n  // ...\n  return <div>Board Content</div>;\n}",
+        "testCases": "Kiểm tra xem `mouseSensor` có được tạo ra từ `useSensor(MouseSensor, ...)` và có `activationConstraint.distance` bằng 15 hay không."
+      },
+      {
+        "title": "Bài 3: Áp dụng Sensor vào DndContext",
+        "description": "Cho một `mouseSensor` và `touchSensor` đã được định nghĩa sẵn. Hãy áp dụng chúng vào `DndContext` bằng cách sử dụng hook `useSensors` và truyền kết quả vào đúng thuộc tính của `DndContext`.",
+        "starterCode": "import { DndContext, useSensor, useSensors, MouseSensor, TouchSensor } from '@dnd-kit/core';\n\nfunction Board() {\n  const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } });\n  const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } });\n\n  // Sử dụng useSensors và áp dụng vào DndContext\n\n  return (\n    <DndContext>\n      {/* Board content */}\n    </DndContext>\n  );\n}",
+        "solution": "import { DndContext, useSensor, useSensors, MouseSensor, TouchSensor } from '@dnd-kit/core';\n\nfunction Board() {\n  const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } });\n  const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } });\n\n  const sensors = useSensors(mouseSensor, touchSensor);\n\n  return (\n    <DndContext sensors={sensors}>\n      {/* Board content */}\n    </DndContext>\n  );\n}",
+        "testCases": "Kiểm tra xem `useSensors` có được gọi với `mouseSensor` và `touchSensor` hay không, và kết quả của nó có được gán cho thuộc tính `sensors` của `DndContext` hay không."
+      },
+      {
+        "title": "Bài 4: Hoàn thiện Component Card có thể sắp xếp",
+        "description": "Hoàn thiện component `SortableCard` dưới đây. Sử dụng hook `useSortable` để lấy các thuộc tính cần thiết và áp dụng chúng vào thẻ `div` để làm cho nó có thể kéo thả và có hiệu ứng chuyển động. Đồng thời, đảm bảo rằng tiêu đề (`h3`) có thể được bôi đen.",
+        "starterCode": "import { useSortable } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction SortableCard({ card }) {\n  // Sử dụng useSortable và áp dụng các thuộc tính, style và listeners\n\n  return (\n    <div>\n      <h3 data-no-dnd=\"true\">{card.title}</h3>\n    </div>\n  );\n}",
+        "solution": "import { useSortable } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction SortableCard({ card }) {\n  const {\n    attributes,\n    listeners,\n    setNodeRef,\n    transform,\n    transition,\n  } = useSortable({ id: card.id });\n\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n  };\n\n  return (\n    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>\n      <h3 data-no-dnd=\"true\">{card.title}</h3>\n    </div>\n  );\n}",
+        "testCases": "Kiểm tra xem `useSortable` có được gọi với `id` của card hay không. Thẻ `div` ngoài cùng phải có các thuộc tính `ref`, `style`, `...attributes`, và `...listeners` được áp dụng chính xác. `style` phải chứa `transform` và `transition`."
+      },
+      {
+        "title": "Bài 5: Tùy chỉnh logic kích hoạt kéo thả",
+        "description": "Nâng cao bài học, thay vì chỉ dựa vào `activationConstraint`, hãy sửa đổi hàm `handleDragStart` để nó kiểm tra xem phần tử được nhấp có thuộc tính `data-no-dnd` hay không. Nếu có, hãy ngăn chặn hành động kéo bằng cách không thực hiện bất kỳ hành động nào. (Gợi ý: `event.activatorEvent.target` sẽ cho bạn phần tử DOM ban đầu).",
+        "starterCode": "import { DndContext } from '@dnd-kit/core';\nimport { useState } from 'react';\n\nfunction Board() {\n  const [activeId, setActiveId] = useState(null);\n\n  function handleDragStart(event) {\n    // Thêm logic kiểm tra data-no-dnd tại đây\n    console.log(\"Drag started!\");\n    setActiveId(event.active.id);\n  }\n\n  return (\n    <DndContext onDragStart={handleDragStart}>\n      {/* ... */}\n    </DndContext>\n  );\n}",
+        "solution": "import { DndContext } from '@dnd-kit/core';\nimport { useState } from 'react';\n\nfunction Board() {\n  const [activeId, setActiveId] = useState(null);\n\n  function handleDragStart(event) {\n    const target = event.activatorEvent.target;\n    // Kiểm tra phần tử được click hoặc cha của nó có thuộc tính data-no-dnd không\n    if (target.closest('[data-no-dnd=\"true\"]')) {\n      // Nếu có, không làm gì cả để ngăn việc kéo\n      // Quan trọng: phải có cách để hủy bỏ việc kéo, trong trường hợp này, không set activeId là một cách.\n      // Một cách tiếp cận khác là tạo một sensor tùy chỉnh.\n      return;\n    }\n    console.log(\"Drag started!\");\n    setActiveId(event.active.id);\n  }\n\n  return (\n    <DndContext onDragStart={handleDragStart}>\n      {/* ... */}\n    </DndContext>\n  );\n}",
+        "testCases": "Khi một hành động kéo bắt đầu trên một phần tử có `data-no-dnd=\"true\"`, hàm `handleDragStart` phải `return` sớm và không được gọi `setActiveId`. Khi kéo trên một phần tử hợp lệ, `setActiveId` phải được gọi với `id` của phần tử đang hoạt động."
+      }
+    ]
+  }
+}

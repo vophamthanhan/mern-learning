@@ -1,0 +1,213 @@
+{
+  "id": 95,
+  "title": "Video 86: SIÊU PHẨM FULL STACK MERN ADVANCED ĐÃ CÓ TRÊN KÊNH TRUNGQUANDEV",
+  "category": "advanced",
+  "categoryName": "Nâng cao & Redux",
+  "content": "# Video 86: SIÊU PHẨM FULL STACK MERN ADVANCED ĐÃ CÓ TRÊN KÊNH TRUNGQUANDEV\n\n## 1. Mục tiêu bài học\n\nVideo này là một thông báo quan trọng từ tác giả TrungQuanDev về việc ra mắt khóa học mới và nâng cao hơn mang tên **\"Full Stack MERN Advanced\"**. Mục tiêu chính của video là:\n\n- Giới thiệu và quảng bá khóa học \"Full Stack MERN Advanced\" đến cộng đồng.\n- Phân tích những điểm khác biệt và nâng cao của khóa học này so với khóa \"MERN Pro\" tiền nhiệm.\n- Cung cấp một cái nhìn tổng quan về các chủ đề chuyên sâu sẽ được đề cập, giúp học viên hiểu rõ giá trị và định hướng của khóa học.\n- Hướng dẫn cách thức tham gia khóa học, chủ yếu thông qua chương trình Hội viên (Members Only) trên kênh YouTube của TrungQuanDev.\n\n## 2. Kiến thức chi tiết được trình bày trong video\n\nVideo này không tập trung vào việc hướng dẫn kỹ thuật hay viết code, mà chủ yếu mang tính chất thông báo và giới thiệu. Dựa trên tiêu đề, mô tả, bình luận và các thông tin tìm kiếm được, nội dung chính của video xoay quanh các điểm sau:\n\n### Giới thiệu Khóa học \"Full Stack MERN Advanced\"\n\n- Tác giả thông báo rằng sau thành công của series \"MERN Pro\", một khóa học mới với mức độ chuyên sâu hơn đã được chuẩn bị và ra mắt.\n- Khóa học này được định vị là \"siêu phẩm\", hứa hẹn mang lại những kiến thức nâng cao, bám sát thực tế công việc tại các doanh nghiệp, giúp lập trình viên nâng cao tay nghề một cách đáng kể.\n\n### So sánh \"MERN Advanced\" và \"MERN Pro\"\n\n- **MERN Pro**: Tập trung vào việc xây dựng nền tảng vững chắc, phù hợp cho người mới bắt đầu hoặc những người muốn hệ thống lại kiến thức về MERN Stack qua một dự án thực tế (Trello Clone).\n- **MERN Advanced**: Dành cho những học viên đã hoàn thành khóa Pro hoặc đã có kinh nghiệm với MERN Stack. Khóa học này đi sâu vào các chủ đề phức tạp và các bài toán khó hơn thường gặp trong các dự án lớn.\n\n### Các chủ đề chính trong khóa \"MERN Advanced\"\n\nDựa trên thông tin từ các video liên quan và blog của tác giả, khóa học nâng cao sẽ bao gồm các chủ đề như:\n\n| Chủ đề | Mô tả chi tiết |\n| :--- | :--- |\n| **State Management nâng cao** | Sử dụng **Redux & Redux Toolkit** để quản lý trạng thái ứng dụng một cách hiệu quả và có cấu trúc, đặc biệt cho các dự án lớn. |\n| **Authentication & Authorization** | Triển khai các cơ chế xác thực và phân quyền người dùng bằng **JSON Web Tokens (JWT)**, bao gồm cả refresh token và xử lý bảo mật. |\n| **Real-time Functionality** | Tích hợp **Socket.IO** để xây dựng các tính năng thời gian thực như thông báo, chat, cập nhật dữ liệu trực tiếp. |\n| **Deployment & CI/CD** | Hướng dẫn chi tiết quy trình deploy ứng dụng lên các nền tảng phổ biến như **Vercel (Front-end)** và **Render (Back-end)**, cùng với việc thiết lập quy trình tích hợp và triển khai liên tục. |\n| **Advanced Database Techniques** | Tối ưu hóa hiệu năng cơ sở dữ liệu MongoDB thông qua **indexing**, sử dụng các truy vấn phức tạp với **Aggregation Pipeline**. |\n| **Software Architecture** | Áp dụng các mô hình kiến trúc phần mềm tiên tiến như **Clean Architecture** để tổ chức mã nguồn một cách khoa học, dễ bảo trì và mở rộng. |\n| **Testing** | Hướng dẫn viết **Unit Test** và **Integration Test** cho cả Back-end và Front-end, đảm bảo chất lượng và sự ổn định của ứng dụng. |\n\n## 3. Các bước thực hành\n\nVideo này không có các bước thực hành code. Tuy nhiên, để chuẩn bị cho khóa học \"MERN Advanced\", người xem được khuyến khích:\n\n1.  **Hoàn thành khóa học \"MERN Pro\"**: Đảm bảo đã nắm vững tất cả các kiến thức nền tảng được dạy trong series Pro.\n2.  **Đăng ký gói Hội viên**: Truy cập kênh YouTube TrungQuanDev và đăng ký gói hội viên phù hợp để có thể xem các video trong series Advanced.\n3.  **Chuẩn bị môi trường**: Cài đặt lại hoặc cập nhật các công cụ cần thiết như Node.js, MongoDB, VSCode và các extensions liên quan.\n4.  **Tải mã nguồn (nếu có)**: Theo dõi các hướng dẫn trong khóa học để lấy mã nguồn khởi đầu cho dự án.\n\n## 4. Lưu ý quan trọng\n\n- Đây là khóa học **trả phí** thông qua hình thức Hội viên trên YouTube, không phải là nội dung miễn phí hoàn toàn.\n- Khóa học đòi hỏi người học phải có kiến thức nền tảng vững chắc về MERN Stack. Không phù hợp cho người mới bắt đầu lập trình.\n- Các kiến thức trong khóa học rất chuyên sâu và thực tế, đòi hỏi sự tập trung cao độ và nỗ lực lớn từ người học.\n\n## 5. Tài liệu tham khảo\n\n- [Kênh YouTube TrungQuanDev](https://www.youtube.com/@trungquandev)\n- [Blog cá nhân của TrungQuanDev](https://trungquandev.com/)\n- [Playlist MERN PRO trên YouTube](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n- [Playlist MERN ADVANCED trên YouTube](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJbPQfTZ0eCAXH_mHQiuf2G)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Khóa học \"Full Stack MERN Advanced\" được giới thiệu trong video là phiên bản nâng cao của khóa học nào trước đó?",
+        "options": [
+          "MERN for Beginners",
+          "MERN Pro",
+          "MERN Essentials",
+          "MERN Ultimate"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Video và bài học nêu rõ khóa học \"Full Stack MERN Advanced\" là sự tiếp nối và nâng cao từ khóa \"MERN Pro\"."
+      },
+      {
+        "question": "Công nghệ nào được sử dụng để quản lý trạng thái (state management) nâng cao trong khóa MERN Advanced?",
+        "options": [
+          "Context API",
+          "MobX",
+          "Redux & Redux Toolkit",
+          "Zustand"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề cập đến việc sử dụng Redux & Redux Toolkit để quản lý trạng thái ứng dụng một cách hiệu quả cho các dự án lớn."
+      },
+      {
+        "question": "Phương pháp xác thực và phân quyền nào được nhấn mạnh trong khóa học?",
+        "options": [
+          "Session-based authentication",
+          "OAuth 2.0",
+          "Basic Authentication",
+          "JSON Web Tokens (JWT) với refresh token"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Khóa học tập trung vào việc triển khai xác thực và phân quyền bằng JSON Web Tokens (JWT), bao gồm cả refresh token để tăng cường bảo mật."
+      },
+      {
+        "question": "Để xây dựng các tính năng thời gian thực (real-time) như chat hoặc thông báo, khóa học MERN Advanced sử dụng công nghệ gì?",
+        "options": [
+          "WebSockets",
+          "Socket.IO",
+          "Server-Sent Events (SSE)",
+          "Firebase Realtime Database"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Socket.IO được đề cập là công nghệ chính để tích hợp các tính năng thời gian thực vào ứng dụng."
+      },
+      {
+        "question": "Front-end của ứng dụng trong khóa học được gợi ý deploy lên nền tảng nào?",
+        "options": [
+          "Heroku",
+          "Netlify",
+          "Vercel",
+          "AWS S3"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học chỉ rõ rằng Front-end sẽ được hướng dẫn deploy lên Vercel."
+      },
+      {
+        "question": "Back-end của ứng dụng sẽ được deploy lên đâu?",
+        "options": [
+          "Render",
+          "Google App Engine",
+          "DigitalOcean",
+          "Firebase Functions"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đối với Back-end, nền tảng được lựa chọn để deploy là Render."
+      },
+      {
+        "question": "Kỹ thuật nào được sử dụng để tối ưu hóa hiệu năng cơ sở dữ liệu MongoDB trong khóa học?",
+        "options": [
+          "Sharding",
+          "Replication",
+          "Indexing và Aggregation Pipeline",
+          "Caching"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khóa học tập trung vào việc tối ưu hóa MongoDB thông qua indexing và sử dụng các truy vấn phức tạp với Aggregation Pipeline."
+      },
+      {
+        "question": "Mô hình kiến trúc phần mềm nào được áp dụng để tổ chức mã nguồn một cách khoa học?",
+        "options": [
+          "MVC (Model-View-Controller)",
+          "MVVM (Model-View-ViewModel)",
+          "Monolithic Architecture",
+          "Clean Architecture"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Clean Architecture là mô hình được áp dụng để giúp mã nguồn dễ bảo trì và mở rộng."
+      },
+      {
+        "question": "Mục tiêu chính của video bài học số 86 là gì?",
+        "options": [
+          "Hướng dẫn code một tính năng cụ thể.",
+          "So sánh ưu nhược điểm của React và Vue.",
+          "Thông báo và giới thiệu về khóa học \"Full Stack MERN Advanced\".",
+          "Giải đáp thắc mắc của học viên về khóa MERN Pro."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Video này không dạy code mà chủ yếu mang tính chất thông báo, giới thiệu khóa học mới và phân tích các điểm nâng cao so với khóa trước."
+      },
+      {
+        "question": "Khóa học \"MERN Advanced\" phù hợp với đối tượng nào?",
+        "options": [
+          "Người mới bắt đầu học lập trình.",
+          "Người đã có kinh nghiệm với MERN Stack hoặc đã hoàn thành khóa MERN Pro.",
+          "Lập trình viên chuyên về Java hoặc C#.",
+          "Sinh viên IT năm nhất."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nhấn mạnh rằng khóa học này đòi hỏi kiến thức nền tảng vững chắc về MERN Stack và không phù hợp cho người mới bắt đầu."
+      },
+      {
+        "question": "Refresh Token trong JWT được sử dụng để làm gì?",
+        "options": [
+          "Thay thế hoàn toàn cho Access Token.",
+          "Lấy lại Access Token mới khi nó hết hạn mà không cần người dùng đăng nhập lại.",
+          "Mã hóa dữ liệu người dùng.",
+          "Xác thực người dùng ở lần đăng nhập đầu tiên."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Refresh Token là một cơ chế bảo mật cho phép ứng dụng yêu cầu một Access Token mới mà không cần người dùng phải cung cấp lại thông tin đăng nhập."
+      },
+      {
+        "question": "CI/CD là viết tắt của cụm từ gì?",
+        "options": [
+          "Continuous Integration / Continuous Deployment",
+          "Code Integration / Code Deployment",
+          "Continuous-Implementation / Continuous-Development",
+          "Code-Implementation / Code-Development"
+        ],
+        "correctAnswer": 0,
+        "explanation": "CI/CD là viết tắt của Continuous Integration (Tích hợp liên tục) và Continuous Deployment/Delivery (Triển khai/Chuyển giao liên tục), một quy trình quan trọng trong phát triển phần mềm hiện đại."
+      },
+      {
+        "question": "Lợi ích chính của việc viết Unit Test và Integration Test là gì?",
+        "options": [
+          "Làm cho ứng dụng chạy nhanh hơn.",
+          "Thay thế hoàn toàn việc kiểm thử thủ công.",
+          "Đảm bảo chất lượng, sự ổn định của ứng dụng và dễ dàng tái cấu trúc code.",
+          "Tăng số lượng dòng code của dự án."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Viết test giúp phát hiện lỗi sớm, đảm bảo các tính năng hoạt động đúng như mong đợi và tạo sự tự tin khi thay đổi hoặc thêm mới mã nguồn."
+      },
+      {
+        "question": "Hình thức để tham gia khóa học \"MERN Advanced\" là gì?",
+        "options": [
+          "Mua khóa học một lần trên Udemy.",
+          "Học miễn phí trên YouTube.",
+          "Đăng ký gói Hội viên (Members Only) trên kênh YouTube TrungQuanDev.",
+          "Tham gia lớp học offline."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khóa học này là nội dung độc quyền dành cho các thành viên đã đăng ký gói Hội viên trên kênh YouTube của tác giả."
+      },
+      {
+        "question": "Aggregation Pipeline trong MongoDB được dùng để làm gì?",
+        "options": [
+          "Chỉ để sắp xếp dữ liệu.",
+          "Thực hiện các thao tác xử lý dữ liệu phức tạp qua nhiều giai đoạn (stages).",
+          "Tạo bản sao của cơ sở dữ liệu.",
+          "Xóa nhiều bản ghi cùng lúc."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Aggregation Pipeline cho phép thực hiện một chuỗi các hoạt động xử lý dữ liệu như lọc, nhóm, tính toán, biến đổi trên các tài liệu, rất mạnh mẽ cho các tác vụ phân tích và báo cáo phức tạp."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Redux Slice cơ bản",
+        "description": "Sử dụng Redux Toolkit, hãy tạo một slice để quản lý trạng thái của một danh sách công việc (todos). Slice này cần có state ban đầu là một mảng rỗng và một reducer để thêm một công việc mới vào danh sách.",
+        "starterCode": "// todosSlice.js\nimport { createSlice } from '@reduxjs/toolkit';\n\nconst initialState = [];\n\nconst todosSlice = createSlice({\n  name: 'todos',\n  initialState,\n  reducers: {\n    // Viết reducer 'addTodo' ở đây\n  }\n});\n\nexport const { addTodo } = todosSlice.actions;\nexport default todosSlice.reducer;",
+        "solution": "// todosSlice.js\nimport { createSlice } from '@reduxjs/toolkit';\n\nconst initialState = [];\n\nconst todosSlice = createSlice({\n  name: 'todos',\n  initialState,\n  reducers: {\n    addTodo: (state, action) => {\n      // action.payload sẽ là nội dung của công việc mới\n      state.push({ id: new Date().toISOString(), text: action.payload, completed: false });\n    }\n  }\n});\n\nexport const { addTodo } = todosSlice.actions;\nexport default todosSlice.reducer;",
+        "testCases": "1. Store phải được khởi tạo với một mảng rỗng.\n2. Sau khi dispatch action `addTodo` với payload là một chuỗi, danh sách todos trong store phải có 1 phần tử.\n3. Phần tử mới được thêm vào phải là một object có chứa `id`, `text` và `completed`."
+      },
+      {
+        "title": "Bài 2: Tạo Middleware để tạo JSON Web Token (JWT)",
+        "description": "Viết một middleware cho Express.js có tên là `generateToken`. Middleware này sẽ nhận thông tin người dùng từ `req.user` (giả sử đã có sau khi xác thực thành công) và tạo ra một JWT, sau đó gửi token này về cho client.",
+        "starterCode": "// authMiddleware.js\nimport jwt from 'jsonwebtoken';\n\nconst generateToken = (req, res) => {\n  // Giả sử req.user có dạng { id: '123', email: 'user@example.com' }\n  const user = req.user;\n  const secretKey = 'YOUR_SECRET_KEY'; // Không nên hardcode trong thực tế\n\n  // Viết code tạo token và gửi về client ở đây\n};\n\nexport default generateToken;",
+        "solution": "// authMiddleware.js\nimport jwt from 'jsonwebtoken';\n\nconst generateToken = (req, res) => {\n  const user = req.user;\n  const secretKey = 'YOUR_SECRET_KEY';\n\n  // Tạo token với payload chứa id người dùng, hết hạn trong 1 giờ\n  const accessToken = jwt.sign({ id: user.id }, secretKey, { expiresIn: '1h' });\n\n  res.status(200).json({ accessToken });\n};\n\nexport default generateToken;",
+        "testCases": "1. Middleware phải trả về mã trạng thái 200.\n2. Response body phải là một JSON object chứa key `accessToken`.\n3. Giá trị của `accessToken` phải là một chuỗi JWT hợp lệ."
+      },
+      {
+        "title": "Bài 3: Lắng nghe và phát sự kiện với Socket.IO",
+        "description": "Trên server, hãy thiết lập Socket.IO để lắng nghe một sự kiện có tên `new_message`. Khi nhận được sự kiện này, server sẽ phát (broadcast) lại sự kiện đó cho tất cả các client khác đang kết nối với tên sự kiện là `message_received`.",
+        "starterCode": "// server.js\nimport { Server } from 'socket.io';\n\nconst io = new Server(3000); // Giả sử server chạy trên cổng 3000\n\nio.on('connection', (socket) => {\n  console.log('A user connected');\n\n  // Viết code lắng nghe và phát sự kiện ở đây\n\n  socket.on('disconnect', () => {\n    console.log('User disconnected');\n  });\n});",
+        "solution": "// server.js\nimport { Server } from 'socket.io';\n\nconst io = new Server(3000);\n\nio.on('connection', (socket) => {\n  console.log('A user connected');\n\n  // Lắng nghe sự kiện 'new_message' từ một client\n  socket.on('new_message', (data) => {\n    console.log('Message received:', data);\n\n    // Phát sự kiện 'message_received' tới tất cả client trừ người gửi\n    socket.broadcast.emit('message_received', data);\n  });\n\n  socket.on('disconnect', () => {\n    console.log('User disconnected');\n  });\n});",
+        "testCases": "1. Server phải khởi tạo Socket.IO thành công.\n2. Khi một client gửi sự kiện `new_message`, server phải log ra được dữ liệu nhận được.\n3. Các client khác (không phải client gửi) phải nhận được sự kiện `message_received` cùng với dữ liệu tương ứng."
+      },
+      {
+        "title": "Bài 4: Sử dụng Aggregation Pipeline để thống kê",
+        "description": "Sử dụng MongoDB Aggregation Pipeline, viết một truy vấn để đếm số lượng sản phẩm (products) trong mỗi danh mục (category) và sắp xếp kết quả theo số lượng giảm dần.",
+        "starterCode": "// productController.js\nimport Product from './models/productModel'; // Giả sử có model Product\n\nconst getProductStats = async (req, res) => {\n  try {\n    const stats = await Product.aggregate([\n      // Viết các stage của pipeline ở đây\n    ]);\n    res.status(200).json(stats);\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n};",
+        "solution": "// productController.js\nimport Product from './models/productModel';\n\nconst getProductStats = async (req, res) => {\n  try {\n    const stats = await Product.aggregate([\n      {\n        $group: {\n          _id: '$category', // Nhóm theo trường category\n          count: { $sum: 1 } // Đếm số lượng document trong mỗi nhóm\n        }\n      },\n      {\n        $sort: { count: -1 } // Sắp xếp theo số lượng giảm dần\n      }\n    ]);\n    res.status(200).json(stats);\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n};",
+        "testCases": "1. API phải trả về một mảng các object.\n2. Mỗi object trong mảng phải chứa `_id` (tên category) và `count` (số lượng sản phẩm).\n3. Kết quả phải được sắp xếp đúng theo thứ tự `count` giảm dần."
+      },
+      {
+        "title": "Bài 5: Tổ chức Route theo Clean Architecture",
+        "description": "Tái cấu trúc một file route của Express.js để tách biệt controller logic ra khỏi định nghĩa route, một bước cơ bản hướng tới Clean Architecture. Controller sẽ xử lý logic và được gọi từ file route.",
+        "starterCode": "// routes/userRoutes.js\nimport express from 'express';\nconst router = express.Router();\n\n// Route này đang chứa logic trực tiếp\nrouter.get('/:id', async (req, res) => {\n  try {\n    // Giả lập việc tìm user trong DB\n    const user = { id: req.params.id, name: 'Test User' };\n    if (user) {\n      res.status(200).json(user);\n    } else {\n      res.status(404).send('User not found');\n    }\n  } catch (error) {\n    res.status(500).send('Server error');\n  }\n});\n\nexport default router;",
+        "solution": "// controllers/userController.js\nexport const getUserById = async (req, res) => {\n  try {\n    // Logic xử lý đã được tách ra\n    const user = { id: req.params.id, name: 'Test User' };\n    if (user) {\n      res.status(200).json(user);\n    } else {\n      res.status(404).send('User not found');\n    }\n  } catch (error) {\n    res.status(500).send('Server error');\n  }\n};\n\n// routes/userRoutes.js\nimport express from 'express';\nimport { getUserById } from '../controllers/userController.js';\nconst router = express.Router();\n\n// Route chỉ còn nhiệm vụ điều hướng tới controller\nrouter.get('/:id', getUserById);\n\nexport default router;",
+        "testCases": "1. Phải có một file `userController.js` mới chứa logic `getUserById`.\n2. File `userRoutes.js` phải import `getUserById` từ controller.\n3. Route `GET /:id` phải gọi đến hàm `getUserById`.\n4. Khi gọi API, nó phải hoạt động giống hệt như trước khi tái cấu trúc."
+      }
+    ]
+  }
+}

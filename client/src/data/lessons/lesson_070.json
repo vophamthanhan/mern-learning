@@ -1,0 +1,213 @@
+{
+  "id": 70,
+  "title": "Bài 54: Error Handling - Middleware Xử Lý Lỗi Tập Trung Phía Back-end",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Bài 54: Error Handling - Middleware Xử Lý Lỗi Tập Trung Phía Back-end\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tìm hiểu cách xây dựng một Middleware xử lý lỗi tập trung cho ứng dụng Back-end sử dụng NodeJS và Express. Việc xử lý lỗi một cách nhất quán và hiệu quả là cực kỳ quan trọng để đảm bảo sự ổn định của hệ thống và cung cấp trải nghiệm người dùng tốt hơn.\n\n## II. Kiến thức chi tiết\n\n### 1. Tại sao cần xử lý lỗi tập trung?\n\nTrong một ứng dụng lớn, việc đặt các khối `try...catch` ở khắp mọi nơi để xử lý lỗi sẽ dẫn đến tình trạng lặp code, khó bảo trì và không nhất quán. Thay vào đó, chúng ta nên có một nơi duy nhất để \"bắt\" và xử lý tất cả các lỗi xảy ra trong ứng dụng. Đây chính là vai trò của Middleware xử lý lỗi tập trung.\n\n### 2. Middleware trong Express.js\n\nMiddleware là các hàm được thực thi tuần tự trong chu trình xử lý request-response của Express. Một Middleware thông thường có 3 tham số: `req`, `res`, và `next`.\n\nTuy nhiên, một Middleware xử lý lỗi đặc biệt sẽ có 4 tham số: `err`, `req`, `res`, và `next`. Express sẽ tự động nhận diện và chuyển các lỗi đến Middleware này.\n\n### 3. Xây dựng Middleware xử lý lỗi\n\nChúng ta sẽ tạo một file `errorHandlingMiddleware.js` để chứa Middleware của mình. Middleware này sẽ nhận vào một đối tượng lỗi, xử lý nó và trả về một response lỗi chuẩn cho client.\n\n```javascript\n// /src/middlewares/errorHandlingMiddleware.js\n\nimport { StatusCodes } from 'http-status-codes'\n\nexport const errorHandlingMiddleware = (err, req, res, next) => {\n\n  // Nếu dev không tự định nghĩa status code thì mặc định sẽ là 500 INTERNAL_SERVER_ERROR\n  if (!err.statusCode) err.statusCode = StatusCodes.INTERNAL_SERVER_ERROR\n\n  const responseError = {\n    statusCode: err.statusCode,\n    message: err.message || StatusCodes[err.statusCode], // Nếu dev không tự định nghĩa message thì sẽ lấy message mặc định của status code\n    stack: err.stack\n  }\n\n  // Chỉ trả về stack trace khi ở môi trường dev\n  if (process.env.BUILD_MODE !== 'dev') {\n    delete responseError.stack\n  }\n\n  res.status(responseError.statusCode).json(responseError)\n}\n```\n\n**Giải thích:**\n\n*   **`StatusCodes`**: Chúng ta sử dụng thư viện `http-status-codes` để có thể truy cập các mã trạng thái HTTP một cách dễ dàng và tường minh.\n*   **`err.statusCode`**: Nếu lỗi được \"ném\" ra có chứa `statusCode`, chúng ta sẽ sử dụng nó. Nếu không, mặc định sẽ là `500 Internal Server Error`.\n*   **`err.message`**: Tương tự, chúng ta sẽ ưu tiên `message` do người lập trình định nghĩa. Nếu không có, chúng ta sẽ lấy `message` mặc định tương ứng với `statusCode`.\n*   **`err.stack`**: `stack trace` (dấu vết lỗi) rất hữu ích cho việc debug, nhưng nó cũng có thể tiết lộ thông tin nhạy cảm về cấu trúc server. Do đó, chúng ta chỉ nên trả về `stack trace` khi ứng dụng đang chạy ở môi trường `development`.\n\n### 4. Tích hợp Middleware vào ứng dụng\n\nĐể Middleware này có thể hoạt động, chúng ta cần đăng ký nó ở cuối file `server.js` (hoặc file khởi tạo server của bạn), sau tất cả các routes khác.\n\n```javascript\n// /src/server.js\n\nimport express from 'express'\nimport { errorHandlingMiddleware } from './middlewares/errorHandlingMiddleware'\n// ... các import khác\n\nconst app = express()\n\n// ... các middleware và routes khác\n\n// Middleware xử lý lỗi tập trung\napp.use(errorHandlingMiddleware)\n\napp.listen(process.env.APP_PORT, process.env.APP_HOST, () => {\n  console.log(`Hello, I am running at http://${process.env.APP_HOST}:${process.env.APP_PORT}/`)\n})\n```\n\n**Lưu ý:** Thứ tự đăng ký Middleware là rất quan trọng. Middleware xử lý lỗi phải được đặt ở cuối cùng.\n\n## III. Các bước thực hành\n\n1.  **Cài đặt `http-status-codes`**: `npm install http-status-codes`\n2.  **Tạo file `errorHandlingMiddleware.js`**: Sao chép và dán đoạn code Middleware xử lý lỗi ở trên.\n3.  **Tạo các lớp lỗi tùy chỉnh (Custom Error Classes)**: Để việc \"ném\" lỗi trở nên tường minh hơn, chúng ta có thể tạo các lớp lỗi kế thừa từ lớp `Error` có sẵn.\n\n    ```javascript\n    // /src/errors/badRequest.js\n    import { StatusCodes } from 'http-status-codes'\n\n    class BadRequestError extends Error {\n      constructor(message) {\n        super(message)\n        this.name = 'BadRequestError'\n        this.statusCode = StatusCodes.BAD_REQUEST\n      }\n    }\n\n    export default BadRequestError\n    ```\n\n4.  **Sử dụng trong Controller**: Bây giờ, trong các tầng `Controller` hoặc `Service`, khi gặp lỗi, chúng ta chỉ cần \"ném\" ra một instance của lớp lỗi tùy chỉnh.\n\n    ```javascript\n    // /src/controllers/boardController.js\n\n    import { StatusCodes } from 'http-status-codes'\n    import { boardService } from '~/services/boardService'\n    import BadRequestError from '~/errors/badRequest'\n\n    const createNew = async (req, res, next) => {\n      try {\n        // Giả sử có lỗi xảy ra\n        if (!req.body.title) {\n          throw new BadRequestError('Board title is required!')\n        }\n\n        const createdBoard = await boardService.createNew(req.body)\n        res.status(StatusCodes.CREATED).json(createdBoard)\n      } catch (error) { \n        next(error) \n      }\n    }\n    ```\n\n    **Giải thích:**\n\n    *   Khi `throw new BadRequestError(...)` được gọi, luồng thực thi sẽ dừng lại.\n    *   Khối `catch` sẽ bắt được lỗi này và gọi `next(error)`.\n    *   Express sẽ chuyển đối tượng `error` này đến Middleware xử lý lỗi tập trung mà chúng ta đã định nghĩa.\n\n## IV. Lưu ý quan trọng\n\n*   **Luôn gọi `next(error)`**: Trong các khối `catch` ở `Controller` hoặc `Service`, hãy đảm bảo bạn gọi `next(error)` để chuyển lỗi đến Middleware xử lý lỗi tập trung. Nếu không, request sẽ bị \"treo\".\n*   **Phân biệt môi trường `dev` và `production`**: Luôn kiểm tra biến môi trường để quyết định xem có nên trả về `stack trace` hay không. Việc này giúp bảo mật thông tin của server.\n*   **Sử dụng các lớp lỗi tùy chỉnh**: Việc này giúp code của bạn dễ đọc, dễ hiểu và dễ bảo trì hơn.\n\n## V. Tài liệu tham khảo\n\n*   [Express.js Error Handling Documentation](https://expressjs.com/en/guide/error-handling.html)\n*   [GeeksforGeeks: Explain Error Handling in Express.js Using An Example](https://www.geeksforgeeks.org/node-js/explain-error-handling-in-express-js-using-an-example/)\n*   [TrungQuanDev YouTube Channel](https://www.youtube.com/c/TrungQuanDev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục đích chính của việc xây dựng một Middleware xử lý lỗi tập trung trong ứng dụng Back-end là gì?",
+        "options": [
+          "A. Để ghi lại mọi request đến server.",
+          "B. Để bắt và xử lý tất cả các lỗi một cách nhất quán tại một nơi duy nhất, tránh lặp code và dễ bảo trì.",
+          "C. Để tăng tốc độ phản hồi của server.",
+          "D. Để xác thực người dùng trước khi họ truy cập vào các tài nguyên."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Middleware xử lý lỗi tập trung giúp gom việc xử lý lỗi về một chỗ, làm cho code sạch hơn, dễ quản lý hơn và đảm bảo tính nhất quán khi trả về lỗi cho client, như đã nêu trong mục \"Tại sao cần xử lý lỗi tập trung?\"."
+      },
+      {
+        "question": "Một hàm Middleware thông thường trong Express.js có các tham số nào?",
+        "options": [
+          "A. err, req, res, next",
+          "B. req, res, next",
+          "C. req, res",
+          "D. err, res, next"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Theo tài liệu của Express, một Middleware thông thường có 3 tham số là `req` (request), `res` (response), và `next` (hàm gọi middleware tiếp theo trong chuỗi)."
+      },
+      {
+        "question": "Đâu là đặc điểm nhận dạng một Middleware xử lý lỗi đặc biệt trong Express.js?",
+        "options": [
+          "A. Nó phải được đặt tên là `errorMiddleware`.",
+          "B. Nó phải được đăng ký đầu tiên trong ứng dụng.",
+          "C. Nó có 4 tham số: `err`, `req`, `res`, và `next`.",
+          "D. Nó chỉ có thể trả về status code 500."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Express nhận diện một middleware là middleware xử lý lỗi khi nó được định nghĩa với 4 tham số, với tham số đầu tiên là đối tượng lỗi (`err`)."
+      },
+      {
+        "question": "Trong `errorHandlingMiddleware` được cung cấp, nếu một lỗi được ném ra mà không có `statusCode` được định nghĩa, giá trị mặc định của `statusCode` sẽ là bao nhiêu?",
+        "options": [
+          "A. 400 BAD_REQUEST",
+          "B. 404 NOT_FOUND",
+          "C. 500 INTERNAL_SERVER_ERROR",
+          "D. 200 OK"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đoạn code `if (!err.statusCode) err.statusCode = StatusCodes.INTERNAL_SERVER_ERROR` cho thấy nếu `statusCode` không được cung cấp, nó sẽ mặc định là 500 (INTERNAL_SERVER_ERROR)."
+      },
+      {
+        "question": "Khi nào thì `stack trace` (dấu vết lỗi) được trả về trong response của `errorHandlingMiddleware`?",
+        "options": [
+          "A. Luôn luôn được trả về.",
+          "B. Không bao giờ được trả về.",
+          "C. Chỉ khi ứng dụng đang chạy ở môi trường `production`.",
+          "D. Chỉ khi ứng dụng đang chạy ở môi trường `dev`."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Đoạn code `if (process.env.BUILD_MODE !== 'dev') { delete responseError.stack }` đảm bảo rằng `stack trace` chỉ được gửi đi khi biến môi trường `BUILD_MODE` được đặt là 'dev' để hỗ trợ debug."
+      },
+      {
+        "question": "Middleware xử lý lỗi tập trung nên được đăng ký ở đâu trong file server của Express?",
+        "options": [
+          "A. Ở đầu file, trước tất cả các middleware và routes khác.",
+          "B. Ở giữa, sau các middleware nhưng trước các routes.",
+          "C. Ở cuối cùng, sau tất cả các middleware và routes khác.",
+          "D. Vị trí không quan trọng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Middleware xử lý lỗi phải được đặt ở cuối cùng (`app.use(errorHandlingMiddleware)`) để nó có thể bắt lỗi từ tất cả các routes và middleware đã được đăng ký trước đó."
+      },
+      {
+        "question": "Mục đích của việc tạo ra các lớp lỗi tùy chỉnh (Custom Error Classes) như `BadRequestError` là gì?",
+        "options": [
+          "A. Để làm cho ứng dụng chạy nhanh hơn.",
+          "B. Để thay thế hoàn toàn lớp `Error` có sẵn của JavaScript.",
+          "C. Để làm cho việc ném lỗi trở nên tường minh, dễ đọc và đính kèm `statusCode` một cách nhất quán.",
+          "D. Để bắt buộc phải sử dụng `try...catch` ở mọi nơi."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc tạo các lớp lỗi tùy chỉnh giúp code trở nên ngữ nghĩa hơn. Thay vì `throw new Error('Bad Request')` và phải nhớ set statusCode, ta có thể `throw new BadRequestError('Message')`, giúp code sạch hơn và dễ bảo trì."
+      },
+      {
+        "question": "Trong một khối `catch (error)` ở Controller, tại sao việc gọi `next(error)` lại quan trọng?",
+        "options": [
+          "A. Để ghi lỗi vào file log.",
+          "B. Để kết thúc response ngay lập tức.",
+          "C. Để khởi động lại server.",
+          "D. Để chuyển đối tượng lỗi đến middleware xử lý lỗi tập trung."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Khi `next()` được gọi với một đối số (ở đây là `error`), Express sẽ bỏ qua tất cả các middleware và route thông thường còn lại và chuyển quyền điều khiển đến middleware xử lý lỗi đã được đăng ký."
+      },
+      {
+        "question": "Điều gì sẽ xảy ra nếu một lỗi xảy ra trong route handler và khối `catch` không gọi `next(error)` hoặc gửi phản hồi?",
+        "options": [
+          "A. Ứng dụng sẽ tự động gửi một lỗi 500.",
+          "B. Yêu cầu (request) sẽ bị treo và client sẽ không nhận được phản hồi cho đến khi timeout.",
+          "C. Server sẽ bị sập (crash).",
+          "D. Lỗi sẽ tự động được bỏ qua."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu không gọi `next(error)` hoặc `res.send()`/`res.json()`, chu trình request-response sẽ không được hoàn thành. Request sẽ bị treo ở phía client cho đến khi hết thời gian chờ."
+      },
+      {
+        "question": "Thư viện nào được sử dụng trong bài học để làm việc với các mã trạng thái HTTP một cách tường minh?",
+        "options": [
+          "A. `express-status-monitor`",
+          "B. `http-codes`",
+          "C. `http-status-codes`",
+          "D. `node-status`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học sử dụng thư viện `http-status-codes` để có thể dùng các hằng số như `StatusCodes.BAD_REQUEST` thay vì phải nhớ các con số như 400, giúp code dễ đọc hơn."
+      },
+      {
+        "question": "Trong ví dụ về `errorHandlingMiddleware`, nếu `err.message` không được định nghĩa, giá trị nào sẽ được sử dụng thay thế?",
+        "options": [
+          "A. Một chuỗi rỗng.",
+          "B. Message mặc định tương ứng với `statusCode` từ thư viện `http-status-codes`.",
+          "C. Chuỗi \"An error occurred\".",
+          "D. `undefined`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đoạn code `message: err.message || StatusCodes[err.statusCode]` cho thấy nếu `err.message` là falsy (ví dụ: không được định nghĩa), nó sẽ lấy message mặc định từ đối tượng `StatusCodes`."
+      },
+      {
+        "question": "Lớp lỗi tùy chỉnh `BadRequestError` trong bài học kế thừa từ lớp nào?",
+        "options": [
+          "A. `Object`",
+          "B. `Exception`",
+          "C. `MiddlewareError`",
+          "D. `Error`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Lớp `BadRequestError` được định nghĩa bằng `class BadRequestError extends Error`, nghĩa là nó kế thừa từ lớp `Error` gốc của JavaScript."
+      },
+      {
+        "question": "Lệnh nào sau đây dùng để cài đặt thư viện `http-status-codes`?",
+        "options": [
+          "A. `npm install http-status-codes`",
+          "B. `npm add status-codes`",
+          "C. `npm get http-status-codes`",
+          "D. `npm http-status-codes`"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Mục III. Các bước thực hành đã nêu rõ lệnh cài đặt là `npm install http-status-codes`."
+      },
+      {
+        "question": "Việc phân biệt môi trường `dev` và `production` trong xử lý lỗi nhằm mục đích chính là gì?",
+        "options": [
+          "A. Để sử dụng các port khác nhau.",
+          "B. Để bảo mật thông tin của server bằng cách không để lộ `stack trace` ở môi trường production.",
+          "C. Để cho phép ghi log ở môi trường dev và không cho phép ở production.",
+          "D. Để code chạy nhanh hơn ở môi trường production."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`stack trace` có thể tiết lộ cấu trúc thư mục, các thư viện đang dùng và các đoạn code nhạy cảm. Do đó, việc ẩn nó đi ở môi trường production là một biện pháp bảo mật quan trọng."
+      },
+      {
+        "question": "Trong `boardController`, khi `req.body.title` không tồn tại, lỗi nào được ném ra?",
+        "options": [
+          "A. `new Error('Board title is required!')`",
+          "B. `new BadRequestError('Board title is required!')`",
+          "C. `new InternalServerError('Board title is required!')`",
+          "D. `new ValidationError('Board title is required!')`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Ví dụ trong controller cho thấy khi title bị thiếu, một instance của lớp lỗi tùy chỉnh `BadRequestError` được ném ra để báo hiệu một yêu cầu không hợp lệ từ client."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo Custom NotFoundError",
+        "description": "Hãy tạo một lớp lỗi tùy chỉnh tên là `NotFoundError` kế thừa từ lớp `Error`. Lớp này nên tự động gán `statusCode` là 404 (NOT_FOUND).",
+        "starterCode": "import { StatusCodes } from 'http-status-codes'\n\n// Your code here\n\nexport default NotFoundError;",
+        "solution": "import { StatusCodes } from 'http-status-codes'\n\nclass NotFoundError extends Error {\n  constructor(message) {\n    super(message)\n    this.name = 'NotFoundError'\n    this.statusCode = StatusCodes.NOT_FOUND\n  }\n}\n\nexport default NotFoundError;",
+        "testCases": "1. Import lớp `NotFoundError`.\n2. Ném một `NotFoundError` trong một route. \n3. Middleware xử lý lỗi tập trung phải bắt được lỗi này và trả về response có `statusCode` là 404."
+      },
+      {
+        "title": "Mở rộng Middleware để ghi log lỗi",
+        "description": "Sửa đổi `errorHandlingMiddleware` để trước khi gửi phản hồi lỗi về cho client, nó sẽ ghi (log) thông điệp lỗi ra console. Chỉ ghi log ở môi trường `dev`.",
+        "starterCode": "import { StatusCodes } from 'http-status-codes'\n\nexport const errorHandlingMiddleware = (err, req, res, next) => {\n  if (!err.statusCode) err.statusCode = StatusCodes.INTERNAL_SERVER_ERROR\n\n  const responseError = {\n    statusCode: err.statusCode,\n    message: err.message || StatusCodes[err.statusCode],\n    stack: err.stack\n  }\n\n  // Your code here to log the error in dev mode\n\n  if (process.env.BUILD_MODE !== 'dev') {\n    delete responseError.stack\n  }\n\n  res.status(responseError.statusCode).json(responseError)\n}",
+        "solution": "import { StatusCodes } from 'http-status-codes'\n\nexport const errorHandlingMiddleware = (err, req, res, next) => {\n  if (!err.statusCode) err.statusCode = StatusCodes.INTERNAL_SERVER_ERROR\n\n  const responseError = {\n    statusCode: err.statusCode,\n    message: err.message || StatusCodes[err.statusCode],\n    stack: err.stack\n  }\n\n  if (process.env.BUILD_MODE === 'dev') {\n    console.error(err.message);\n  }\n\n  if (process.env.BUILD_MODE !== 'dev') {\n    delete responseError.stack\n  }\n\n  res.status(responseError.statusCode).json(responseError)\n}",
+        "testCases": "1. Chạy ứng dụng ở chế độ `dev`.\n2. Gây ra một lỗi bất kỳ.\n3. Kiểm tra console của server, phải thấy thông điệp lỗi được in ra."
+      },
+      {
+        "title": "Sử dụng Lỗi Tùy Chỉnh trong Controller",
+        "description": "Viết một hàm controller `updateUser` nhận `userId` từ `req.params` và `email` từ `req.body`. Nếu `email` không phải là một chuỗi hợp lệ (ví dụ: không chứa ký tự '@'), hãy ném một `BadRequestError` với thông điệp 'Invalid email format'.",
+        "starterCode": "import BadRequestError from '~/errors/badRequest'\n\nconst updateUser = async (req, res, next) => {\n  try {\n    const { email } = req.body;\n    // Your validation logic here\n\n    // If validation passes, send success response\n    res.status(200).json({ message: 'User updated successfully!' });\n  } catch (error) {\n    next(error);\n  }\n};",
+        "solution": "import BadRequestError from '~/errors/badRequest'\n\nconst updateUser = async (req, res, next) => {\n  try {\n    const { email } = req.body;\n    if (!email || typeof email !== 'string' || !email.includes('@')) {\n      throw new BadRequestError('Invalid email format');\n    }\n\n    res.status(200).json({ message: 'User updated successfully!' });\n  } catch (error) {\n    next(error);\n  }\n};",
+        "testCases": "1. Gọi API tới route sử dụng controller này với body không có `email`.\n2. Response phải là lỗi 400.\n3. Gọi API với `email` là một chuỗi không hợp lệ (ví dụ: \"test.com\").\n4. Response phải là lỗi 400 với message 'Invalid email format'."
+      },
+      {
+        "title": "Tạo Middleware xác thực đơn giản",
+        "description": "Tạo một middleware `authMiddleware` kiểm tra xem request header có chứa `x-api-key` với giá trị là `'supersecret'` hay không. Nếu không, hãy tạo và ném một lớp lỗi tùy chỉnh mới tên là `UnauthorizedError` (kế thừa từ `Error`, `statusCode` 401). Nếu hợp lệ, gọi `next()`.",
+        "starterCode": "import { StatusCodes } from 'http-status-codes'\n\nclass UnauthorizedError extends Error {\n  // ... implement this class ...\n}\n\nexport const authMiddleware = (req, res, next) => {\n  try {\n    // Your authentication logic here\n  } catch (error) {\n    next(error);\n  }\n};",
+        "solution": "import { StatusCodes } from 'http-status-codes'\n\nclass UnauthorizedError extends Error {\n  constructor(message) {\n    super(message || 'Authentication failed');\n    this.name = 'UnauthorizedError';\n    this.statusCode = StatusCodes.UNAUTHORIZED;\n  }\n}\n\nexport const authMiddleware = (req, res, next) => {\n  try {\n    const apiKey = req.headers['x-api-key'];\n    if (apiKey && apiKey === 'supersecret') {\n      next();\n    } else {\n      throw new UnauthorizedError('Missing or invalid API key');\n    }\n  } catch (error) {\n    next(error);\n  }\n};",
+        "testCases": "1. Áp dụng `authMiddleware` cho một route.\n2. Gọi API đến route đó mà không có header `x-api-key`.\n3. Response phải là lỗi 401.\n4. Gọi API với `x-api-key` sai.\n5. Response phải là lỗi 401.\n6. Gọi API với `x-api-key` đúng.\n7. Response phải là 200 OK từ route handler."
+      },
+      {
+        "title": "Xử lý nhiều loại lỗi trong Middleware",
+        "description": "Nâng cấp `errorHandlingMiddleware` để nó có thể xử lý các loại lỗi khác nhau một cách đặc thù. Cụ thể: nếu lỗi là `NotFoundError`, trả về message mặc định là 'Resource not found'. Nếu là `BadRequestError`, giữ nguyên message của lỗi. Với các lỗi khác, trả về message chung là 'An unexpected error occurred'.",
+        "starterCode": "import { StatusCodes } from 'http-status-codes'\nimport NotFoundError from '~/errors/notFound' // Assume this exists\nimport BadRequestError from '~/errors/badRequest' // Assume this exists\n\nexport const errorHandlingMiddleware = (err, req, res, next) => {\n  // Your advanced error handling logic here\n\n  // Remember to handle the default case and hide stack in production\n};",
+        "solution": "import { StatusCodes } from 'http-status-codes'\nimport NotFoundError from '~/errors/notFound'\nimport BadRequestError from '~/errors/badRequest'\n\nexport const errorHandlingMiddleware = (err, req, res, next) => {\n  let customError = {\n    statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,\n    message: err.message\n  };\n\n  if (err instanceof NotFoundError) {\n    customError.message = 'Resource not found';\n  }\n\n  if (!(err instanceof BadRequestError) && !(err instanceof NotFoundError)) {\n     customError.message = 'An unexpected error occurred';\n  }\n\n  const responseError = {\n    statusCode: customError.statusCode,\n    message: customError.message,\n    stack: err.stack\n  }\n\n  if (process.env.BUILD_MODE !== 'dev') {\n    delete responseError.stack\n  }\n\n  res.status(responseError.statusCode).json(responseError)\n}",
+        "testCases": "1. Ném một `NotFoundError` -> response message phải là 'Resource not found'.\n2. Ném một `BadRequestError('Invalid input')` -> response message phải là 'Invalid input'.\n3. Ném một `Error('Generic error')` -> response message phải là 'An unexpected error occurred' và status 500."
+      }
+    ]
+  }
+}

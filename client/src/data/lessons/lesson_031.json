@@ -1,0 +1,213 @@
+{
+  "id": 31,
+  "title": "Buổi 16: Add Card Comment, Invite User to Board by Email...vv",
+  "category": "react-basics",
+  "categoryName": "React Cơ bản",
+  "content": "# Buổi 16: Add Card Comment, Invite User to Board by Email...vv\n\n## Mục tiêu bài học\n\nVideo này tập trung vào việc phát triển hai tính năng quan trọng trong một ứng dụng quản lý dự án kiểu Trello:\n\n1.  **Thêm bình luận vào thẻ (Add Card Comment):** Cho phép người dùng bình luận về các công việc (card) cụ thể để trao đổi thông tin, cập nhật tiến độ hoặc đặt câu hỏi.\n2.  **Mời thành viên vào bảng qua email (Invite User to Board by Email):** Cung cấp chức năng mời người dùng khác tham gia vào một bảng (board) thông qua việc gửi lời mời đến địa chỉ email của họ.\n\nĐây là những tính năng cốt lõi giúp tăng cường sự tương tác và cộng tác trong ứng dụng.\n\n## Kiến thức chi tiết\n\nDựa trên tiêu đề và kinh nghiệm phát triển ứng dụng MERN Stack, nội dung video có thể sẽ bao gồm các phần sau:\n\n### 1. Tính năng \"Add Card Comment\"\n\nĐể triển khai tính năng này, chúng ta cần làm việc ở cả Back-end và Front-end.\n\n#### Back-end (Node.js, Express.js, MongoDB)\n\n*   **Cập nhật Database Schema (Mongoose):**\n    *   Chúng ta cần một `Comment` model mới.\n\n    ```javascript\n    // models/commentModel.js\n    const commentSchema = new mongoose.Schema({\n      cardId: { type: mongoose.Schema.Types.ObjectId, ref: 'Card', required: true },\n      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },\n      content: { type: String, required: true },\n      createdAt: { type: Date, default: Date.now }\n    });\n    ```\n\n    *   Cập nhật `Card` model để lưu trữ một danh sách các comment IDs.\n\n    ```javascript\n    // models/cardModel.js\n    const cardSchema = new mongoose.Schema({\n      // ... other fields\n      comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }]\n    });\n    ```\n\n*   **Xây dựng API Endpoints:**\n    *   `POST /v1/comments`: API để tạo một bình luận mới. \n        *   **Validation:** Sử dụng Joi để xác thực dữ liệu đầu vào (`cardId`, `userId`, `content`).\n        *   **Controller & Service:** Logic để tạo một comment mới, sau đó cập nhật mảng `comments` trong document `Card` tương ứng.\n    *   `GET /v1/cards/:cardId/comments`: API để lấy danh sách bình luận của một thẻ.\n    *   `PUT /v1/comments/:commentId`: API để cập nhật nội dung bình luận.\n    *   `DELETE /v1/comments/:commentId`: API để xóa một bình luận (cần xử lý logic xóa commentId khỏi mảng trong `Card` model).\n\n#### Front-end (React.js)\n\n*   **Tạo Component:**\n    *   `CommentList.js`: Component để hiển thị danh sách các bình luận.\n    *   `Comment.js`: Component để hiển thị một bình luận đơn lẻ.\n    *   `AddCommentForm.js`: Form để người dùng nhập và gửi bình luận mới.\n*   **Tích hợp API:**\n    *   Sử dụng `axios` để gọi API `POST /v1/comments` khi người dùng gửi form.\n    *   Cập nhật UI ngay lập tức sau khi nhận được phản hồi thành công từ API (có thể sử dụng optimistic updates để cải thiện trải nghiệm người dùng).\n*   **Quản lý State (Redux/Context API):**\n    *   Lưu trữ danh sách bình luận trong state của component hoặc global state.\n    *   Cập nhật state khi có bình luận mới, chỉnh sửa hoặc xóa.\n\n### 2. Tính năng \"Invite User to Board by Email\"\n\nTính năng này phức tạp hơn vì nó liên quan đến việc gửi email và quản lý quyền truy cập.\n\n#### Back-end\n\n*   **Cập nhật Database Schema:**\n    *   Cập nhật `Board` model để có một trường `memberIds` và `ownerId`.\n    *   Tạo một `Invitation` model để quản lý các lời mời.\n\n    ```javascript\n    // models/invitationModel.js\n    const invitationSchema = new mongoose.Schema({\n      inviterId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },\n      inviteeEmail: { type: String, required: true },\n      boardId: { type: mongoose.Schema.Types.ObjectId, ref: 'Board', required: true },\n      token: { type: String, required: true, unique: true },\n      status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },\n      createdAt: { type: Date, default: Date.now, expires: '7d' } // Lời mời hết hạn sau 7 ngày\n    });\n    ```\n\n*   **Xây dựng API Endpoints:**\n    *   `POST /v1/boards/:boardId/invitations`: API để gửi lời mời.\n        *   **Logic:**\n            1.  Kiểm tra xem người gửi có phải là chủ sở hữu của board không.\n            2.  Kiểm tra xem email được mời đã là thành viên chưa.\n            3.  Tạo một `invitation` document mới với một token duy nhất (sử dụng `crypto` hoặc `uuid`).\n            4.  Sử dụng một dịch vụ email (như Nodemailer, SendGrid, Brevo) để gửi email chứa link mời (ví dụ: `https://your-app.com/invite?token=...`).\n    *   `GET /v1/invitations/accept`: API để chấp nhận lời mời.\n        *   **Logic:**\n            1.  Tìm lời mời dựa trên `token` từ query params.\n            2.  Xác thực token và kiểm tra trạng thái lời mời.\n            3.  Thêm `userId` của người được mời vào mảng `memberIds` của `Board`.\n            4.  Cập nhật trạng thái của lời mời thành `accepted`.\n\n#### Front-end\n\n*   **Tạo Component:**\n    *   `InviteUserForm.js`: Một modal hoặc pop-up cho phép chủ board nhập email người muốn mời.\n    *   `InvitationHandler.js`: Một trang hoặc component đặc biệt để xử lý link mời. Component này sẽ lấy `token` từ URL, gọi API để chấp nhận lời mời và chuyển hướng người dùng đến board.\n*   **Tích hợp API:**\n    *   Gọi API `POST /v1/boards/:boardId/invitations` khi chủ board gửi form mời.\n    *   Hiển thị thông báo thành công hoặc lỗi.\n\n## Các bước thực hành\n\n1.  **Thiết lập Back-end:**\n    *   Định nghĩa các schema cho `Comment` và `Invitation` trong MongoDB.\n    *   Cập nhật schema cho `Card` và `Board`.\n    *   Viết các routes, controllers, và services cho các API endpoint đã nêu ở trên.\n    *   Cấu hình Nodemailer hoặc một dịch vụ email khác.\n\n2.  **Thiết lập Front-end:**\n    *   Tạo các React component cần thiết cho việc hiển thị và thêm bình luận.\n    *   Tạo component form mời thành viên.\n    *   Viết logic để gọi các API tương ứng từ React.\n    *   Tạo trang xử lý lời mời.\n\n3.  **Kiểm thử:**\n    *   Sử dụng Postman để kiểm thử các API endpoint của Back-end.\n    *   Kiểm thử luồng chức năng trên giao diện người dùng.\n\n## Lưu ý quan trọng\n\n*   **Bảo mật:** Luôn xác thực và phân quyền người dùng ở phía Back-end. Chỉ chủ sở hữu board mới có quyền mời thành viên. Chỉ người dùng đã đăng nhập mới được bình luận.\n*   **Trải nghiệm người dùng (UX):** Cung cấp phản hồi rõ ràng cho người dùng (ví dụ: \"Lời mời đã được gửi\", \"Bình luận đã được thêm\"). Cân nhắc sử dụng real-time updates (với WebSockets) để các thành viên khác thấy bình luận mới ngay lập tức.\n*   **Xử lý lỗi:** Xử lý các trường hợp lỗi như email không hợp lệ, người dùng đã là thành viên, token mời không hợp lệ hoặc đã hết hạn.\n*   **Email Templates:** Thiết kế các mẫu email chuyên nghiệp cho việc gửi lời mời.\n\n## Tài liệu tham khảo\n\nDo video này dành cho hội viên, các tài liệu tham khảo dưới đây được suy luận dựa trên các công nghệ và kỹ thuật thường được sử dụng để xây dựng các tính năng tương tự:\n\n1.  **Mongoose ODM:** [https://mongoosejs.com/docs/guide.html](https://mongoosejs.com/docs/guide.html)\n2.  **Joi (Validation):** [https://joi.dev/api/](https://joi.dev/api/)\n3.  **Nodemailer (Gửi Email):** [https://nodemailer.com/](https://nodemailer.com/)\n4.  **ReactJS Documentation:** [https://react.dev/](https://react.dev/)\n5.  **TrungQuanDev GitHub:** [https://github.com/trungquandev](https://github.com/trungquandev) (Có thể chứa các project mẫu liên quan).\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Để triển khai tính năng bình luận, `Card` model cần được cập nhật như thế nào?",
+        "options": [
+          "Thêm một trường `comments` là một mảng các chuỗi (string).",
+          "Thêm một trường `comments` là một mảng các ObjectId tham chiếu đến `Comment` model.",
+          "Không cần cập nhật `Card` model, chỉ cần tạo `Comment` model.",
+          "Thêm một trường `commentIds` là một object chứa thông tin người bình luận."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Theo nội dung bài học, `Card` model cần được cập nhật để lưu trữ một danh sách các `commentId`, sử dụng mảng ObjectId tham chiếu đến `Comment` model để tạo mối quan hệ giữa chúng."
+      },
+      {
+        "question": "API endpoint nào được sử dụng để tạo một bình luận mới?",
+        "options": [
+          "GET /v1/comments",
+          "POST /v1/cards/:cardId/comments",
+          "PUT /v1/comments",
+          "POST /v1/comments"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Endpoint `POST /v1/comments` được sử dụng để tạo một bình luận mới. Dữ liệu gửi lên sẽ bao gồm `cardId`, `userId`, và `content`."
+      },
+      {
+        "question": "Thư viện nào được đề xuất để xác thực (validation) dữ liệu đầu vào ở phía Back-end?",
+        "options": [
+          "Express-validator",
+          "Joi",
+          "Yup",
+          "Moment.js"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học đề cập đến việc sử dụng Joi để xác thực dữ liệu đầu vào cho các API endpoint, đảm bảo tính toàn vẹn của dữ liệu."
+      },
+      {
+        "question": "Trong tính năng mời thành viên, `Invitation` model có một trường `expires`. Chức năng của nó là gì?",
+        "options": [
+          "Đặt thời gian hết hạn cho phiên đăng nhập của người dùng.",
+          "Tự động xóa lời mời khỏi cơ sở dữ liệu sau một khoảng thời gian.",
+          "Giới hạn số lần một người có thể được mời.",
+          "Đặt ngày hết hạn cho board."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trường `expires` trong `invitationSchema` được sử dụng để tự động xóa document lời mời sau một khoảng thời gian nhất định (ví dụ: 7 ngày), giúp dọn dẹp các lời mời đã cũ và không được phản hồi."
+      },
+      {
+        "question": "Dịch vụ nào được gợi ý để gửi email lời mời trong bài học?",
+        "options": [
+          "Socket.IO",
+          "Axios",
+          "Nodemailer, SendGrid, Brevo",
+          "JWT (JSON Web Token)"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề xuất sử dụng các dịch vụ email như Nodemailer, SendGrid, hoặc Brevo để tích hợp chức năng gửi email cho việc mời thành viên."
+      },
+      {
+        "question": "Khi người dùng chấp nhận lời mời tham gia board, hành động nào sau đây sẽ xảy ra ở Back-end?",
+        "options": [
+          "Tạo một board mới cho người dùng.",
+          "Xóa người dùng khỏi hệ thống.",
+          "Thêm `userId` của người được mời vào mảng `memberIds` của `Board` và cập nhật trạng thái lời mời.",
+          "Gửi một email xác nhận đến chủ sở hữu board."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi chấp nhận lời mời, logic back-end sẽ xác thực token, thêm `userId` của người dùng vào danh sách thành viên của board, và cập nhật trạng thái của lời mời thành `accepted`."
+      },
+      {
+        "question": "Ai có quyền mời thành viên mới vào một board?",
+        "options": [
+          "Bất kỳ thành viên nào của board.",
+          "Chỉ chủ sở hữu (owner) của board.",
+          "Bất kỳ người dùng nào đã đăng nhập.",
+          "Chỉ quản trị viên (admin) của hệ thống."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Về mặt bảo mật, bài học nhấn mạnh rằng chỉ chủ sở hữu của board mới có quyền thực hiện hành động mời thành viên mới để đảm bảo quyền kiểm soát."
+      },
+      {
+        "question": "Component React nào chịu trách nhiệm xử lý link mời sau khi người dùng nhấp vào?",
+        "options": [
+          "InviteUserForm.js",
+          "Board.js",
+          "InvitationHandler.js",
+          "CommentList.js"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`InvitationHandler.js` là một component đặc biệt được tạo ra để xử lý URL chứa token mời. Nó sẽ gọi API để chấp nhận lời mời và sau đó chuyển hướng người dùng."
+      },
+      {
+        "question": "Token trong `Invitation` model được tạo ra nhằm mục đích gì?",
+        "options": [
+          "Xác thực người dùng khi đăng nhập.",
+          "Mã hóa mật khẩu người dùng.",
+          "Tạo một đường link mời duy nhất và an toàn cho mỗi lời mời.",
+          "Định danh cho mỗi board trong cơ sở dữ liệu."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Token duy nhất được tạo cho mỗi lời mời để đảm bảo rằng chỉ người nhận email mới có thể sử dụng link để chấp nhận lời mời, tăng cường tính bảo mật."
+      },
+      {
+        "question": "Để cải thiện trải nghiệm người dùng (UX) khi thêm bình luận, kỹ thuật nào được gợi ý?",
+        "options": [
+          "Lazy loading",
+          "Server-side rendering",
+          "Real-time updates với WebSockets",
+          "Code splitting"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học gợi ý sử dụng real-time updates (ví dụ: với WebSockets) để các thành viên khác trong board có thể thấy bình luận mới ngay lập tức mà không cần tải lại trang."
+      },
+      {
+        "question": "Trường `status` trong `invitationSchema` có các giá trị enum nào?",
+        "options": [
+          "['pending', 'sent', 'failed']",
+          "['active', 'inactive']",
+          "['pending', 'accepted', 'rejected']",
+          "['new', 'viewed', 'expired']"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trường `status` dùng để theo dõi trạng thái của lời mời, với các giá trị được định nghĩa là 'pending', 'accepted', hoặc 'rejected'."
+      },
+      {
+        "question": "Khi xóa một bình luận, ngoài việc xóa document trong collection `Comment`, cần thực hiện thêm hành động nào?",
+        "options": [
+          "Xóa card chứa bình luận đó.",
+          "Xóa người dùng đã tạo bình luận.",
+          "Không cần làm gì thêm.",
+          "Xóa `commentId` tương ứng khỏi mảng `comments` trong `Card` model."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Để đảm bảo tính nhất quán của dữ liệu, khi một bình luận bị xóa, `commentId` của nó cũng phải được gỡ bỏ khỏi mảng `comments` của card liên quan."
+      },
+      {
+        "question": "Mối quan hệ giữa `Comment` model và `User` model được định nghĩa như thế nào?",
+        "options": [
+          "Một `Comment` có thể được tạo bởi nhiều `User`.",
+          "Một `Comment` chứa thông tin chi tiết của `User`.",
+          "Một `Comment` có một trường `userId` tham chiếu đến `User` model.",
+          "Không có mối quan hệ trực tiếp."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`commentSchema` chứa một trường `userId` với kiểu `mongoose.Schema.Types.ObjectId` và `ref: 'User'`, cho biết mỗi bình luận được tạo bởi một người dùng cụ thể."
+      },
+      {
+        "question": "API endpoint `GET /v1/invitations/accept` xử lý logic gì?",
+        "options": [
+          "Tạo một lời mời mới.",
+          "Lấy danh sách tất cả lời mời.",
+          "Từ chối một lời mời.",
+          "Xác thực token và chấp nhận lời mời tham gia board."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Endpoint này được gọi khi người dùng nhấp vào link mời. Nó nhận token, xác thực, thêm người dùng vào board và cập nhật trạng thái lời mời."
+      },
+      {
+        "question": "Tại sao việc xử lý lỗi cho các trường hợp như token hết hạn lại quan trọng?",
+        "options": [
+          "Để tăng hiệu năng cho server.",
+          "Để cung cấp phản hồi rõ ràng cho người dùng và tránh các trạng thái không mong muốn.",
+          "Để tuân thủ tiêu chuẩn của MongoDB.",
+          "Để giúp việc gửi email nhanh hơn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Xử lý lỗi tốt, bao gồm cả trường hợp token không hợp lệ hoặc hết hạn, là rất quan trọng để cải thiện trải nghiệm người dùng, cung cấp thông báo lỗi hữu ích và duy trì sự ổn định của ứng dụng."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo Comment Mongoose Schema",
+        "description": "Hãy định nghĩa một Mongoose schema cho `Comment`. Schema cần bao gồm các trường: `cardId` (tham chiếu đến 'Card'), `userId` (tham chiếu đến 'User'), `content` (String), và `createdAt` (Date, mặc định là thời gian hiện tại).",
+        "starterCode": "const mongoose = require('mongoose');\n\n// Your code here\nconst commentSchema = new mongoose.Schema({\n  // ...\n});\n\nmodule.exports = mongoose.model('Comment', commentSchema);",
+        "solution": "const mongoose = require('mongoose');\n\nconst commentSchema = new mongoose.Schema({\n  cardId: { type: mongoose.Schema.Types.ObjectId, ref: 'Card', required: true },\n  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },\n  content: { type: String, required: true },\n  createdAt: { type: Date, default: Date.now }\n});\n\nmodule.exports = mongoose.model('Comment', commentSchema);",
+        "testCases": "1. Schema phải có trường `cardId` là ObjectId và tham chiếu đến 'Card'.\n2. Schema phải có trường `userId` là ObjectId và tham chiếu đến 'User'.\n3. Trường `content` phải là String và bắt buộc.\n4. Trường `createdAt` phải là Date và có giá trị mặc định."
+      },
+      {
+        "title": "Viết Controller tạo Comment",
+        "description": "Hoàn thành hàm controller `createComment` trong Express.js. Hàm này nhận `req.body` chứa `cardId`, `userId`, `content`, sau đó gọi một service `commentService.create` để tạo comment mới và trả về kết quả với status 201.",
+        "starterCode": "const commentService = require('../services/commentService');\n\nconst createComment = async (req, res, next) => {\n  try {\n    // Your code here\n    \n    res.status(201).json(newComment);\n  } catch (error) {\n    next(error);\n  }\n};\n\nmodule.exports = { createComment };",
+        "solution": "const commentService = require('../services/commentService');\n\nconst createComment = async (req, res, next) => {\n  try {\n    const newComment = await commentService.create(req.body);\n    res.status(201).json(newComment);\n  } catch (error) {\n    next(error);\n  }\n};\n\nmodule.exports = { createComment };",
+        "testCases": "1. Hàm phải gọi `commentService.create` với `req.body`.\n2. Phải trả về status code 201 khi thành công.\n3. Phải trả về kết quả của service dưới dạng JSON.\n4. Phải bắt lỗi và chuyển cho middleware `next`."
+      },
+      {
+        "title": "Tạo Form thêm Comment bằng React",
+        "description": "Tạo một component React tên là `AddCommentForm`. Component này chứa một `textarea` cho nội dung bình luận và một nút `button` để gửi. Khi form được submit, nó sẽ gọi hàm `onSubmit` được truyền qua props với nội dung của `textarea`.",
+        "starterCode": "import React, { useState } from 'react';\n\nconst AddCommentForm = ({ onSubmit }) => {\n  const [content, setContent] = useState('');\n\n  const handleSubmit = (e) => {\n    e.preventDefault();\n    // Your code here\n  };\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <textarea \n        value={content}\n        onChange={(e) => setContent(e.target.value)}\n        placeholder=\"Thêm bình luận...\"/>\n      <button type=\"submit\">Gửi</button>\n    </form>\n  );\n};\n\nexport default AddCommentForm;",
+        "solution": "import React, { useState } from 'react';\n\nconst AddCommentForm = ({ onSubmit }) => {\n  const [content, setContent] = useState('');\n\n  const handleSubmit = (e) => {\n    e.preventDefault();\n    if (!content.trim()) return;\n    onSubmit(content);\n    setContent('');\n  };\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <textarea \n        value={content}\n        onChange={(e) => setContent(e.target.value)}\n        placeholder=\"Thêm bình luận...\"/>\n      <button type=\"submit\">Gửi</button>\n    </form>\n  );\n};\n\nexport default AddCommentForm;",
+        "testCases": "1. Component phải quản lý state cho `textarea`.\n2. Khi submit, hàm `onSubmit` phải được gọi với giá trị của state.\n3. Sau khi submit, `textarea` phải được xóa trắng.\n4. Không gọi `onSubmit` nếu `textarea` rỗng hoặc chỉ chứa khoảng trắng."
+      },
+      {
+        "title": "Viết Service gửi lời mời",
+        "description": "Hoàn thành service `sendInvitation`. Service này nhận `boardId`, `inviterId`, và `inviteeEmail`. Logic cần làm: kiểm tra người mời có phải owner không (giả sử đã có hàm `boardModel.isOwner`), tạo token duy nhất, lưu lời mời vào DB, và gọi hàm `emailService.send`.",
+        "starterCode": "const boardModel = require('../models/boardModel');\nconst invitationModel = require('../models/invitationModel');\nconst emailService = require('./emailService');\nconst crypto = require('crypto');\n\nconst sendInvitation = async (boardId, inviterId, inviteeEmail) => {\n  // 1. Check permission (giả sử đã có)\n  // const isOwner = await boardModel.isOwner(boardId, inviterId);\n  // if (!isOwner) throw new Error('Permission denied');\n\n  // Your code here\n  // 2. Create unique token\n  \n  // 3. Save invitation to DB\n  \n  // 4. Send email\n  \n  return newInvitation;\n};\n\nmodule.exports = { sendInvitation };",
+        "solution": "const boardModel = require('../models/boardModel');\nconst invitationModel = require('../models/invitationModel');\nconst emailService = require('./emailService');\nconst crypto = require('crypto');\n\nconst sendInvitation = async (boardId, inviterId, inviteeEmail) => {\n  // 1. Check permission (giả sử đã có)\n  // const isOwner = await boardModel.isOwner(boardId, inviterId);\n  // if (!isOwner) throw new Error('Permission denied');\n\n  // 2. Create unique token\n  const token = crypto.randomBytes(20).toString('hex');\n\n  // 3. Save invitation to DB\n  const newInvitation = await invitationModel.create({\n    inviterId,\n    inviteeEmail,\n    boardId,\n    token\n  });\n\n  // 4. Send email\n  const inviteLink = `https://your-app.com/invite?token=${token}`\n  await emailService.send(inviteeEmail, 'Lời mời tham gia board', `Nhấp vào đây để tham gia: ${inviteLink}`);\n\n  return newInvitation;\n};\n\nmodule.exports = { sendInvitation };",
+        "testCases": "1. Phải tạo được một token ngẫu nhiên, duy nhất.\n2. Phải tạo một document mới trong `invitationModel`.\n3. Phải gọi `emailService.send` với email người nhận và link mời chứa token.\n4. Phải trả về document lời mời đã được tạo."
+      },
+      {
+        "title": "Tích hợp API chấp nhận lời mời trong React",
+        "description": "Hoàn thành component `InvitationHandler`. Component này được render khi người dùng truy cập vào link mời. Sử dụng `useEffect` để lấy `token` từ URL query params, gọi API `GET /v1/invitations/accept?token=...` và xử lý kết quả (chuyển hướng hoặc hiển thị lỗi).",
+        "starterCode": "import React, { useEffect, useState } from 'react';\nimport { useLocation, useHistory } from 'react-router-dom';\nimport api from '../api'; // Giả sử đã cấu hình axios instance\n\nfunction useQuery() {\n  return new URLSearchParams(useLocation().search);\n}\n\nconst InvitationHandler = () => {\n  const query = useQuery();\n  const history = useHistory();\n  const [message, setMessage] = useState('Đang xử lý lời mời...');\n\n  useEffect(() => {\n    const token = query.get('token');\n    if (token) {\n      const acceptInvite = async () => {\n        // Your code here\n      };\n      acceptInvite();\n    }\n  }, [query, history]);\n\n  return <div>{message}</div>;\n};\n\nexport default InvitationHandler;",
+        "solution": "import React, { useEffect, useState } from 'react';\nimport { useLocation, useHistory } from 'react-router-dom';\nimport api from '../api'; // Giả sử đã cấu hình axios instance\n\nfunction useQuery() {\n  return new URLSearchParams(useLocation().search);\n}\n\nconst InvitationHandler = () => {\n  const query = useQuery();\n  const history = useHistory();\n  const [message, setMessage] = useState('Đang xử lý lời mời...');\n\n  useEffect(() => {\n    const token = query.get('token');\n    if (token) {\n      const acceptInvite = async () => {\n        try {\n          const response = await api.get(`/v1/invitations/accept?token=${token}`);\n          setMessage('Chấp nhận lời mời thành công! Đang chuyển hướng...');\n          // Giả sử API trả về boardId để chuyển hướng\n          history.push(`/boards/${response.data.boardId}`);\n        } catch (error) {\n          setMessage('Lỗi: Lời mời không hợp lệ hoặc đã hết hạn.');\n        }\n      };\n      acceptInvite();\n    }\n  }, [query, history]);\n\n  return <div>{message}</div>;\n};\n\nexport default InvitationHandler;",
+        "testCases": "1. Phải lấy được `token` từ URL query params.\n2. Phải gọi API `GET /v1/invitations/accept` với token.\n3. Khi thành công, phải chuyển hướng người dùng (ví dụ: đến trang board).\n4. Khi thất bại, phải hiển thị một thông báo lỗi cho người dùng."
+      }
+    ]
+  }
+}

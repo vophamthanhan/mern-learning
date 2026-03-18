@@ -1,0 +1,213 @@
+{
+  "id": 52,
+  "title": "Bài học 34: Thuật Toán Phát Hiện Va Chạm với Dnd-kit",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# Bài học 34: Thuật Toán Phát Hiện Va Chạm với Dnd-kit\n\n## I. Mục tiêu bài học\n\nVideo này tập trung vào một vấn đề cụ thể nhưng rất quan trọng trong quá trình phát triển tính năng kéo thả (Drag and Drop) trong ứng dụng ReactJS: **xử lý va chạm (collision detection)**, đặc biệt là khi làm việc với thư viện `dnd-kit`. Mục tiêu chính của bài học bao gồm:\n\n1.  **Hiểu rõ thuật toán phát hiện va chạm:** Nắm vững cách `dnd-kit` xác định khi nào một đối tượng kéo (draggable) đang \"va chạm\" hoặc \"nằm trên\" một khu vực có thể thả (droppable).\n2.  **Phân tích và sửa lỗi (bug):** Giải quyết một lỗi thường gặp khi kéo thả các phần tử có kích thước không đồng nhất (ví dụ: một card chứa hình ảnh và một card chỉ có văn bản), dẫn đến việc phát hiện va chạm không chính xác.\n3.  **Tùy chỉnh thuật toán va chạm:** Học cách triển khai một thuật toán phát hiện va chạm tùy chỉnh để phù hợp với yêu cầu cụ thể của ứng dụng, thay vì chỉ dựa vào các thuật toán có sẵn.\n\n## II. Kiến thức chi tiết\n\n### 1. Giới thiệu về `dnd-kit` và Phát hiện va chạm\n\n`dnd-kit` là một thư viện kéo thả nhẹ, module hóa và có khả năng truy cập cao cho React. Một trong những tính năng mạnh mẽ nhất của nó là hệ thống phát hiện va chạm linh hoạt.\n\nKhi bạn kéo một đối tượng (`Draggable`) qua các khu vực có thể thả (`Droppable`), `dnd-kit` cần một thuật toán để quyết định xem đối tượng đang được kéo hiện đang ở trên khu vực nào. Thư viện cung cấp sẵn một số thuật toán:\n\n*   `rectIntersection`: Trả về tất cả các khu vực `droppable` mà hình chữ nhật bao quanh con trỏ (hoặc đối tượng kéo) giao nhau. Đây là thuật toán mặc định và phù hợp cho nhiều trường hợp.\n*   `pointerWithin`: Chỉ trả về khu vực `droppable` mà con trỏ chuột đang ở bên trong. Thuật toán này chính xác hơn nhưng có thể không phù hợp với các đối tượng kéo lớn.\n*   `closestCenter`: Tìm khu vực `droppable` có tâm gần nhất với tâm của đối tượng kéo.\n*   `closestCorners`: Tìm khu vực `droppable` có góc gần nhất với góc của đối tượng kéo.\n\n### 2. Phân tích vấn đề: Va chạm không chính xác với các phần tử khác kích thước\n\nTrong video, tác giả TrungQuanDev đối mặt với một vấn đề: khi kéo một card từ cột này sang cột khác, việc phát hiện va chạm hoạt động không đúng như mong đợi, đặc biệt khi một cột chứa các card có chiều cao khác nhau (do có card chứa ảnh, có card không).\n\n**Nguyên nhân:**\n\nThuật toán `rectIntersection` mặc định của `dnd-kit` dựa trên việc tính toán sự giao nhau của các hình chữ nhật (bounding rectangles). Khi bạn bắt đầu kéo một card, `dnd-kit` sẽ \"chụp lại\" kích thước và vị trí của tất cả các khu vực `droppable` (trong trường hợp này là các cột). Nếu các card trong một cột được thêm vào hoặc sắp xếp lại trong quá trình kéo, các hình chữ nhật được tính toán ban đầu sẽ không còn chính xác, dẫn đến việc phát hiện va chạm sai.\n\nVấn đề trở nên rõ ràng hơn khi kéo một card vào một cột trống hoặc một cột có ít card hơn. Vùng `droppable` của cột đó có thể nhỏ hơn so với dự kiến, khiến cho việc \"thả\" card vào đó trở nên khó khăn.\n\n### 3. Giải pháp: Thuật toán phát hiện va chạm tùy chỉnh\n\nĐể giải quyết vấn đề này, thay vì dựa vào các thuật toán có sẵn, chúng ta có thể tự viết một logic phát hiện va chạm của riêng mình. Video đề xuất một hướng tiếp cận thông minh, không phải là tạo ra một thuật toán phức tạp từ đầu, mà là **kết hợp các thuật toán có sẵn**.\n\nÝ tưởng là sử dụng `closestCorners` làm thuật toán chính để xác định cột nào gần nhất, nhưng chỉ khi con trỏ chuột đã thực sự đi vào bên trong khu vực của cột đó. Điều này giúp tránh trường hợp card \"nhảy\" sang cột bên cạnh quá sớm chỉ vì một góc của nó gần hơn.\n\n```javascript\nimport { pointerWithin, rectIntersection, closestCorners } from '@dnd-kit/core';\n\n/**\n * Custom collision detection strategy\n * - First, we check if the pointer is within any droppable container. If it is, we use that.\n * - If the pointer is not in any droppable container, we find the closest one to the pointer.\n */\nconst collisionDetectionStrategy = (args) => {\n  // First, check if the pointer is within any droppable\n  const pointerCollisions = pointerWithin(args);\n  if (pointerCollisions.length > 0) {\n    return pointerCollisions;\n  }\n\n  // If no collisions with the pointer, check for rectangle intersection\n  const rectCollisions = rectIntersection(args);\n  if (rectCollisions.length > 0) {\n    return rectCollisions;\n  }\n\n  // If still no collisions, find the closest corner\n  return closestCorners(args);\n};\n```\n\nSau đó, bạn sẽ truyền thuật toán tùy chỉnh này vào `DndContext`:\n\n```jsx\n<DndContext collisionDetection={collisionDetectionStrategy}>\n  {/* ... your components ... */}\n</DndContext>\n```\n\nCách tiếp cận này mang lại sự cân bằng giữa độ chính xác của `pointerWithin` và sự linh hoạt của các thuật toán khác, giải quyết hiệu quả vấn đề va chạm với các phần tử có kích thước không đồng nhất.\n\n## III. Các bước thực hành\n\n1.  **Thiết lập `DndContext`:** Bọc toàn bộ ứng dụng hoặc phần có chức năng kéo thả bằng `<DndContext>`.\n2.  **Xác định cảm biến (Sensors):** Sử dụng `useSensors`, `useSensor`, `PointerSensor`, và `KeyboardSensor` để cho phép người dùng tương tác bằng chuột, cảm ứng hoặc bàn phím.\n3.  **Tái hiện lỗi:**\n    *   Tạo một cấu trúc gồm nhiều cột (droppable containers).\n    *   Trong mỗi cột, tạo nhiều card (draggable items).\n    *   Đảm bảo rằng một số card có chứa hình ảnh để làm cho chiều cao của chúng lớn hơn các card khác.\n    *   Sử dụng thuật toán `rectIntersection` mặc định và thử kéo một card qua các cột để quan sát hành vi va chạm không chính xác.\n4.  **Triển khai thuật toán tùy chỉnh:**\n    *   Tạo một hàm `collisionDetectionStrategy` như đoạn code mẫu ở trên.\n    *   Truyền hàm này vào prop `collisionDetection` của `DndContext`.\n5.  **Kiểm tra lại:** Kéo thả các card một lần nữa để xác nhận rằng vấn đề đã được giải quyết và việc phát hiện va chạm giờ đây hoạt động một cách mượt mà và chính xác.\n\n## IV. Lưu ý quan trọng\n\n*   **Hiệu năng:** Việc phát hiện va chạm có thể ảnh hưởng đến hiệu năng, đặc biệt với số lượng lớn các phần tử `droppable`. Luôn kiểm tra hiệu năng của ứng dụng và xem xét các kỹ thuật tối ưu hóa như `virtualization` nếu cần.\n*   **`DragOverlay`:** Luôn sử dụng `DragOverlay` để hiển thị một bản xem trước (preview) của phần tử đang được kéo. Điều này giúp tách biệt phần tử đang kéo ra khỏi luồng DOM thông thường, tránh được nhiều vấn đề phức tạp liên quan đến CSS và layout trong quá trình kéo.\n*   **Trải nghiệm người dùng (UX):** Mục tiêu cuối cùng là tạo ra một trải nghiệm kéo thả mượt mà, tự nhiên và dễ đoán cho người dùng. Đừng ngần ngại thử nghiệm với các thuật toán và chiến lược khác nhau để tìm ra giải pháp tốt nhất cho ứng dụng của bạn.\n\n## V. Tài liệu tham khảo\n\n1.  **Video bài học:** [34. Thuật Toán Phát Hiện Va Chạm với Dnd-kit | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=vJumSLS6hOw)\n2.  **Tài liệu chính thức của dnd-kit:** [dnd-kit Documentation - Collision Detection](https://docs.dndkit.com/api-documentation/context-provider/collision-detection-algorithms)\n3.  **GitHub của TrungQuanDev:** [trungquandev on GitHub](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của bài học về Thuật Toán Phát Hiện Va Chạm với dnd-kit là gì?",
+        "options": [
+          "A. Học cách cài đặt và cấu hình cơ bản thư viện dnd-kit trong một dự án React.",
+          "B. Hiểu, phân tích và tùy chỉnh thuật toán phát hiện va chạm để xử lý các trường hợp phức tạp như các phần tử khác kích thước.",
+          "C. Tối ưu hóa hiệu năng của ứng dụng React sử dụng dnd-kit bằng kỹ thuật virtualization.",
+          "D. Xây dựng một giao diện kéo thả hoàn chỉnh từ đầu không cần dùng thư viện."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học tập trung sâu vào việc hiểu rõ các thuật toán va chạm, phân tích một lỗi cụ thể khi các phần tử có kích thước không đồng nhất và cách tạo ra một thuật toán tùy chỉnh để giải quyết vấn đề đó."
+      },
+      {
+        "question": "Thuật toán phát hiện va chạm mặc định của dnd-kit là gì?",
+        "options": [
+          "A. pointerWithin",
+          "B. closestCenter",
+          "C. rectIntersection",
+          "D. closestCorners"
+        ],
+        "correctAnswer": 2,
+        "explanation": "dnd-kit sử dụng `rectIntersection` làm thuật toán mặc định. Nó trả về tất cả các khu vực droppable mà hình chữ nhật bao quanh đối tượng kéo giao nhau."
+      },
+      {
+        "question": "Theo bài học, nguyên nhân chính gây ra lỗi phát hiện va chạm không chính xác khi kéo các card có chiều cao khác nhau là gì?",
+        "options": [
+          "A. Do trình duyệt không tính toán lại layout đủ nhanh trong quá trình kéo thả.",
+          "B. Do thuật toán `pointerWithin` chỉ xét đến vị trí con trỏ chuột mà không quan tâm kích thước đối tượng kéo.",
+          "C. Do `dnd-kit` \"chụp lại\" kích thước và vị trí của các khu vực droppable lúc bắt đầu kéo, và các giá trị này không còn đúng nếu layout thay đổi.",
+          "D. Do sử dụng sai cảm biến (Sensors) trong DndContext."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vấn đề cốt lõi là `dnd-kit` tính toán các hình chữ nhật bao quanh (bounding rectangles) của các khu vực có thể thả một lần duy nhất khi bắt đầu thao tác kéo. Nếu các mục bên trong thay đổi, các phép tính đó sẽ trở nên lỗi thời, dẫn đến va chạm sai."
+      },
+      {
+        "question": "Thuật toán `pointerWithin` hoạt động như thế nào?",
+        "options": [
+          "A. Tìm khu vực droppable có tâm gần nhất với tâm của đối tượng kéo.",
+          "B. Chỉ trả về khu vực droppable mà con trỏ chuột hiện đang ở bên trong.",
+          "C. Trả về tất cả các khu vực droppable giao với hình chữ nhật của đối tượng kéo.",
+          "D. Tìm khu vực droppable có góc gần nhất với góc của đối tượng kéo."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`pointerWithin` là thuật toán chính xác nhất về mặt vị trí con trỏ, nó chỉ xem xét khu vực mà con trỏ đang trỏ vào."
+      },
+      {
+        "question": "Giải pháp được đề xuất trong bài học để khắc phục lỗi va chạm là gì?",
+        "options": [
+          "A. Thay thế hoàn toàn `dnd-kit` bằng một thư viện khác mạnh mẽ hơn.",
+          "B. Buộc tất cả các card phải có cùng chiều cao bằng CSS.",
+          "C. Viết một thuật toán phát hiện va chạm hoàn toàn mới từ đầu bằng tính toán hình học phức tạp.",
+          "D. Tạo một chiến lược va chạm tùy chỉnh bằng cách kết hợp các thuật toán có sẵn như `pointerWithin` và `closestCorners`."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bài học hướng dẫn một cách tiếp cận thông minh là kết hợp các thuật toán có sẵn để tận dụng điểm mạnh của từng cái, thay vì phát minh lại bánh xe."
+      },
+      {
+        "question": "Trong `DndContext`, prop nào được sử dụng để truyền vào thuật toán phát hiện va chạm tùy chỉnh?",
+        "options": [
+          "A. `sensors`",
+          "B. `onDragEnd`",
+          "C. `collisionDetection`",
+          "D. `modifiers`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Prop `collisionDetection` của component `DndContext` cho phép bạn cung cấp một hàm tùy chỉnh để `dnd-kit` sử dụng khi xác định va chạm."
+      },
+      {
+        "question": "Thành phần nào của `dnd-kit` được khuyến nghị sử dụng để hiển thị bản xem trước của phần tử đang được kéo, giúp tách biệt nó khỏi luồng DOM thông thường?",
+        "options": [
+          "A. `Draggable`",
+          "B. `Droppable`",
+          "C. `SortableContext`",
+          "D. `DragOverlay`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`DragOverlay` là công cụ lý tưởng để hiển thị một bản sao của phần tử đang kéo. Điều này ngăn chặn các vấn đề về layout và CSS có thể xảy ra khi phần tử gốc bị thay đổi vị trí trong DOM."
+      },
+      {
+        "question": "Chiến lược phát hiện va chạm tùy chỉnh trong bài học ưu tiên thuật toán nào đầu tiên?",
+        "options": [
+          "A. `closestCorners`",
+          "B. `rectIntersection`",
+          "C. `pointerWithin`",
+          "D. `closestCenter`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Chiến lược đề xuất trước tiên kiểm tra xem con trỏ có nằm trong khu vực nào không (`pointerWithin`). Nếu có, nó sẽ trả về kết quả ngay lập tức để đảm bảo độ chính xác cao nhất theo hành động của người dùng."
+      },
+      {
+        "question": "Trường hợp nào sau đây KHÔNG phải là một thuật toán phát hiện va chạm có sẵn trong `dnd-kit`?",
+        "options": [
+          "A. `rectIntersection`",
+          "B. `pointerWithin`",
+          "C. `mostOverlapping`",
+          "D. `closestCenter`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`rectIntersection`, `pointerWithin`, `closestCenter`, và `closestCorners` là các thuật toán được `dnd-kit` cung cấp. `mostOverlapping` không phải là một trong số đó."
+      },
+      {
+        "question": "Tại sao việc sử dụng cảm biến (Sensors) như `PointerSensor` và `KeyboardSensor` lại quan trọng?",
+        "options": [
+          "A. Chúng giúp tối ưu hóa hiệu năng phát hiện va chạm.",
+          "B. Chúng cho phép người dùng tương tác với chức năng kéo thả bằng nhiều phương thức nhập liệu khác nhau (chuột, cảm ứng, bàn phím), tăng khả năng truy cập.",
+          "C. Chúng là yêu cầu bắt buộc để `DragOverlay` hoạt động.",
+          "D. Chúng tự động xử lý tất cả các lỗi va chạm."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sensors là cốt lõi của việc lắng nghe và diễn giải hành động từ người dùng. Sử dụng chúng đúng cách đảm bảo ứng dụng có thể truy cập được và hoạt động trên nhiều thiết bị."
+      },
+      {
+        "question": "Nếu thuật toán `pointerWithin` không tìm thấy va chạm nào, chiến lược tùy chỉnh trong bài học sẽ làm gì tiếp theo?",
+        "options": [
+          "A. Dừng lại và không trả về va chạm nào.",
+          "B. Thử thuật toán `rectIntersection`.",
+          "C. Mặc định chọn khu vực droppable đầu tiên trong danh sách.",
+          "D. Báo lỗi ra console."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Theo logic trong bài học, nếu `pointerWithin` không có kết quả, nó sẽ chuyển sang thử `rectIntersection` để xem có sự giao nhau nào của các hình chữ nhật không."
+      },
+      {
+        "question": "Khi nào thì thuật toán `closestCorners` được sử dụng trong chiến lược va chạm tùy chỉnh của bài học?",
+        "options": [
+          "A. Nó được gọi đầu tiên để ước tính nhanh.",
+          "B. Nó được dùng làm phương án cuối cùng nếu cả `pointerWithin` và `rectIntersection` đều không trả về va chạm.",
+          "C. Nó không bao giờ được sử dụng trong chiến lược đề xuất.",
+          "D. Nó được dùng song song với `pointerWithin`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trong hàm `collisionDetectionStrategy` được trình bày, `closestCorners` là giải pháp cuối cùng, đảm bảo rằng ngay cả khi con trỏ ở bên ngoài tất cả các vùng chứa, hệ thống vẫn có thể tìm thấy vùng chứa gần nhất một cách hợp lý."
+      },
+      {
+        "question": "Việc phát hiện va chạm có thể ảnh hưởng đến hiệu năng, đặc biệt khi nào?",
+        "options": [
+          "A. Khi có ít phần tử `droppable`.",
+          "B. Khi sử dụng thuật toán `pointerWithin`.",
+          "C. Khi có số lượng lớn các phần tử `droppable`.",
+          "D. Khi ứng dụng được mở trên màn hình lớn."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Càng có nhiều khu vực có thể thả, `dnd-kit` càng phải thực hiện nhiều phép tính trong mỗi lần di chuyển của con trỏ, điều này có thể làm giảm hiệu năng. Các kỹ thuật như `virtualization` có thể giúp giải quyết vấn đề này."
+      },
+      {
+        "question": "Trong đoạn code `const pointerCollisions = pointerWithin(args);`, `args` chứa thông tin gì?",
+        "options": [
+          "A. Chỉ chứa thông tin về vị trí con trỏ.",
+          "B. Chứa thông tin về đối tượng đang được kéo và danh sách tất cả các khu vực `droppable`.",
+          "C. Chỉ chứa danh sách các khu vực `droppable`.",
+          "D. Chứa hàm callback để xử lý khi có va chạm."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tham số `args` được `dnd-kit` truyền vào hàm phát hiện va chạm chứa tất cả thông tin cần thiết, bao gồm hình chữ nhật bao quanh của đối tượng kéo, con trỏ, và danh sách các khu vực có thể thả cùng với hình chữ nhật của chúng."
+      },
+      {
+        "question": "Mục đích của việc tái hiện lại lỗi trước khi sửa là gì?",
+        "options": [
+          "A. Để chứng minh rằng thư viện `dnd-kit` bị lỗi.",
+          "B. Để hiểu rõ hành vi, nguyên nhân của lỗi và xác nhận rằng giải pháp đưa ra thực sự hiệu quả.",
+          "C. Để làm cho bài học dài hơn và chi tiết hơn.",
+          "D. Để kiểm tra xem máy tính của lập trình viên có đủ mạnh để xử lý kéo thả không."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trong lập trình, việc tái hiện lại lỗi là một bước cực kỳ quan trọng. Nó giúp xác nhận sự tồn tại của vấn đề, hiểu sâu hơn về các điều kiện gây ra nó, và sau khi áp dụng bản sửa lỗi, bạn có thể chạy lại kịch bản tương tự để đảm bảo vấn đề đã được giải quyết hoàn toàn."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cấu hình DndContext cơ bản",
+        "description": "Hãy hoàn thiện component sau bằng cách bọc các phần tử kéo thả trong `DndContext` và cung cấp các cảm biến cơ bản (`PointerSensor` và `KeyboardSensor`) để kích hoạt chức năng kéo thả.",
+        "starterCode": "import React from 'react';\nimport { DndContext, useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';\n\nfunction App() {\n  // Khởi tạo sensors ở đây\n\n  return (\n    // Bọc component bằng DndContext và truyền sensors vào\n    <div>\n      {/* Các components Draggable và Droppable sẽ ở đây */}\n      <p>Khu vực kéo thả</p>\n    </div>\n  );\n}\n\nexport default App;",
+        "solution": "import React from 'react';\nimport { DndContext, useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';\n\nfunction App() {\n  const sensors = useSensors(\n    useSensor(PointerSensor),\n    useSensor(KeyboardSensor)\n  );\n\n  return (\n    <DndContext sensors={sensors}>\n      <div>\n        {/* Các components Draggable và Droppable sẽ ở đây */}\n        <p>Khu vực kéo thả</p>\n      </div>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "testCases": "Kiểm tra xem component `App` có trả về một `DndContext` bao bọc nội dung hay không. `DndContext` phải nhận được prop `sensors` chứa `PointerSensor` và `KeyboardSensor`."
+      },
+      {
+        "title": "Bài 2: Sử dụng thuật toán `closestCenter`",
+        "description": "Trong nhiều trường hợp, bạn muốn một đối tượng được thả vào khu vực có tâm gần nhất. Hãy cấu hình `DndContext` để sử dụng thuật toán phát hiện va chạm `closestCenter`.",
+        "starterCode": "import React from 'react';\nimport { DndContext, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';\n// import thuật toán cần thiết từ @dnd-kit/core\n\nfunction App() {\n  const sensors = useSensors(useSensor(PointerSensor));\n\n  return (\n    <DndContext sensors={sensors} /* Thêm prop collisionDetection ở đây */ >\n      <p>Sử dụng closestCenter</p>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "solution": "import React from 'react';\nimport { DndContext, useSensor, useSensors, PointerSensor, closestCenter } from '@dnd-kit/core';\n\nfunction App() {\n  const sensors = useSensors(useSensor(PointerSensor));\n\n  return (\n    <DndContext sensors={sensors} collisionDetection={closestCenter}>\n      <p>Sử dụng closestCenter</p>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "testCases": "Kiểm tra xem `DndContext` có được cung cấp prop `collisionDetection` với giá trị là hàm `closestCenter` đã được import từ `@dnd-kit/core` hay không."
+      },
+      {
+        "title": "Bài 3: Tạo hàm va chạm tùy chỉnh đơn giản",
+        "description": "Hãy viết một hàm phát hiện va chạm tùy chỉnh có tên `customCollision` chỉ sử dụng thuật toán `pointerWithin`. Sau đó, truyền hàm này vào `DndContext`.",
+        "starterCode": "import React from 'react';\nimport { DndContext, pointerWithin } from '@dnd-kit/core';\n\n// Viết hàm customCollision của bạn ở đây\n// Hàm này nhận vào một tham số (ví dụ: args)\n// và nên trả về kết quả của pointerWithin(args)\n\nfunction App() {\n  return (\n    <DndContext collisionDetection={customCollision}>\n      <p>Va chạm tùy chỉnh đơn giản</p>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "solution": "import React from 'react';\nimport { DndContext, pointerWithin } from '@dnd-kit/core';\n\nconst customCollision = (args) => {\n  return pointerWithin(args);\n};\n\nfunction App() {\n  return (\n    <DndContext collisionDetection={customCollision}>\n      <p>Va chạm tùy chỉnh đơn giản</p>\n    </DndContext>\n  );\n}\n\nexport default App;",
+        "testCases": "Kiểm tra xem có một hàm tên `customCollision` được định nghĩa hay không. Hàm này phải nhận một tham số và gọi `pointerWithin` với tham số đó. `DndContext` phải sử dụng hàm này."
+      },
+      {
+        "title": "Bài 4: Kết hợp hai thuật toán va chạm",
+        "description": "Nâng cao hơn, hãy viết một chiến lược va chạm tùy chỉnh. Nếu `pointerWithin` tìm thấy va chạm, hãy trả về kết quả đó. Nếu không, hãy trả về kết quả của `closestCorners`.",
+        "starterCode": "import { pointerWithin, closestCorners } from '@dnd-kit/core';\n\nconst combinedStrategy = (args) => {\n  // Kiểm tra va chạm với con trỏ trước\n  const pointerCollisions = pointerWithin(args);\n\n  // Viết logic của bạn ở đây: \n  // Nếu pointerCollisions có phần tử, trả về nó.\n  // Nếu không, trả về kết quả của closestCorners(args).\n  \n};\n\n// Test (không cần sửa)\n// console.log(typeof combinedStrategy === 'function');",
+        "solution": "import { pointerWithin, closestCorners } from '@dnd-kit/core';\n\nconst combinedStrategy = (args) => {\n  // Kiểm tra va chạm với con trỏ trước\n  const pointerCollisions = pointerWithin(args);\n\n  if (pointerCollisions.length > 0) {\n    return pointerCollisions;\n  }\n\n  // Nếu không, trả về kết quả của thuật toán góc gần nhất\n  return closestCorners(args);\n};",
+        "testCases": "Kiểm tra hàm `combinedStrategy`. Nếu `pointerWithin` trả về một mảng không rỗng, hàm phải trả về mảng đó. Ngược lại, hàm phải trả về kết quả từ việc gọi `closestCorners`."
+      },
+      {
+        "title": "Bài 5: Hoàn thiện chiến lược va chạm từ bài học",
+        "description": "Hãy tái tạo lại đầy đủ chiến lược phát hiện va chạm đã được thảo luận trong bài học. Chiến lược này sẽ thử lần lượt: `pointerWithin`, sau đó đến `rectIntersection`, và cuối cùng là `closestCorners`.",
+        "starterCode": "import { pointerWithin, rectIntersection, closestCorners } from '@dnd-kit/core';\n\nconst fullCollisionStrategy = (args) => {\n  // 1. Thử với pointerWithin\n  const pointerCollisions = pointerWithin(args);\n  if (pointerCollisions.length > 0) {\n    return pointerCollisions;\n  }\n\n  // 2. Nếu không thành công, hãy thử với rectIntersection. \n  // Thêm code của bạn ở đây.\n\n\n  // 3. Nếu vẫn không thành công, dùng closestCorners làm phương án cuối cùng.\n  // Thêm code của bạn ở đây.\n};",
+        "solution": "import { pointerWithin, rectIntersection, closestCorners } from '@dnd-kit/core';\n\nconst fullCollisionStrategy = (args) => {\n  // 1. Thử với pointerWithin\n  const pointerCollisions = pointerWithin(args);\n  if (pointerCollisions.length > 0) {\n    return pointerCollisions;\n  }\n\n  // 2. Nếu không thành công, hãy thử với rectIntersection\n  const rectCollisions = rectIntersection(args);\n  if (rectCollisions.length > 0) {\n    return rectCollisions;\n  }\n\n  // 3. Nếu vẫn không thành công, dùng closestCorners làm phương án cuối cùng\n  return closestCorners(args);\n};",
+        "testCases": "Kiểm tra logic của hàm `fullCollisionStrategy`. Hàm phải thực hiện kiểm tra theo đúng thứ tự: `pointerWithin`, sau đó `rectIntersection`, và cuối cùng là `closestCorners`, trả về kết quả của thuật toán đầu tiên tìm thấy va chạm."
+      }
+    ]
+  }
+}

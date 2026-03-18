@@ -1,0 +1,213 @@
+{
+  "id": 79,
+  "title": "BÀI 61: AXIOS - GỌI API TỪ PHÍA FRONT-END SAO CHO CLEAN CODE",
+  "category": "react-basics",
+  "categoryName": "React Cơ bản",
+  "content": "# BÀI 61: AXIOS - GỌI API TỪ PHÍA FRONT-END SAO CHO CLEAN CODE\n\n## MỤC TIÊU BÀI HỌC\n\nTrong bài học này, chúng ta sẽ cùng nhau tìm hiểu cách sử dụng thư viện Axios để thực hiện các lời gọi API từ phía Front-end một cách hiệu quả và có tổ chức. Mục tiêu chính là giúp các bạn Lập trình viên, đặc biệt là các bạn mới, có thể viết code một cách sạch sẽ, dễ đọc, dễ bảo trì và mở rộng trong các dự án thực tế.\n\n## KIẾN THỨC CHI TIẾT\n\n### 1. Axios là gì?\n\nAxios là một thư viện HTTP client dựa trên Promise cho trình duyệt và Node.js. Nó giúp chúng ta dễ dàng thực hiện các yêu cầu HTTP (GET, POST, PUT, DELETE,...) đến các máy chủ API. So với `fetch` API có sẵn trong trình duyệt, Axios cung cấp nhiều tính năng mạnh mẽ hơn như:\n\n*   Tự động chuyển đổi dữ liệu JSON.\n*   Hỗ trợ phía client để chống lại các cuộc tấn công XSRF.\n*   Cung cấp các interceptor để xử lý yêu cầu và phản hồi trước khi chúng được `then` hoặc `catch` xử lý.\n*   Dễ dàng hủy bỏ yêu cầu.\n*   Tương thích ngược với các trình duyệt cũ.\n\n### 2. Cài đặt và sử dụng cơ bản\n\nĐể sử dụng Axios trong dự án React, chúng ta cần cài đặt nó thông qua npm hoặc yarn:\n\n```bash\nnpm install axios\n# hoặc\nyarn add axios\n```\n\nSau khi cài đặt, chúng ta có thể import và sử dụng nó trong các component của mình:\n\n```javascript\nimport axios from 'axios';\n\n// Ví dụ về yêu cầu GET\naxios.get('/user?ID=12345')\n  .then(function (response) {\n    // xử lý khi thành công\n    console.log(response);\n  })\n  .catch(function (error) {\n    // xử lý khi bị lỗi\n    console.log(error);\n  })\n  .finally(function () {\n    // luôn luôn được thực thi\n  });\n\n// Ví dụ về yêu cầu POST\naxios.post('/user', {\n    firstName: 'Fred',\n    lastName: 'Flintstone'\n  })\n  .then(function (response) {\n    console.log(response);\n  })\n  .catch(function (error) {\n    console.log(error);\n  });\n```\n\n### 3. Tổ chức code với Axios Instance\n\nTrong một dự án lớn, việc gọi API có thể xuất hiện ở nhiều nơi. Thay vì lặp lại các cấu hình chung (như `baseURL`, `headers`) ở mỗi lời gọi, chúng ta nên tạo một \"instance\" của Axios để tái sử dụng.\n\n```javascript\n// src/apis/index.js\n\nimport axios from 'axios';\n\nconst instance = axios.create({\n  baseURL: 'https://api.example.com',\n  timeout: 10000, // 10 giây\n  headers: {'X-Custom-Header': 'foobar'}\n});\n\nexport default instance;\n```\n\nBằng cách này, chúng ta chỉ cần import `instance` này ở những nơi cần gọi API và không cần phải lo lắng về việc cấu hình lại từ đầu.\n\n### 4. Interceptors - Sức mạnh của Axios\n\nInterceptors cho phép chúng ta \"chặn\" các yêu cầu hoặc phản hồi trước khi chúng được xử lý. Đây là một tính năng cực kỳ hữu ích để:\n\n*   **Thêm Authorization Header:** Tự động đính kèm token xác thực (ví dụ: JWT) vào mỗi yêu cầu.\n*   **Xử lý lỗi tập trung:** Bắt và xử lý các lỗi chung (ví dụ: lỗi 401 Unauthorized, 500 Internal Server Error) ở một nơi duy nhất.\n*   **Hiển thị/ẩn loading indicator:** Tự động hiển thị một spinner khi có yêu cầu đang chờ và ẩn nó đi khi yêu cầu hoàn tất.\n*   **Làm mới Token (Refresh Token):** Tự động yêu cầu một token mới khi token hiện tại hết hạn và sau đó thực hiện lại yêu cầu ban đầu.\n\nĐây là một ví dụ về cách sử dụng interceptors để xử lý Refresh Token:\n\n```javascript\n// Add a request interceptor\naxios.interceptors.request.use(function (config) {\n    // Do something before request is sent\n    return config;\n  }, function (error) {\n    // Do something with request error\n    return Promise.reject(error);\n  });\n\n// Add a response interceptor\naxios.interceptors.response.use(function (response) {\n    // Any status code that lie within the range of 2xx cause this function to trigger\n    // Do something with response data\n    return response;\n  }, function (error) {\n    // Any status codes that falls outside the range of 2xx cause this function to trigger\n    // Do something with response error\n    return Promise.reject(error);\n  });\n```\n\n## CÁC BƯỚC THỰC HÀNH\n\n1.  **Tạo một file cấu hình Axios:** Tạo một file `src/apis/index.js` để tạo và cấu hình một Axios instance.\n2.  **Tách các lời gọi API:** Thay vì gọi API trực tiếp trong các component, hãy tạo các hàm riêng biệt cho từng loại API (ví dụ: `boardAPI.js`, `cardAPI.js`).\n3.  **Sử dụng Interceptors:** Cấu hình interceptors để tự động xử lý các tác vụ chung như đính kèm token, xử lý lỗi, và quản lý trạng thái loading.\n4.  **Tích hợp vào Component:** Import và sử dụng các hàm gọi API đã được tách biệt trong các component React của bạn.\n\n## LƯU Ý QUAN TRỌNG\n\n*   **Biến môi trường:** Luôn sử dụng biến môi trường (`process.env.REACT_APP_API_URL`) để lưu trữ `baseURL` và các thông tin nhạy cảm khác. Điều này giúp dễ dàng thay đổi cấu hình giữa các môi trường phát triển (development), kiểm thử (staging), và sản phẩm (production).\n*   **Clean Code:** Việc tổ chức code API một cách khoa học không chỉ giúp code dễ đọc, dễ bảo trì mà còn thể hiện sự chuyên nghiệp của một Lập trình viên.\n*   **React Query/SWR:** Đối với các ứng dụng phức tạp hơn, hãy cân nhắc sử dụng các thư viện quản lý trạng thái server-side như React Query hoặc SWR. Chúng cung cấp các tính năng mạnh mẽ như caching, re-fetching, và tối ưu hóa hiệu suất một cách tự động.\n\n## TÀI LIỆU THAM KHẢO\n\n1.  [Axios Documentation](https://axios-http.com/docs/intro)\n2.  [Video 61. Axios: Gọi API từ phía Front-end sao cho Clean Code | NodeJS + MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=3FFxwhfW8U4)\n3.  [Clean API calls with axios - CodeSandbox](https://codesandbox.io/s/clean-api-calls-with-axios-cv3ki)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Axios là gì?",
+        "options": [
+          "Một thư viện quản lý state cho React",
+          "Một thư viện HTTP client dựa trên Promise cho trình duyệt và Node.js",
+          "Một framework CSS để xây dựng giao diện người dùng",
+          "Một ngôn ngữ lập trình mới"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Axios là một thư viện HTTP client phổ biến, hoạt động trên cả trình duyệt và môi trường Node.js, giúp thực hiện các yêu cầu HTTP một cách dễ dàng."
+      },
+      {
+        "question": "Lợi ích nào sau đây KHÔNG phải của Axios so với `fetch` API?",
+        "options": [
+          "Tự động chuyển đổi dữ liệu JSON",
+          "Tích hợp sẵn cơ chế quản lý state toàn cục",
+          "Hỗ trợ interceptor để xử lý yêu cầu/phản hồi",
+          "Dễ dàng hủy bỏ yêu cầu"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Axios không tích hợp sẵn cơ chế quản lý state. Để quản lý state, chúng ta cần dùng các thư viện khác như Redux, hoặc các thư viện quản lý trạng thái server-side như React Query/SWR."
+      },
+      {
+        "question": "Lệnh nào dùng để cài đặt Axios vào một dự án React?",
+        "options": [
+          "npm install react-axios",
+          "npm get axios",
+          "npm install axios",
+          "npm add react-http"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để cài đặt Axios, chúng ta sử dụng câu lệnh `npm install axios` hoặc `yarn add axios`."
+      },
+      {
+        "question": "Phương thức nào của Axios được sử dụng để tạo một instance có thể tái sử dụng với cấu hình chung?",
+        "options": [
+          "axios.new()",
+          "axios.instance()",
+          "axios.configure()",
+          "axios.create()"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`axios.create()` cho phép tạo một instance mới của Axios với các cấu hình mặc định như `baseURL`, `headers`, `timeout` để tái sử dụng trong toàn bộ ứng dụng."
+      },
+      {
+        "question": "Interceptors trong Axios được sử dụng để làm gì?",
+        "options": [
+          "Chỉ để xử lý lỗi từ phía server",
+          "Để 'chặn' và xử lý các yêu cầu hoặc phản hồi trước khi chúng được xử lý bởi `then` hoặc `catch`",
+          "Để thay thế hoàn toàn cho `Promise.then()` và `Promise.catch()`",
+          "Để tạo các component React mới"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Interceptors cho phép chúng ta 'chặn' các yêu cầu hoặc phản hồi để thực hiện các tác vụ chung như đính kèm token, xử lý lỗi tập trung, hiển thị loading indicator, v.v."
+      },
+      {
+        "question": "Khi sử dụng Axios instance, `baseURL` được dùng để làm gì?",
+        "options": [
+          "Để chỉ định URL đầy đủ cho mỗi yêu cầu",
+          "Để đặt một tiền tố chung cho tất cả các URL tương đối trong các lời gọi API",
+          "Để xác định phiên bản của Axios đang sử dụng",
+          "Để thiết lập thời gian chờ tối đa cho một yêu cầu"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`baseURL` trong `axios.create()` được sử dụng để định nghĩa một URL gốc, và các yêu cầu sau đó chỉ cần chỉ định phần đường dẫn tương đối."
+      },
+      {
+        "question": "Đâu là một ứng dụng phổ biến của `request interceptor` trong Axios?",
+        "options": [
+          "Tự động hiển thị thông báo thành công cho người dùng",
+          "Ghi log tất cả các dữ liệu trả về từ API",
+          "Tự động đính kèm token xác thực (ví dụ: JWT) vào header của mỗi yêu cầu",
+          "Chuyển hướng người dùng đến trang đăng nhập khi API trả về lỗi 500"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Request interceptor rất hữu ích để tự động thêm các thông tin chung vào mỗi yêu cầu trước khi nó được gửi đi, chẳng hạn như `Authorization` header."
+      },
+      {
+        "question": "Đâu là một ứng dụng phổ biến của `response interceptor` trong Axios?",
+        "options": [
+          "Thêm một header tùy chỉnh vào tất cả các yêu cầu",
+          "Xử lý lỗi tập trung, ví dụ như tự động làm mới token khi token hết hạn (Refresh Token)",
+          "Thay đổi phương thức của yêu cầu từ GET sang POST",
+          "Nén dữ liệu trước khi gửi yêu cầu lên server"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Response interceptor cho phép xử lý các phản hồi trước khi chúng được trả về cho code gọi API, rất lý tưởng để xử lý lỗi tập trung, làm mới token, hoặc định dạng lại dữ liệu."
+      },
+      {
+        "question": "Tại sao nên lưu trữ `baseURL` trong biến môi trường?",
+        "options": [
+          "Để làm cho code khó đọc hơn",
+          "Vì đó là yêu cầu bắt buộc của thư viện Axios",
+          "Để dễ dàng thay đổi cấu hình giữa các môi trường khác nhau (development, staging, production)",
+          "Để tăng tốc độ thực thi của các lời gọi API"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng biến môi trường (ví dụ: `process.env.REACT_APP_API_URL`) giúp tách biệt cấu hình ra khỏi code, cho phép thay đổi URL của API và các thông tin nhạy cảm khác một cách linh hoạt giữa các môi trường."
+      },
+      {
+        "question": "Trong một yêu cầu `axios.post('/user', { name: 'John' })`, `{ name: 'John' }` là gì?",
+        "options": [
+          "Headers của yêu cầu",
+          "Dữ liệu (body) của yêu cầu",
+          "Các tham số truy vấn (query params)",
+          "Cấu hình của interceptor"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đối với phương thức POST, tham số thứ hai của `axios.post` là dữ liệu (payload/body) được gửi lên server."
+      },
+      {
+        "question": "Khối lệnh nào sẽ luôn được thực thi sau một lời gọi Axios, bất kể thành công hay thất bại?",
+        "options": [
+          "`.then()`",
+          "`.catch()`",
+          "`.finally()`",
+          "`.always()`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khối lệnh `.finally()` được giới thiệu trong Promise và được Axios hỗ trợ, nó sẽ luôn được thực thi sau khi promise kết thúc, dù là `resolve` (thành công) hay `reject` (thất bại)."
+      },
+      {
+        "question": "Để chống lại các cuộc tấn công XSRF, Axios cung cấp tính năng gì?",
+        "options": [
+          "Tự động mã hóa tất cả dữ liệu",
+          "Hỗ trợ phía client để gửi cookie trong các yêu cầu cross-site",
+          "Yêu cầu sử dụng HTTPS cho tất cả các kết nối",
+          "Không có tính năng nào, lập trình viên phải tự xử lý"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Axios có hỗ trợ tích hợp để xử lý Cross-Site Request Forgery (XSRF) bằng cách tự động đính kèm cookie vào các yêu cầu cross-site."
+      },
+      {
+        "question": "Thư viện nào được gợi ý trong bài học để quản lý trạng thái server-side phức tạp hơn?",
+        "options": [
+          "Redux",
+          "MobX",
+          "React Query hoặc SWR",
+          "useState và useEffect"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đối với các ứng dụng phức tạp, bài học gợi ý sử dụng các thư viện như React Query hoặc SWR để quản lý trạng thái từ server một cách hiệu quả với các tính năng như caching, re-fetching."
+      },
+      {
+        "question": "Mục đích chính của việc tách các lời gọi API ra các file riêng (ví dụ `boardAPI.js`) là gì?",
+        "options": [
+          "Để làm tăng số lượng file trong dự án",
+          "Để làm cho code khó tìm kiếm hơn",
+          "Để tuân thủ nguyên tắc Clean Code, giúp code có tổ chức, dễ đọc và dễ bảo trì",
+          "Để giảm kích thước của bundle cuối cùng"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tách các hàm gọi API ra các module riêng biệt giúp code trở nên có tổ chức, dễ quản lý, tái sử dụng và bảo trì, đây là một trong những nguyên tắc quan trọng của Clean Code."
+      },
+      {
+        "question": "Trong `axios.create`, thuộc tính `timeout` có ý nghĩa gì?",
+        "options": [
+          "Thời gian chờ giữa các lần gọi API",
+          "Thời gian tối đa (tính bằng mili giây) mà một yêu cầu có thể mất trước khi bị hủy tự động",
+          "Thời gian token xác thực hết hạn",
+          "Thời gian chờ để server khởi động"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thuộc tính `timeout` cho phép bạn chỉ định thời gian chờ tối đa cho một yêu cầu. Nếu yêu cầu mất nhiều thời gian hơn giá trị này, nó sẽ bị hủy và trả về lỗi."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Thực hiện yêu cầu GET đơn giản",
+        "description": "Sử dụng Axios để thực hiện một yêu cầu GET đến `https://jsonplaceholder.typicode.com/posts/1` và in dữ liệu trả về ra console.",
+        "starterCode": "import axios from 'axios';\n\nasync function fetchPost() {\n  // Viết code của bạn ở đây\n}\n\nfetchPost();",
+        "solution": "import axios from 'axios';\n\nasync function fetchPost() {\n  try {\n    const response = await axios.get('https://jsonplaceholder.typicode.com/posts/1');\n    console.log(response.data);\n    return response.data;\n  } catch (error) {\n    console.error('Error fetching post:', error);\n  }\n}\n\nfetchPost();",
+        "testCases": "Kiểm tra xem console có in ra object chứa thông tin của bài post với id là 1 hay không."
+      },
+      {
+        "title": "Bài 2: Thực hiện yêu cầu POST với dữ liệu",
+        "description": "Sử dụng Axios để tạo một bài post mới bằng cách gửi yêu cầu POST đến `https://jsonplaceholder.typicode.com/posts`. Dữ liệu gửi đi phải là một object có `title`, `body`, và `userId`.",
+        "starterCode": "import axios from 'axios';\n\nasync function createPost() {\n  const newPost = {\n    title: 'foo',\n    body: 'bar',\n    userId: 1\n  };\n  // Viết code của bạn ở đây\n}\n\ncreatePost();",
+        "solution": "import axios from 'axios';\n\nasync function createPost() {\n  const newPost = {\n    title: 'foo',\n    body: 'bar',\n    userId: 1\n  };\n  try {\n    const response = await axios.post('https://jsonplaceholder.typicode.com/posts', newPost);\n    console.log('Created post:', response.data);\n    return response.data;\n  } catch (error) {\n    console.error('Error creating post:', error);\n  }\n}\n\ncreatePost();",
+        "testCases": "Kiểm tra xem console có in ra object của bài post vừa tạo (thường sẽ có id mới do server trả về) hay không."
+      },
+      {
+        "title": "Bài 3: Tạo và sử dụng Axios Instance",
+        "description": "Tạo một Axios instance với `baseURL` là `https://jsonplaceholder.typicode.com`. Sau đó, sử dụng instance này để lấy danh sách người dùng từ endpoint `/users`.",
+        "starterCode": "import axios from 'axios';\n\n// 1. Tạo Axios instance với baseURL\nconst apiClient = null; // Thay thế null bằng code của bạn\n\nasync function fetchUsers() {\n  // 2. Sử dụng instance để gọi API\n}\n\nfetchUsers();",
+        "solution": "import axios from 'axios';\n\n// 1. Tạo Axios instance với baseURL\nconst apiClient = axios.create({\n  baseURL: 'https://jsonplaceholder.typicode.com'\n});\n\nasync function fetchUsers() {\n  // 2. Sử dụng instance để gọi API\n  try {\n    const response = await apiClient.get('/users');\n    console.log(response.data);\n    return response.data;\n  } catch (error) {\n    console.error('Error fetching users:', error);\n  }\n}\n\nfetchUsers();",
+        "testCases": "Kiểm tra xem console có in ra một mảng chứa các object người dùng hay không."
+      },
+      {
+        "title": "Bài 4: Sử dụng Request Interceptor",
+        "description": "Cấu hình một `request interceptor` cho một Axios instance để tự động thêm header `Authorization: Bearer MY_FAKE_TOKEN` vào tất cả các yêu cầu.",
+        "starterCode": "import axios from 'axios';\n\nconst apiClient = axios.create({\n  baseURL: 'https://jsonplaceholder.typicode.com'\n});\n\n// Viết code interceptor của bạn ở đây\n\n// Test interceptor bằng cách gọi một API bất kỳ\napiClient.get('/todos/1').catch(err => console.log('Request sent with new header!'));",
+        "solution": "import axios from 'axios';\n\nconst apiClient = axios.create({\n  baseURL: 'https://jsonplaceholder.typicode.com'\n});\n\n// Viết code interceptor của bạn ở đây\napiClient.interceptors.request.use(config => {\n  console.log('Original Headers:', config.headers);\n  config.headers['Authorization'] = 'Bearer MY_FAKE_TOKEN';\n  console.log('New Headers:', config.headers);\n  return config;\n}, error => {\n  return Promise.reject(error);\n});\n\n// Test interceptor bằng cách gọi một API bất kỳ\napiClient.get('/todos/1').then(res => console.log('Request successful!'));",
+        "testCases": "Kiểm tra log của console để chắc chắn rằng header `Authorization` đã được thêm vào trước khi yêu cầu được gửi đi."
+      },
+      {
+        "title": "Bài 5: Xử lý lỗi với Response Interceptor",
+        "description": "Cấu hình một `response interceptor` để bắt các lỗi có status code không nằm trong khoảng 2xx. Nếu có lỗi, hãy in ra một thông báo lỗi tùy chỉnh thay vì để ứng dụng bị crash.",
+        "starterCode": "import axios from 'axios';\n\nconst apiClient = axios.create({\n  baseURL: 'https://jsonplaceholder.typicode.com'\n});\n\n// Viết code response interceptor của bạn ở đây\n\n// Test bằng cách gọi một API không tồn tại\napiClient.get('/posts/99999999');",
+        "solution": "import axios from 'axios';\n\nconst apiClient = axios.create({\n  baseURL: 'https://jsonplaceholder.typicode.com'\n});\n\n// Viết code response interceptor của bạn ở đây\napiClient.interceptors.response.use(\n  response => {\n    // Bất kỳ status code nào nằm trong khoảng 2xx sẽ đi vào đây\n    return response;\n  },\n  error => {\n    // Bất kỳ status code nào nằm ngoài khoảng 2xx sẽ đi vào đây\n    if (error.response) {\n      // Request đã được gửi và server đã trả về với một status code\n      // không nằm trong khoảng 2xx\n      console.error(`Lỗi API: Status ${error.response.status} - ${error.response.statusText}`);\n    } else if (error.request) {\n      // Request đã được gửi nhưng không nhận được phản hồi\n      console.error('Lỗi mạng: Không nhận được phản hồi từ server.');\n    } else {\n      // Có lỗi xảy ra khi thiết lập request\n      console.error('Lỗi: ', error.message);\n    }\n    return Promise.reject(error);\n  }\n);\n\n// Test bằng cách gọi một API không tồn tại\napiClient.get('/posts/99999999');",
+        "testCases": "Chạy code và kiểm tra xem console có in ra thông báo lỗi tùy chỉnh (ví dụ: `Lỗi API: Status 404 - Not Found`) thay vì một lỗi unhandled promise rejection hay không."
+      }
+    ]
+  }
+}

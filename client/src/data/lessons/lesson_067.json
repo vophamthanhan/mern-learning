@@ -1,0 +1,213 @@
+{
+  "id": 67,
+  "title": "Bài học 51: Tạo cơ sở dữ liệu MongoDB Atlas Cloud gói Free 512 MB",
+  "category": "mongodb",
+  "categoryName": "MongoDB & Database",
+  "content": "# Bài học 51: Tạo cơ sở dữ liệu MongoDB Atlas Cloud gói Free 512 MB\n\n## I. Mục tiêu bài học\n\nVideo này hướng dẫn chi tiết cách tạo và cấu hình một cơ sở dữ liệu MongoDB trên nền tảng đám mây của MongoDB Atlas. Sau khi hoàn thành bài học, người học sẽ có khả năng:\n\n- **Hiểu rõ về MongoDB Atlas**: Nắm được khái niệm MongoDB Atlas là gì, lợi ích của việc sử dụng dịch vụ cơ sở dữ liệu trên đám mây (DBaaS) so với việc tự cài đặt và quản lý trên máy chủ cục bộ.\n- **Đăng ký và tạo Cluster miễn phí**: Thực hiện các bước đăng ký tài khoản và tạo một \"cluster\" MongoDB với gói miễn phí (Free Tier), cung cấp 512MB dung lượng lưu trữ.\n- **Cấu hình bảo mật**: Thiết lập các quy tắc truy cập mạng (Network Access) để cho phép các địa chỉ IP cụ thể kết nối đến cơ sở dữ liệu, cũng như tạo người dùng (Database User) với thông tin đăng nhập và mật khẩu để xác thực.\n- **Lấy chuỗi kết nối (Connection String)**: Biết cách lấy chuỗi URI kết nối đến cluster, một thông tin quan trọng để tích hợp vào các ứng dụng back-end (ví dụ: NodeJS) nhằm tương tác với cơ sở dữ liệu.\n\n## II. Kiến thức chi tiết\n\n### 1. MongoDB Atlas là gì?\n\n**MongoDB Atlas** là một dịch vụ cơ sở dữ liệu đám mây (Database-as-a-Service - DBaaS) được cung cấp và quản lý hoàn toàn bởi MongoDB Inc., công ty đứng sau phát triển cơ sở dữ liệu NoSQL MongoDB. Thay vì phải tự cài đặt, cấu hình, bảo trì và mở rộng MongoDB trên máy chủ của riêng mình, lập trình viên có thể sử dụng Atlas để thực hiện tất cả các công việc này một cách tự động và dễ dàng thông qua một giao diện web trực quan.\n\n> **Lợi ích chính của MongoDB Atlas:**\n> - **Dễ dàng triển khai**: Chỉ mất vài phút để có một cluster MongoDB sẵn sàng hoạt động trên các nhà cung cấp đám mây hàng đầu như Amazon Web Services (AWS), Google Cloud Platform (GCP), và Microsoft Azure.\n> - **Tự động hóa quản lý**: Atlas tự động xử lý các tác vụ phức tạp như sao lưu, phục hồi, vá lỗi bảo mật và nâng cấp phiên bản.\n> - **Khả năng mở rộng linh hoạt**: Dễ dàng tăng hoặc giảm quy mô của cluster (cả chiều dọc và chiều ngang) để đáp ứng nhu cầu thay đổi của ứng dụng.\n> - **Bảo mật cao**: Cung cấp nhiều lớp bảo mật mạnh mẽ bao gồm mã hóa dữ liệu, kiểm soát truy cập mạng và quản lý người dùng chi tiết.\n> - **Giám sát và cảnh báo**: Tích hợp sẵn các công cụ giám sát hiệu suất, truy vấn và gửi cảnh báo khi có sự cố.\n\n### 2. Các khái niệm chính\n\n| Khái niệm | Mô tả chi tiết |\n|---|---|\n| **Project** | Một không gian làm việc để nhóm các cluster lại với nhau. Mỗi project có thể chứa nhiều cluster và có các thiết lập bảo mật, thành viên riêng. |\n| **Cluster** | Một nhóm các máy chủ MongoDB hoạt động cùng nhau. Trong MongoDB, một cluster thường được triển khai dưới dạng một \"replica set\" hoặc một \"sharded cluster\". Gói miễn phí của Atlas cung cấp một replica set. |\n| **Replica Set** | Một nhóm gồm ít nhất ba máy chủ (node) MongoDB lưu trữ cùng một bộ dữ liệu. Một node đóng vai trò là `PRIMARY` (nhận tất cả các thao tác ghi), các node còn lại là `SECONDARY` (sao chép dữ liệu từ `PRIMARY`). Nếu node `PRIMARY` gặp sự cố, một trong các node `SECONDARY` sẽ được tự động bầu chọn làm `PRIMARY` mới, đảm bảo tính sẵn sàng cao (High Availability). |\n| **Network Access** | Một cơ chế tường lửa cho phép bạn kiểm soát những địa chỉ IP nào được phép kết nối đến cluster của bạn. Đây là một lớp bảo mật quan trọng để ngăn chặn truy cập trái phép. |\n| **Database User** | Tài khoản người dùng (bao gồm tên đăng nhập và mật khẩu) được sử dụng để xác thực khi kết nối vào cơ sở dữ liệu. Mỗi người dùng có thể được gán các quyền (roles) khác nhau để giới hạn quyền truy cập vào các cơ sở dữ liệu và collection cụ thể. |\n| **Connection String** | Một chuỗi định dạng URI (Uniform Resource Identifier) chứa tất cả thông tin cần thiết để một ứng dụng có thể kết nối đến cluster MongoDB, bao gồm địa chỉ máy chủ, cổng, tên người dùng, mật khẩu và các tham số tùy chọn khác. |\n\n## III. Các bước thực hành\n\n1.  **Truy cập và Đăng ký**: Truy cập trang chủ [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) và tiến hành đăng ký một tài khoản mới. Bạn có thể đăng ký nhanh bằng tài khoản Google có sẵn.\n2.  **Tạo Project mới**: Sau khi đăng nhập, tạo một Project mới và đặt tên cho nó (ví dụ: `mern-stack-pro-project`).\n3.  **Tạo Cluster (Build a Database)**: Trong giao diện Project, chọn \"Build a Database\".\n4.  **Chọn Gói Dịch vụ**: Chọn gói **\"Free\"** (M0 Sandbox) được cung cấp miễn phí.\n5.  **Cấu hình Cluster**: \n    - **Provider & Region**: Chọn nhà cung cấp đám mây (AWS, GCP, Azure) và khu vực (Region) gần với bạn nhất để giảm độ trễ. \n    - **Cluster Name**: Đặt tên cho cluster (ví dụ: `trungquandev-mern-pro`). Tên này không thể thay đổi sau khi tạo.\n6.  **Tạo Người dùng Cơ sở dữ liệu (Database User)**:\n    - **Username**: Đặt tên người dùng, ví dụ `trungquandev`.\n    - **Password**: Tạo một mật khẩu mạnh và **lưu lại cẩn thận**. Bạn có thể sử dụng chức năng \"Autogenerate Secure Password\".\n7.  **Cấu hình Truy cập Mạng (Network Access)**:\n    - Để phục vụ cho việc học và phát triển, bạn có thể chọn \"Allow Access from Anywhere\" (`0.0.0.0/0`).\n    - **Lưu ý**: Trong môi trường thực tế (production), bạn phải chỉ định địa chỉ IP cụ thể của máy chủ ứng dụng để đảm bảo an toàn.\n8.  **Hoàn tất và Chờ đợi**: Nhấn \"Finish and Close\" và chờ khoảng 3-5 phút để MongoDB Atlas hoàn tất việc khởi tạo cluster.\n9.  **Lấy Chuỗi kết nối**: \n    - Khi cluster đã sẵn sàng (trạng thái \"Active\"), nhấn nút \"Connect\".\n    - Chọn \"Drivers\" (vì chúng ta sẽ kết nối từ ứng dụng NodeJS).\n    - Đảm bảo bạn đã chọn đúng phiên bản Driver và NodeJS.\n    - Sao chép chuỗi kết nối (Connection String) được cung cấp.\n    - **Thay thế `<password>`** trong chuỗi bằng mật khẩu bạn đã tạo ở bước 6.\n\n**Ví dụ Connection String:**\n`mongodb+srv://trungquandev:<password>@trungquandev-mern-pro.abcde.mongodb.net/?retryWrites=true&w=majority`\n\n## IV. Lưu ý quan trọng\n\n- **Bảo mật mật khẩu**: Tuyệt đối không \"hard-code\" (viết thẳng) chuỗi kết nối chứa mật khẩu vào trong mã nguồn. Thay vào đó, hãy sử dụng các biến môi trường (environment variables) để lưu trữ và quản lý các thông tin nhạy cảm này. File `.env` là một giải pháp phổ biến trong các dự án NodeJS.\n- **Giới hạn của Gói Miễn phí**: Gói M0 Sandbox có giới hạn về dung lượng (512 MB), RAM và CPU. Nó phù hợp cho việc học tập, phát triển và các ứng dụng nhỏ. Đối với các dự án lớn và môi trường production, bạn cần nâng cấp lên các gói trả phí.\n- **Network Access trong Production**: Lặp lại một lần nữa, việc mở truy cập từ `0.0.0.0/0` là cực kỳ nguy hiểm trong môi trường thực tế. Luôn giới hạn quyền truy cập chỉ từ những địa chỉ IP đáng tin cậy.\n\n## V. Tài liệu tham khảo\n\n1.  [Video 45. Tạo cơ sở dữ liệu MongoDB Atlas Cloud gói Free 512 MB | NodeJS | TrungQuanDev](https://www.youtube.com/watch?v=3M4WXlSXqEc)\n2.  [MongoDB Atlas Documentation: Deploy a Free Tier Cluster](https://www.mongodb.com/docs/atlas/tutorial/deploy-free-tier-cluster/)\n3.  [TrungQuanDev Blog](https://trungquandev.com/)\n4.  [GitHub Repository for MERN Stack Pro Project](https://github.com/trungquandev/nodejs-express-mongodb-rest-api-boilerplate)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "MongoDB Atlas là gì?",
+        "options": [
+          "Một cơ sở dữ liệu NoSQL tự host.",
+          "Một dịch vụ cơ sở dữ liệu đám mây (DBaaS) được quản lý hoàn toàn bởi MongoDB Inc.",
+          "Một công cụ dòng lệnh để tương tác với MongoDB.",
+          "Một thư viện NodeJS để kết nối với MongoDB."
+        ],
+        "correctAnswer": 1,
+        "explanation": "MongoDB Atlas là một dịch vụ DBaaS, giúp đơn giản hóa việc triển khai và quản lý MongoDB trên đám mây mà không cần tự cài đặt hay bảo trì."
+      },
+      {
+        "question": "Lợi ích chính của việc sử dụng MongoDB Atlas so với tự cài đặt là gì?",
+        "options": [
+          "Chi phí cao hơn nhưng bảo mật tốt hơn.",
+          "Hiệu suất thấp hơn nhưng dễ sử dụng hơn.",
+          "Tự động hóa các tác vụ quản lý như sao lưu, vá lỗi và nâng cấp.",
+          "Chỉ hoạt động trên một nhà cung cấp đám mây duy nhất."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Atlas tự động hóa nhiều công việc quản trị phức tạp, giúp lập trình viên tập trung vào việc phát triển ứng dụng."
+      },
+      {
+        "question": "Trong MongoDB Atlas, một \"Cluster\" là gì?",
+        "options": [
+          "Một tệp cấu hình duy nhất.",
+          "Một nhóm các máy chủ MongoDB hoạt động cùng nhau, thường là một replica set.",
+          "Một người dùng cơ sở dữ liệu.",
+          "Một không gian làm việc để nhóm các dự án."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một cluster là một tập hợp các máy chủ MongoDB, đảm bảo tính sẵn sàng cao và khả năng mở rộng. Gói miễn phí cung cấp một replica set."
+      },
+      {
+        "question": "Mục đích của một \"Replica Set\" trong MongoDB là gì?",
+        "options": [
+          "Tăng dung lượng lưu trữ bằng cách chia nhỏ dữ liệu.",
+          "Đảm bảo tính sẵn sàng cao bằng cách sao chép dữ liệu trên nhiều máy chủ.",
+          "Chỉ dùng để lưu trữ các bản sao lưu.",
+          "Quản lý người dùng và quyền truy cập."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Replica set duy trì nhiều bản sao của dữ liệu. Nếu node chính (PRIMARY) lỗi, một node phụ (SECONDARY) sẽ được bầu làm node chính mới, đảm bảo hệ thống không bị gián đoạn."
+      },
+      {
+        "question": "Chức năng \"Network Access\" trong MongoDB Atlas dùng để làm gì?",
+        "options": [
+          "Tạo người dùng và mật khẩu.",
+          "Giám sát hiệu suất của cluster.",
+          "Kiểm soát những địa chỉ IP nào được phép kết nối đến cluster.",
+          "Lấy chuỗi kết nối đến cơ sở dữ liệu."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Network Access hoạt động như một bức tường lửa, là một lớp bảo mật quan trọng để ngăn chặn các truy cập trái phép từ những địa chỉ IP không được tin tưởng."
+      },
+      {
+        "question": "Tại sao không nên sử dụng địa chỉ IP `0.0.0.0/0` trong môi trường production?",
+        "options": [
+          "Vì nó làm giảm hiệu suất kết nối.",
+          "Vì nó chỉ cho phép kết nối từ máy local.",
+          "Vì nó cho phép bất kỳ ai từ bất kỳ đâu trên internet kết nối vào cơ sở dữ liệu, gây ra rủi ro bảo mật lớn.",
+          "Vì nó không tương thích với tất cả các driver."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mở truy cập cho `0.0.0.0/0` là một lỗ hổng bảo mật nghiêm trọng. Trong production, bạn phải chỉ định IP cụ thể của máy chủ ứng dụng."
+      },
+      {
+        "question": "Một \"Database User\" trong MongoDB Atlas bao gồm những thông tin gì?",
+        "options": [
+          "Chỉ có tên người dùng.",
+          "Tên người dùng và mật khẩu.",
+          "Tên người dùng và địa chỉ IP.",
+          "Chỉ có mật khẩu."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một Database User được xác thực bằng tên người dùng và mật khẩu để có quyền truy cập vào cơ sở dữ liệu."
+      },
+      {
+        "question": "Chuỗi kết nối (Connection String) được sử dụng để làm gì?",
+        "options": [
+          "Để xóa một cluster.",
+          "Để một ứng dụng có thể kết nối và tương tác với cluster MongoDB.",
+          "Để tạo một project mới.",
+          "Để cấu hình Network Access."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Connection String chứa tất cả thông tin cần thiết (địa chỉ, user, password) để ứng dụng client thiết lập kết nối đến cơ sở dữ liệu."
+      },
+      {
+        "question": "Trong chuỗi kết nối `mongodb+srv://user:<password>@cluster-name.abcde.mongodb.net/`, bạn cần thay thế `<password>` bằng gì?",
+        "options": [
+          "Mật khẩu của tài khoản MongoDB Atlas của bạn.",
+          "Mật khẩu của người dùng cơ sở dữ liệu (Database User) đã tạo.",
+          "Cụm từ \"password\" không cần thay đổi.",
+          "Tên của cluster."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bạn phải thay thế `<password>` bằng mật khẩu chính xác của Database User mà bạn đã tạo cho cluster đó."
+      },
+      {
+        "question": "Đâu là phương pháp tốt nhất để lưu trữ chuỗi kết nối trong một ứng dụng NodeJS?",
+        "options": [
+          "Viết thẳng (hard-code) chuỗi kết nối vào trong file mã nguồn chính.",
+          "Lưu trong một file text công khai trên GitHub.",
+          "Sử dụng biến môi trường (environment variables), ví dụ như trong file `.env`.",
+          "Lưu trong một comment trong code."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng biến môi trường giúp tách biệt thông tin nhạy cảm ra khỏi mã nguồn, tăng cường bảo mật và linh hoạt trong việc cấu hình."
+      },
+      {
+        "question": "Gói miễn phí (M0 Sandbox) của MongoDB Atlas có giới hạn chính là gì?",
+        "options": [
+          "Không giới hạn dung lượng.",
+          "Dung lượng lưu trữ 512 MB, và giới hạn về RAM, CPU.",
+          "Chỉ cho phép một người dùng kết nối.",
+          "Không hỗ trợ Replica Set."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Gói miễn phí phù hợp cho học tập và các dự án nhỏ do có giới hạn về tài nguyên, bao gồm 512 MB dung lượng lưu trữ."
+      },
+      {
+        "question": "Khi tạo một cluster mới, việc chọn \"Region\" (khu vực) gần nhất có tác dụng gì?",
+        "options": [
+          "Tăng dung lượng lưu trữ.",
+          "Giảm chi phí.",
+          "Giảm độ trễ (latency) khi kết nối đến cơ sở dữ liệu.",
+          "Tăng số lượng kết nối đồng thời."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Chọn khu vực địa lý gần với người dùng hoặc máy chủ ứng dụng của bạn sẽ giúp giảm thời gian truyền dữ liệu, cải thiện hiệu suất."
+      },
+      {
+        "question": "Thao tác nào sau đây KHÔNG được MongoDB Atlas tự động hóa?",
+        "options": [
+          "Sao lưu dữ liệu.",
+          "Nâng cấp phiên bản MongoDB.",
+          "Viết logic nghiệp vụ cho ứng dụng.",
+          "Vá các lỗ hổng bảo mật."
+        ],
+        "correctAnswer": 2,
+        "explanation": "MongoDB Atlas quản lý hạ tầng và cơ sở dữ liệu, nhưng việc viết mã và logic cho ứng dụng của bạn là trách nhiệm của lập trình viên."
+      },
+      {
+        "question": "Trong một Replica Set, node `PRIMARY` có vai trò gì?",
+        "options": [
+          "Chỉ đọc dữ liệu.",
+          "Nhận tất cả các thao tác ghi (write operations).",
+          "Lưu trữ bản sao lưu.",
+          "Không có vai trò đặc biệt."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tất cả các yêu cầu ghi dữ liệu đều được gửi đến node PRIMARY. Các node SECONDARY sau đó sẽ sao chép dữ liệu từ PRIMARY."
+      },
+      {
+        "question": "Để kết nối một ứng dụng NodeJS đến Atlas, bạn nên chọn loại kết nối nào trong giao diện của Atlas?",
+        "options": [
+          "\"Connect with the MongoDB Shell\"",
+          "\"Connect using MongoDB Compass\"",
+          "\"Drivers\"",
+          "\"Connect your application\""
+        ],
+        "correctAnswer": 2,
+        "explanation": "Chọn \"Drivers\" sẽ cung cấp cho bạn chuỗi kết nối và hướng dẫn cần thiết để tích hợp vào ứng dụng của bạn thông qua các thư viện driver chính thức."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Xây dựng chuỗi kết nối MongoDB",
+        "description": "Dựa vào các thông tin cho trước, hãy hoàn thiện một chuỗi kết nối (Connection String) hợp lệ để kết nối đến MongoDB Atlas.",
+        "starterCode": "const username = \"testuser\";\nconst password = \"testpassword123\";\nconst clusterUrl = \"my-cluster.abcde.mongodb.net\";\nconst dbName = \"myFirstDatabase\";\n\n// Hoàn thiện chuỗi kết nối bên dưới\nconst connectionString = `mongodb+srv://${username}:${password}@${clusterUrl}/${dbName}?retryWrites=true&w=majority`;\n\nconsole.log(connectionString);",
+        "solution": "const username = \"testuser\";\nconst password = \"testpassword123\";\nconst clusterUrl = \"my-cluster.abcde.mongodb.net\";\nconst dbName = \"myFirstDatabase\";\n\nconst connectionString = `mongodb+srv://${username}:${password}@${clusterUrl}/${dbName}?retryWrites=true&w=majority`;\n\nconsole.log(connectionString);",
+        "testCases": "Chạy code sẽ in ra chuỗi: mongodb+srv://testuser:testpassword123@my-cluster.abcde.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+      },
+      {
+        "title": "Sử dụng biến môi trường cho chuỗi kết nối",
+        "description": "Trong thực tế, không ai viết thẳng mật khẩu vào code. Hãy sửa lại đoạn code sau để lấy chuỗi kết nối từ biến môi trường `process.env.DB_CONNECTION_STRING` trong NodeJS.",
+        "starterCode": "// Giả sử file .env có nội dung: DB_CONNECTION_STRING=mongodb+srv://...\n// require('dotenv').config(); // Cần có dòng này trong dự án thực tế\n\n// Sửa dòng dưới đây để lấy giá trị từ biến môi trường\nconst connectionString = \"mongodb+srv://user:pass@cluster.mongodb.net/db\";\n\nconsole.log(connectionString);",
+        "solution": "// Giả sử file .env có nội dung: DB_CONNECTION_STRING=mongodb+srv://...\n// require('dotenv').config();\n\nconst connectionString = process.env.DB_CONNECTION_STRING;\n\nconsole.log(connectionString);",
+        "testCases": "Nếu biến môi trường `DB_CONNECTION_STRING` được thiết lập, code sẽ in ra giá trị của nó. Nếu không, nó sẽ in ra `undefined`."
+      },
+      {
+        "title": "Kết nối đến MongoDB bằng Mongoose (NodeJS)",
+        "description": "Hoàn thiện đoạn code sau để kết nối đến cơ sở dữ liệu MongoDB bằng thư viện Mongoose. Sử dụng chuỗi kết nối đã cho.",
+        "starterCode": "const mongoose = require('mongoose');\n\nconst DB_URI = \"mongodb+srv://trungquandev:fakepassword@cluster0.mongodb.net/test?retryWrites=true&w=majority\";\n\nasync function connectDB() {\n  try {\n    // Viết code kết nối Mongoose ở đây\n    console.log(\"MongoDB connected successfully!\");\n  } catch (error) {\n    console.error(\"MongoDB connection failed:\", error.message);\n    process.exit(1);\n  }\n}\n\nconnectDB();",
+        "solution": "const mongoose = require('mongoose');\n\nconst DB_URI = \"mongodb+srv://trungquandev:fakepassword@cluster0.mongodb.net/test?retryWrites=true&w=majority\";\n\nasync function connectDB() {\n  try {\n    await mongoose.connect(DB_URI);\n    console.log(\"MongoDB connected successfully!\");\n  } catch (error) {\n    console.error(\"MongoDB connection failed:\", error.message);\n    process.exit(1);\n  }\n}\n\nconnectDB();",
+        "testCases": "Khi chạy, code sẽ cố gắng kết nối đến URI. Nếu thành công (bỏ qua lỗi xác thực), nó sẽ in ra \"MongoDB connected successfully!\". Nếu URI sai định dạng, nó sẽ báo lỗi."
+      },
+      {
+        "title": "Xác định các thành phần trong Connection String",
+        "description": "Cho chuỗi kết nối sau, hãy viết code để trích xuất `username`, `clusterUrl`, và `dbName`.",
+        "starterCode": "const connectionString = \"mongodb+srv://app_user:secure123@prod-cluster.xyz.mongodb.net/e-commerce?retryWrites=true&w=majority\";\n\nlet username, clusterUrl, dbName;\n\n// Viết code của bạn ở đây để gán giá trị cho 3 biến trên\n\nconsole.log({ username, clusterUrl, dbName });",
+        "solution": "const connectionString = \"mongodb+srv://app_user:secure123@prod-cluster.xyz.mongodb.net/e-commerce?retryWrites=true&w=majority\";\n\nconst url = new URL(connectionString);\n\nconst username = url.username;\nconst clusterUrl = url.hostname;\nconst dbName = url.pathname.slice(1);\n\nconsole.log({ username, clusterUrl, dbName });",
+        "testCases": "Chạy code sẽ in ra object: { username: 'app_user', clusterUrl: 'prod-cluster.xyz.mongodb.net', dbName: 'e-commerce' }"
+      },
+      {
+        "title": "Tạo hàm cấu hình Network Access (Pseudo-code)",
+        "description": "Trong môi trường production, bạn cần cập nhật danh sách IP được phép truy cập một cách tự động. Hãy viết một hàm pseudo-code `updateNetworkAccess(newIpAddress)` mô tả các bước cần thực hiện để thêm một địa chỉ IP mới vào danh sách cho phép của MongoDB Atlas (sử dụng API của Atlas).",
+        "starterCode": "function updateNetworkAccess(newIpAddress) {\n  // 1. Xác thực với API của MongoDB Atlas (sử dụng API Key).\n  // 2. Lấy danh sách các địa chỉ IP hiện tại.\n  // 3. Thêm newIpAddress vào danh sách.\n  // 4. Gửi yêu cầu cập nhật lên API.\n  // 5. Kiểm tra kết quả và thông báo.\n\n  console.log(`(Pseudo) Adding ${newIpAddress} to the IP access list...`);\n  // Viết logic pseudo-code của bạn ở đây\n  console.log(\"(Pseudo) IP address updated successfully!\");\n}",
+        "solution": "function updateNetworkAccess(newIpAddress) {\n  const ATLAS_API_ENDPOINT = \"https://cloud.mongodb.com/api/atlas/v1.0\";\n  const API_KEY = process.env.ATLAS_API_KEY;\n  const PROJECT_ID = process.env.ATLAS_PROJECT_ID;\n\n  console.log(`(Pseudo) Adding ${newIpAddress} to the IP access list...`);\n\n  // Step 1: Authenticate and fetch current list (conceptual)\n  // const currentIpList = await fetch(`${ATLAS_API_ENDPOINT}/projects/${PROJECT_ID}/accessList`, { headers: { \"Authorization\": `Bearer ${API_KEY}` } });\n\n  // Step 2: Add new IP\n  // const updatedList = [...currentIpList, { ipAddress: newIpAddress, comment: \"Added by script\" }];\n\n  // Step 3: Send update request\n  // await fetch(`${ATLAS_API_ENDPOINT}/projects/${PROJECT_ID}/accessList`, {\n  //   method: 'POST',\n  //   body: JSON.stringify(updatedList),\n  //   headers: { \"Authorization\": `Bearer ${API_KEY}`, \"Content-Type\": \"application/json\" }\n  // });\n\n  console.log(\"(Pseudo) IP address updated successfully!\");\n}",
+        "testCases": "Đây là bài tập pseudo-code, không chạy trực tiếp. Mục đích là để mô tả quy trình logic về cách tương tác với API để quản lý Network Access một cách tự động."
+      }
+    ]
+  }
+}

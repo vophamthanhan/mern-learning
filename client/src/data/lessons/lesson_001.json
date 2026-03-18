@@ -1,0 +1,213 @@
+{
+  "id": 1,
+  "title": "Bài 1: Demo dự án Trello Clone & Review khóa học MERN Stack Pro",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# Bài 1: Demo dự án Trello Clone & Review khóa học MERN Stack Pro\n\n## I. Mục tiêu bài học\n\nVideo đầu tiên trong series MERN Stack Pro của TrungQuanDev không đi sâu vào code mà mang tính chất giới thiệu tổng quan, giúp học viên có cái nhìn toàn diện về khóa học và sản phẩm cuối cùng. Mục tiêu chính của bài học này bao gồm:\n\n*   **Xem demo sản phẩm hoàn chỉnh:** Hiểu rõ chức năng và giao diện của ứng dụng Trello Clone sẽ được xây dựng trong suốt khóa học.\n*   **Nắm bắt lộ trình học:** Cung cấp cái nhìn tổng quan về các kiến thức và công nghệ sẽ được đề cập, từ Front-end đến Back-end.\n*   **Hiểu về triết lý giảng dạy:** Tác giả chia sẻ về phương pháp tiếp cận thực tế, tập trung vào các kỹ năng cần thiết để đi làm.\n*   **Tham khảo đánh giá:** Cung cấp các bình luận, nhận xét từ những học viên đã tham gia để tạo sự tin tưởng và động lực.\n\n## II. Kiến thức chi tiết\n\n### 1. Demo ứng dụng Trello Clone\n\nPhần đầu của video tập trung vào việc demo sản phẩm cuối khóa, một ứng dụng Trello clone hoàn chỉnh với các tính năng chuyên nghiệp:\n\n*   **Giao diện người dùng (UI):**\n    *   Thiết kế giao diện sáng sủa, trực quan, và thân thiện với người dùng, lấy cảm hứng từ Trello.\n    *   Hỗ trợ chế độ **Dark/Light Mode**, cho phép người dùng tùy chỉnh giao diện theo sở thích.\n    *   Thiết kế **Responsive**, đảm bảo trải nghiệm tốt trên nhiều thiết bị và kích thước màn hình khác nhau.\n*   **Chức năng kéo thả (Drag & Drop):**\n    *   Kéo thả **Card** trong cùng một **Column**.\n    *   Kéo thả **Card** giữa các **Column** khác nhau.\n    *   Kéo thả **Column** để sắp xếp lại vị trí.\n*   **Quản lý Boards, Columns, và Cards:**\n    *   Tạo, đọc, cập nhật, và xóa (CRUD) các bảng (Boards), cột (Columns), và thẻ (Cards).\n    *   Tích hợp trình soạn thảo văn bản để chỉnh sửa nội dung chi tiết trong Card.\n\n### 2. Review và giới thiệu khóa học\n\nPhần còn lại của video là những chia sẻ tâm huyết của tác giả về khóa học MERN Stack Pro:\n\n*   **Tác giả:** TrungQuanDev, một lập trình viên Full-stack với nhiều năm kinh nghiệm, chia sẻ kiến thức qua blog và kênh YouTube cá nhân.\n*   **Mục tiêu khóa học:** Không chỉ dạy những kiến thức cơ bản, khóa học hướng tới việc trang bị cho học viên tư duy và kỹ năng để xây dựng các dự án thực tế, đủ sức cạnh tranh khi đi làm.\n*   **Đối tượng phù hợp:** Dành cho những người đã có kiến thức nền tảng về JavaScript, HTML/CSS và muốn đi sâu vào MERN Stack để trở thành lập trình viên Full-stack chuyên nghiệp.\n*   **Công nghệ sử dụng:**\n    *   **Front-end:** ReactJS, Vite, Material UI (MUI), Redux Toolkit.\n    *   **Back-end:** Node.js, Express.js, MongoDB.\n    *   **Công cụ và quy trình:** ESlint cho clean code, Semantic Versioning để quản lý phiên bản code.\n\n## III. Các bước thực hành\n\nVideo này không có nội dung thực hành code. Thay vào đó, tác giả khuyến khích người học:\n\n1.  **Xem kỹ video:** Để hiểu rõ mục tiêu và lộ trình của khóa học.\n2.  **Tham gia cộng đồng:** Kết nối với tác giả và các học viên khác qua các kênh Discord, Facebook được giới thiệu.\n3.  **Chuẩn bị môi trường:** Cài đặt các công cụ cần thiết như Node.js, npm, yarn theo phiên bản được khuyến nghị trong repo GitHub.\n\n## IV. Lưu ý quan trọng\n\n*   **Khóa học miễn phí:** Toàn bộ video bài giảng được cung cấp miễn phí trên YouTube.\n*   **Source code:** Tác giả có các gói \"Sponsor\" (trả phí) để nhận được bộ source code hoàn chỉnh, chất lượng \"như đi làm thực tế\". Đây là hình thức ủng hộ để tác giả có thêm động lực ra các nội dung chất lượng.\n*   **Kiến thức nền tảng:** Cần có sự chuẩn bị tốt về kiến thức JavaScript trước khi bắt đầu để có thể theo kịp nội dung khóa học.\n*   **Tuân thủ phiên bản:** Để tránh lỗi không đáng có, hãy cài đặt đúng các phiên bản của Node.js, npm, và yarn như trong file `package.json` của dự án.\n\n## V. Tài liệu tham khảo\n\n*   **[1] Blog cá nhân:** [https://trungquandev.com](https://trungquandev.com)\n*   **[2] GitHub Repository (Base Project):** [https://github.com/trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n*   **[3] Playlist khóa học trên YouTube:** [https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Sản phẩm cuối cùng của khóa học MERN Stack Pro được demo trong bài học là gì?",
+        "options": [
+          "Một trang blog cá nhân",
+          "Một ứng dụng thương mại điện tử",
+          "Một ứng dụng clone Trello",
+          "Một mạng xã hội mini"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Video đầu tiên giới thiệu và demo một ứng dụng Trello clone hoàn chỉnh sẽ được xây dựng trong suốt khóa học."
+      },
+      {
+        "question": "Tính năng nào KHÔNG được đề cập trong phần demo ứng dụng Trello Clone?",
+        "options": [
+          "Kéo thả card và column",
+          "Hỗ trợ Dark/Light Mode",
+          "Tích hợp thanh toán trực tuyến",
+          "Giao diện responsive"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Ứng dụng demo có các tính năng kéo thả, chế độ sáng/tối và thiết kế responsive, nhưng không có chức năng thanh toán."
+      },
+      {
+        "question": "Theo tác giả, đối tượng phù hợp nhất cho khóa học này là ai?",
+        "options": [
+          "Người mới bắt đầu học lập trình",
+          "Người đã có kiến thức nền tảng về JavaScript, HTML/CSS",
+          "Lập trình viên chuyên về Python",
+          "Chuyên gia phân tích dữ liệu"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khóa học dành cho những người đã có nền tảng về web cơ bản và muốn đi sâu vào MERN Stack."
+      },
+      {
+        "question": "Công nghệ nào sau đây được sử dụng cho Front-end trong khóa học?",
+        "options": [
+          "Angular và TypeScript",
+          "Vue.js và Vuetify",
+          "ReactJS và Material UI (MUI)",
+          "Svelte và Tailwind CSS"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khóa học sử dụng ReactJS, Vite, Material UI và Redux Toolkit cho phần Front-end."
+      },
+      {
+        "question": "Công nghệ nào được sử dụng cho Back-end trong khóa học?",
+        "options": [
+          "PHP và Laravel",
+          "Node.js và Express.js",
+          "Python và Django",
+          "Java và Spring Boot"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Phần Back-end của dự án được xây dựng bằng Node.js, Express.js và MongoDB."
+      },
+      {
+        "question": "Triết lý giảng dạy của tác giả TrungQuanDev trong khóa học là gì?",
+        "options": [
+          "Tập trung vào lý thuyết hàn lâm",
+          "Chỉ dạy các kiến thức cơ bản nhất",
+          "Trang bị tư duy và kỹ năng để xây dựng dự án thực tế",
+          "Học thuộc lòng các đoạn code mẫu"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tác giả nhấn mạnh việc trang bị tư duy và kỹ năng thực tế, đủ sức cạnh tranh khi đi làm, thay vì chỉ dạy lý thuyết suông."
+      },
+      {
+        "question": "Hình thức cung cấp khóa học MERN Stack Pro là gì?",
+        "options": [
+          "Toàn bộ khóa học là trả phí",
+          "Các video bài giảng được cung cấp miễn phí trên YouTube",
+          "Chỉ có source code là miễn phí",
+          "Phải đăng ký thành viên trên website mới được học"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Toàn bộ video bài giảng của khóa học được tác giả chia sẻ miễn phí trên kênh YouTube của mình."
+      },
+      {
+        "question": "Làm thế nào để nhận được bộ source code hoàn chỉnh của dự án?",
+        "options": [
+          "Source code được đính kèm miễn phí dưới mỗi video",
+          "Tham gia các gói \"Sponsor\" (trả phí) để ủng hộ tác giả",
+          "Gửi email yêu cầu trực tiếp cho tác giả",
+          "Source code không được chia sẻ"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tác giả cung cấp source code chất lượng cao cho những người tham gia các gói \"Sponsor\" như một hình thức ủng hộ."
+      },
+      {
+        "question": "Công cụ nào được sử dụng để đảm bảo \"clean code\" trong dự án?",
+        "options": [
+          "Prettier",
+          "JSHint",
+          "ESlint",
+          "SonarQube"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề cập đến việc sử dụng ESlint để duy trì chất lượng và sự thống nhất của code."
+      },
+      {
+        "question": "Yếu tố nào được nhấn mạnh là \"cần có sự chuẩn bị tốt\" trước khi bắt đầu khóa học?",
+        "options": [
+          "Kiến thức về thiết kế đồ họa",
+          "Kiến thức về marketing online",
+          "Kiến thức về JavaScript",
+          "Kiến thức về quản trị hệ thống"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tác giả lưu ý rằng học viên cần có kiến thức nền tảng vững chắc về JavaScript để có thể theo kịp nội dung."
+      },
+      {
+        "question": "Mục đích chính của việc kéo thả (Drag & Drop) trong ứng dụng Trello Clone là gì?",
+        "options": [
+          "Thay đổi màu sắc của thẻ",
+          "Sắp xếp lại vị trí của các Card và Column",
+          "Xóa nhiều thẻ cùng lúc",
+          "Tạo hiệu ứng động cho giao diện"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Chức năng kéo thả là cốt lõi của Trello, cho phép người dùng sắp xếp công việc một cách trực quan bằng cách di chuyển các thẻ và cột."
+      },
+      {
+        "question": "\"Semantic Versioning\" được đề cập trong khóa học để làm gì?",
+        "options": [
+          "Tối ưu hóa SEO cho trang web",
+          "Đặt tên biến và hàm cho có ý nghĩa",
+          "Quản lý phiên bản của source code",
+          "Viết tài liệu cho API"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Semantic Versioning là một quy ước để đánh số phiên bản cho phần mềm, giúp quản lý sự thay đổi và phụ thuộc một cách rõ ràng."
+      },
+      {
+        "question": "Tác giả khuyến khích người học làm gì sau khi xem video đầu tiên?",
+        "options": [
+          "Bắt tay vào code ngay dự án Trello Clone",
+          "Học một khóa học về thiết kế UI/UX",
+          "Tham gia cộng đồng và chuẩn bị môi trường",
+          "Tìm hiểu về các framework khác ngoài React"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thay vì code ngay, tác giả khuyến khích học viên tham gia cộng đồng (Discord, Facebook) và cài đặt các công cụ cần thiết."
+      },
+      {
+        "question": "Tại sao việc tuân thủ đúng phiên bản của Node.js, npm, yarn lại quan trọng?",
+        "options": [
+          "Để có hiệu năng tốt nhất",
+          "Để tránh các lỗi không đáng có liên quan đến sự tương thích",
+          "Để được tác giả hỗ trợ tốt hơn",
+          "Để mã nguồn bảo mật hơn"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sử dụng đúng phiên bản công cụ như trong dự án mẫu giúp đảm bảo môi trường phát triển ổn định và tránh các lỗi xung đột phiên bản."
+      },
+      {
+        "question": "Đâu là một trong những điểm nổi bật của giao diện người dùng (UI) được demo?",
+        "options": [
+          "Chỉ hỗ trợ giao diện dòng lệnh",
+          "Giao diện chỉ hoạt động trên màn hình lớn",
+          "Hỗ trợ tùy chỉnh chế độ Dark/Light Mode",
+          "Giao diện được tạo bằng HTML và CSS thuần"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Giao diện người dùng của Trello Clone được thiết kế hiện đại, thân thiện và có cả tính năng Dark/Light Mode để phù hợp với sở thích người dùng."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Kiểm tra phiên bản Node.js và npm",
+        "description": "Viết một đoạn script shell để kiểm tra phiên bản Node.js và npm đã cài đặt trên máy của bạn và so sánh với phiên bản yêu cầu (Node.js >= 18.0.0, npm >= 8.0.0).",
+        "starterCode": "#!/bin/bash\n# Lấy phiên bản Node.js và npm\nnode_version=$(node -v)\nnpm_version=$(npm -v)\n\necho \"Node.js version: $node_version\"\necho \"npm version: $npm_version\"\n\n# Thêm logic so sánh phiên bản ở đây",
+        "solution": "#!/bin/bash\nnode_version=$(node -v | cut -d'v' -f2)\nnpm_version=$(npm -v)\n\necho \"Node.js version: v$node_version\"\necho \"npm version: $npm_version\"\n\nrequired_node_major=18\n\ncurrent_node_major=$(echo $node_version | cut -d'.' -f1)\n\nif [ \"$current_node_major\" -lt \"$required_node_major\" ]; then\n    echo \"Lỗi: Phiên bản Node.js của bạn ($node_version) cũ hơn phiên bản yêu cầu (>= v18.0.0). Vui lòng nâng cấp.\"\nelse\n    echo \"Phiên bản Node.js hợp lệ.\"\nfi",
+        "testCases": "Mô tả các trường hợp kiểm thử: chạy script với phiên bản Node.js cũ hơn 18, và phiên bản mới hơn hoặc bằng 18."
+      },
+      {
+        "title": "Viết hàm JavaScript cơ bản",
+        "description": "Dựa trên yêu cầu cần có kiến thức nền tảng về JavaScript, hãy viết một hàm có tên `getWelcomeMessage` nhận vào một tham số `courseName` và trả về chuỗi \"Chào mừng bạn đến với khóa học [tên khóa học]!\".",
+        "starterCode": "function getWelcomeMessage(courseName) {\n  // Viết code của bạn ở đây\n}\n\n// Ví dụ sử dụng:\n// console.log(getWelcomeMessage(\"MERN Stack Pro\"));",
+        "solution": "function getWelcomeMessage(courseName) {\n  return `Chào mừng bạn đến với khóa học ${courseName}!`;\n}\n\nconsole.log(getWelcomeMessage(\"MERN Stack Pro\"));",
+        "testCases": "Gọi hàm với các chuỗi khác nhau cho `courseName` và kiểm tra chuỗi trả về có đúng định dạng không."
+      },
+      {
+        "title": "Tạo Component React \"Hello World\" với Vite",
+        "description": "Khóa học sử dụng ReactJS và Vite. Hãy viết mã cho một component React đơn giản có tên `Greeting` hiển thị lời chào \"Hello, MERN Stack Pro learners!\".",
+        "starterCode": "// src/Greeting.jsx\nimport React from 'react';\n\nfunction Greeting() {\n  // Viết code của bạn ở đây\n}\n\nexport default Greeting;",
+        "solution": "// src/Greeting.jsx\nimport React from 'react';\n\nfunction Greeting() {\n  return <h1>Hello, MERN Stack Pro learners!</h1>;\n}\n\nexport default Greeting;",
+        "testCases": "Render component `Greeting` và kiểm tra xem phần tử `h1` có chứa đúng nội dung text hay không."
+      },
+      {
+        "title": "Tạo server Express.js đơn giản",
+        "description": "Khóa học sử dụng Node.js và Express.js cho backend. Hãy tạo một server Express tối giản, khi truy cập vào đường dẫn gốc (`/`) sẽ trả về một tin nhắn JSON `{ \"message\": \"Welcome to the Trello Clone API\" }`.",
+        "starterCode": "const express = require('express');\nconst app = express();\nconst port = 8017;\n\n// Viết code của bạn ở đây\n\napp.listen(port, () => {\n  console.log(`Server is running at http://localhost:${port}`);\n});",
+        "solution": "const express = require('express');\nconst app = express();\nconst port = 8017;\n\napp.get('/', (req, res) => {\n  res.json({ message: \"Welcome to the Trello Clone API\" });\n});\n\napp.listen(port, () => {\n  console.log(`Server is running at http://localhost:${port}`);\n});",
+        "testCases": "Chạy server, dùng một công cụ như `curl` hoặc Postman để gửi request GET đến `http://localhost:8017/` và kiểm tra nội dung JSON trả về."
+      },
+      {
+        "title": "Khởi tạo dự án và Repo GitHub",
+        "description": "Bài học khuyến khích chuẩn bị môi trường và tham khảo repo GitHub. Hãy viết các lệnh shell cần thiết để: 1. Tạo một thư mục dự án mới tên `trello-clone`. 2. Di chuyển vào thư mục đó. 3. Khởi tạo một repo Git mới. 4. Tạo một file `README.md` với nội dung \"My Trello Clone Project\".",
+        "starterCode": "#!/bin/bash\n# Viết các lệnh của bạn bên dưới",
+        "solution": "#!/bin/bash\nmkdir trello-clone\ncd trello-clone\ngit init\necho \"# My Trello Clone Project\" > README.md",
+        "testCases": "Chạy script và kiểm tra xem thư mục `trello-clone` có được tạo không, bên trong có thư mục `.git` và file `README.md` với nội dung chính xác hay không."
+      }
+    ]
+  }
+}

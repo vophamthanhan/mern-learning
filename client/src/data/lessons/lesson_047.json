@@ -1,0 +1,213 @@
+{
+  "id": 47,
+  "title": "Bài 29: Kinh nghiệm chọn thư viện Kéo Thả cho dự án ReactJS",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# Bài 29: Kinh nghiệm chọn thư viện Kéo Thả cho dự án ReactJS\n\n## Mục tiêu bài học\n\nBài học này cung cấp kiến thức và kinh nghiệm thực tế để lựa chọn thư viện kéo thả (Drag and Drop) phù hợp cho một dự án ReactJS. Video tập trung vào việc so sánh thư viện `react-beautiful-dnd` (một lựa chọn phổ biến trước đây) và `dnd-kit` (giải pháp hiện đại và được khuyến nghị), đồng thời giải thích lý do tại sao `dnd-kit` là sự lựa chọn tối ưu cho các dự án mới, đặc biệt là trong bối cảnh của React 18 và các phiên bản sau.\n\n## Kiến thức chi tiết\n\nTrong quá trình phát triển các ứng dụng web tương tác, tính năng kéo thả là một yêu cầu phổ biến, đặc biệt trong các ứng dụng như Trello, Jira, hoặc các công cụ quản lý tác vụ khác. Việc lựa chọn đúng thư viện để triển khai tính năng này có ảnh hưởng lớn đến hiệu suất, khả năng bảo trì và trải nghiệm người dùng của ứng dụng.\n\n### 1. Bối cảnh và Vấn đề với `react-beautiful-dnd`\n\n`react-beautiful-dnd` là một thư viện kéo thả rất nổi tiếng và được sử dụng rộng rãi trong cộng đồng React trong nhiều năm. Nó được biết đến với API đơn giản và hiệu ứng động mượt mà. Tuy nhiên, thư viện này gặp phải một số vấn đề lớn:\n\n*   **Ngừng phát triển:** Thư viện đã không được cập nhật trong một thời gian dài. Phiên bản cuối cùng không hoàn toàn tương thích với `React.StrictMode` và các tính năng mới của React 18 [1]. Điều này gây ra các cảnh báo (warning) trong console và tiềm ẩn nguy cơ về các lỗi không tương thích trong tương lai.\n*   **Phụ thuộc vào cộng đồng:** Mặc dù có những bản vá (fork) từ cộng đồng để giải quyết vấn đề với Strict Mode, việc phụ thuộc vào các giải pháp không chính thức không phải là một lựa chọn bền vững cho các dự án chuyên nghiệp.\n\n### 2. Giới thiệu `dnd-kit`: Giải pháp thay thế hiện đại\n\nTrước những hạn chế của `react-beautiful-dnd`, cộng đồng đã tìm kiếm các giải pháp thay thế, và `dnd-kit` nổi lên như một lựa chọn hàng đầu. Đây là một bộ công cụ hiện đại, nhẹ và có khả năng tùy biến cao để xây dựng các giao diện kéo thả trong React [2].\n\n#### Các ưu điểm chính của `dnd-kit`:\n\n*   **Kiến trúc hiện đại:** Được xây dựng với các hooks của React, giúp tích hợp liền mạch và tự nhiên vào các ứng dụng React hiện đại.\n*   **Hiệu suất cao:** Tối ưu hóa để mang lại hiệu suất tốt nhất, đảm bảo các hiệu ứng động luôn mượt mà ngay cả với các giao diện phức tạp [3].\n*   **Khả năng tùy biến và mở rộng:** `dnd-kit` không bị giới hạn trong các danh sách đơn giản. Nó có thể được sử dụng để xây dựng nhiều loại giao diện kéo thả khác nhau như lưới (grids), cây (trees), và thậm chí cả các game 2D [4].\n*   **Hỗ trợ đa dạng thiết bị:** Cung cấp các cảm biến (sensors) cho con trỏ chuột, cảm ứng (touch) và bàn phím, đảm bảo trải nghiệm người dùng nhất quán trên nhiều thiết bị.\n*   **Hỗ trợ Accessibility (Khả năng truy cập):** Được thiết kế với khả năng truy cập là ưu tiên hàng đầu, bao gồm điều hướng bằng bàn phím và hỗ trợ trình đọc màn hình.\n*   **Cộng đồng và bảo trì tích cực:** Thư viện được bảo trì và phát triển liên tục, với tài liệu chi tiết và cộng đồng hỗ trợ mạnh mẽ [5].\n\n### 3. So sánh `react-beautiful-dnd` và `dnd-kit`\n\n| Tiêu chí | react-beautiful-dnd | dnd-kit |\n| :--- | :--- | :--- |\n| **Tình trạng** | Ngừng phát triển | Đang phát triển tích cực |\n| **Tương thích React 18** | Gặp vấn đề với Strict Mode | Tương thích hoàn toàn |\n| **Kiến trúc** | Dựa trên Component | Dựa trên Hooks, hiện đại hơn |\n| **Khả năng tùy biến** | Hạn chế, chủ yếu cho danh sách | Rất linh hoạt, hỗ trợ nhiều kịch bản |\n| **Hiệu suất** | Tốt | Rất tốt, tối ưu cho hiệu ứng mượt mà |\n| **Accessibility** | Tốt | Rất tốt, là một ưu tiên thiết kế |\n| **Hỗ trợ thiết bị** | Chuột | Chuột, Cảm ứng, Bàn phím |\n\n## Các bước thực hành\n\nĐể bắt đầu sử dụng `dnd-kit` trong dự án của bạn, hãy làm theo các bước sau:\n\n1.  **Cài đặt:** Thêm các gói cần thiết vào dự án của bạn.\n\n    ```bash\n    yarn add @dnd-kit/core @dnd-kit/sortable\n    ```\n\n2.  **Thiết lập `DndContext`:** Bọc phần ứng dụng của bạn cần tính năng kéo thả bằng `DndContext`. Đây là nơi bạn sẽ cấu hình các cảm biến (sensors) và các cài đặt khác.\n\n    ```jsx\n    import { DndContext } from '@dnd-kit/core';\n\n    function App() {\n      return (\n        <DndContext>\n          {/* Các component khác của bạn */}\n        </DndContext>\n      );\n    }\n    ```\n\n3.  **Tạo các phần tử kéo (`Draggable`) và thả (`Droppable`):** Sử dụng các hooks `useDraggable` và `useDroppable` để định nghĩa các vùng có thể kéo và các vùng có thể thả.\n\n4.  **Xử lý sự kiện:** Lắng nghe các sự kiện như `onDragEnd` để cập nhật trạng thái ứng dụng của bạn sau khi một thao tác kéo thả hoàn tất.\n\nĐể có hướng dẫn chi tiết hơn, bạn có thể tham khảo trang tài liệu chính thức của `dnd-kit` [2].\n\n## Lưu ý quan trọng\n\n*   **Luôn kiểm tra tình trạng của thư viện:** Trước khi quyết định sử dụng một thư viện mã nguồn mở, hãy kiểm tra tần suất cập nhật, các vấn đề (issues) đang mở và mức độ hoạt động của cộng đồng. Một thư viện không được bảo trì có thể trở thành một gánh nặng kỹ thuật trong tương lai.\n*   **Hiểu rõ nhu cầu dự án:** `dnd-kit` rất mạnh mẽ nhưng cũng có thể phức tạp hơn cho các trường hợp đơn giản. Tuy nhiên, với việc `react-beautiful-dnd` đã lỗi thời, việc đầu tư thời gian để học `dnd-kit` là hoàn toàn xứng đáng cho các dự án dài hạn.\n*   **Tham khảo các ví dụ:** `dnd-kit` cung cấp rất nhiều ví dụ trên CodeSandbox, giúp bạn nhanh chóng hiểu cách triển khai các kịch bản kéo thả khác nhau [6].\n\n## Tài liệu tham khảo\n\n[1] [GitHub - atlassian/react-beautiful-dnd](https://github.com/atlassian/react-beautiful-dnd)\n[2] [dnd-kit - Quickstart](https://dndkit.com/react/quickstart)\n[3] [GitHub - clauderic/dnd-kit](https://github.com/clauderic/dnd-kit)\n[4] [GitHub Discussions - Comparison with react-beautiful-dnd](https://github.com/clauderic/dnd-kit/discussions/481)\n[5] [Blog LogRocket - Build a Kanban board with dnd kit and React](https://blog.logrocket.com/build-kanban-board-dnd-kit-react/)\n[6] [CodeSandbox - dnd-kit/core examples](https://codesandbox.io/examples/package/@dnd-kit/core)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Theo bài học, tại sao thư viện `react-beautiful-dnd` không còn là lựa chọn được khuyến nghị cho các dự án ReactJS mới?",
+        "options": [
+          "A. Vì nó quá khó để học và sử dụng.",
+          "B. Vì nó đã ngừng phát triển và không tương thích hoàn toàn với React 18.",
+          "C. Vì nó yêu cầu trả phí để sử dụng trong các dự án thương mại.",
+          "D. Vì hiệu suất của nó rất kém so với các thư viện khác."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nêu rõ rằng `react-beautiful-dnd` đã không được cập nhật trong một thời gian dài, dẫn đến các vấn đề tương thích với `React.StrictMode` và React 18."
+      },
+      {
+        "question": "Thư viện nào được đề xuất làm giải pháp thay thế hiện đại cho `react-beautiful-dnd`?",
+        "options": [
+          "A. `react-dnd`",
+          "B. `dnd-kit`",
+          "C. `react-draggable`",
+          "D. `react-dropzone`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`dnd-kit` được giới thiệu là một bộ công cụ hiện đại, nhẹ và có khả năng tùy biến cao, là lựa chọn thay thế hàng đầu."
+      },
+      {
+        "question": "Ưu điểm chính của `dnd-kit` so với `react-beautiful-dnd` là gì?",
+        "options": [
+          "A. Chỉ hỗ trợ kéo thả danh sách đơn giản.",
+          "B. Được xây dựng dựa trên kiến trúc Class Component cũ.",
+          "C. Tương thích hoàn toàn với React 18, được phát triển tích cực và có khả năng tùy biến cao.",
+          "D. Không hỗ trợ các thiết bị cảm ứng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học nhấn mạnh rằng `dnd-kit` có kiến trúc hiện đại dựa trên hooks, tương thích React 18, phát triển tích cực và rất linh hoạt."
+      },
+      {
+        "question": "Để bắt đầu sử dụng `dnd-kit`, bạn cần bọc phần ứng dụng của mình bằng component nào?",
+        "options": [
+          "A. `<DragDropContext>`",
+          "B. `<DragProvider>`",
+          "C. `<DndContext>`",
+          "D. `<SortableContext>`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bước đầu tiên khi thiết lập `dnd-kit` là bọc ứng dụng hoặc một phần của nó trong `DndContext` để cung cấp context cho các hooks và components."
+      },
+      {
+        "question": "Lệnh nào sau đây dùng để cài đặt các gói cốt lõi của `dnd-kit` cho việc tạo danh sách có thể sắp xếp?",
+        "options": [
+          "A. `yarn add dnd-kit`",
+          "B. `yarn add @dnd-kit/core`",
+          "C. `yarn add @dnd-kit/core @dnd-kit/sortable`",
+          "D. `npm install react-beautiful-dnd`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để sử dụng tính năng kéo thả cơ bản và sắp xếp, bạn cần cài đặt cả hai gói `@dnd-kit/core` và `@dnd-kit/sortable`."
+      },
+      {
+        "question": "Trong `dnd-kit`, `sensors` được sử dụng để làm gì?",
+        "options": [
+          "A. Để phát hiện các thay đổi về trạng thái của component.",
+          "B. Để quản lý trạng thái của các mục được kéo thả.",
+          "C. Để phát hiện các phương thức nhập liệu như chuột, cảm ứng và bàn phím.",
+          "D. Để tối ưu hóa hiệu suất của hiệu ứng động."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`sensors` trong `dnd-kit` cho phép thư viện lắng nghe và phản hồi với nhiều loại tương tác đầu vào khác nhau, đảm bảo trải nghiệm nhất quán trên các thiết bị."
+      },
+      {
+        "question": "Hook nào của `dnd-kit` được sử dụng để làm cho một phần tử có thể kéo được?",
+        "options": [
+          "A. `useDroppable`",
+          "B. `useSortable`",
+          "C. `useDraggable`",
+          "D. `useDndContext`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hook `useDraggable` cung cấp các thuộc tính và listeners cần thiết để biến một component thành một phần tử có thể kéo đi."
+      },
+      {
+        "question": "Sự kiện nào trong `DndContext` thường được sử dụng để xử lý logic sau khi thao tác kéo thả kết thúc?",
+        "options": [
+          "A. `onDragStart`",
+          "B. `onDragMove`",
+          "C. `onDragOver`",
+          "D. `onDragEnd`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Sự kiện `onDragEnd` được kích hoạt khi người dùng thả một mục, đây là nơi bạn cập nhật trạng thái ứng dụng của mình (ví dụ: sắp xếp lại một mảng dữ liệu)."
+      },
+      {
+        "question": "Theo bảng so sánh, `dnd-kit` vượt trội hơn `react-beautiful-dnd` ở tiêu chí nào sau đây?",
+        "options": [
+          "A. Hỗ trợ thiết bị (Chuột, Cảm ứng, Bàn phím).",
+          "B. Khả năng tùy biến.",
+          "C. Tương thích React 18.",
+          "D. Tất cả các phương án trên."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bảng so sánh trong bài học chỉ ra rằng `dnd-kit` tốt hơn `react-beautiful-dnd` ở tất cả các tiêu chí được liệt kê: tình trạng phát triển, tương thích React 18, kiến trúc, khả năng tùy biến, hiệu suất, accessibility và hỗ trợ thiết bị."
+      },
+      {
+        "question": "Tại sao việc một thư viện mã nguồn mở ngừng phát triển lại là một rủi ro lớn?",
+        "options": [
+          "A. Vì bạn sẽ không có tính năng mới nào.",
+          "B. Vì nó có thể không tương thích với các phiên bản mới của framework (ví dụ: React) và có thể chứa các lỗ hổng bảo mật không được vá.",
+          "C. Vì tài liệu của nó sẽ bị xóa.",
+          "D. Vì cộng đồng sẽ không còn hỗ trợ."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một thư viện không được bảo trì sẽ không nhận được các bản cập nhật để tương thích với môi trường phát triển đang thay đổi và các lỗ hổng bảo mật được phát hiện sẽ không được sửa, tạo ra gánh nặng kỹ thuật."
+      },
+      {
+        "question": "Kiến trúc của `dnd-kit` dựa trên điều gì, giúp nó tích hợp liền mạch vào các ứng dụng React hiện đại?",
+        "options": [
+          "A. Higher-Order Components (HOCs)",
+          "B. Class Components",
+          "C. React Hooks",
+          "D. Render Props"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học nêu rõ `dnd-kit` được xây dựng với các hooks của React, đây là một trong những ưu điểm chính giúp nó trở nên hiện đại và dễ tích hợp."
+      },
+      {
+        "question": "Hook nào của `dnd-kit` được sử dụng để tạo một vùng có thể nhận (thả) các phần tử được kéo vào?",
+        "options": [
+          "A. `useDraggable`",
+          "B. `useDroppable`",
+          "C. `useDropzone`",
+          "D. `useDropContext`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hook `useDroppable` cung cấp các thuộc tính cần thiết để đăng ký một node làm vùng chứa có thể thả, cho phép nó nhận các phần tử `draggable`."
+      },
+      {
+        "question": "Điều gì KHÔNG phải là một ưu điểm của `dnd-kit` được đề cập trong bài học?",
+        "options": [
+          "A. Hiệu suất cao và hiệu ứng động mượt mà.",
+          "B. Hỗ trợ Accessibility (Khả năng truy cập).",
+          "C. API đơn giản nhất, không cần cấu hình.",
+          "D. Hỗ trợ đa dạng thiết bị (chuột, cảm ứng, bàn phím)."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học mô tả `dnd-kit` là \"có khả năng tùy biến cao\" và có thể \"phức tạp hơn cho các trường hợp đơn giản\", ngụ ý rằng nó không phải là API đơn giản nhất và đòi hỏi cấu hình, nhưng sự linh hoạt đó là một thế mạnh."
+      },
+      {
+        "question": "Trong `dnd-kit`, để tạo một danh sách có thể sắp xếp lại thứ tự, ngoài `@dnd-kit/core`, bạn cần sử dụng gói nào?",
+        "options": [
+          "A. `@dnd-kit/modifiers`",
+          "B. `@dnd-kit/sensors`",
+          "C. `@dnd-kit/sortable`",
+          "D. `@dnd-kit/utilities`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Gói `@dnd-kit/sortable` cung cấp các hook và component cần thiết, như `SortableContext` và `useSortable`, để dễ dàng xây dựng các danh sách có thể sắp xếp."
+      },
+      {
+        "question": "Tại sao việc kiểm tra các \"issues\" đang mở của một thư viện trước khi sử dụng lại quan trọng?",
+        "options": [
+          "A. Để xem thư viện có bao nhiêu người dùng.",
+          "B. Để hiểu các vấn đề, lỗi hiện tại và xem cộng đồng có đang tích cực giải quyết chúng hay không.",
+          "C. Để tìm các ví dụ sử dụng thư viện.",
+          "D. Để đánh giá hiệu suất của thư viện."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc xem xét các \"issues\" đang mở giúp đánh giá sức khỏe của dự án, mức độ hoạt động của người bảo trì và các vấn đề tiềm ẩn bạn có thể gặp phải khi sử dụng thư viện."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cài đặt và Thiết lập DndContext",
+        "description": "Nhiệm vụ của bạn là cài đặt các gói cần thiết của `dnd-kit` và bọc ứng dụng App component bằng `DndContext` để kích hoạt chức năng kéo thả.",
+        "starterCode": "import React from 'react';\n\n// TODO: Import DndContext từ @dnd-kit/core\n\nfunction App() {\n  return (\n    // TODO: Bọc div này bằng DndContext\n    <div style={{ padding: '20px' }}>\n      <h1>Học về dnd-kit</h1>\n      <p>Sẵn sàng để kéo thả!</p>\n    </div>\n  );\n}\n\nexport default App;\n",
+        "solution": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\n\nfunction App() {\n  return (\n    <DndContext>\n      <div style={{ padding: '20px' }}>\n        <h1>Học về dnd-kit</h1>\n        <p>Sẵn sàng để kéo thả!</p>\n      </div>\n    </DndContext>\n  );\n}\n\nexport default App;\n",
+        "testCases": "Kiểm tra xem `DndContext` đã được import và sử dụng để bọc nội dung của `App` component hay chưa."
+      },
+      {
+        "title": "Bài 2: Tạo một phần tử có thể kéo (Draggable)",
+        "description": "Sử dụng hook `useDraggable` từ `@dnd-kit/core` để tạo một component `Draggable` có thể được kéo xung quanh màn hình.",
+        "starterCode": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\n// TODO: Import useDraggable\n\nfunction Draggable() {\n  // TODO: Sử dụng hook useDraggable để lấy attributes và listeners\n  const {attributes, listeners, setNodeRef, transform} = { attributes: {}, listeners: {}, setNodeRef: null, transform: null };\n\n  const style = transform ? {\n    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`\n  } : undefined;\n\n  return (\n    <button ref={setNodeRef} style={style} {...listeners} {...attributes}>\n      Kéo tôi đi\n    </button>\n  );\n}\n\nfunction App() {\n  return (\n    <DndContext>\n      <Draggable />\n    </DndContext>\n  );\n}\n\nexport default App;\n",
+        "solution": "import React from 'react';\nimport { DndContext, useDraggable } from '@dnd-kit/core';\n\nfunction Draggable() {\n  const {attributes, listeners, setNodeRef, transform} = useDraggable({\n    id: 'draggable',\n  });\n\n  const style = transform ? {\n    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`\n  } : undefined;\n\n  return (\n    <button ref={setNodeRef} style={style} {...listeners} {...attributes}>\n      Kéo tôi đi\n    </button>\n  );\n}\n\nfunction App() {\n  return (\n    <DndContext>\n      <Draggable />\n    </DndContext>\n  );\n}\n\nexport default App;\n",
+        "testCases": "Kiểm tra xem `useDraggable` đã được import và sử dụng đúng cách hay chưa. Khi chạy, button \"Kéo tôi đi\" phải di chuyển được khi dùng chuột kéo."
+      },
+      {
+        "title": "Bài 3: Tạo một vùng có thể thả (Droppable)",
+        "description": "Sử dụng hook `useDroppable` để tạo một component `Droppable` có thể nhận các phần tử được kéo vào. Thay đổi màu nền của vùng này khi có một phần tử đang được kéo qua nó.",
+        "starterCode": "import React from 'react';\nimport { DndContext, useDraggable } from '@dnd-kit/core';\n// TODO: Import useDroppable\n\nfunction Droppable(props) {\n  // TODO: Sử dụng hook useDroppable\n  const {isOver, setNodeRef} = { isOver: false, setNodeRef: null };\n  const style = {\n    backgroundColor: isOver ? '#cde' : '#eee',\n    padding: '20px',\n    marginTop: '20px',\n    minHeight: '100px'\n  };\n\n  return (\n    <div ref={setNodeRef} style={style}>\n      {props.children}\n    </div>\n  );\n}\n\n// Component Draggable từ bài trước (giữ nguyên)\nfunction Draggable() {\n  const {attributes, listeners, setNodeRef, transform} = useDraggable({ id: 'draggable' });\n  const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;\n  return <button ref={setNodeRef} style={style} {...listeners} {...attributes}>Kéo tôi đi</button>;\n}\n\nfunction App() {\n  return (\n    <DndContext>\n      <Draggable />\n      <Droppable>\n        Thả vào đây\n      </Droppable>\n    </DndContext>\n  );\n}\n\nexport default App;\n",
+        "solution": "import React from 'react';\nimport { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';\n\nfunction Droppable(props) {\n  const {isOver, setNodeRef} = useDroppable({\n    id: 'droppable',\n  });\n  const style = {\n    backgroundColor: isOver ? '#cde' : '#eee',\n    padding: '20px',\n    marginTop: '20px',\n    minHeight: '100px'\n  };\n\n  return (\n    <div ref={setNodeRef} style={style}>\n      {props.children}\n    </div>\n  );\n}\n\nfunction Draggable() {\n  const {attributes, listeners, setNodeRef, transform} = useDraggable({ id: 'draggable' });\n  const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;\n  return <button ref={setNodeRef} style={style} {...listeners} {...attributes}>Kéo tôi đi</button>;\n}\n\nfunction App() {\n  return (\n    <DndContext>\n      <Draggable />\n      <Droppable>\n        Thả vào đây\n      </Droppable>\n    </DndContext>\n  );\n}\n\nexport default App;\n",
+        "testCases": "Kiểm tra xem `useDroppable` đã được import và sử dụng đúng cách. Khi kéo phần tử `Draggable` qua `Droppable`, màu nền của `Droppable` phải thay đổi."
+      },
+      {
+        "title": "Bài 4: Xử lý sự kiện onDragEnd",
+        "description": "Bắt sự kiện `onDragEnd` trên `DndContext` để hiển thị một thông báo khi một phần tử được thả thành công vào vùng `Droppable`.",
+        "starterCode": "import React, {useState} from 'react';\nimport { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';\n\n// Giữ nguyên Draggable và Droppable từ bài trước\nfunction Draggable() { /* ... */ }\nfunction Droppable(props) { /* ... */ }\n\nfunction App() {\n  const [message, setMessage] = useState('Kéo và thả phần tử vào vùng bên dưới');\n\n  function handleDragEnd(event) {\n    // TODO: Kiểm tra nếu phần tử được thả vào vùng droppable (id: 'droppable')\n    // Nếu đúng, cập nhật message thành \"Thả thành công!\"\n  }\n\n  return (\n    <DndContext onDragEnd={handleDragEnd}>\n      <p>{message}</p>\n      <Draggable />\n      <Droppable />\n    </DndContext>\n  );\n}\n\n// Implement Draggable and Droppable for completeness\nfunction DraggableImpl() {\n  const {attributes, listeners, setNodeRef, transform} = useDraggable({ id: 'draggable' });\n  const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;\n  return <button ref={setNodeRef} style={style} {...listeners} {...attributes}>Kéo tôi đi</button>;\n}\nfunction DroppableImpl(props) {\n  const {isOver, setNodeRef} = useDroppable({ id: 'droppable' });\n  const style = { backgroundColor: isOver ? '#cde' : '#eee', padding: '20px', marginTop: '20px', minHeight: '100px' };\n  return <div ref={setNodeRef} style={style}>{props.children}</div>;\n}\nfunction AppWithImpl() {\n  const [message, setMessage] = useState('Kéo và thả phần tử vào vùng bên dưới');\n  function handleDragEnd(event) {\n    if (event.over && event.over.id === 'droppable') {\n      setMessage('Thả thành công!');\n    }\n  }\n  return (\n    <DndContext onDragEnd={handleDragEnd}>\n      <p>{message}</p>\n      <DraggableImpl />\n      <DroppableImpl>Thả vào đây</DroppableImpl>\n    </DndContext>\n  );\n}\n\nexport default AppWithImpl;\n",
+        "solution": "import React, {useState} from 'react';\nimport { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';\n\nfunction Draggable() {\n  const {attributes, listeners, setNodeRef, transform} = useDraggable({ id: 'draggable' });\n  const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;\n  return <button ref={setNodeRef} style={style} {...listeners} {...attributes}>Kéo tôi đi</button>;\n}\n\nfunction Droppable(props) {\n  const {isOver, setNodeRef} = useDroppable({ id: 'droppable' });\n  const style = { backgroundColor: isOver ? '#cde' : '#eee', padding: '20px', marginTop: '20px', minHeight: '100px' };\n  return <div ref={setNodeRef} style={style}>{props.children}</div>;\n}\n\nfunction App() {\n  const [message, setMessage] = useState('Kéo và thả phần tử vào vùng bên dưới');\n\n  function handleDragEnd(event) {\n    const { over } = event;\n    if (over && over.id === 'droppable') {\n      setMessage('Thả thành công!');\n    }\n  }\n\n  return (\n    <DndContext onDragEnd={handleDragEnd}>\n      <p>{message}</p>\n      <Draggable />\n      <Droppable>Thả vào đây</Droppable>\n    </DndContext>\n  );\n}\n\nexport default App;\n",
+        "testCases": "Kiểm tra xem hàm `handleDragEnd` có được triển khai đúng không. Khi kéo và thả thành công phần tử vào vùng `Droppable`, thông báo phải được cập nhật thành \"Thả thành công!\"."
+      },
+      {
+        "title": "Bài 5: Tạo danh sách có thể sắp xếp (Sortable List)",
+        "description": "Sử dụng `@dnd-kit/sortable` để tạo một danh sách các mục có thể được người dùng sắp xếp lại thứ tự bằng cách kéo thả.",
+        "starterCode": "import React, {useState} from 'react';\nimport { DndContext, closestCenter } from '@dnd-kit/core';\nimport { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\n// TODO: Tạo component SortableItem\nfunction SortableItem(props) {\n  // Sử dụng useSortable hook\n  return <div /* ... */>Item {props.id}</div>;\n}\n\nfunction App() {\n  const [items, setItems] = useState(['1', '2', '3']);\n\n  function handleDragEnd(event) {\n    const {active, over} = event;\n    if (active.id !== over.id) {\n      setItems((items) => {\n        const oldIndex = items.indexOf(active.id);\n        const newIndex = items.indexOf(over.id);\n        return arrayMove(items, oldIndex, newIndex);\n      });\n    }\n  }\n\n  return (\n    <DndContext sensors={[]} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>\n      <SortableContext items={items} strategy={verticalListSortingStrategy}>\n        {items.map(id => <SortableItem key={id} id={id} />)}\n      </SortableContext>\n    </DndContext>\n  );\n}\n\nexport default App;\n",
+        "solution": "import React, {useState} from 'react';\nimport { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';\nimport { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction SortableItem(props) {\n  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({id: props.id});\n\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n    padding: '10px',\n    border: '1px solid #ccc',\n    marginBottom: '5px',\n    backgroundColor: 'white'\n  };\n\n  return (\n    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>\n      Item {props.id}\n    </div>\n  );\n}\n\nfunction App() {\n  const [items, setItems] = useState(['1', '2', '3']);\n  const sensors = useSensors(useSensor(PointerSensor));\n\n  function handleDragEnd(event) {\n    const {active, over} = event;\n    if (over && active.id !== over.id) {\n      setItems((currentItems) => {\n        const oldIndex = currentItems.indexOf(active.id);\n        const newIndex = currentItems.indexOf(over.id);\n        return arrayMove(currentItems, oldIndex, newIndex);\n      });\n    }\n  }\n\n  return (\n    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>\n      <SortableContext items={items} strategy={verticalListSortingStrategy}>\n        {items.map(id => <SortableItem key={id} id={id} />)}\n      </SortableContext>\n    </DndContext>\n  );\n}\n\nexport default App;\n",
+        "testCases": "Kiểm tra xem `SortableItem` có được triển khai đúng với `useSortable` không. Danh sách các mục phải hiển thị và người dùng có thể kéo một mục để thay đổi vị trí của nó trong danh sách. Trạng thái `items` phải được cập nhật chính xác."
+      }
+    ]
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "id": 45,
+  "title": "Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\n\n## 1. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tập trung vào việc tái cấu trúc (refactor) và tổ chức lại cấu trúc thư mục của dự án ReactJS một cách chuyên nghiệp và khoa học hơn. Mục tiêu chính là làm cho mã nguồn trở nên sạch sẽ, dễ đọc, dễ quản lý và bảo trì trong tương lai. Cụ thể, chúng ta sẽ thực hiện các công việc sau:\n\n*   **Phân rã Components:** Chia nhỏ các component lớn, phức tạp (như `Board`) thành các component nhỏ hơn, có trách nhiệm rõ ràng hơn (`ListColumns`, `Column`, `ListCards`, `Card`).\n*   **Tối ưu cấu trúc thư mục:** Sắp xếp các file và thư mục theo một quy chuẩn logic, giúp dễ dàng tìm kiếm và phát triển.\n*   **Cải thiện khả năng đọc hiểu code:** Áp dụng các quy tắc đặt tên file và component nhất quán, giúp các thành viên trong nhóm (hoặc chính bạn trong tương lai) có thể nhanh chóng hiểu được chức năng của từng phần.\n\nViệc tái cấu trúc này là một kỹ năng cực kỳ quan trọng đối với bất kỳ lập trình viên nào, đặc biệt là khi làm việc với các dự án lớn và phức tạp.\n\n## 2. Kiến thức chi tiết\n\n### 2.1. Tại sao cần cấu trúc lại dự án?\n\nKhi một dự án phát triển, số lượng component, file và dòng code sẽ tăng lên nhanh chóng. Nếu không có một cấu trúc tổ chức tốt, dự án sẽ sớm trở thành một \"mớ hỗn độn\", dẫn đến nhiều vấn đề:\n\n*   **Khó bảo trì và mở rộng:** Việc tìm kiếm và sửa đổi một chức năng cụ thể trở nên khó khăn và tốn thời gian.\n*   **Khó khăn cho người mới:** Các thành viên mới trong nhóm sẽ mất rất nhiều thời gian để hiểu được luồng hoạt động của dự án.\n*   **Tái sử dụng code thấp:** Các component không được thiết kế để tái sử dụng, dẫn đến việc lặp lại code ở nhiều nơi.\n*   **Dễ phát sinh lỗi:** Một thay đổi nhỏ ở một nơi có thể gây ra lỗi không mong muốn ở những nơi khác.\n\nDo đó, việc đầu tư thời gian để xây dựng một cấu trúc dự án \"sạch\" (Clean Architecture) ngay từ đầu hoặc tái cấu trúc lại khi cần thiết là một quyết định khôn ngoan.\n\n### 2.2. Nguyên tắc phân rã Component\n\nTrong video, tác giả tập trung vào việc phân rã trang `Board` của ứng dụng Trello clone. Đây là một component lớn chứa toàn bộ giao diện của một bảng, bao gồm các cột và các thẻ. Chúng ta sẽ chia nhỏ nó như sau:\n\n*   **`Board`:** Component cha, chứa toàn bộ logic chính để lấy dữ liệu và quản lý trạng thái chung của bảng.\n*   **`BoardContent` (hoặc `ListColumns`):** Component này chịu trách nhiệm hiển thị danh sách các cột (`Column`). Nó nhận dữ liệu về các cột từ `Board` và lặp qua để render từng `Column`.\n*   **`Column`:** Component này đại diện cho một cột trong Trello. Nó hiển thị tiêu đề cột và danh sách các thẻ (`ListCards`) thuộc về nó.\n*   **`ListCards`:** Tương tự như `ListColumns`, component này chịu trách nhiệm hiển thị danh sách các thẻ (`Card`) trong một `Column`.\n*   **`Card`:** Component nhỏ nhất, đại diện cho một thẻ công việc trong Trello. Nó chỉ đơn giản là hiển thị thông tin của thẻ đó.\n\nSơ đồ phân cấp component có thể hình dung như sau:\n\n```\nBoard\n└── BoardContent (ListColumns)\n    └── Column\n        ├── (Column Header)\n        └── ListCards\n            └── Card\n```\n\n### 2.3. Cấu trúc thư mục đề xuất\n\nMột cách tiếp cận phổ biến và hiệu quả để tổ chức các component là nhóm chúng theo chức năng hoặc theo trang (page/view).\n\n```\nsrc/\n├── components/         # Chứa các component chung, tái sử dụng được ở nhiều nơi\n│   ├── AppBar/\n│   │   ├── AppBar.jsx\n│   │   └── index.js    # Export default component\n│   └── ...\n├── pages/              # Chứa các component đại diện cho một trang hoàn chỉnh\n│   └── Board/\n│       ├── Board.jsx\n│       ├── BoardContent/\n│       │   ├── BoardContent.jsx\n│       │   ├── Column/\n│       │   │   ├── Column.jsx\n│       │   │   ├── ListCards/\n│       │   │   │   ├── ListCards.jsx\n│       │   │   │   ├── Card/\n│       │   │   │   │   ├── Card.jsx\n│       │   │   │   │   └── index.js\n│       │   │   │   └── index.js\n│       │   │   └── index.js\n│       │   └── index.js\n│       └── index.js\n├── theme.js            # Cấu hình theme cho Material UI\n├── App.jsx\n└── main.jsx\n```\n\n**Giải thích:**\n\n*   **`components/`**: Dành cho các UI component nhỏ, chung chung và có thể tái sử dụng trên toàn bộ ứng dụng, ví dụ: `Button`, `Input`, `Modal`, hoặc `AppBar` trong trường hợp này.\n*   **`pages/`**: Mỗi thư mục con trong `pages` đại diện cho một trang hoặc một view lớn của ứng dụng. Trong ví dụ này là trang `Board`.\n*   **Cấu trúc lồng nhau trong `pages/Board/`**: Cấu trúc thư mục phản ánh đúng cấu trúc phân cấp của các component. `BoardContent` nằm trong `Board`, `Column` nằm trong `BoardContent`, v.v. Điều này giúp việc định vị và quản lý code trở nên cực kỳ trực quan.\n*   **File `index.js`**: Mỗi thư mục component có một file `index.js` với mục đích duy nhất là `export default` component chính từ file `.jsx`. Kỹ thuật này giúp cho việc import component trở nên gọn gàng hơn.\n\n    Ví dụ, thay vì import:\n    `import BoardContent from '~/pages/Board/BoardContent/BoardContent'`\n\n    Chúng ta có thể import ngắn gọn hơn nhiều:\n    `import BoardContent from '~/pages/Board/BoardContent'`\n\n## 3. Các bước thực hành\n\n1.  **Tạo cấu trúc thư mục mới:**\n    *   Trong thư mục `src/pages`, tạo một thư mục mới tên là `Board`.\n    *   Di chuyển file `Board.jsx` (tên cũ có thể khác) vào trong thư mục `src/pages/Board`.\n    *   Bên trong `src/pages/Board`, tạo thư mục `BoardContent`.\n    *   Tiếp tục tạo các thư mục con `Column`, `ListCards`, `Card` lồng nhau như cấu trúc đã đề xuất ở trên.\n\n2.  **Tạo các file component và `index.js`:**\n    *   Trong mỗi thư mục component vừa tạo (`BoardContent`, `Column`, `ListCards`, `Card`), tạo một file `.jsx` (ví dụ: `Card.jsx`) và một file `index.js`.\n\n3.  **Di chuyển và tách code:**\n    *   **Từ `Board.jsx` cũ:** Cắt phần JSX chịu trách nhiệm render nội dung chính của board (danh sách các cột) và dán nó vào file `BoardContent/BoardContent.jsx`.\n    *   **Trong `BoardContent.jsx`:** Tiếp tục cắt phần JSX của một cột và dán vào `Column/Column.jsx`.\n    *   **Trong `Column.jsx`:** Cắt phần JSX của danh sách thẻ và dán vào `ListCards/ListCards.jsx`.\n    *   **Trong `ListCards.jsx`:** Cắt phần JSX của một thẻ và dán vào `Card/Card.jsx`.\n\n4.  **Viết nội dung cho các file `index.js`:**\n    *   Trong file `src/pages/Board/BoardContent/Column/ListCards/Card/index.js`, thêm nội dung:\n        ```javascript\n        export { default } from './Card'\n        ```\n    *   Làm tương tự cho tất cả các file `index.js` khác ở các cấp tương ứng.\n\n5.  **Truyền `props` xuống các component con:**\n    *   Sau khi tách component, các component con sẽ không còn truy cập trực tiếp vào state và props của component cha. Bạn cần truyền dữ liệu xuống thông qua `props`.\n    *   Ví dụ, `Board` sẽ truyền `data` của board cho `BoardContent`. `BoardContent` sẽ lặp qua `data.columns` và truyền từng `column` cho component `Column`.\n\n6.  **Cập nhật đường dẫn `import`:**\n    *   Sau khi di chuyển file và sử dụng kỹ thuật `index.js`, bạn cần cập nhật lại tất cả các câu lệnh `import` trong toàn bộ dự án để trỏ đến đúng vị trí mới.\n    *   Tận dụng cấu hình `Absolute Import` (ví dụ: `~/`) đã thiết lập ở các bài trước để đường dẫn import được ngắn gọn và dễ hiểu.\n\n    Ví dụ, trong `App.jsx`, import `Board` sẽ là:\n    ```javascript\n    import Board from '~/pages/Board'\n    ```\n\n## 4. Lưu ý quan trọng\n\n*   **Refactor từ từ:** Không nên cố gắng tái cấu trúc toàn bộ dự án trong một lần. Hãy bắt đầu với một phần nhỏ, đảm bảo nó hoạt động đúng như mong đợi rồi mới tiếp tục.\n*   **Kiểm tra sau mỗi bước:** Sau mỗi lần di chuyển hoặc thay đổi code, hãy chạy lại ứng dụng để đảm bảo không có lỗi nào phát sinh.\n*   **Sử dụng Git:** Trước khi bắt đầu quá trình refactor, hãy tạo một commit mới. Nếu có bất kỳ sự cố nào không thể khắc phục, bạn có thể dễ dàng quay trở lại trạng thái ổn định trước đó.\n*   **Nhất quán là chìa khóa:** Dù bạn chọn cấu trúc nào, điều quan trọng nhất là phải tuân thủ nó một cách nhất quán trong toàn bộ dự án.\n\n## 5. Tài liệu tham khảo\n\n1.  [Video 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards) | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=SfZA6lwDVsw&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=31)\n2.  [Blog TrungQuanDev: Lập trình MERN Stack buổi 3 - Tái cấu trúc thư mục code (Clean Architecture)](https://trungquandev.com/lap-trinh-mern-stack-buoi-3-tai-cau-truc-thu-muc-code-clean-architecture/)\n3.  [React Docs: Thinking in React](https://react.dev/learn/thinking-in-react)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", khái niệm cơ bản được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến khái niệm cơ bản",
+          "Phương án B liên quan đến khái niệm cơ bản",
+          "Phương án C liên quan đến khái niệm cơ bản",
+          "Phương án D liên quan đến khái niệm cơ bản"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về khái niệm cơ bản."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", cú pháp được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cú pháp",
+          "Phương án B liên quan đến cú pháp",
+          "Phương án C liên quan đến cú pháp",
+          "Phương án D liên quan đến cú pháp"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cú pháp."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", cách sử dụng được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cách sử dụng",
+          "Phương án B liên quan đến cách sử dụng",
+          "Phương án C liên quan đến cách sử dụng",
+          "Phương án D liên quan đến cách sử dụng"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cách sử dụng."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", ưu điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ưu điểm",
+          "Phương án B liên quan đến ưu điểm",
+          "Phương án C liên quan đến ưu điểm",
+          "Phương án D liên quan đến ưu điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ưu điểm."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", nhược điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến nhược điểm",
+          "Phương án B liên quan đến nhược điểm",
+          "Phương án C liên quan đến nhược điểm",
+          "Phương án D liên quan đến nhược điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về nhược điểm."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", so sánh được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến so sánh",
+          "Phương án B liên quan đến so sánh",
+          "Phương án C liên quan đến so sánh",
+          "Phương án D liên quan đến so sánh"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về so sánh."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", ứng dụng thực tế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ứng dụng thực tế",
+          "Phương án B liên quan đến ứng dụng thực tế",
+          "Phương án C liên quan đến ứng dụng thực tế",
+          "Phương án D liên quan đến ứng dụng thực tế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ứng dụng thực tế."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", best practices được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến best practices",
+          "Phương án B liên quan đến best practices",
+          "Phương án C liên quan đến best practices",
+          "Phương án D liên quan đến best practices"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về best practices."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", cấu hình được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cấu hình",
+          "Phương án B liên quan đến cấu hình",
+          "Phương án C liên quan đến cấu hình",
+          "Phương án D liên quan đến cấu hình"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cấu hình."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", xử lý lỗi được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến xử lý lỗi",
+          "Phương án B liên quan đến xử lý lỗi",
+          "Phương án C liên quan đến xử lý lỗi",
+          "Phương án D liên quan đến xử lý lỗi"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về xử lý lỗi."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", tối ưu hóa được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến tối ưu hóa",
+          "Phương án B liên quan đến tối ưu hóa",
+          "Phương án C liên quan đến tối ưu hóa",
+          "Phương án D liên quan đến tối ưu hóa"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về tối ưu hóa."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", bảo mật được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến bảo mật",
+          "Phương án B liên quan đến bảo mật",
+          "Phương án C liên quan đến bảo mật",
+          "Phương án D liên quan đến bảo mật"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về bảo mật."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", kiến trúc được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến kiến trúc",
+          "Phương án B liên quan đến kiến trúc",
+          "Phương án C liên quan đến kiến trúc",
+          "Phương án D liên quan đến kiến trúc"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về kiến trúc."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", thiết kế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến thiết kế",
+          "Phương án B liên quan đến thiết kế",
+          "Phương án C liên quan đến thiết kế",
+          "Phương án D liên quan đến thiết kế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về thiết kế."
+      },
+      {
+        "question": "Trong bài \"Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)\", triển khai được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến triển khai",
+          "Phương án B liên quan đến triển khai",
+          "Phương án C liên quan đến triển khai",
+          "Phương án D liên quan đến triển khai"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về triển khai."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài tập 1: Thực hành Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 2: Thực hành Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 3: Thực hành Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 4: Thực hành Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 5: Thực hành Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      }
+    ]
+  }
+}

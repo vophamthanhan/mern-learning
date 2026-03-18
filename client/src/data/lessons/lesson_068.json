@@ -1,0 +1,213 @@
+{
+  "id": 68,
+  "title": "51. Sử dụng Postman để Test API Back-end | NodeJS + MongoDB",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# 51. Sử dụng Postman để Test API Back-end | NodeJS + MongoDB\n\n## Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tìm hiểu cách sử dụng Postman, một công cụ cực kỳ mạnh mẽ và phổ biến, để kiểm thử (test) các API back-end được xây dựng bằng NodeJS và MongoDB. Việc sử dụng Postman giúp lập trình viên đảm bảo rằng các API hoạt động đúng như mong đợi trước khi tích hợp với front-end.\n\n## Kiến thức chi tiết\n\n### Postman là gì?\n\nPostman là một nền tảng cộng tác cho phát triển API. Về cơ bản, nó là một ứng dụng cho phép bạn gửi các yêu cầu HTTP (GET, POST, PUT, DELETE,...) đến một máy chủ và xem phản hồi trả về. Điều này làm cho nó trở thành một công cụ không thể thiếu cho các nhà phát triển back-end.\n\n### Các thành phần chính của Postman\n\n*   **Collections**: Dùng để tổ chức các yêu cầu API của bạn. Bạn có thể tạo các thư mục con trong collection để nhóm các yêu cầu liên quan đến nhau.\n*   **Requests**: Đại diện cho một yêu cầu API cụ thể. Mỗi yêu cầu có phương thức HTTP, URL, headers, và body.\n*   **Environments**: Cho phép bạn quản lý các biến cho các môi trường khác nhau (ví dụ: development, staging, production). Điều này giúp bạn dễ dàng chuyển đổi giữa các môi trường mà không cần thay đổi yêu cầu của mình.\n*   **Tests**: Postman cho phép bạn viết các kịch bản kiểm thử bằng JavaScript để xác minh tính đúng đắn của các phản hồi API.\n\n### Code mẫu\n\nGiả sử chúng ta có một API đơn giản để lấy danh sách người dùng:\n\n```javascript\n// server.js\nconst express = require('express');\nconst app = express();\nconst port = 3000;\n\napp.get('/users', (req, res) => {\n  const users = [\n    { id: 1, name: 'TrungQuanDev' },\n    { id: 2, name: 'John Doe' },\n  ];\n  res.json(users);\n});\n\napp.listen(port, () => {\n  console.log(`Example app listening at http://localhost:${port}`);\n});\n```\n\n## Các bước thực hành\n\n1.  **Cài đặt Postman**: Tải và cài đặt Postman từ trang web chính thức: [https://www.postman.com/downloads/](https://www.postman.com/downloads/)\n2.  **Tạo một Collection mới**: Mở Postman và tạo một collection mới để lưu trữ các yêu cầu của bạn.\n3.  **Tạo một Request mới**: Trong collection vừa tạo, tạo một request mới với các thông tin sau:\n    *   **Method**: GET\n    *   **URL**: http://localhost:3000/users\n4.  **Gửi Request**: Nhấn nút \"Send\" để gửi yêu cầu đến máy chủ.\n5.  **Xem kết quả**: Postman sẽ hiển thị phản hồi từ máy chủ, bao gồm status code, headers, và body. Trong trường hợp này, bạn sẽ thấy một danh sách người dùng ở định dạng JSON.\n\n## Lưu ý quan trọng\n\n*   Luôn tổ chức các yêu cầu của bạn vào các collection để dễ dàng quản lý.\n*   Sử dụng các biến môi trường để tránh việc phải thay đổi URL và các thông tin khác theo cách thủ công.\n*   Viết các bài kiểm thử để tự động hóa quy trình xác minh API.\n\n## Tài liệu tham khảo\n\n*   [Trang chủ Postman](https://www.postman.com/)\n*   [Tài liệu Postman](https://learning.postman.com/docs/getting-started/introduction/)\n*   [Video \"51. Sử dụng Postman để Test API Back-end | NodeJS + MongoDB | TrungQuanDev\"](https://www.youtube.com/watch?v=SIobJQIn75g)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Postman là gì?",
+        "options": [
+          "Một trình soạn thảo mã nguồn.",
+          "Một nền tảng cộng tác cho phát triển API.",
+          "Một hệ quản trị cơ sở dữ liệu.",
+          "Một thư viện front-end."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Postman là một ứng dụng cho phép gửi các yêu cầu HTTP đến một máy chủ và xem phản hồi, làm cho nó trở thành một công cụ không thể thiếu cho các nhà phát triển back-end."
+      },
+      {
+        "question": "Chức năng chính của 'Collections' trong Postman là gì?",
+        "options": [
+          "Để viết mã kiểm thử.",
+          "Để quản lý các biến môi trường.",
+          "Để tổ chức các yêu cầu API.",
+          "Để gửi yêu cầu HTTP."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Collections trong Postman được sử dụng để tổ chức các yêu cầu API, giúp quản lý chúng một cách dễ dàng và có cấu trúc."
+      },
+      {
+        "question": "'Environments' trong Postman được sử dụng để làm gì?",
+        "options": [
+          "Để thay đổi giao diện của Postman.",
+          "Để quản lý các biến cho các môi trường khác nhau (development, production,...).",
+          "Để lưu trữ kết quả của các yêu cầu API.",
+          "Để chia sẻ các collection với người khác."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Environments cho phép bạn quản lý các biến cho các môi trường khác nhau, giúp dễ dàng chuyển đổi giữa các môi trường mà không cần thay đổi yêu cầu."
+      },
+      {
+        "question": "Phương thức HTTP nào được sử dụng để lấy dữ liệu từ một API?",
+        "options": [
+          "POST",
+          "GET",
+          "PUT",
+          "DELETE"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Phương thức GET được sử dụng để yêu cầu và lấy dữ liệu từ một tài nguyên được chỉ định."
+      },
+      {
+        "question": "Trong Postman, phần nào của một request chứa dữ liệu được gửi đến máy chủ, ví dụ như khi tạo một tài nguyên mới?",
+        "options": [
+          "URL",
+          "Headers",
+          "Body",
+          "Method"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phần body của một request chứa dữ liệu được gửi đến máy chủ, thường được sử dụng với các phương thức như POST hoặc PUT."
+      },
+      {
+        "question": "Để kiểm tra một API lấy danh sách người dùng tại `http://localhost:3000/users`, bạn sẽ tạo một request mới trong Postman với thông tin nào?",
+        "options": [
+          "Method: POST, URL: http://localhost:3000/users",
+          "Method: GET, URL: http://localhost:3000/users",
+          "Method: GET, URL: http://localhost:3000/create-user",
+          "Method: DELETE, URL: http://localhost:3000/users"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để lấy dữ liệu, chúng ta sử dụng phương thức GET và URL của endpoint API."
+      },
+      {
+        "question": "Lợi ích của việc sử dụng biến môi trường (environment variables) trong Postman là gì?",
+        "options": [
+          "Tăng tốc độ thực thi của các yêu cầu.",
+          "Giúp dễ dàng chuyển đổi giữa các môi trường mà không cần thay đổi yêu cầu.",
+          "Tự động tạo tài liệu cho API.",
+          "Mã hóa dữ liệu nhạy cảm."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sử dụng các biến môi trường giúp tránh việc phải thay đổi URL và các thông tin khác theo cách thủ công khi chuyển đổi giữa các môi trường như development và production."
+      },
+      {
+        "question": "Tính năng 'Tests' trong Postman cho phép bạn làm gì?",
+        "options": [
+          "Viết kịch bản kiểm thử bằng JavaScript để xác minh tính đúng đắn của các phản hồi API.",
+          "Tạo giao diện người dùng cho API.",
+          "Triển khai API lên máy chủ.",
+          "Tối ưu hóa hiệu suất của API."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Postman cho phép bạn viết các kịch bản kiểm thử bằng JavaScript để xác minh tính đúng đắn của các phản hồi API, chẳng hạn như kiểm tra status code hoặc nội dung của body."
+      },
+      {
+        "question": "Khi gửi một yêu cầu GET đến API `http://localhost:3000/users` trong bài học, kết quả trả về là gì?",
+        "options": [
+          "Một thông báo lỗi.",
+          "Một chuỗi HTML.",
+          "Một danh sách người dùng ở định dạng JSON.",
+          "Không có gì cả."
+        ],
+        "correctAnswer": 2,
+        "explanation": "API được thiết kế để trả về một danh sách người dùng ở định dạng JSON khi nhận được yêu cầu GET tại endpoint `/users`."
+      },
+      {
+        "question": "Tại sao việc tổ chức các yêu cầu vào Collections lại quan trọng?",
+        "options": [
+          "Để tăng giới hạn số lượng yêu cầu có thể gửi.",
+          "Để dễ dàng quản lý và chia sẻ các yêu cầu.",
+          "Để Postman chạy nhanh hơn.",
+          "Để tự động tạo báo cáo lỗi."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Luôn tổ chức các yêu cầu của bạn vào các collection để dễ dàng quản lý, đặc biệt là khi làm việc với các dự án lớn có nhiều API."
+      },
+      {
+        "question": "Thành phần nào của Postman KHÔNG được đề cập trong bài học?",
+        "options": [
+          "Collections",
+          "Requests",
+          "Environments",
+          "Monitors"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bài học đã đề cập đến Collections, Requests, Environments và Tests, nhưng không đề cập đến Monitors, một tính năng khác của Postman để tự động hóa việc chạy collection."
+      },
+      {
+        "question": "Mục tiêu chính của việc sử dụng Postman trong phát triển back-end là gì?",
+        "options": [
+          "Để thiết kế giao diện người dùng.",
+          "Để viết mã front-end.",
+          "Để đảm bảo rằng các API hoạt động đúng như mong đợi.",
+          "Để quản lý cơ sở dữ liệu."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc sử dụng Postman giúp lập trình viên đảm bảo rằng các API hoạt động đúng như mong đợi trước khi tích hợp với front-end."
+      },
+      {
+        "question": "Trong code mẫu, `res.json(users)` có chức năng gì?",
+        "options": [
+          "Gửi một chuỗi JSON chứa danh sách người dùng làm phản hồi.",
+          "Ghi danh sách người dùng vào một file JSON.",
+          "Xóa danh sách người dùng.",
+          "Cập nhật danh sách người dùng."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`res.json()` là một hàm của Express.js, dùng để gửi một phản hồi JSON. Trong trường hợp này, nó gửi mảng `users` về cho client."
+      },
+      {
+        "question": "Để bắt đầu sử dụng Postman, bước đầu tiên bạn cần làm là gì?",
+        "options": [
+          "Viết mã kiểm thử.",
+          "Tạo một collection.",
+          "Tải và cài đặt Postman.",
+          "Cấu hình biến môi trường."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bước đầu tiên để sử dụng Postman là tải và cài đặt ứng dụng từ trang web chính thức của nó."
+      },
+      {
+        "question": "Phần nào trong giao diện Postman hiển thị kết quả trả về từ máy chủ?",
+        "options": [
+          "Thanh địa chỉ (URL bar)",
+          "Bảng Headers",
+          "Phần Body của request",
+          "Phần Response"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Sau khi gửi một yêu cầu, Postman sẽ hiển thị phản hồi từ máy chủ trong phần Response, bao gồm status code, headers, và body."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo API GET đơn giản",
+        "description": "Tạo một API đơn giản sử dụng Express.js để trả về một thông điệp chào mừng khi có yêu cầu GET đến endpoint `/hello`.",
+        "starterCode": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\n// Your code here\n\napp.listen(port, () => {\n  console.log(`Server is running on http://localhost:${port}`);\n});",
+        "solution": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\napp.get('/hello', (req, res) => {\n  res.send('Welcome to our API!');\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on http://localhost:${port}`);\n});",
+        "testCases": "Gửi yêu cầu GET đến `http://localhost:3000/hello` bằng Postman. Kết quả mong đợi: status code 200 và body chứa chuỗi 'Welcome to our API!'."
+      },
+      {
+        "title": "API trả về danh sách sản phẩm",
+        "description": "Xây dựng một API trả về một danh sách các sản phẩm dưới dạng JSON khi có yêu cầu GET đến endpoint `/products`.",
+        "starterCode": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\nconst products = [\n  { id: 1, name: 'Laptop', price: 1200 },\n  { id: 2, name: 'Mouse', price: 25 },\n  { id: 3, name: 'Keyboard', price: 75 },\n];\n\n// Your code here\n\napp.listen(port, () => {\n  console.log(`Server is running on http://localhost:${port}`);\n});",
+        "solution": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\nconst products = [\n  { id: 1, name: 'Laptop', price: 1200 },\n  { id: 2, name: 'Mouse', price: 25 },\n  { id: 3, name: 'Keyboard', price: 75 },\n];\n\napp.get('/products', (req, res) => {\n  res.json(products);\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on http://localhost:${port}`);\n});",
+        "testCases": "Gửi yêu cầu GET đến `http://localhost:3000/products` bằng Postman. Kết quả mong đợi: status code 200 và body là một mảng JSON chứa 3 sản phẩm."
+      },
+      {
+        "title": "API POST để thêm người dùng mới",
+        "description": "Tạo một API sử dụng phương thức POST tại endpoint `/users` để nhận dữ liệu người dùng mới từ body của request và trả về thông báo thành công.",
+        "starterCode": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\napp.use(express.json()); // Middleware to parse JSON bodies\n\nconst users = [];\n\n// Your code here\n\napp.listen(port, () => {\n  console.log(`Server is running on http://localhost:${port}`);\n});",
+        "solution": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\napp.use(express.json()); // Middleware to parse JSON bodies\n\nlet users = [];\n\napp.post('/users', (req, res) => {\n  const newUser = req.body;\n  users.push(newUser);\n  res.status(201).send(`User ${newUser.name} created successfully!`);\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on http://localhost:${port}`);\n});",
+        "testCases": "Gửi yêu cầu POST đến `http://localhost:3000/users` bằng Postman với body là một đối tượng JSON (ví dụ: `{'name': 'Jane Doe'}`). Kết quả mong đợi: status code 201 và body chứa chuỗi 'User Jane Doe created successfully!'."
+      },
+      {
+        "title": "API GET để lấy thông tin chi tiết sản phẩm",
+        "description": "Xây dựng một API động để lấy thông tin chi tiết của một sản phẩm dựa vào `id` được truyền qua URL (ví dụ: `/products/1`). Nếu không tìm thấy sản phẩm, trả về status 404.",
+        "starterCode": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\nconst products = [\n  { id: 1, name: 'Laptop', price: 1200 },\n  { id: 2, name: 'Mouse', price: 25 },\n];\n\n// Your code here\n\napp.listen(port, () => {\n  console.log(`Server is running on http://localhost:${port}`);\n});",
+        "solution": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\nconst products = [\n  { id: 1, name: 'Laptop', price: 1200 },\n  { id: 2, name: 'Mouse', price: 25 },\n];\n\napp.get('/products/:id', (req, res) => {\n  const productId = parseInt(req.params.id);\n  const product = products.find(p => p.id === productId);\n\n  if (product) {\n    res.json(product);\n  } else {\n    res.status(404).send('Product not found');\n  }\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on http://localhost:${port}`);\n});",
+        "testCases": "1. Gửi yêu cầu GET đến `http://localhost:3000/products/1`. Mong đợi: status 200 và body là JSON của sản phẩm có id 1. 2. Gửi yêu cầu GET đến `http://localhost:3000/products/99`. Mong đợi: status 404 và body chứa chuỗi 'Product not found'."
+      },
+      {
+        "title": "Viết Test Script trong Postman",
+        "description": "Với API lấy danh sách người dùng từ bài học, hãy viết một test script trong Postman để kiểm tra xem status code có phải là 200 và phản hồi có phải là một mảng JSON hay không.",
+        "starterCode": "// Code server.js từ bài học\nconst express = require('express');\nconst app = express();\nconst port = 3000;\n\napp.get('/users', (req, res) => {\n  const users = [\n    { id: 1, name: 'TrungQuanDev' },\n    { id: 2, name: 'John Doe' },\n  ];\n  res.json(users);\n});\n\napp.listen(port, () => {\n  console.log(`Server is running on http://localhost:${port}`);\n});",
+        "solution": "// Trong tab \"Tests\" của request trong Postman\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response is a JSON array\", function () {\n    pm.response.to.be.json;\n    const responseData = pm.response.json();\n    pm.expect(responseData).to.be.an('array');\n});",
+        "testCases": "Chạy request GET đến `http://localhost:3000/users` trong Postman. Trong tab \"Test Results\", cả hai bài test \"Status code is 200\" và \"Response is a JSON array\" đều phải có trạng thái PASS."
+      }
+    ]
+  }
+}

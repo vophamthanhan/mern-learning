@@ -1,0 +1,213 @@
+{
+  "id": 7,
+  "title": "Bài học 4: Cài đặt môi trường dự án (NVM, Node, Git, Yarn...)",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# Bài học 4: Cài đặt môi trường dự án (NVM, Node, Git, Yarn...)\n\n## Mục tiêu bài học\n\nBài học này hướng dẫn chi tiết cách cài đặt và cấu hình môi trường phát triển cần thiết cho dự án Full Stack MERN, cụ thể là Trello Clone. Sau khi hoàn thành bài học, bạn sẽ có thể:\n\n*   Hiểu và cài đặt NVM (Node Version Manager) để quản lý nhiều phiên bản Node.js.\n*   Cài đặt phiên bản Node.js và Yarn phù hợp với yêu cầu của dự án.\n*   Cài đặt và cấu hình Git để quản lý mã nguồn.\n*   Sử dụng Visual Studio Code và các extensions hữu ích.\n\n## Kiến thức chi tiết\n\n### 1. NVM (Node Version Manager)\n\nNVM là một công cụ dòng lệnh cho phép bạn quản lý và chuyển đổi giữa các phiên bản Node.js khác nhau một cách dễ dàng. Điều này rất hữu ích khi làm việc trên nhiều dự án với các yêu cầu phiên bản Node.js khác nhau.\n\n### 2. Node.js\n\nNode.js là một môi trường chạy JavaScript phía máy chủ, được xây dựng trên công cụ JavaScript V8 của Chrome. Trong dự án này, chúng ta sẽ sử dụng Node.js để xây dựng phần backend (API).\n\n### 3. Git\n\nGit là một hệ thống quản lý phiên bản phân tán, được sử dụng để theo dõi các thay đổi trong mã nguồn trong quá trình phát triển phần mềm. Nó cho phép nhiều nhà phát triển làm việc cùng nhau trên cùng một dự án.\n\n### 4. Yarn\n\nYarn là một trình quản lý gói cho JavaScript, tương tự như npm. Nó được phát triển bởi Facebook và được biết đến với tốc độ, độ tin cậy và bảo mật cao hơn.\n\n## Các bước thực hành\n\n1.  **Cài đặt NVM:**\n    *   Truy cập trang chủ NVM để lấy lệnh cài đặt mới nhất.\n    *   Chạy lệnh cài đặt trong terminal.\n    *   Khởi động lại terminal và kiểm tra bằng lệnh `nvm --version`.\n\n2.  **Cài đặt Node.js:**\n    *   Sử dụng NVM để cài đặt phiên bản Node.js LTS (Long Term Support) mới nhất: `nvm install --lts`\n    *   Sử dụng phiên bản vừa cài đặt: `nvm use --lts`\n    *   Kiểm tra phiên bản Node.js và npm: `node -v` và `npm -v`\n\n3.  **Cài đặt Yarn:**\n    *   Cài đặt Yarn bằng npm: `npm install -g yarn`\n    *   Kiểm tra phiên bản Yarn: `yarn --version`\n\n4.  **Cài đặt Git:**\n    *   Tải và cài đặt Git từ trang web chính thức.\n    *   Cấu hình tên người dùng và email của bạn:\n        ```bash\n        git config --global user.name \"Your Name\"\n        git config --global user.email \"your.email@example.com\"\n        ```\n\n5.  **Cài đặt Visual Studio Code:**\n    *   Tải và cài đặt VS Code từ trang web chính thức.\n    *   Cài đặt các extensions hữu ích như: ESLint, Prettier, Material Icon Theme.\n\n## Lưu ý quan trọng\n\n*   Luôn sử dụng các phiên bản được đề xuất trong `package.json` của dự án để đảm bảo tính tương thích.\n*   Nên sử dụng NVM để tránh các xung đột phiên bản Node.js tiềm ẩn.\n*   Thường xuyên cập nhật các công cụ và thư viện lên phiên bản ổn định mới nhất để được hưởng lợi từ các bản sửa lỗi và cải tiến hiệu suất.\n\n## Tài liệu tham khảo\n\n*   [Video bài học trên YouTube](https://www.youtube.com/watch?v=VIDEO_4&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=4)\n*   [GitHub Repository](https://github.com/trungquandev/nodejs-express-mongodb-rest-api-boilerplate)\n*   [NVM (Node Version Manager)](https://github.com/nvm-sh/nvm)\n*   [Node.js](https://nodejs.org/)\n*   [Git](https://git-scm.com/)\n*   [Yarn](https://yarnpkg.com/)\n*   [Visual Studio Code](https://code.visualstudio.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Công cụ nào được sử dụng để quản lý nhiều phiên bản Node.js trên cùng một máy?",
+        "options": [
+          "NPM",
+          "Yarn",
+          "NVM",
+          "Git"
+        ],
+        "correctAnswer": 2,
+        "explanation": "NVM (Node Version Manager) là một công cụ dòng lệnh cho phép bạn cài đặt, quản lý và chuyển đổi giữa các phiên bản Node.js khác nhau một cách dễ dàng."
+      },
+      {
+        "question": "Lệnh nào sau đây dùng để cài đặt phiên bản Node.js Long Term Support (LTS) mới nhất bằng NVM?",
+        "options": [
+          "nvm install latest",
+          "nvm install --lts",
+          "nvm use lts",
+          "nvm install node"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lệnh `nvm install --lts` được sử dụng để tải về và cài đặt phiên bản Node.js được hỗ trợ dài hạn (LTS) mới nhất."
+      },
+      {
+        "question": "Mục đích chính của Git trong phát triển phần mềm là gì?",
+        "options": [
+          "Quản lý các gói phụ thuộc (dependencies) của dự án.",
+          "Chạy mã JavaScript phía máy chủ.",
+          "Quản lý phiên bản mã nguồn và theo dõi các thay đổi.",
+          "Tối ưu hóa tốc độ cài đặt các thư viện."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Git là một hệ thống quản lý phiên bản phân tán, được sử dụng để theo dõi các thay đổi trong mã nguồn, cho phép làm việc nhóm hiệu quả và quay lại các phiên bản cũ khi cần."
+      },
+      {
+        "question": "Yarn là gì và tại sao nó được sử dụng thay cho npm trong một số dự án?",
+        "options": [
+          "Là một phiên bản khác của Node.js, có hiệu năng cao hơn.",
+          "Là một trình quản lý gói JavaScript, được biết đến với tốc độ và độ tin cậy cao hơn npm.",
+          "Là một công cụ để viết mã JavaScript phía client.",
+          "Là một hệ thống quản lý cơ sở dữ liệu."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Yarn là một trình quản lý gói cho JavaScript, được phát triển bởi Facebook. Nó thường được ưa chuộng hơn npm vì tốc độ cài đặt nhanh hơn, cơ chế caching hiệu quả và file lock đảm bảo tính nhất quán."
+      },
+      {
+        "question": "Lệnh nào dùng để kiểm tra phiên bản Yarn đã được cài đặt trên máy?",
+        "options": [
+          "yarn -v",
+          "yarn --version",
+          "yarn version",
+          "Cả A và B đều đúng"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Cả hai lệnh `yarn -v` và `yarn --version` đều có thể được sử dụng để hiển thị phiên bản Yarn hiện tại đang được cài đặt."
+      },
+      {
+        "question": "Sau khi cài đặt Git, hai thông tin quan trọng nào cần được cấu hình global?",
+        "options": [
+          "Tên dự án và phiên bản Git",
+          "Tên người dùng và địa chỉ email",
+          "Thư mục làm việc và tên nhánh mặc định",
+          "Token truy cập và mật khẩu"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cấu hình `user.name` và `user.email` là bước cần thiết sau khi cài đặt Git để định danh tác giả của các commit."
+      },
+      {
+        "question": "Node.js được xây dựng trên công cụ JavaScript nào?",
+        "options": [
+          "SpiderMonkey của Firefox",
+          "Chakra của Microsoft Edge",
+          "V8 của Google Chrome",
+          "JavaScriptCore của Safari"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Node.js là một môi trường chạy JavaScript phía máy chủ, được xây dựng trên công cụ JavaScript V8 mạnh mẽ của Google Chrome."
+      },
+      {
+        "question": "Lệnh `npm install -g yarn` có ý nghĩa gì?",
+        "options": [
+          "Cài đặt Yarn chỉ cho dự án hiện tại.",
+          "Cài đặt Yarn trên toàn hệ thống (globally).",
+          "Cập nhật Yarn lên phiên bản mới nhất.",
+          "Gỡ cài đặt Yarn khỏi hệ thống."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cờ `-g` (hoặc `--global`) trong lệnh `npm install` có nghĩa là gói sẽ được cài đặt trên toàn hệ thống, cho phép bạn sử dụng lệnh `yarn` từ bất kỳ đâu trong terminal."
+      },
+      {
+        "question": "Tại sao việc sử dụng NVM lại được khuyến khích khi làm việc với nhiều dự án Node.js?",
+        "options": [
+          "Vì nó giúp mã Node.js chạy nhanh hơn.",
+          "Vì nó tự động cài đặt tất cả các gói cần thiết.",
+          "Vì nó giúp dễ dàng chuyển đổi giữa các phiên bản Node.js khác nhau theo yêu cầu của từng dự án, tránh xung đột.",
+          "Vì nó là cách duy nhất để cài đặt Node.js."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mỗi dự án có thể yêu cầu một phiên bản Node.js cụ thể. NVM giải quyết vấn đề này bằng cách cho phép cài đặt và sử dụng đồng thời nhiều phiên bản Node.js, và chuyển đổi giữa chúng chỉ bằng một dòng lệnh."
+      },
+      {
+        "question": "Đâu KHÔNG phải là một extension hữu ích cho Visual Studio Code được đề cập trong bài học?",
+        "options": [
+          "ESLint",
+          "Prettier",
+          "jQuery Debugger",
+          "Material Icon Theme"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề cập đến ESLint (phân tích code), Prettier (định dạng code), và Material Icon Theme (cải thiện giao diện icon), nhưng không đề cập đến jQuery Debugger."
+      },
+      {
+        "question": "Lệnh `nvm use --lts` dùng để làm gì?",
+        "options": [
+          "Cài đặt phiên bản LTS của Node.js.",
+          "Liệt kê tất cả các phiên bản Node.js đã cài đặt.",
+          "Đặt phiên bản LTS đã cài đặt làm phiên bản hoạt động cho phiên terminal hiện tại.",
+          "Gỡ cài đặt phiên bản LTS."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sau khi đã cài đặt một phiên bản Node.js bằng NVM, bạn cần sử dụng lệnh `nvm use [version]` để kích hoạt nó. `nvm use --lts` là cách để kích hoạt phiên bản LTS."
+      },
+      {
+        "question": "Mục tiêu chính của bài học này là gì?",
+        "options": [
+          "Hướng dẫn xây dựng một API hoàn chỉnh với Node.js và Express.",
+          "Cài đặt và cấu hình môi trường phát triển cần thiết cho một dự án MERN.",
+          "So sánh chi tiết giữa Yarn và NPM.",
+          "Hướng dẫn sử dụng các tính năng nâng cao của Git."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mục tiêu chính của bài học là chuẩn bị một môi trường làm việc đầy đủ bao gồm NVM, Node.js, Git, Yarn và VS Code để sẵn sàng cho việc phát triển dự án Trello Clone."
+      },
+      {
+        "question": "Lệnh nào sau đây dùng để cấu hình email của bạn với Git?",
+        "options": [
+          "git config --global user.email \"your.email@example.com\"",
+          "git config --local user.email \"your.email@example.com\"",
+          "git set email \"your.email@example.com\"",
+          "git email config \"your.email@example.com\""
+        ],
+        "correctAnswer": 0,
+        "explanation": "Lệnh `git config --global user.email \"your.email@example.com\"` được sử dụng để thiết lập địa chỉ email của bạn cho tất cả các kho chứa Git trên máy tính của bạn."
+      },
+      {
+        "question": "Tại sao cần khởi động lại terminal sau khi cài đặt NVM?",
+        "options": [
+          "Để NVM có thể tải về danh sách các phiên bản Node.js.",
+          "Để áp dụng các thay đổi trong file cấu hình của shell (ví dụ: .bashrc, .zshrc) và nạp lệnh nvm vào môi trường.",
+          "Để xóa cache của terminal.",
+          "Để hoàn tất quá trình cài đặt Node.js."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi cài đặt, NVM thêm các dòng lệnh vào file cấu hình của shell. Khởi động lại terminal hoặc mở một tab mới sẽ thực thi file cấu hình này, làm cho lệnh `nvm` trở nên khả dụng."
+      },
+      {
+        "question": "Thứ tự cài đặt các công cụ nào sau đây là hợp lý nhất theo hướng dẫn của bài học?",
+        "options": [
+          "Node.js -> NVM -> Yarn -> Git",
+          "Git -> Yarn -> Node.js -> NVM",
+          "NVM -> Node.js -> Yarn -> Git",
+          "Yarn -> NVM -> Git -> Node.js"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học hướng dẫn cài đặt theo thứ tự: NVM để quản lý phiên bản, sau đó dùng NVM để cài Node.js, tiếp theo dùng npm (đi kèm Node.js) để cài Yarn, và cuối cùng là cài đặt Git."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Kiểm tra phiên bản các công cụ",
+        "description": "Viết một loạt các lệnh shell để kiểm tra phiên bản của NVM, Node.js, NPM và Yarn đã được cài đặt trên hệ thống của bạn.",
+        "starterCode": "#!/bin/bash\n# Viết các lệnh của bạn ở đây",
+        "solution": "#!/bin/bash\necho \"Kiểm tra phiên bản NVM...\"\nnvm --version\n\necho \"\nKiểm tra phiên bản Node.js...\"\nnode -v\n\necho \"\nKiểm tra phiên bản NPM...\"\nnpm -v\n\necho \"\nKiểm tra phiên bản Yarn...\"\nyarn --version",
+        "testCases": "Chạy script và quan sát output. Script nên hiển thị thông tin phiên bản cho cả bốn công cụ nếu chúng đã được cài đặt đúng cách."
+      },
+      {
+        "title": "Bài 2: Cài đặt và sử dụng một phiên bản Node.js cụ thể",
+        "description": "Sử dụng NVM để cài đặt phiên bản Node.js 18.17.0, sau đó chuyển sang sử dụng phiên bản này và kiểm tra lại.",
+        "starterCode": "#!/bin/bash\n# Lệnh cài đặt Node.js v18.17.0\n\n# Lệnh chuyển sang sử dụng phiên bản v18.17.0\n\n# Lệnh kiểm tra lại phiên bản Node.js hiện tại",
+        "solution": "#!/bin/bash\necho \"Cài đặt Node.js v18.17.0...\"\nnvm install 18.17.0\n\necho \"\nSử dụng Node.js v18.17.0...\"\nnvm use 18.17.0\n\necho \"\nKiểm tra phiên bản Node.js hiện tại...\"\nnode -v",
+        "testCases": "Sau khi chạy script, lệnh `node -v` cuối cùng phải hiển thị output là `v18.17.0`."
+      },
+      {
+        "title": "Bài 3: Cấu hình Git Global",
+        "description": "Viết các lệnh Git cần thiết để cấu hình tên người dùng và địa chỉ email của bạn trên toàn hệ thống (globally). Thay thế \"Your Name\" và \"your.email@example.com\" bằng thông tin cá nhân của bạn.",
+        "starterCode": "#!/bin/bash\n# Cấu hình tên người dùng\n\n# Cấu hình địa chỉ email",
+        "solution": "#!/bin/bash\ngit config --global user.name \"Your Name\"\ngit config --global user.email \"your.email@example.com\"\n\necho \"Đã cấu hình Git thành công!\"",
+        "testCases": "Chạy lệnh `git config --list` để kiểm tra xem `user.name` và `user.email` đã được thiết lập đúng với thông tin bạn cung cấp hay chưa."
+      },
+      {
+        "title": "Bài 4: Liệt kê các phiên bản Node.js đã cài đặt",
+        "description": "Viết lệnh NVM để hiển thị tất cả các phiên bản Node.js đã được cài đặt trên máy tính của bạn thông qua NVM.",
+        "starterCode": "#!/bin/bash\n# Viết lệnh của bạn để liệt kê các phiên bản Node.js",
+        "solution": "#!/bin/bash\nnvm ls",
+        "testCases": "Chạy script sẽ hiển thị một danh sách các phiên bản Node.js. Danh sách này sẽ bao gồm phiên bản LTS và phiên bản 18.17.0 nếu bạn đã hoàn thành các bài tập trước."
+      },
+      {
+        "title": "Bài 5: Script tự động cài đặt môi trường",
+        "description": "Viết một script shell hoàn chỉnh để tự động hóa các bước: cài đặt phiên bản Node.js LTS mới nhất, đặt nó làm phiên bản mặc định, và sau đó cài đặt Yarn trên toàn hệ thống.",
+        "starterCode": "#!/bin/bash\n# 1. Cài đặt phiên bản Node.js LTS mới nhất\n\n# 2. Đặt phiên bản LTS làm mặc định\n\n# 3. Cài đặt Yarn trên toàn hệ thống\n\necho \"Hoàn tất cài đặt môi trường!\"",
+        "solution": "#!/bin/bash\necho \"Bắt đầu cài đặt môi trường...\"\n\n# 1. Cài đặt phiên bản Node.js LTS mới nhất\necho \"\nCài đặt Node.js LTS...\"\nnvm install --lts\n\n# 2. Đặt phiên bản LTS làm mặc định\necho \"\nĐặt phiên bản LTS làm mặc định...\"\nnvm alias default lts/*\n\n# 3. Cài đặt Yarn trên toàn hệ thống\necho \"\nCài đặt Yarn...\"\nnpm install -g yarn\n\necho \"\nHoàn tất cài đặt môi trường! Kiểm tra phiên bản...\"\nnode -v\nyarn --version",
+        "testCases": "Chạy script. Sau khi hoàn tất, script sẽ in ra phiên bản của Node.js (phải là phiên bản LTS) và phiên bản của Yarn."
+      }
+    ]
+  }
+}

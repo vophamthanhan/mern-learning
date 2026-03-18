@@ -1,0 +1,213 @@
+{
+  "id": 27,
+  "title": "Buổi 14: Active Card, Board Owners, Members...vv",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Buổi 14: Active Card, Board Owners, Members...vv\n\n## Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tập trung vào việc xây dựng các tính năng quan trọng liên quan đến việc quản lý chi tiết một chiếc thẻ (Card) trong dự án Trello clone. Cụ thể, các mục tiêu chính bao gồm:\n\n*   **Triển khai Active Card Modal:** Xây dựng một cửa sổ (Modal) hiển thị chi tiết thông tin của một Card khi người dùng nhấp vào.\n*   **Cập nhật tiêu đề Card (Card Title):** Cho phép người dùng chỉnh sửa tiêu đề của Card trực tiếp trên giao diện một cách linh hoạt (Inline Input).\n*   **Tích hợp Markdown Editor:** Tích hợp một trình soạn thảo Markdown vào phần mô tả (Description) của Card, giúp người dùng định dạng nội dung một cách phong phú.\n*   **Xây dựng API cập nhật Card:** Viết API ở phía Back-end để lưu lại những thay đổi của Card vào cơ sở dữ liệu.\n*   **Quản lý Board Owners và Members:** (Dự đoán dựa trên tiêu đề) Bắt đầu tìm hiểu cách triển khai logic để quản lý chủ sở hữu (Owner) và các thành viên (Members) của một Board.\n\n## Kiến thức chi tiết\n\nDựa trên mô tả video và kiến thức chuyên môn về MERN Stack, nội dung chi tiết của bài học này có thể được tái cấu trúc như sau:\n\n### 1. Active Card Modal\n\nĐây là chức năng cốt lõi, cho phép người dùng xem và tương tác với thông tin chi tiết của một Card. Khi người dùng nhấp vào một Card bất kỳ trên bảng, một cửa sổ Modal sẽ hiện lên.\n\n**Phân tích và thiết kế giao diện:**\n\n*   **Giao diện:** Modal cần hiển thị đầy đủ các thông tin của Card như: Tiêu đề, mô tả, thành viên, nhãn, bình luận, v.v.\n*   **Component:** Chúng ta sẽ sử dụng component `Modal` từ thư viện Material-UI. Đây là một component mạnh mẽ, cung cấp nền tảng vững chắc để xây dựng các cửa sổ pop-up, dialog hoặc modal.\n\n**Xử lý logic:**\n\n*   **State Management:** Cần một state để quản lý trạng thái ẩn/hiện của Modal, ví dụ: `openCardModal`. Đồng thời, cần một state khác để lưu trữ dữ liệu của Card đang được chọn, ví dụ: `activeCardData`.\n*   **Event Handling:** Gắn sự kiện `onClick` vào mỗi Card. Khi được kích hoạt, sự kiện này sẽ cập nhật `activeCardData` với thông tin của Card tương ứng và set `openCardModal` thành `true`.\n\n### 2. Cập nhật Card Title với Inline Input\n\nChức năng này cho phép người dùng chỉnh sửa tiêu đề Card một cách nhanh chóng ngay trên giao diện Modal, tương tự như cách đã làm với Column Title.\n\n*   **Tái sử dụng Component:** Để tối ưu và giữ code sạch sẽ, chúng ta sẽ tái sử dụng component `InlineInput` đã xây dựng trước đó cho việc cập nhật Column Title.\n*   **Logic cập nhật:** Khi người dùng hoàn tất việc chỉnh sửa (ví dụ: nhấn Enter hoặc click ra ngoài), một hàm sẽ được gọi để gửi yêu cầu cập nhật lên API.\n\n### 3. Tích hợp Markdown Editor cho Card Description\n\nĐể phần mô tả của Card trở nên sinh động và dễ đọc hơn, việc tích hợp một trình soạn thảo hỗ trợ cú pháp Markdown là rất cần thiết.\n\n*   **Thư viện:** Video đề cập đến việc sử dụng `@uiw/react-md-editor`. Đây là một thư viện phổ biến và mạnh mẽ cho phép tạo ra một trình soạn thảo Markdown đầy đủ tính năng trong ứng dụng React.\n*   **Tích hợp:**\n    1.  Cài đặt thư viện: `npm install @uiw/react-md-editor`\n    2.  Import component `MDEditor` vào `CardModal`.\n    3.  Sử dụng `MDEditor` để thay thế cho thẻ `<textarea>` mặc định của phần mô tả.\n    4.  Sử dụng `rehype-sanitize` để làm sạch HTML được tạo ra từ Markdown, ngăn chặn các cuộc tấn công XSS.\n\n### 4. API Cập nhật Card (Update Card)\n\nPhía Back-end cần một API endpoint để tiếp nhận và xử lý các yêu cầu cập nhật thông tin Card từ Front-end.\n\n*   **Endpoint:** Thiết kế một API theo phương thức `PUT` hoặc `PATCH`, ví dụ: `/v1/cards/:id`.\n*   **Validation:** Sử dụng thư viện `Joi` để kiểm tra và xác thực dữ liệu gửi lên từ client. Đảm bảo rằng các trường dữ liệu như `title`, `description` hợp lệ trước khi xử lý.\n*   **Controller & Service:**\n    *   **Controller:** Tiếp nhận request, gọi đến service tương ứng để xử lý logic.\n    *   **Service:** Chứa logic nghiệp vụ chính, tương tác với Model để cập nhật dữ liệu vào cơ sở dữ liệu MongoDB.\n\n### 5. Quản lý Board Owners và Members (Dự đoán)\n\nPhần này có thể là bước khởi đầu cho việc phân quyền trong ứng dụng.\n\n*   **Schema Design:** Cần cập nhật lại `BoardModel` trong MongoDB để chứa thêm các trường như `ownerIds` (một mảng chứa ID của các chủ sở hữu) và `memberIds` (một mảng chứa ID của các thành viên).\n*   **Logic:**\n    *   **Owner:** Người tạo ra Board mặc định là Owner. Owner có toàn quyền trên Board (chỉnh sửa, xóa, mời thành viên).\n    *   **Member:** Là những người được mời vào Board, có thể có các quyền hạn chế hơn (ví dụ: chỉ xem, tạo Card, comment).\n\n## Các bước thực hành\n\n1.  **Xây dựng giao diện CardModal:**\n    *   Tạo file `CardModal.jsx`.\n    *   Sử dụng component `<Modal>` của Material-UI để dựng khung cơ bản.\n    *   Thiết kế layout chi tiết cho Modal, bao gồm các khu vực cho Title, Description, Members, Comments, v.v.\n\n2.  **Tích hợp CardModal vào BoardContent:**\n    *   Import `CardModal` vào `BoardContent.jsx`.\n    *   Thêm state `openCardModal` và `activeCardData` vào `BoardContent`.\n    *   Truyền các state và hàm xử lý xuống `CardModal` qua props.\n\n3.  **Xử lý sự kiện mở Modal:**\n    *   Trong component `Card`, thêm sự kiện `onClick`.\n    *   Khi người dùng click, gọi hàm từ `BoardContent` để cập nhật `activeCardData` và mở Modal.\n\n4.  **Tích hợp Inline Input và Markdown Editor:**\n    *   Trong `CardModal.jsx`, import và sử dụng lại component `InlineInput` cho phần Card Title.\n    *   Cài đặt và import `@uiw/react-md-editor`.\n    *   Tích hợp `MDEditor` vào khu vực Card Description.\n\n5.  **Viết API Update Card:**\n    *   Trong thư mục `routes/v1`, tạo file `card.route.js` (nếu chưa có).\n    *   Định nghĩa route `PUT /:id`.\n    *   Trong thư mục `controllers`, tạo `card.controller.js` với hàm `update`.\n    *   Trong thư mục `services`, tạo `card.service.js` với hàm `update` để xử lý logic cập nhật.\n    *   Trong thư- mục `validations`, tạo `card.validation.js` để định nghĩa schema validation với Joi.\n\n6.  **Gọi API từ Front-end:**\n    *   Tạo một hàm (ví dụ: `handleUpdateCard`) trong `CardModal`.\n    *   Khi người dùng thay đổi Title hoặc Description, gọi hàm này.\n    *   Sử dụng `axios` để gửi request `PUT` lên API `updateCard` cùng với dữ liệu mới.\n    .\n\n## Lưu ý quan trọng\n\n*   **Tái sử dụng Component:** Việc tái sử dụng component `InlineInput` không chỉ giúp tiết kiệm thời gian mà còn đảm bảo tính nhất quán trong giao diện và hành vi người dùng, đồng thời làm cho codebase trở nên gọn gàng và dễ bảo trì hơn.\n*   **Xử lý bất đồng bộ (Asynchronous):** Mọi tương tác với API đều là hoạt động bất đồng bộ. Cần sử dụng `async/await` và xử lý các trạng thái loading, success, error một cách cẩn thận để cung cấp trải nghiệm người dùng tốt nhất. Ví dụ, hiển thị một spinner trong khi dữ liệu đang được lưu.\n*   **Validation hai lớp:** Luôn luôn thực hiện validation ở cả phía Front-end và Back-end. Validation ở Front-end (ví dụ: không cho phép để trống tiêu đề) giúp cải thiện trải nghiệm người dùng bằng cách cung cấp phản hồi ngay lập tức. Validation ở Back-end là lớp bảo vệ cuối cùng, đảm bảo tính toàn vẹn của dữ liệu trong cơ sở dữ liệu, ngăn chặn các yêu cầu không hợp lệ.\n\n## Tài liệu tham khảo\n\n*   **Video bài học:** [Buổi 14: Active Card, Board Owners, Members...vv | TrungQuanDev | Members Only](https://www.youtube.com/watch?v=7l-Cejd4Q-Y&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=103)\n*   **Material-UI Modal:** [https://mui.com/material-ui/react-modal/](https://mui.com/material-ui/react-modal/)\n*   **React Markdown Editor (@uiw/react-md-editor):** [https://www.npmjs.com/package/@uiw/react-md-editor](https://www.npmjs.com/package/@uiw/react-md-editor)\n*   **Rehype Sanitize:** [https://www.npmjs.com/package/rehype-sanitize](https://www.npmjs.com/package/rehype-sanitize)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của việc triển khai 'Active Card Modal' trong bài học là gì?",
+        "options": [
+          "Để tạo một card mới trên bảng.",
+          "Để hiển thị chi tiết thông tin của một Card khi người dùng nhấp vào.",
+          "Để xóa nhiều card cùng một lúc.",
+          "Để di chuyển card giữa các cột."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Active Card Modal được xây dựng để cung cấp một giao diện chi tiết, cho phép người dùng xem và tương tác với toàn bộ thông tin của một card cụ thể."
+      },
+      {
+        "question": "Thư viện nào được đề xuất sử dụng để xây dựng component Modal trong bài học?",
+        "options": [
+          "Bootstrap",
+          "Ant Design",
+          "Material-UI",
+          "Chakra UI"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề cập rõ ràng đến việc sử dụng component Modal từ thư viện Material-UI vì tính mạnh mẽ và nền tảng vững chắc của nó."
+      },
+      {
+        "question": "Để quản lý trạng thái ẩn/hiện của Card Modal, phương pháp nào sau đây là phù hợp nhất?",
+        "options": [
+          "Sử dụng `localStorage`.",
+          "Sử dụng một state trong component React, ví dụ `openCardModal`.",
+          "Lưu trạng thái vào một file tĩnh.",
+          "Truyền trạng thái qua URL parameter."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sử dụng state của React (ví dụ: `useState`) là cách tiếp cận chuẩn để quản lý các trạng thái giao diện động như việc ẩn/hiện một Modal."
+      },
+      {
+        "question": "Tại sao việc tái sử dụng component `InlineInput` cho việc cập nhật Card Title lại được khuyến khích?",
+        "options": [
+          "Vì không thể tạo một component mới cho Card Title.",
+          "Để tiết kiệm thời gian, đảm bảo tính nhất quán và giữ cho codebase gọn gàng.",
+          "Vì `InlineInput` là component duy nhất có thể chỉnh sửa văn bản.",
+          "Để tăng độ phức tạp của ứng dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tái sử dụng component giúp giảm trùng lặp code, đảm bảo giao diện và hành vi người dùng nhất quán, và làm cho việc bảo trì code dễ dàng hơn."
+      },
+      {
+        "question": "Thư viện nào được sử dụng để tích hợp trình soạn thảo Markdown vào phần mô tả của Card?",
+        "options": [
+          "Draft.js",
+          "Slate.js",
+          "TinyMCE",
+          "@uiw/react-md-editor"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bài học đề cập cụ thể đến việc cài đặt và sử dụng `@uiw/react-md-editor` để cung cấp tính năng soạn thảo Markdown cho mô tả của Card."
+      },
+      {
+        "question": "Mục đích của việc sử dụng `rehype-sanitize` khi tích hợp trình soạn thảo Markdown là gì?",
+        "options": [
+          "Để định dạng code trong Markdown.",
+          "Để làm sạch HTML được tạo ra từ Markdown, ngăn chặn tấn công XSS.",
+          "Để tối ưu hóa hình ảnh được chèn vào.",
+          "Để kiểm tra lỗi chính tả trong nội dung."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`rehype-sanitize` là một plugin bảo mật quan trọng giúp loại bỏ các mã HTML nguy hiểm có thể được chèn vào thông qua nội dung Markdown, từ đó ngăn chặn các lỗ hổng Cross-Site Scripting (XSS)."
+      },
+      {
+        "question": "Phương thức HTTP nào thường được sử dụng để thiết kế API cập nhật một phần tài nguyên đã tồn tại?",
+        "options": [
+          "POST",
+          "GET",
+          "PATCH",
+          "DELETE"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Theo chuẩn RESTful, `PUT` được dùng để thay thế toàn bộ tài nguyên, trong khi `PATCH` được dùng để cập nhật một phần. Cả hai đều có thể được sử dụng, nhưng `PATCH` phù hợp hơn cho việc cập nhật các trường riêng lẻ như title hoặc description."
+      },
+      {
+        "question": "Thư viện `Joi` được sử dụng ở phía Back-end để làm gì?",
+        "options": [
+          "Để kết nối với cơ sở dữ liệu MongoDB.",
+          "Để mã hóa mật khẩu người dùng.",
+          "Để xác thực và kiểm tra tính hợp lệ của dữ liệu gửi lên từ client.",
+          "Để tạo các API endpoint."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`Joi` là một thư viện mạnh mẽ dùng để định nghĩa các schema và xác thực dữ liệu đầu vào, đảm bảo rằng chỉ những dữ liệu hợp lệ mới được xử lý bởi service."
+      },
+      {
+        "question": "Mô hình kiến trúc nào được đề cập trong việc xử lý logic ở Back-end?",
+        "options": [
+          "MVC (Model-View-Controller)",
+          "MVP (Model-View-Presenter)",
+          "Controller & Service",
+          "Serverless"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học mô tả một cấu trúc rõ ràng bao gồm Route -> Validation -> Controller -> Service -> Model, trong đó Controller tiếp nhận request và gọi Service để xử lý logic nghiệp vụ."
+      },
+      {
+        "question": "Tại sao cần phải thực hiện validation ở cả Front-end và Back-end (validation hai lớp)?",
+        "options": [
+          "Chỉ cần validation ở Back-end là đủ.",
+          "Để làm chậm hệ thống.",
+          "FE validation cải thiện trải nghiệm người dùng, BE validation đảm bảo toàn vẹn dữ liệu.",
+          "Để tăng lượng code cần viết."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Validation ở Front-end cho phản hồi tức thì, cải thiện UX. Validation ở Back-end là lớp bảo vệ cuối cùng, ngăn chặn dữ liệu không hợp lệ lưu vào DB, đảm bảo tính toàn vẹn và bảo mật."
+      },
+      {
+        "question": "Trong kiến trúc MERN, tầng nào chịu trách nhiệm tương tác trực tiếp với cơ sở dữ liệu MongoDB?",
+        "options": [
+          "React (View)",
+          "Controller",
+          "Service",
+          "Model"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Tầng Model (sử dụng Mongoose) chịu trách nhiệm định nghĩa schema và tương tác trực tiếp với các collection trong cơ sở dữ liệu MongoDB để thực hiện các thao tác CRUD."
+      },
+      {
+        "question": "Khi gọi API từ Front-end để cập nhật dữ liệu, tại sao việc sử dụng `async/await` lại quan trọng?",
+        "options": [
+          "Nó làm cho code chạy nhanh hơn.",
+          "Nó là cách duy nhất để gọi API.",
+          "Để xử lý các hoạt động bất đồng bộ và quản lý các trạng thái loading, success, error.",
+          "Nó giúp giảm kích thước bundle của ứng dụng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc gọi API là một hoạt động bất đồng bộ. `async/await` cung cấp một cú pháp rõ ràng để làm việc với Promises, giúp quản lý luồng thực thi và xử lý các trạng thái khác nhau của request một cách dễ dàng."
+      },
+      {
+        "question": "Dựa trên dự đoán về quản lý `Board Owners` và `Members`, trường dữ liệu nào nên được thêm vào `BoardModel`?",
+        "options": [
+          "Một trường `owner` kiểu String và `member` kiểu String.",
+          "Một trường `users` chứa thông tin của tất cả người dùng.",
+          "Các trường `ownerIds` và `memberIds` kiểu mảng chứa các ID của người dùng.",
+          "Không cần thêm trường nào, thông tin này được lưu ở client."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để quản lý nhiều chủ sở hữu và thành viên, cách thiết kế tốt nhất là sử dụng các mảng (`ownerIds`, `memberIds`) để lưu trữ các ObjectId của người dùng tương ứng."
+      },
+      {
+        "question": "Sự kiện nào trên component `Card` sẽ kích hoạt việc mở `CardModal`?",
+        "options": [
+          "`onHover`",
+          "`onDoubleClick`",
+          "`onRightClick`",
+          "`onClick`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Theo mô tả, người dùng sẽ nhấp (click) vào một Card để xem chi tiết, do đó sự kiện `onClick` là phù hợp nhất để kích hoạt việc mở Modal."
+      },
+      {
+        "question": "Khi người dùng cập nhật mô tả Card bằng `MDEditor`, dữ liệu được gửi lên API sẽ ở định dạng nào?",
+        "options": [
+          "Plain Text (văn bản thuần túy)",
+          "Markdown (chuỗi văn bản theo cú pháp Markdown)",
+          "HTML (chuỗi HTML đã được render)",
+          "JSON (đối tượng JSON chứa nội dung)"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trình soạn thảo `MDEditor` sẽ quản lý nội dung dưới dạng cú pháp Markdown. Khi lưu, chính chuỗi Markdown này sẽ được gửi lên và lưu vào cơ sở dữ liệu."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Quản lý State cho Card Modal",
+        "description": "Sử dụng hook `useState` của React để tạo hai state: một để quản lý trạng thái mở/đóng của modal (`open`) và một để lưu dữ liệu của card đang được chọn (`activeCard`). Viết một hàm `handleOpenModal` nhận vào `cardData` và cập nhật cả hai state.",
+        "starterCode": "import React, { useState } from 'react';\n\nfunction Board() {\n  // Khai báo state ở đây\n\n  const handleOpenModal = (cardData) => {\n    // Viết logic cập nhật state ở đây\n    console.log('Opening modal for:', cardData);\n  };\n\n  // Giả lập một card để test\n  const sampleCard = { id: 'card-1', title: 'Test Card' };\n\n  return (\n    <button onClick={() => handleOpenModal(sampleCard)}>Open Modal</button>\n  );\n}",
+        "solution": "import React, { useState } from 'react';\n\nfunction Board() {\n  const [open, setOpen] = useState(false);\n  const [activeCard, setActiveCard] = useState(null);\n\n  const handleOpenModal = (cardData) => {\n    setActiveCard(cardData);\n    setOpen(true);\n  };\n\n  const handleCloseModal = () => {\n    setOpen(false);\n    setActiveCard(null);\n  };\n\n  const sampleCard = { id: 'card-1', title: 'Test Card' };\n\n  return (\n    <div>\n      <button onClick={() => handleOpenModal(sampleCard)}>Open Modal</button>\n      {open && activeCard && (\n        <div>\n          <h2>{activeCard.title}</h2>\n          <button onClick={handleCloseModal}>Close</button>\n        </div>\n      )}\n    </div>\n  );\n}",
+        "testCases": "1. Click vào button 'Open Modal'. 2. Kiểm tra xem state `open` có chuyển thành `true` không. 3. Kiểm tra xem state `activeCard` có chứa đúng dữ liệu của `sampleCard` không."
+      },
+      {
+        "title": "Bài 2: Xây dựng Component CardModal với Material-UI",
+        "description": "Sử dụng component `Modal` và `Box` từ `@mui/material` để tạo một component `CardModal` cơ bản. Modal này nên hiển thị tiêu đề của card được truyền vào qua props. Modal có thể được đóng khi click ra vùng nền bên ngoài.",
+        "starterCode": "import React from 'react';\nimport { Modal, Box, Typography } from '@mui/material';\n\nconst style = {\n  position: 'absolute',\n  top: '50%',\n  left: '50%',\n  transform: 'translate(-50%, -50%)',\n  width: 400,\n  bgcolor: 'background.paper',\n  border: '2px solid #000',\n  boxShadow: 24,\n  p: 4,\n};\n\nfunction CardModal({ open, onClose, card }) {\n  return (\n    // Viết code Modal ở đây\n  );\n}",
+        "solution": "import React from 'react';\nimport { Modal, Box, Typography } from '@mui/material';\n\nconst style = {\n  position: 'absolute',\n  top: '50%',\n  left: '50%',\n  transform: 'translate(-50%, -50%)',\n  width: 600,\n  bgcolor: 'background.paper',\n  borderRadius: '8px',\n  boxShadow: 24,\n  p: 4,\n};\n\nfunction CardModal({ open, onClose, card }) {\n  return (\n    <Modal\n      open={open}\n      onClose={onClose}\n      aria-labelledby=\"modal-modal-title\"\n    >\n      <Box sx={style}>\n        <Typography id=\"modal-modal-title\" variant=\"h6\" component=\"h2\">\n          {card ? card.title : 'Loading...'}\n        </Typography>\n      </Box>\n    </Modal>\n  );\n}",
+        "testCases": "1. Truyền `open={true}` và một object `card` vào component. 2. Modal phải được hiển thị trên màn hình. 3. Tiêu đề của card phải được hiển thị đúng. 4. Click vào vùng nền bên ngoài modal, hàm `onClose` phải được gọi."
+      },
+      {
+        "title": "Bài 3: Tích hợp Inline Input cho Card Title",
+        "description": "Tạo một component `InlineInput` nhận vào một giá trị ban đầu và một hàm `onSave`. Khi người dùng click vào text, nó sẽ chuyển thành một input. Khi nhấn Enter hoặc blur, nó sẽ gọi hàm `onSave` với giá trị mới và quay trở lại dạng text.",
+        "starterCode": "import React, { useState } from 'react';\n\nfunction InlineInput({ initialValue, onSave }) {\n  const [isEditing, setIsEditing] = useState(false);\n  const [value, setValue] = useState(initialValue);\n\n  // Viết logic xử lý sự kiện ở đây\n\n  if (isEditing) {\n    return (\n      <input\n        type=\"text\"\n        value={value}\n        // ... các props và event handlers khác\n      />\n    );\n  }\n\n  return (\n    <div onClick={() => setIsEditing(true)}>\n      {value}\n    </div>\n  );\n}",
+        "solution": "import React, { useState, useEffect } from 'react';\n\nfunction InlineInput({ initialValue, onSave }) {\n  const [isEditing, setIsEditing] = useState(false);\n  const [value, setValue] = useState(initialValue);\n\n  useEffect(() => {\n    setValue(initialValue);\n  }, [initialValue]);\n\n  const handleSave = () => {\n    setIsEditing(false);\n    if (value.trim() !== '' && value !== initialValue) {\n      onSave(value);\n    }\n  };\n\n  const handleKeyDown = (e) => {\n    if (e.key === 'Enter') {\n      handleSave();\n    }\n  };\n\n  if (isEditing) {\n    return (\n      <input\n        type=\"text\"\n        value={value}\n        onChange={(e) => setValue(e.target.value)}\n        onBlur={handleSave}\n        onKeyDown={handleKeyDown}\n        autoFocus\n      />\n    );\n  }\n\n  return (\n    <div onClick={() => setIsEditing(true)} style={{cursor: 'pointer'}}>\n      {value}\n    </div>\n  );\n}",
+        "testCases": "1. Click vào text, nó phải chuyển thành input. 2. Thay đổi giá trị trong input. 3. Nhấn phím Enter. 4. Hàm `onSave` phải được gọi với giá trị mới. 5. Component phải quay lại hiển thị dạng text."
+      },
+      {
+        "title": "Bài 4: Tích hợp MDEditor cho Card Description",
+        "description": "Sử dụng thư viện `@uiw/react-md-editor`. Tạo một component hiển thị trình soạn thảo Markdown. Component này nhận vào giá trị mô tả ban đầu và một hàm `onDescriptionChange` sẽ được gọi mỗi khi nội dung thay đổi.",
+        "starterCode": "import React, { useState } from 'react';\nimport MDEditor from '@uiw/react-md-editor';\n\nfunction MarkdownDescription({ initialDescription, onDescriptionChange }) {\n  const [description, setDescription] = useState(initialDescription);\n\n  const handleChange = (newValue) => {\n    // Viết logic ở đây\n  };\n\n  return (\n    <div data-color-mode=\"light\">\n      <MDEditor\n        value={description}\n        onChange={handleChange}\n      />\n    </div>\n  );\n}",
+        "solution": "import React, { useState } from 'react';\nimport MDEditor from '@uiw/react-md-editor';\nimport rehypeSanitize from 'rehype-sanitize';\n\nfunction MarkdownDescription({ initialDescription, onDescriptionChange }) {\n  const [description, setDescription] = useState(initialDescription);\n\n  const handleChange = (newValue) => {\n    setDescription(newValue);\n    onDescriptionChange(newValue);\n  };\n\n  return (\n    <div data-color-mode=\"light\">\n      <MDEditor\n        value={description}\n        onChange={handleChange}\n        previewOptions={{\n          rehypePlugins: [[rehypeSanitize]],\n        }}\n      />\n    </div>\n  );\n}",
+        "testCases": "1. Component phải hiển thị trình soạn thảo với nội dung `initialDescription`. 2. Gõ thêm văn bản vào trình soạn thảo. 3. Hàm `onDescriptionChange` phải được gọi với nội dung mới nhất. 4. Chèn một thẻ `<script>` vào trình soạn thảo, nó phải bị loại bỏ ở phần preview."
+      },
+      {
+        "title": "Bài 5: Viết Schema Validation với Joi cho API Update Card",
+        "description": "Sử dụng thư viện `Joi`, hãy viết một schema để xác thực dữ liệu cho API cập nhật Card. Schema cần xác thực các trường: `title` (string, min 3, max 50), `description` (string, optional, max 5000), và `boardId` (string, bắt buộc, phải là ObjectId hợp lệ).",
+        "starterCode": "import Joi from 'joi';\n\n// Custom validation cho ObjectId\nconst objectId = (value, helpers) => {\n  if (!Joi.string().hex().length(24).validate(value).error) {\n    return value;\n  }\n  return helpers.message('{{#label}} must be a valid mongo id');\n};\n\nconst updateCardSchema = Joi.object({\n  // Viết schema validation ở đây\n});\n\nexport default updateCardSchema;",
+        "solution": "import Joi from 'joi';\n\nconst objectId = (value, helpers) => {\n  if (!Joi.string().hex().length(24).validate(value).error) {\n    return value;\n  }\n  return helpers.message('{{#label}} must be a valid mongo id');\n};\n\nconst updateCardSchema = Joi.object({\n  title: Joi.string().min(3).max(50).trim().strict(),\n  description: Joi.string().max(5000).trim().strict().optional(),\n  boardId: Joi.string().required().custom(objectId, 'custom objectId validation'),\n  // Các trường khác có thể được thêm vào đây và cho phép optional\n  // để API có thể cập nhật từng phần\n  columnId: Joi.string().custom(objectId, 'custom objectId validation').optional()\n});\n\nexport default updateCardSchema;",
+        "testCases": "1. Validate object `{ title: 'Ab', boardId: '...' }` -> Phải báo lỗi (title quá ngắn). 2. Validate object `{ title: 'Valid Title', boardId: 'invalid-id' }` -> Phải báo lỗi (boardId không hợp lệ). 3. Validate object `{ title: 'Valid Title', boardId: '60d5f1b3b3f3b3f3b3f3b3f3' }` -> Phải hợp lệ. 4. Validate object `{ description: 'Valid Desc', boardId: '60d5f1b3b3f3b3f3b3f3b3f3' }` -> Phải hợp lệ (vì title là optional khi update)."
+      }
+    ]
+  }
+}

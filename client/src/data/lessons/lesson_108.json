@@ -1,0 +1,213 @@
+{
+  "id": 108,
+  "title": "Bài học: Xử lý lỗi kết nối MongoDB SSL Alert Number 80",
+  "category": "mongodb",
+  "categoryName": "MongoDB & Database",
+  "content": "# Bài học: Xử lý lỗi kết nối MongoDB SSL Alert Number 80\n\n## 1. Mục tiêu bài học\n\nBài học này tập trung vào việc xác định nguyên nhân và hướng dẫn cách khắc phục một lỗi kết nối phổ biến khi làm việc với MongoDB Atlas và NodeJS: `MongoNetworkError: connection <monitor> to <host> closed` kèm theo thông báo `SSL alert number 80`. Sau khi hoàn thành, người học sẽ có khả năng:\n\n*   Hiểu được nguyên nhân sâu xa gây ra lỗi \"SSL alert number 80\" trong ngữ cảnh kết nối tới MongoDB Atlas.\n*   Nắm vững các bước thực hành để cấu hình \"Network Access\" một cách chính xác trên MongoDB Atlas.\n*   Phân biệt được các phương pháp cấp quyền truy cập IP và lựa chọn phương án phù hợp, an toàn cho từng môi trường (phát triển và sản phẩm).\n\n## 2. Kiến thức chi tiết\n\n### 2.1. Bối cảnh và Mô tả lỗi\n\nKhi một ứng dụng NodeJS cố gắng thiết lập kết nối đến một cụm (cluster) trên MongoDB Atlas, quá trình này có thể thất bại và trả về một lỗi phức tạp. Lỗi thường có dạng `MongoNetworkError` và đi kèm với thông báo `SSL alert number 80`. \n\n> **SSL alert number 80** tương ứng với mã lỗi `internal_error` trong giao thức TLS/SSL. Đây là một thông báo lỗi chung, cho biết phía máy chủ (server - trong trường hợp này là MongoDB Atlas) đã gặp phải một sự cố nội bộ không mong muốn và không thể tiếp tục quá trình bắt tay (handshake) TLS. \n\nSự chung chung của thông báo lỗi này thường gây ra nhiều khó khăn cho lập trình viên trong việc chẩn đoán. Nhiều người có thể lầm tưởng vấn đề nằm ở phiên bản NodeJS, phiên bản driver MongoDB, cấu hình SSL/TLS trong code, hoặc thậm chí là lỗi từ phía MongoDB Atlas. Tuy nhiên, dựa trên kinh nghiệm thực tế và các báo cáo từ cộng đồng, nguyên nhân phổ biến nhất lại đơn giản hơn nhiều.\n\n### 2.2. Nguyên nhân chính: IP Whitelisting\n\nTrong hầu hết các trường hợp, **nguyên nhân gốc rễ của lỗi \"SSL alert number 80\" là do địa chỉ IP của máy khách (client - nơi chạy ứng dụng NodeJS) chưa được cấp quyền truy cập trong phần cài đặt `Network Access` của MongoDB Atlas.**\n\nMongoDB Atlas, với vai trò là một dịch vụ cơ sở dữ liệu trên đám mây, đặt nặng vấn đề bảo mật. Một trong những lớp bảo vệ cơ bản và hiệu quả nhất là tường lửa mạng (network firewall). Mặc định, Atlas sẽ chặn tất cả các kết nối đến từ các địa chỉ IP không được khai báo một cách tường minh. Khi một kết nối mới được khởi tạo từ một IP lạ, tường lửa của Atlas sẽ từ chối kết nối đó ở cấp độ mạng, và thay vì trả về một lỗi rõ ràng như \"IP address not allowed\", quá trình bắt tay TLS bị chấm dứt đột ngột, dẫn đến thông báo lỗi `internal_error` (alert 80) khó hiểu.\n\n## 3. Các bước thực hành\n\nĐể khắc phục lỗi này, bạn cần thêm địa chỉ IP của máy khách vào danh sách cho phép (whitelist) trên MongoDB Atlas. Dưới đây là các bước chi tiết:\n\n1.  **Đăng nhập vào MongoDB Atlas:** Truy cập trang chủ [MongoDB Atlas](https://cloud.mongodb.com/) và đăng nhập vào tài khoản của bạn.\n\n2.  **Truy cập phần Network Access:** Từ giao diện chính, chọn project của bạn. Ở menu điều hướng bên trái, tìm và nhấp vào mục **Network Access** dưới phần **Security**.\n\n3.  **Thêm địa chỉ IP:** Tại trang Network Access, bạn sẽ thấy một danh sách các địa chỉ IP đã được cấp quyền. Nhấp vào nút màu xanh lá cây **Add IP Address**.\n\n4.  **Lựa chọn phương thức thêm IP:** Một hộp thoại sẽ xuất hiện, cung cấp cho bạn một số tùy chọn:\n\n| Phương thức | Mô tả | Trường hợp sử dụng | Mức độ an toàn |\n| :--- | :--- | :--- | :--- |\n| **Add My Current IP Address** | Tự động phát hiện và điền địa chỉ IP công cộng hiện tại của bạn. | Cách nhanh chóng và được khuyến nghị để cấp quyền cho máy phát triển cá nhân. | Cao |\n| **Allow Access From Anywhere** | Cấp quyền truy cập cho tất cả các địa chỉ IP trên thế giới bằng cách thêm `0.0.0.0/0`. | Chỉ nên dùng cho mục đích gỡ lỗi nhanh hoặc khi IP của bạn thay đổi liên tục. **Tuyệt đối không dùng cho môi trường production.** | Rất thấp |\n| **Nhập thủ công** | Tự nhập một địa chỉ IP hoặc một dải IP cụ thể. | Cấp quyền cho máy chủ server có IP tĩnh. | Cao (nếu cấu hình đúng) |\n\n5.  **Xác nhận và chờ đợi:** Sau khi chọn phương thức phù hợp, nhấp vào nút **Confirm**. Trạng thái của IP mới thêm sẽ là \"Pending\". Quá trình này thường mất từ 1-3 phút để hoàn tất và chuyển sang trạng thái \"Active\".\n\n6.  **Kiểm tra lại kết nối:** Sau khi trạng thái IP đã là \"Active\", hãy khởi động lại ứng dụng NodeJS của bạn. Lỗi kết nối `SSL alert number 80` sẽ được giải quyết.\n\n## 4. Lưu ý quan trọng\n\n*   **Lỗi gây hiểu lầm:** Hãy ghi nhớ rằng `SSL alert number 80` trong ngữ cảnh MongoDB Atlas thường là một \"dấu hiệu giả\" (false flag) chỉ đến vấn đề cấu hình mạng chứ không phải lỗi về SSL/TLS trong code.\n*   **Bảo mật là trên hết:** Luôn tuân thủ nguyên tắc \"đặc quyền tối thiểu\". Chỉ cấp quyền truy cập cho những địa chỉ IP thực sự cần thiết. Việc mở toang cổng kết nối với `0.0.0.0/0` trong môi trường production là một rủi ro bảo mật nghiêm trọng.\n*   **IP động (Dynamic IP):** Nếu bạn đang làm việc ở nhà hoặc các mạng công cộng, địa chỉ IP của bạn có thể thay đổi. Nếu gặp lại lỗi này, hãy kiểm tra xem IP của bạn có bị thay đổi không và cập nhật lại trong Network Access.\n\n## 5. Tài liệu tham khảo\n\n1.  [Video gốc: 47.1 Xử lý lỗi kết nối MongoDB SSL Alert Number 80 | NodeJS + MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=pQAqAczmHTU&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=54)\n2.  [MongoDB Community Forums: Error while connecting my database through mongodb compass](https://www.mongodb.com/community/forums/t/error-while-connecting-my-database-through-mongodb-compass/243317)\n3.  [Stack Overflow: Why am I getting an SSL handshake failed error when trying to connect to mongodb](https://stackoverflow.com/questions/76799372/why-am-i-getting-an-ssl-handshake-failed-error-when-trying-to-connect-to-mongodb)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Nguyên nhân chính gây ra lỗi `MongoNetworkError: connection <monitor> to <host> closed` kèm theo `SSL alert number 80` khi kết nối tới MongoDB Atlas là gì?",
+        "options": [
+          "Phiên bản NodeJS không tương thích.",
+          "Địa chỉ IP của máy khách chưa được cấp quyền truy cập (whitelisted) trong Network Access của MongoDB Atlas.",
+          "Sai chuỗi kết nối (connection string).",
+          "Lỗi từ phía máy chủ của MongoDB Atlas."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trong hầu hết các trường hợp, nguyên nhân gốc rễ là do địa chỉ IP của máy khách (nơi chạy ứng dụng) chưa được thêm vào danh sách cho phép trong cài đặt `Network Access` của MongoDB Atlas, khiến tường lửa của Atlas từ chối kết nối."
+      },
+      {
+        "question": "Mã lỗi `SSL alert number 80` tương ứng với mã lỗi nào trong giao thức TLS/SSL?",
+        "options": [
+          "user_canceled",
+          "handshake_failure",
+          "internal_error",
+          "bad_certificate"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`SSL alert number 80` tương ứng với mã lỗi `internal_error`. Đây là một thông báo lỗi chung cho biết máy chủ đã gặp sự cố nội bộ và không thể tiếp tục quá trình bắt tay (handshake) TLS."
+      },
+      {
+        "question": "Để khắc phục lỗi `SSL alert number 80`, bạn cần thực hiện hành động nào trong giao diện MongoDB Atlas?",
+        "options": [
+          "Tạo một người dùng database mới.",
+          "Khởi động lại (reboot) cụm (cluster).",
+          "Nâng cấp phiên bản của cụm.",
+          "Thêm địa chỉ IP của máy khách vào mục Network Access."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Cách khắc phục là truy cập mục `Security > Network Access` trong project của bạn trên MongoDB Atlas và thêm địa chỉ IP của máy khách vào danh sách cho phép."
+      },
+      {
+        "question": "Phương thức \"Allow Access From Anywhere\" trong MongoDB Atlas (thêm IP `0.0.0.0/0`) nên được sử dụng trong trường hợp nào?",
+        "options": [
+          "Trong mọi môi trường production để đảm bảo ứng dụng luôn kết nối được.",
+          "Chỉ cho mục đích gỡ lỗi nhanh và tuyệt đối không dùng cho môi trường production.",
+          "Khi kết nối từ một máy chủ có địa chỉ IP tĩnh.",
+          "Đây là phương thức được khuyến nghị cho máy phát triển cá nhân."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc cấp quyền truy cập cho tất cả các địa chỉ IP (`0.0.0.0/0`) tạo ra một lỗ hổng bảo mật nghiêm trọng và chỉ nên được sử dụng tạm thời để gỡ lỗi, không bao giờ được dùng trong môi trường sản phẩm (production)."
+      },
+      {
+        "question": "Khi bạn thêm một địa chỉ IP mới vào Network Access, trạng thái ban đầu của nó là gì?",
+        "options": [
+          "Active",
+          "Pending",
+          "Failed",
+          "Inactive"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sau khi xác nhận thêm IP, trạng thái của nó sẽ là \"Pending\". Quá trình này mất khoảng 1-3 phút để hoàn tất và chuyển sang \"Active\"."
+      },
+      {
+        "question": "Tại sao lỗi `SSL alert number 80` được coi là một \"dấu hiệu giả\" (false flag) trong ngữ cảnh MongoDB Atlas?",
+        "options": [
+          "Vì nó thực sự là lỗi về phiên bản driver MongoDB.",
+          "Vì nó chỉ ra vấn đề cấu hình mạng (IP whitelisting) chứ không phải lỗi về SSL/TLS trong code.",
+          "Vì nó luôn xuất hiện cùng với lỗi sai mật khẩu.",
+          "Vì nó chỉ xảy ra trên hệ điều hành Windows."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lỗi này gây hiểu lầm vì nó gợi ý về một vấn đề với SSL/TLS, nhưng nguyên nhân thực sự thường là do cấu hình tường lửa mạng trên Atlas, cụ thể là việc IP của client chưa được cho phép."
+      },
+      {
+        "question": "Phương thức nào là nhanh chóng và được khuyến nghị để cấp quyền cho máy phát triển cá nhân trong Network Access?",
+        "options": [
+          "Allow Access From Anywhere",
+          "Nhập thủ công dải IP của công ty",
+          "Add My Current IP Address",
+          "Liên hệ hỗ trợ của MongoDB"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng nút \"Add My Current IP Address\" là cách thuận tiện và an toàn nhất để cấp quyền cho máy phát triển cá nhân của bạn, vì nó tự động phát hiện và điền IP công cộng hiện tại của bạn."
+      },
+      {
+        "question": "Nếu bạn đang làm việc tại nhà với IP động và đột nhiên gặp lại lỗi `SSL alert number 80`, bạn nên làm gì đầu tiên?",
+        "options": [
+          "Cài đặt lại driver NodeJS MongoDB.",
+          "Kiểm tra xem địa chỉ IP công cộng của bạn có bị thay đổi không và cập nhật lại trong Network Access.",
+          "Xóa toàn bộ cụm và tạo lại.",
+          "Thay đổi chuỗi kết nối trong ứng dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Địa chỉ IP động có thể thay đổi. Nếu lỗi xuất hiện trở lại, bước đầu tiên là kiểm tra IP hiện tại của bạn và cập nhật nó trong danh sách cho phép của MongoDB Atlas."
+      },
+      {
+        "question": "Nguyên tắc bảo mật \"đặc quyền tối thiểu\" (principle of least privilege) khi áp dụng cho Network Access của MongoDB có nghĩa là gì?",
+        "options": [
+          "Mở tất cả các cổng để dễ dàng gỡ lỗi.",
+          "Chỉ cấp quyền truy cập cho những địa chỉ IP thực sự cần thiết.",
+          "Sử dụng chung một tài khoản người dùng cho tất cả các ứng dụng.",
+          "Luôn sử dụng tùy chọn \"Allow Access From Anywhere\"."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nguyên tắc \"đặc quyền tối thiểu\" yêu cầu chỉ cấp các quyền hạn tối thiểu cần thiết để thực hiện một chức năng. Trong trường hợp này, nó có nghĩa là chỉ cho phép các địa chỉ IP cụ thể, đã biết cần truy cập vào cơ sở dữ liệu."
+      },
+      {
+        "question": "Hành động nào sau đây KHÔNG phải là một bước trong quy trình khắc phục lỗi `SSL alert number 80` được mô tả trong bài học?",
+        "options": [
+          "Đăng nhập vào MongoDB Atlas.",
+          "Nhấp vào nút \"Add IP Address\" trong mục Network Access.",
+          "Chỉnh sửa file cấu hình `mongod.conf` trên máy chủ.",
+          "Chờ trạng thái của IP mới chuyển từ \"Pending\" sang \"Active\"."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc chỉnh sửa file `mongod.conf` liên quan đến việc cấu hình một máy chủ MongoDB tự host, không phải là một bước khi làm việc với dịch vụ đám mây MongoDB Atlas. Việc khắc phục được thực hiện hoàn toàn trên giao diện web của Atlas."
+      },
+      {
+        "question": "Tường lửa mạng của MongoDB Atlas hoạt động theo cơ chế nào theo mặc định?",
+        "options": [
+          "Cho phép tất cả các kết nối đến.",
+          "Chặn tất cả các kết nối đến từ các địa chỉ IP không được khai báo tường minh.",
+          "Chỉ cho phép kết nối từ các địa chỉ IP thuộc cùng một quốc gia.",
+          "Yêu cầu xác thực hai yếu tố cho mọi kết nối."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mặc định, MongoDB Atlas áp dụng chính sách tường lửa nghiêm ngặt, chặn tất cả các kết nối đến từ những địa chỉ IP chưa được thêm vào danh sách cho phép (whitelist) một cách rõ ràng."
+      },
+      {
+        "question": "Sau khi cập nhật Network Access trên MongoDB Atlas, bạn cần làm gì với ứng dụng NodeJS của mình?",
+        "options": [
+          "Không cần làm gì, ứng dụng sẽ tự động kết nối lại.",
+          "Xóa thư mục `node_modules` và cài đặt lại.",
+          "Khởi động lại ứng dụng.",
+          "Thay đổi phiên bản driver MongoDB."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sau khi IP đã ở trạng thái \"Active\", bạn cần khởi động lại ứng dụng NodeJS để nó thử thiết lập lại một kết nối mới. Các kết nối thất bại trước đó sẽ không tự động thử lại."
+      },
+      {
+        "question": "Việc nhập thủ công một địa chỉ IP trong Network Access thường được sử dụng cho trường hợp nào?",
+        "options": [
+          "Cấp quyền cho máy tính cá nhân có IP động.",
+          "Cấp quyền cho một máy chủ ứng dụng (application server) có địa chỉ IP tĩnh.",
+          "Để mở quyền truy cập cho toàn bộ Internet.",
+          "Khi không biết địa chỉ IP của mình."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nhập IP thủ công là lựa chọn lý tưởng khi bạn cần cấp quyền cho một tài nguyên có địa chỉ IP không đổi, chẳng hạn như máy chủ web hoặc máy chủ API của bạn."
+      },
+      {
+        "question": "Lỗi `SSL alert number 80` xảy ra ở giai đoạn nào của quá trình kết nối?",
+        "options": [
+          "Sau khi đã xác thực người dùng thành công.",
+          "Trong quá trình truy vấn dữ liệu.",
+          "Trong quá trình bắt tay (handshake) TLS/SSL.",
+          "Khi đóng kết nối."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lỗi này xảy ra rất sớm trong quá trình kết nối, cụ thể là trong giai đoạn bắt tay TLS/SSL, khi client và server đang cố gắng thiết lập một kênh liên lạc an toàn. Tường lửa của Atlas đã chặn kết nối trước khi quá trình này có thể hoàn tất."
+      },
+      {
+        "question": "Ngoài `MongoNetworkError`, thông báo lỗi `SSL alert number 80` còn có thể đi kèm với mô tả nào khác?",
+        "options": [
+          "Authentication failed",
+          "Query timed out",
+          "connection <monitor> to <host> closed",
+          "Invalid BSON object"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học mô tả lỗi đầy đủ thường có dạng `MongoNetworkError: connection <monitor> to <host> closed` và đi kèm với thông báo `SSL alert number 80`, cho thấy kết nối đã bị đóng một cách đột ngột."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo hàm kết nối cơ bản đến MongoDB",
+        "description": "Viết một hàm bất đồng bộ `connectToDatabase` sử dụng `mongodb.MongoClient` để kết nối đến một URI được cung cấp. Hàm nên in ra thông báo thành công nếu kết nối được thiết lập.",
+        "starterCode": "const { MongoClient } = require('mongodb');\n\nasync function connectToDatabase(uri) {\n  const client = new MongoClient(uri);\n\n  try {\n    // Viết code của bạn ở đây để kết nối đến client\n    // và in ra thông báo \"Connected successfully to server\"\n\n  } finally {\n    // Đảm bảo client sẽ đóng khi bạn hoàn thành/gặp lỗi\n    await client.close();\n  }\n}\n\n// Ví dụ sử dụng (thay thế bằng URI thật của bạn để chạy thử)\n// connectToDatabase(\"mongodb+srv://<user>:<password>@<cluster-url>/test?retryWrites=true&w=majority\");",
+        "solution": "const { MongoClient } = require('mongodb');\n\nasync function connectToDatabase(uri) {\n  const client = new MongoClient(uri);\n\n  try {\n    // Kết nối đến MongoDB server\n    await client.connect();\n\n    // In ra thông báo khi kết nối thành công\n    console.log(\"Connected successfully to server\");\n\n  } finally {\n    // Đảm bảo client sẽ đóng khi bạn hoàn thành/gặp lỗi\n    await client.close();\n  }\n}",
+        "testCases": "Khi chạy với một URI hợp lệ và IP đã được whitelist, hàm sẽ in ra: `Connected successfully to server`. Khi chạy với URI không hợp lệ, hàm có thể throw lỗi."
+      },
+      {
+        "title": "Bài 2: Xử lý lỗi kết nối",
+        "description": "Mở rộng hàm từ Bài 1. Sử dụng khối `try...catch` để bắt lỗi kết nối. Nếu có lỗi xảy ra, hãy in ra thông báo lỗi đó ra console.",
+        "starterCode": "const { MongoClient } = require('mongodb');\n\nasync function connectToDatabase(uri) {\n  const client = new MongoClient(uri);\n\n  try {\n    await client.connect();\n    console.log(\"Connected successfully to server\");\n  } catch (error) {\n    // Viết code của bạn ở đây để in ra lỗi\n  } finally {\n    await client.close();\n  }\n}\n\n// Ví dụ sử dụng với một URI không thể kết nối (ví dụ: IP chưa được whitelist)\n// connectToDatabase(\"mongodb+srv://user:pass@invalid-cluster.mongodb.net/test\");",
+        "solution": "const { MongoClient } = require('mongodb');\n\nasync function connectToDatabase(uri) {\n  const client = new MongoClient(uri);\n\n  try {\n    await client.connect();\n    console.log(\"Connected successfully to server\");\n  } catch (error) {\n    // In ra đối tượng lỗi để chẩn đoán\n    console.error(\"Connection failed:\", error);\n  } finally {\n    await client.close();\n  }\n}",
+        "testCases": "Khi chạy với một URI gây ra lỗi (ví dụ IP chưa được whitelist), hàm sẽ in ra một thông báo lỗi, ví dụ: `Connection failed: MongoNetworkError: ... SSL alert number 80 ...`."
+      },
+      {
+        "title": "Bài 3: Hàm kiểm tra IP Whitelist",
+        "description": "Viết một hàm `checkConnection` nhận vào một URI. Hàm này sẽ cố gắng kết nối. Nếu thành công, trả về `true`. Nếu thất bại và lỗi chứa chuỗi \"SSL alert number 80\", trả về `false`. Với các lỗi khác, hãy throw lại lỗi đó.",
+        "starterCode": "const { MongoClient } = require('mongodb');\n\nasync function checkConnection(uri) {\n  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 }); // Thêm timeout để không phải chờ lâu\n\n  try {\n    await client.connect();\n    return true;\n  } catch (error) {\n    // Viết logic của bạn ở đây\n  } finally {\n    await client.close();\n  }\n}",
+        "solution": "const { MongoClient } = require('mongodb');\n\nasync function checkConnection(uri) {\n  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });\n\n  try {\n    await client.connect();\n    return true;\n  } catch (error) {\n    if (error.message && error.message.includes('SSL alert number 80')) {\n      return false;\n    } else {\n      throw error;\n    }\n  } finally {\n    await client.close();\n  }\n}",
+        "testCases": "Gọi hàm với URI gây lỗi SSL alert 80 sẽ trả về `false`. Gọi với URI hợp lệ sẽ trả về `true`. Gọi với URI có lỗi khác (sai mật khẩu) sẽ throw lỗi."
+      },
+      {
+        "title": "Bài 4: Tạo một lớp MongoDBManager",
+        "description": "Tạo một lớp `MongoDBManager` có constructor nhận URI. Lớp này có một phương thức `connect` để kết nối và một phương thức `disconnect` để ngắt kết nối. Quản lý đối tượng `client` như một thuộc tính của lớp.",
+        "starterCode": "const { MongoClient } = require('mongodb');\n\nclass MongoDBManager {\n  constructor(uri) {\n    this.uri = uri;\n    this.client = new MongoClient(this.uri);\n  }\n\n  async connect() {\n    // Viết code để kết nối và in thông báo\n  }\n\n  async disconnect() {\n    // Viết code để ngắt kết nối và in thông báo\n  }\n}\n\n// async function main() {\n//   const manager = new MongoDBManager(\"YOUR_URI_HERE\");\n//   await manager.connect();\n//   await manager.disconnect();\n// }\n// main();",
+        "solution": "const { MongoClient } = require('mongodb');\n\nclass MongoDBManager {\n  constructor(uri) {\n    this.uri = uri;\n    this.client = new MongoClient(this.uri);\n  }\n\n  async connect() {\n    try {\n      await this.client.connect();\n      console.log('Successfully connected to MongoDB Atlas!');\n    } catch (error) {\n      console.error('Connection to MongoDB Atlas failed!', error);\n      throw error;\n    }\n  }\n\n  async disconnect() {\n    try {\n      await this.client.close();\n      console.log('Successfully disconnected from MongoDB Atlas.');\n    } catch (error) {\n      console.error('Failed to disconnect from MongoDB Atlas.', error);\n      throw error;\n    }\n  }\n}",
+        "testCases": "Khi tạo một instance và gọi `connect()`, nó sẽ in ra thông báo kết nối thành công. Sau đó gọi `disconnect()` sẽ in ra thông báo ngắt kết nối thành công."
+      },
+      {
+        "title": "Bài 5: Tự động kiểm tra và gợi ý lỗi IP Whitelist",
+        "description": "Cải tiến phương thức `connect` của lớp `MongoDBManager` từ Bài 4. Nếu gặp lỗi kết nối, hãy kiểm tra xem thông báo lỗi có chứa `SSL alert number 80` hay không. Nếu có, in ra một thông báo thân thiện gợi ý người dùng kiểm tra cài đặt Network Access trên MongoDB Atlas.",
+        "starterCode": "const { MongoClient } = require('mongodb');\n\nclass MongoDBManager {\n  constructor(uri) {\n    this.uri = uri;\n    this.client = new MongoClient(this.uri, { serverSelectionTimeoutMS: 5000 });\n  }\n\n  async connect() {\n    try {\n      await this.client.connect();\n      console.log('Successfully connected to MongoDB Atlas!');\n    } catch (error) {\n      // Viết logic kiểm tra lỗi và gợi ý ở đây\n      throw error;\n    }\n  }\n\n  async disconnect() {\n    await this.client.close();\n  }\n}",
+        "solution": "const { MongoClient } = require('mongodb');\n\nclass MongoDBManager {\n  constructor(uri) {\n    this.uri = uri;\n    this.client = new MongoClient(this.uri, { serverSelectionTimeoutMS: 5000 });\n  }\n\n  async connect() {\n    try {\n      await this.client.connect();\n      console.log('Successfully connected to MongoDB Atlas!');\n    } catch (error) {\n      if (error.message && error.message.includes('SSL alert number 80')) {\n        console.error('Connection failed. This might be due to an IP whitelist issue. Please check your Network Access settings in MongoDB Atlas and ensure your current IP is added.');\n      } else {\n        console.error('An unexpected error occurred during connection:', error);\n      }\n      throw error;\n    }\n  }\n\n  async disconnect() {\n    await this.client.close();\n  }\n}",
+        "testCases": "Khi kết nối với URI gây ra lỗi whitelist, console sẽ hiển thị một thông báo lỗi thân thiện hướng dẫn người dùng kiểm tra Network Access, thay vì chỉ in ra lỗi gốc."
+      }
+    ]
+  }
+}

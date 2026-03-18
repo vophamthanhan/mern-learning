@@ -1,0 +1,213 @@
+{
+  "id": 33,
+  "title": "Buổi 17: Tính năng Notifications - Query, Real-time Socket.io",
+  "category": "realtime",
+  "categoryName": "Real-time & Socket.io",
+  "content": "# Buổi 17: Tính năng Notifications - Query, Real-time Socket.io\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tập trung vào việc xây dựng một trong những tính năng quan trọng và phổ biến nhất trong các ứng dụng web hiện đại: **hệ thống thông báo (Notifications)**. Cụ thể, mục tiêu chính bao gồm:\n\n1.  **Thiết kế và triển khai:** Xây dựng từ đầu một hệ thống thông báo hoàn chỉnh cho phép người dùng nhận được các cập nhật quan trọng trong ứng dụng.\n2.  **Truy vấn dữ liệu:** Học cách viết các API và logic để truy vấn (query) danh sách thông báo hoặc lời mời (invitations) dành riêng cho từng người dùng một cách hiệu quả.\n3.  **Cập nhật Real-time:** Tích hợp **Socket.io** để đẩy thông báo đến người dùng ngay lập tức (real-time) mà không cần phải tải lại trang, mang lại trải nghiệm người dùng mượt mà và tương tác cao.\n4.  **Tích hợp Full-stack:** Kết hợp nhuần nhuyễn giữa backend (Node.js, Express.js) và frontend (React.js) để hoàn thiện tính năng, từ việc gửi thông báo từ server đến việc hiển thị và tương tác trên client.\n\n## II. Kiến thức chi tiết\n\nĐể xây dựng tính năng này, chúng ta cần hiểu rõ về hai công nghệ cốt lõi là WebSockets và Socket.io, cũng như cách áp dụng chúng trong kiến trúc MERN.\n\n### 1. Tổng quan về WebSockets và Socket.io\n\nKhác với giao thức HTTP truyền thống hoạt động theo mô hình request-response (client yêu cầu, server trả lời rồi đóng kết nối), **WebSockets** tạo ra một kênh giao tiếp hai chiều, liên tục và bền vững giữa client và server. Điều này cho phép server có thể chủ động gửi dữ liệu đến client bất cứ lúc nào, là nền tảng cho các ứng dụng real-time.\n\n**Socket.io** là một thư viện JavaScript mạnh mẽ giúp đơn giản hóa việc làm việc với WebSockets. Nó cung cấp các tính năng vượt trội như:\n\n*   **Tự động \"fallback\":** Nếu trình duyệt của người dùng không hỗ trợ WebSockets, Socket.io sẽ tự động chuyển sang các phương thức khác như Long-Polling để đảm bảo tính tương thích.\n*   **Quản lý kết nối:** Tự động xử lý việc kết nối lại khi bị ngắt quãng.\n*   **Phòng (Rooms) và Namespace:** Dễ dàng gửi tin nhắn đến một nhóm client cụ thể, rất hữu ích cho việc gửi thông báo đến đúng người dùng.\n\n### 2. Triển khai phía Backend (Node.js & Express.js)\n\nPhía backend sẽ chịu trách nhiệm xử lý logic, lưu trữ và gửi đi các thông báo.\n\n#### a. Cài đặt và cấu hình Socket.io Server\n\nĐầu tiên, chúng ta cần cài đặt `socket.io` và tích hợp nó vào server Express hiện có.\n\n```bash\nnpm install socket.io\n```\n\nSau đó, cấu hình server để lắng nghe các kết nối từ Socket.io.\n\n```javascript\n// server.js\nconst express = require('express');\nconst http = require('http');\nconst { Server } = require('socket.io');\nconst cors = require('cors');\n\nconst app = express();\nconst server = http.createServer(app);\n\n// Cấu hình Socket.io với CORS để cho phép client kết nối\nconst io = new Server(server, {\n  cors: {\n    origin: 'http://localhost:3000', // URL của React app\n    methods: ['GET', 'POST'],\n    credentials: true\n  }\n});\n\n// ... các middleware khác của Express\napp.use(cors());\napp.use(express.json());\n\n// Lắng nghe sự kiện kết nối từ client\nio.on('connection', (socket) => {\n  console.log(`Một người dùng đã kết nối: ${socket.id}`);\n\n  // Tham gia một \"phòng\" riêng dựa trên ID người dùng\n  socket.on('join_user_room', (userId) => {\n    socket.join(userId);\n    console.log(`Socket ${socket.id} đã tham gia phòng của user ${userId}`);\n  });\n\n  // Lắng nghe sự kiện ngắt kết nối\n  socket.on('disconnect', () => {\n    console.log(`Người dùng đã ngắt kết nối: ${socket.id}`);\n  });\n});\n\n// ... các routes API\n\nconst PORT = process.env.PORT || 8017;\nserver.listen(PORT, () => {\n  console.log(`Server đang chạy trên port ${PORT}`);\n});\n\n// Export io để có thể sử dụng ở các file khác\nmodule.exports = { io };\n```\n\n#### b. Thiết kế Notification Schema (Mongoose)\n\nChúng ta cần một model để lưu trữ thông tin của các thông báo trong MongoDB.\n\n```javascript\n// models/notificationModel.js\nconst mongoose = require('mongoose');\n\nconst notificationSchema = new mongoose.Schema({\n  recipient: {\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User',\n    required: true\n  },\n  sender: {\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User',\n    required: true\n  },\n  type: {\n    type: String,\n    enum: ['board_invitation', 'card_comment', 'mention'], // Các loại thông báo\n    required: true\n  },\n  content: {\n    type: String,\n    required: true\n  },\n  boardId: {\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'Board'\n  },\n  isRead: {\n    type: Boolean,\n    default: false\n  }\n}, { timestamps: true });\n\nmodule.exports = mongoose.model('Notification', notificationSchema);\n```\n\n#### c. Viết API và Logic gửi thông báo\n\nKhi một sự kiện cần tạo thông báo xảy ra (ví dụ: mời một thành viên vào board), chúng ta sẽ tạo một bản ghi `Notification` mới và sau đó dùng Socket.io để phát một sự kiện đến người dùng liên quan.\n\n```javascript\n// services/invitationService.js\nconst Notification = require('../models/notificationModel');\nconst { io } = require('../server'); // Import io từ file server\n\nconst inviteUserToBoard = async (invitingUser, invitedUser, board) => {\n  // ... logic mời người dùng vào board\n\n  // Tạo thông báo mới\n  const newNotification = await Notification.create({\n    recipient: invitedUser._id,\n    sender: invitingUser._id,\n    type: 'board_invitation',\n    content: `${invitingUser.displayName} đã mời bạn vào bảng ${board.title}`,\n    boardId: board._id\n  });\n\n  // Phát sự kiện real-time đến phòng của người được mời\n  io.to(invitedUser._id.toString()).emit('new_notification', newNotification);\n\n  return { message: 'Lời mời đã được gửi.' };\n};\n```\n\n### 3. Triển khai phía Frontend (React)\n\nPhía client sẽ lắng nghe các sự kiện từ Socket.io và cập nhật giao diện người dùng.\n\n#### a. Cài đặt và cấu hình Socket.io Client\n\n```bash\nnpm install socket.io-client\n```\n\nChúng ta sẽ tạo một file riêng để quản lý kết nối socket.\n\n```javascript\n// src/socket.js\nimport { io } from 'socket.io-client';\n\nconst SOCKET_URL = 'http://localhost:8017'; // URL của server Node.js\n\n// Khởi tạo socket\nexport const socket = io(SOCKET_URL, {\n  autoConnect: false // Chỉ kết nối khi cần\n});\n```\n\n#### b. Lắng nghe thông báo trong React Component\n\nTrong component chính hoặc layout của ứng dụng, chúng ta sẽ thiết lập kết nối socket sau khi người dùng đăng nhập và lắng nghe sự kiện `new_notification`.\n\n```jsx\n// src/App.jsx\nimport { useEffect } from 'react';\nimport { socket } from './socket';\nimport { useCurrentUser } from './auth'; // Giả sử có hook để lấy thông tin user\nimport { useNotifications } from './notification-store'; // Giả sử có store (Zustand/Redux) để quản lý thông báo\nimport { ToastContainer, toast } from 'react-toastify';\n\nfunction App() {\n  const currentUser = useCurrentUser();\n  const addNotification = useNotifications(state => state.addNotification);\n\n  useEffect(() => {\n    if (currentUser) {\n      // Kết nối socket\n      socket.connect();\n\n      // Gửi sự kiện tham gia phòng riêng của user\n      socket.emit('join_user_room', currentUser._id);\n\n      // Lắng nghe sự kiện có thông báo mới\n      const handleNewNotification = (notification) => {\n        // Thêm thông báo vào store\n        addNotification(notification);\n        // Hiển thị toast\n        toast.info(notification.content);\n      };\n\n      socket.on('new_notification', handleNewNotification);\n\n      // Dọn dẹp khi component unmount\n      return () => {\n        socket.off('new_notification', handleNewNotification);\n        socket.disconnect();\n      };\n    }\n  }, [currentUser, addNotification]);\n\n  return (\n    <>\n      {/* ... Giao diện ứng dụng ... */}\n      <ToastContainer />\n    </>\n  );\n}\n\nexport default App;\n```\n\n## III. Các bước thực hành\n\n1.  **Backend:**\n    *   Cài đặt `socket.io`.\n    *   Cập nhật file `server.js` để tích hợp `http` server và `socket.io`.\n    *   Tạo `notificationModel.js`.\n    *   Trong các service hoặc controller liên quan (ví dụ: `invitationService`), sau khi xử lý logic thành công, hãy tạo một bản ghi `Notification` và dùng `io.to(userId).emit(...)` để gửi sự kiện.\n2.  **Frontend:**\n    *   Cài đặt `socket.io-client`.\n    *   Tạo file `socket.js` để khởi tạo và export socket instance.\n    *   Trong component `App.jsx` hoặc một layout chung, sử dụng `useEffect` để quản lý vòng đời của kết nối socket (kết nối, tham gia phòng, lắng nghe sự kiện, ngắt kết nối).\n    *   Tạo một component `NotificationDropdown` để hiển thị danh sách thông báo khi người dùng nhấp vào biểu tượng chuông.\n    *   Sử dụng một state management library (Zustand, Redux) để quản lý danh sách thông báo một cách tập trung.\n\n## IV. Lưu ý quan trọng\n\n*   **Bảo mật:** Luôn xác thực người dùng trước khi cho phép họ tham gia một phòng socket. Đừng tin tưởng vào dữ liệu gửi từ client.\n*   **Performance:** Đối với các ứng dụng có lượng người dùng lớn, cần cân nhắc việc mở rộng (scaling) hệ thống Socket.io bằng cách sử dụng các adapter như `socket.io-redis`.\n*   **Quản lý `userId`:** Cần đảm bảo `userId` được quản lý nhất quán giữa backend và frontend để việc join/emit vào room hoạt động chính xác.\n*   **Tách biệt logic:** Nên tạo một file `socketHandler.js` riêng ở backend để quản lý tất cả các logic liên quan đến socket, giúp mã nguồn sạch sẽ và dễ bảo trì hơn.\n\n## V. Tài liệu tham khảo\n\n1.  [Socket.IO Official Documentation](https://socket.io/docs/v4/)\n2.  [Real Time Features with Socket.io in MERN Stack (Medium)](https://medium.com/@sivanathandilakshan/real-time-features-with-socket-io-in-mern-stack-0c38a56833e6)\n3.  [TrungQuanDev Playlist - MERN Stack Pro](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Đâu là sự khác biệt cơ bản nhất giữa WebSockets và giao thức HTTP truyền thống?",
+        "options": [
+          "WebSockets nhanh hơn HTTP.",
+          "WebSockets tạo ra một kênh giao tiếp hai chiều và liên tục, trong khi HTTP hoạt động theo mô hình request-response.",
+          "HTTP chỉ dùng để tải trang web, còn WebSockets dùng để chat.",
+          "WebSockets yêu cầu cài đặt phần mềm đặc biệt trên client."
+        ],
+        "correctAnswer": 1,
+        "explanation": "HTTP hoạt động theo mô hình client yêu cầu, server trả lời rồi đóng kết nối. Ngược lại, WebSockets thiết lập một kết nối bền vững, cho phép server chủ động gửi dữ liệu đến client bất cứ lúc nào, là nền tảng cho các ứng dụng real-time."
+      },
+      {
+        "question": "Tính năng \"fallback\" của Socket.io có ý nghĩa gì?",
+        "options": [
+          "Tự động nén dữ liệu để tăng tốc độ.",
+          "Tự động mã hóa tất cả các tin nhắn.",
+          "Nếu trình duyệt không hỗ trợ WebSockets, nó sẽ tự động chuyển sang các phương thức khác như Long-Polling.",
+          "Tự động dịch tin nhắn sang các ngôn ngữ khác nhau."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tính năng fallback đảm bảo tính tương thích rộng rãi của Socket.io bằng cách sử dụng các công nghệ thay thế khi công nghệ chính (WebSockets) không được hỗ trợ bởi client."
+      },
+      {
+        "question": "Trong Socket.io, làm thế nào để server có thể gửi một sự kiện chỉ đến một người dùng cụ thể?",
+        "options": [
+          "Sử dụng `socket.broadcast.emit()`",
+          "Sử dụng `io.emit()`",
+          "Cho socket của người dùng đó tham gia một \"phòng\" (room) riêng và gửi sự kiện đến phòng đó bằng `io.to(roomId).emit()`",
+          "Lưu trữ tất cả socket và lặp qua để tìm đúng socket của người dùng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khái niệm \"Room\" trong Socket.io là cách hiệu quả nhất để nhóm các client và gửi thông điệp đến một nhóm cụ thể, ví dụ như tất cả các kết nối của một người dùng."
+      },
+      {
+        "question": "Để tích hợp Socket.io vào một server Express, bạn cần làm gì?",
+        "options": [
+          "Chỉ cần `npm install socket.io` là đủ.",
+          "Thay thế hoàn toàn Express bằng Socket.io.",
+          "Sử dụng module `http` của Node.js để tạo server, sau đó gắn Express và Socket.io vào server đó.",
+          "Cấu hình Express để lắng nghe trên một port khác với Socket.io."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Socket.io cần được gắn vào một server HTTP gốc. Do đó, chúng ta tạo một `http.createServer` với `app` Express, sau đó khởi tạo `new Server(server)` của Socket.io."
+      },
+      {
+        "question": "Tại sao cần cấu hình CORS khi khởi tạo server Socket.io?",
+        "options": [
+          "Để tăng cường bảo mật cho server.",
+          "Để cho phép client từ một origin (ví dụ: http://localhost:3000) khác có thể kết nối đến server Socket.io (ví dụ: http://localhost:8017).",
+          "Để nén dữ liệu truyền đi.",
+          "Đây là một yêu cầu bắt buộc của Node.js."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Chính sách Same-Origin Policy của trình duyệt sẽ chặn các yêu cầu từ một domain, port, hoặc protocol khác. Cấu hình CORS trên server Socket.io là để \"nói\" với trình duyệt rằng việc nhận kết nối từ origin của ứng dụng React là được phép."
+      },
+      {
+        "question": "Sự kiện `io.on('connection', (socket) => { ... })` ở phía server dùng để làm gì?",
+        "options": [
+          "Gửi một tin nhắn đến tất cả client.",
+          "Lắng nghe và xử lý khi một client mới kết nối thành công đến server.",
+          "Tạo một phòng mới.",
+          "Ngắt kết nối một client."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đây là trình xử lý sự kiện (event handler) cốt lõi của Socket.io server. Bất cứ khi nào một client thiết lập kết nối thành công, callback function bên trong `io.on('connection', ...)` sẽ được thực thi với đối tượng `socket` đại diện cho kết nối đó."
+      },
+      {
+        "question": "Lệnh `socket.join(userId)` trong server có tác dụng gì?",
+        "options": [
+          "Thêm người dùng vào một cuộc trò chuyện nhóm.",
+          "Đăng ký socket hiện tại vào một phòng có tên là giá trị của `userId`.",
+          "Kết hợp hai người dùng với nhau.",
+          "Xóa người dùng khỏi hệ thống."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đây là cách để đưa một kết nối socket vào một kênh (phòng) cụ thể. Sau khi tham gia, server có thể gửi tin nhắn đến phòng đó và chỉ những socket trong phòng mới nhận được."
+      },
+      {
+        "question": "Trong `notificationSchema` của Mongoose, trường `recipient` có vai trò gì?",
+        "options": [
+          "Lưu ID của người gửi thông báo.",
+          "Lưu ID của người sẽ nhận thông báo.",
+          "Lưu nội dung của thông báo.",
+          "Xác định loại thông báo."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trường `recipient` (người nhận) rất quan trọng để xác định thông báo này dành cho ai, từ đó có thể truy vấn và gửi thông báo real-time đến đúng người dùng."
+      },
+      {
+        "question": "Để phát một sự kiện real-time từ server đến phòng của một người dùng cụ thể (ví dụ: `invitedUser._id`), câu lệnh nào sau đây là đúng?",
+        "options": [
+          "`io.emit('new_notification', data)`",
+          "`socket.emit('new_notification', data)`",
+          "`io.to(invitedUser._id.toString()).emit('new_notification', data)`",
+          "`socket.to(invitedUser._id.toString()).broadcast('new_notification')`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`io.to(roomId)` chọn ra một phòng cụ thể, và `.emit()` sẽ gửi sự kiện đến tất cả các client trong phòng đó. Đây là cách chuẩn để gửi thông báo cho một người dùng cụ thể đã tham gia phòng riêng của họ."
+      },
+      {
+        "question": "Lệnh nào dùng để cài đặt thư viện Socket.io client trong một dự án React?",
+        "options": [
+          "`npm install socket.io`",
+          "`npm install socket-client`",
+          "`npm install socket.io-client`",
+          "`npm install react-socket`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thư viện phía client có tên là `socket.io-client`. Thư viện `socket.io` là dành cho phía server Node.js."
+      },
+      {
+        "question": "Trong React, tại sao nên đặt `autoConnect: false` khi khởi tạo socket client?",
+        "options": [
+          "Để ứng dụng chạy nhanh hơn.",
+          "Để tránh kết nối socket ngay khi ứng dụng vừa tải, thay vào đó chỉ kết nối khi cần thiết (ví dụ: sau khi người dùng đã đăng nhập).",
+          "Đây là giá trị mặc định và không thể thay đổi.",
+          "Để cho phép nhiều kết nối đồng thời."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc kiểm soát thời điểm kết nối là rất quan trọng. Chúng ta thường chỉ muốn thiết lập kết nối socket sau khi đã xác thực người dùng và có thông tin `userId` để tham gia vào phòng riêng."
+      },
+      {
+        "question": "Trong một React component, hook nào thường được sử dụng để quản lý vòng đời của kết nối socket (kết nối, lắng nghe sự kiện, ngắt kết nối)?",
+        "options": [
+          "`useState`",
+          "`useContext`",
+          "`useEffect`",
+          "`useReducer`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useEffect` là nơi lý tưởng để xử lý các side-effect, bao gồm việc thiết lập và dọn dẹp các kết nối bên ngoài như WebSockets. Hàm cleanup trả về từ `useEffect` đảm bảo rằng các event listener và kết nối sẽ được hủy đúng cách khi component unmount."
+      },
+      {
+        "question": "Hàm cleanup (hàm trả về) trong `useEffect` dùng để quản lý socket có vai trò quan trọng gì?",
+        "options": [
+          "Gửi tin nhắn cuối cùng trước khi đóng.",
+          "Ngắt kết nối socket (`socket.disconnect()`) và gỡ bỏ các trình lắng nghe sự kiện (`socket.off()`) để tránh rò rỉ bộ nhớ và các lỗi không mong muốn khi component bị unmount.",
+          "Lưu trạng thái của socket vào `localStorage`.",
+          "Kết nối lại socket nếu nó bị ngắt."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu không dọn dẹp, trình lắng nghe sự kiện có thể vẫn tồn tại ngay cả khi component không còn trên UI, dẫn đến việc nó cố gắng cập nhật state trên một component đã unmount, gây ra lỗi và rò rỉ bộ nhớ."
+      },
+      {
+        "question": "Một trong những lưu ý bảo mật quan trọng nhất khi làm việc với Socket.io là gì?",
+        "options": [
+          "Luôn sử dụng phiên bản mới nhất của thư viện.",
+          "Không bao giờ tin tưởng dữ liệu gửi từ client và luôn xác thực người dùng trước khi cho phép họ thực hiện các hành động nhạy cảm như tham gia phòng.",
+          "Chỉ cho phép kết nối từ một địa chỉ IP duy nhất.",
+          "Mã hóa tất cả nội dung tin nhắn bằng một thuật toán riêng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bất kỳ dữ liệu nào từ client đều có thể bị giả mạo. Do đó, phía server phải luôn kiểm tra quyền hạn của người dùng (ví dụ: qua JWT, session) trước khi thực hiện một hành động được yêu cầu qua socket."
+      },
+      {
+        "question": "Khi một ứng dụng có lượng người dùng rất lớn, giải pháp nào thường được sử dụng để mở rộng (scale) hệ thống Socket.io?",
+        "options": [
+          "Tăng RAM cho server.",
+          "Sử dụng một server mạnh hơn.",
+          "Chạy nhiều instance của server và sử dụng một Adapter như `socket.io-redis` để đồng bộ sự kiện giữa các instance.",
+          "Giới hạn số lượng người dùng có thể kết nối cùng lúc."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi bạn chạy nhiều tiến trình server, một client kết nối đến server A sẽ không nhận được sự kiện được phát ra từ server B. Adapter (như Redis) giải quyết vấn đề này bằng cách tạo một kênh chung để tất cả các server có thể giao tiếp và chuyển tiếp sự kiện cho nhau."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Khởi tạo Server Socket.io cơ bản",
+        "description": "Tích hợp Socket.io vào một server Express đơn giản và in ra console khi có một client kết nối thành công.",
+        "starterCode": "const express = require('express');\nconst http = require('http');\nconst { Server } = require('socket.io');\nconst cors = require('cors');\n\nconst app = express();\nconst server = http.createServer(app);\n\n// YÊU CẦU: Khởi tạo Socket.io server (io) tại đây, cho phép kết nối từ 'http://localhost:3000'\n\n\n// YÊU CẦU: Lắng nghe sự kiện 'connection' và in ra ID của socket vừa kết nối\n\n\nconst PORT = 8017;\nserver.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});",
+        "solution": "const express = require('express');\nconst http = require('http');\nconst { Server } = require('socket.io');\nconst cors = require('cors');\n\nconst app = express();\nconst server = http.createServer(app);\n\nconst io = new Server(server, {\n  cors: {\n    origin: 'http://localhost:3000',\n    methods: ['GET', 'POST']\n  }\n});\n\nio.on('connection', (socket) => {\n  console.log(`A user connected: ${socket.id}`);\n\n  socket.on('disconnect', () => {\n    console.log(`User disconnected: ${socket.id}`);\n  });\n});\n\nconst PORT = 8017;\nserver.listen(PORT, () => {\n  console.log(`Server is running on port ${PORT}`);\n});",
+        "testCases": "Chạy server, sau đó mở một client (có thể là một file HTML đơn giản hoặc ứng dụng React) kết nối đến server. Console phía server phải in ra dòng chữ 'A user connected: [socket_id]'."
+      },
+      {
+        "title": "Bài 2: Tham gia phòng (Room) theo User ID",
+        "description": "Mở rộng server từ Bài 1. Lắng nghe một sự kiện từ client có tên là `join_user_room`. Khi nhận được sự kiện này, server sẽ cho socket tham gia vào một phòng có tên chính là `userId` được gửi lên và in ra thông báo.",
+        "starterCode": "io.on('connection', (socket) => {\n  console.log(`A user connected: ${socket.id}`);\n\n  // YÊU CẦU: Lắng nghe sự kiện 'join_user_room' từ client.\n  // Khi nhận được, lấy ra userId và cho socket tham gia vào phòng tương ứng.\n  // In ra console: `Socket [socket_id] joined room for user [user_id]`\n\n\n  socket.on('disconnect', () => {\n    console.log(`User disconnected: ${socket.id}`);\n  });\n});",
+        "solution": "io.on('connection', (socket) => {\n  console.log(`A user connected: ${socket.id}`);\n\n  socket.on('join_user_room', (userId) => {\n    socket.join(userId);\n    console.log(`Socket ${socket.id} joined room for user ${userId}`);\n  });\n\n  socket.on('disconnect', () => {\n    console.log(`User disconnected: ${socket.id}`);\n  });\n});",
+        "testCases": "Từ phía client, sau khi kết nối, gửi sự kiện `socket.emit('join_user_room', 'some_user_id_123')`. Console phía server phải in ra dòng chữ 'Socket [socket_id] joined room for user some_user_id_123'."
+      },
+      {
+        "title": "Bài 3: Định nghĩa Notification Schema với Mongoose",
+        "description": "Tạo một file model Mongoose cho Notification. Schema cần có các trường: `recipient`, `sender`, `type`, `content`, và `isRead` với các kiểu dữ liệu và thuộc tính phù hợp như trong bài học.",
+        "starterCode": "const mongoose = require('mongoose');\n\n// YÊU CẦU: Định nghĩa notificationSchema tại đây.\n// - recipient: ObjectId, ref 'User', required\n// - sender: ObjectId, ref 'User', required\n// - type: String, enum ['board_invitation', 'card_comment'], required\n// - content: String, required\n// - isRead: Boolean, default false\nconst notificationSchema = new mongoose.Schema({\n  // ... code của bạn\n}, { timestamps: true });\n\nmodule.exports = mongoose.model('Notification', notificationSchema);",
+        "solution": "const mongoose = require('mongoose');\n\nconst notificationSchema = new mongoose.Schema({\n  recipient: {\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User',\n    required: true\n  },\n  sender: {\n    type: mongoose.Schema.Types.ObjectId,\n    ref: 'User',\n    required: true\n  },\n  type: {\n    type: String,\n    enum: ['board_invitation', 'card_comment'],\n    required: true\n  },\n  content: {\n    type: String,\n    required: true\n  },\n  isRead: {\n    type: Boolean,\n    default: false\n  }\n}, { timestamps: true });\n\nmodule.exports = mongoose.model('Notification', notificationSchema);",
+        "testCases": "Chạy code không gây ra lỗi. Có thể thử tạo một instance mới của model `new Notification(...)` với dữ liệu hợp lệ để kiểm tra xem schema có được định nghĩa đúng hay không."
+      },
+      {
+        "title": "Bài 4: Gửi thông báo khi có sự kiện",
+        "description": "Giả sử bạn có một hàm `createNewComment`. Sau khi tạo comment thành công, hãy viết logic để tạo một bản ghi `Notification` mới và phát sự kiện `new_notification` đến phòng của người nhận thông báo.",
+        "starterCode": "const Notification = require('../models/notificationModel');\nconst { io } = require('../server');\n\nconst createNewComment = async (commentData, board, author, recipientUser) => {\n  // Giả sử logic tạo comment đã thành công ở đây...\n  const comment = { ...commentData, author: author.displayName };\n\n  // YÊU CẦU: \n  // 1. Tạo một bản ghi Notification mới trong database.\n  //    - recipient: recipientUser._id\n  //    - sender: author._id\n  //    - type: 'card_comment'\n  //    - content: `${author.displayName} đã bình luận về một thẻ bạn theo dõi.`\n  // 2. Phát sự kiện 'new_notification' đến phòng của recipientUser.\n  //    - Gửi kèm bản ghi notification vừa tạo làm dữ liệu.\n\n  return comment;\n};",
+        "solution": "const Notification = require('../models/notificationModel');\nconst { io } = require('../server');\n\nconst createNewComment = async (commentData, board, author, recipientUser) => {\n  const comment = { ...commentData, author: author.displayName };\n\n  const newNotification = await Notification.create({\n    recipient: recipientUser._id,\n    sender: author._id,\n    type: 'card_comment',\n    content: `${author.displayName} đã bình luận về một thẻ bạn theo dõi.`\n  });\n\n  io.to(recipientUser._id.toString()).emit('new_notification', newNotification);\n\n  return comment;\n};",
+        "testCases": "Khi gọi hàm `createNewComment`, một bản ghi mới phải được tạo trong collection `notifications` của MongoDB. Đồng thời, client đang lắng nghe trong phòng của `recipientUser` phải nhận được sự kiện `new_notification` cùng với dữ liệu của thông báo đó."
+      },
+      {
+        "title": "Bài 5: Component React lắng nghe thông báo",
+        "description": "Hoàn thiện một component React. Sử dụng `useEffect` để kết nối tới socket server, tham gia phòng của người dùng hiện tại, lắng nghe sự kiện `new_notification`, và hiển thị nội dung thông báo bằng `alert`.",
+        "starterCode": "import { useEffect } from 'react';\nimport { socket } from './socket'; // Giả sử socket đã được khởi tạo với autoConnect: false\n\nfunction NotificationListener({ currentUser }) {\n  useEffect(() => {\n    if (currentUser) {\n      // YÊU CẦU: \n      // 1. Kết nối socket.\n      // 2. Gửi sự kiện 'join_user_room' với `currentUser._id`.\n      // 3. Lắng nghe sự kiện 'new_notification' từ server.\n      // 4. Khi nhận được, gọi `alert(notification.content)`.\n      // 5. Viết hàm cleanup để gỡ bỏ trình lắng nghe và ngắt kết nối socket.\n\n    }\n  }, [currentUser]);\n\n  return <div>Listening for notifications...</div>;\n}",
+        "solution": "import { useEffect } from 'react';\nimport { socket } from './socket';\n\nfunction NotificationListener({ currentUser }) {\n  useEffect(() => {\n    if (currentUser) {\n      socket.connect();\n\n      socket.emit('join_user_room', currentUser._id);\n\n      const handleNewNotification = (notification) => {\n        alert(notification.content);\n      };\n\n      socket.on('new_notification', handleNewNotification);\n\n      return () => {\n        socket.off('new_notification', handleNewNotification);\n        socket.disconnect();\n      };\n    }\n  }, [currentUser]);\n\n  return <div>Listening for notifications...</div>;\n}",
+        "testCases": "Render component này với một đối tượng `currentUser` hợp lệ. Khi server phát đi một sự kiện `new_notification` đến phòng của user này, một hộp thoại `alert` phải hiện ra trên trình duyệt với nội dung của thông báo."
+      }
+    ]
+  }
+}

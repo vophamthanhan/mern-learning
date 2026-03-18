@@ -1,0 +1,213 @@
+{
+  "id": 60,
+  "title": "Bài học 44: 38. Hãy nói cho mình biết cảm nghĩ của bạn nhé?",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Bài học 44: 38. Hãy nói cho mình biết cảm nghĩ của bạn nhé?\n\n## Mục tiêu bài học\n\nVideo này là một điểm dừng đặc biệt trong chuỗi series \"MERN Stack Pro\". Thay vì truyền tải kiến thức kỹ thuật mới, video này có mục tiêu chính là:\n\n*   **Tạo không gian tương tác:** Mở ra một kênh giao tiếp hai chiều giữa người hướng dẫn (TrungQuanDev) và cộng đồng học viên.\n*   **Thu thập phản hồi:** Khuyến khích học viên chia sẻ những cảm nghĩ, đánh giá, và góp ý chân thành về chất lượng và nội dung của khóa học sau một chặng đường dài cùng nhau.\n*   **Xây dựng cộng đồng:** Tăng cường sự kết nối, tạo động lực và xây dựng một cộng đồng học tập vững mạnh, nơi mọi người có thể chia sẻ và giúp đỡ lẫn nhau.\n\n## Nội dung chính\n\nVideo \"38. Hãy nói cho mình biết cảm nghĩ của bạn nhé?\" không phải là một bài giảng về code hay một khái niệm kỹ thuật cụ thể. Đây là một video tâm sự, một lời kêu gọi từ tác giả TrungQuanDev gửi đến những người đã và đang theo dõi khóa học. Tác giả muốn lắng nghe những chia sẻ từ cộng đồng để có thể cải thiện chất lượng các bài học trong tương lai và cũng để hiểu rõ hơn về những khó khăn, thuận lợi mà học viên gặp phải trong quá trình học.\n\nQua phần bình luận của video, có thể thấy cộng đồng đã có những phản hồi rất tích cực. Nhiều bình luận bày tỏ sự cảm kích đối với tâm huyết và sự chỉn chu của tác giả trong từng video. Các học viên đánh giá cao phương pháp giảng dạy \"học qua dự án thực tế\", giúp họ không chỉ nắm vững kiến thức mà còn có được kinh nghiệm thực chiến.\n\nMột số bình luận tiêu biểu:\n\n> \"Giờ em mới cày tới được video này hehe. Tuy cột sống gần như đang lên án nhưng mà thật sự video quá cuốn, em ngồi cả tiếng đồng hồ vẫn rất dính không dứt ra khỏi video của anh được =))))) - Việc học FE chay bằng các lý thuyết thuần thì rất chán, những video làm project một dự án thực tế như thế này thật sự rất cuốn, rất thiết thực.\" - **@dbk0175**\n\n> \"Đầu tiên phải cảm ơn anh Quân vì một khóa học MERN Stack cực kỳ chất lượng thế này :3 Bản thân em đã từng mua 2 khóa học React bên nước ngoài giá khoảng $40 mà chất lượng kiến thức lại khá sơ xài và học xong gần như không đọng lại được gì hết. Thấy anh chăm chút từng video một nên nội dung khóa học vô cùng đầy đủ, chi tiết và chất lượng.\" - **@kudoo39**\n\nNhững phản hồi này cho thấy video đã đạt được mục tiêu của nó là tạo ra một diễn đàn mở để cộng đồng có thể bày tỏ quan điểm và cảm xúc của mình.\n\n## Các bước thực hành\n\nĐối với video này, không có các bước thực hành về code. Thay vào đó, bạn có thể:\n\n1.  **Xem video:** Dành thời gian xem hết video để lắng nghe những chia sẻ của tác giả.\n2.  **Để lại bình luận:** Chia sẻ cảm nghĩ, câu chuyện hoặc bất kỳ góp ý nào của bạn về khóa học. Sự đóng góp của bạn sẽ giúp tác giả và cộng đồng.\n3.  **Tham gia cộng đồng:** Kết nối với các học viên khác qua các kênh do TrungQuanDev tạo ra như Discord hoặc nhóm Facebook để cùng nhau học hỏi và phát triển.\n\n## Lưu ý quan trọng\n\n*   Đây là một video mang tính chất cộng đồng và tương tác, không phải là một bài học kỹ thuật. Nếu bạn đang tìm kiếm kiến thức mới, bạn có thể chuyển sang các video tiếp theo trong playlist.\n*   Sự tham gia của bạn vào việc đóng góp ý kiến là rất quý giá và được trân trọng.\n\n## Tài liệu tham khảo\n\n*   **Video:** [38. Hãy nói cho mình biết cảm nghĩ của bạn nhé? | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=107kytKJ8UM&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=44)\n*   **Playlist:** [[FULL STACK] MERN PRO • Học lập trình Front-end + Back-end | Làm dự án thực tế Trello kéo thả | ReactJS, NodeJS, MongoDB | TrungQuanDev](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của video `38. Hãy nói cho mình biết cảm nghĩ của bạn nhé?` là gì?",
+        "options": [
+          "Hướng dẫn một kỹ thuật code mới trong MERN Stack.",
+          "Tạo không gian tương tác và thu thập phản hồi từ học viên.",
+          "Tổng kết toàn bộ kiến thức đã học trong khóa MERN Stack Pro.",
+          "Giới thiệu một dự án thực tế mới."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Video này không phải là một bài học kỹ thuật, mà là một điểm dừng để tác giả kết nối với cộng đồng, lắng nghe chia sẻ và thu thập góp ý để cải thiện khóa học."
+      },
+      {
+        "question": "Video này thuộc thể loại nào?",
+        "options": [
+          "Bài giảng kỹ thuật (Technical Lecture)",
+          "Hướng dẫn dự án (Project Tutorial)",
+          "Video tâm sự, tương tác cộng đồng (Community Interaction)",
+          "Video đánh giá công nghệ (Technology Review)"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Nội dung chính của video là lời kêu gọi chia sẻ và tâm sự từ tác giả, nhằm tăng cường sự kết nối với cộng đồng học viên."
+      },
+      {
+        "question": "Theo các bình luận được trích dẫn, học viên đánh giá cao điều gì nhất ở khóa học của TrungQuanDev?",
+        "options": [
+          "Thời lượng của mỗi video rất ngắn và súc tích.",
+          "Khóa học có chi phí rẻ hơn các khóa học nước ngoài.",
+          "Phương pháp giảng dạy thông qua dự án thực tế, giúp kiến thức trở nên thiết thực.",
+          "Tất cả các video đều có phụ đề tiếng Anh."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Các học viên nhấn mạnh rằng việc học qua dự án thực tế giúp họ thấy cuốn hút và kiến thức trở nên rất thiết thực, khác với việc học lý thuyết chay."
+      },
+      {
+        "question": "Hành động nào được khuyến khích người xem thực hiện sau khi xem video này?",
+        "options": [
+          "Thực hành code một tính năng mới được giới thiệu.",
+          "Làm một bài kiểm tra kiến thức.",
+          "Chia sẻ cảm nghĩ, góp ý qua phần bình luận và tham gia các kênh cộng đồng.",
+          "Tải về các tài liệu và slide của bài học."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tác giả kêu gọi người xem để lại bình luận để chia sẻ cảm nghĩ và tham gia vào các cộng đồng như Discord hoặc Facebook để cùng nhau học hỏi."
+      },
+      {
+        "question": "Thông điệp chính mà tác giả muốn truyền tải qua video là gì?",
+        "options": [
+          "Sự quan trọng của việc học lý thuyết nền tảng.",
+          "Sự trân trọng đối với những đóng góp và phản hồi của cộng đồng học viên.",
+          "Thông báo về việc ra mắt một khóa học mới.",
+          "So sánh ưu và nhược điểm của MERN Stack so với các stack khác."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Tác giả thể hiện sự trân trọng và mong muốn lắng nghe ý kiến từ cộng đồng để cải thiện chất lượng khóa học và xây dựng một môi trường học tập tốt hơn."
+      },
+      {
+        "question": "Trong bối cảnh phát triển ứng dụng MERN, để xây dựng tính năng cho phép người dùng gửi `cảm nghĩ` (feedback), bạn sẽ thiết kế một Mongoose Schema như thế nào?",
+        "options": [
+          "Schema chỉ cần một trường `content` kiểu String.",
+          "Schema cần các trường như `author`, `content`, `rating` (số sao), và `createdAt`.",
+          "Schema không cần thiết, có thể lưu trực tiếp vào một file text.",
+          "Schema chỉ cần một trường `likes` kiểu Number."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một schema cho feedback cần có đủ thông tin để hiển thị và quản lý, bao gồm người gửi, nội dung, xếp hạng (nếu có) và thời gian gửi để sắp xếp."
+      },
+      {
+        "question": "Để tạo một form nhận phản hồi từ người dùng trong React, hook nào là phù hợp nhất để quản lý trạng thái của các ô nhập liệu?",
+        "options": [
+          "`useEffect`",
+          "`useContext`",
+          "`useState`",
+          "`useRef`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useState` là hook cơ bản và hiệu quả nhất để quản lý trạng thái của các input trong một form, ví dụ như nội dung bình luận, email của người gửi, v.v."
+      },
+      {
+        "question": "Khi người dùng gửi một phản hồi từ client (React) đến server (Node.js/Express), phương thức HTTP nào là phù hợp nhất?",
+        "options": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Phương thức POST được sử dụng để tạo một tài nguyên mới. Trong trường hợp này, mỗi phản hồi được gửi đi là một tài nguyên mới được tạo trên server."
+      },
+      {
+        "question": "Tại sao việc xây dựng cộng đồng học tập lại quan trọng, theo tinh thần của bài học?",
+        "options": [
+          "Để tăng số lượng người đăng ký kênh YouTube.",
+          "Để tạo ra một môi trường nơi mọi người có thể hỗ trợ, chia sẻ kiến thức và tạo động lực cho nhau.",
+          "Để dễ dàng bán các sản phẩm đi kèm khóa học.",
+          "Để cạnh tranh với các cộng đồng lập trình khác."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nhấn mạnh việc xây dựng cộng đồng để tăng cường kết nối, tạo động lực và giúp các học viên có nơi để trao đổi, giúp đỡ lẫn nhau cùng phát triển."
+      },
+      {
+        "question": "Nếu bạn muốn hiển thị các phản hồi của người dùng theo thứ tự mới nhất trước, bạn sẽ sắp xếp (sort) dữ liệu lấy từ MongoDB như thế nào?",
+        "options": [
+          "Sắp xếp theo trường `createdAt` với thứ tự tăng dần (ascending).",
+          "Không cần sắp xếp, MongoDB mặc định trả về theo thứ tự mới nhất.",
+          "Sắp xếp theo trường `createdAt` với thứ tự giảm dần (descending).",
+          "Sắp xếp ngẫu nhiên để tạo sự đa dạng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để hiển thị các bản ghi mới nhất lên đầu, cần sắp xếp theo trường thời gian tạo (`createdAt` hoặc tương tự) theo thứ tự giảm dần (ví dụ: `sort({ createdAt: -1 })`)."
+      },
+      {
+        "question": "Đâu là lợi ích của việc `học qua dự án thực tế` được đề cập trong các bình luận?",
+        "options": [
+          "Giúp học viên thuộc lòng các cú pháp một cách nhanh chóng.",
+          "Giúp khóa học trông có vẻ chuyên nghiệp hơn.",
+          "Giúp kiến thức trở nên thiết thực, dễ hiểu và tạo sự cuốn hút khi học.",
+          "Giúp giảm thời gian cần thiết để hoàn thành khóa học."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bình luận của học viên cho thấy việc áp dụng kiến thức vào một dự án thực tế làm cho việc học trở nên cuốn hút, thiết thực và không nhàm chán như học lý thuyết thuần."
+      },
+      {
+        "question": "Trong Express.js, để xử lý dữ liệu JSON được gửi từ client trong body của request, bạn cần sử dụng middleware nào?",
+        "options": [
+          "`express.static()`",
+          "`express.json()`",
+          "`express.urlencoded()`",
+          "`cors()`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`express.json()` là một middleware tích hợp sẵn trong Express, có chức năng phân tích (parse) body của các request có `Content-Type` là `application/json`."
+      },
+      {
+        "question": "Khi xây dựng tính năng cộng đồng, việc xác thực (authenticate) người dùng trước khi cho phép họ đăng bình luận nhằm mục đích gì?",
+        "options": [
+          "Để làm chậm tốc độ gửi bình luận.",
+          "Để đảm bảo chỉ những người dùng đã đăng nhập mới có thể tương tác, giúp quản lý và chống spam.",
+          "Để thu thập thêm thông tin cá nhân của người dùng.",
+          "Đây là một yêu cầu bắt buộc của mọi ứng dụng web."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Xác thực người dùng giúp định danh người gửi, tăng tính trách nhiệm cho nội dung họ đăng tải, và là một biện pháp hiệu quả để ngăn chặn các bình luận rác, nặc danh."
+      },
+      {
+        "question": "Theo nội dung bài học, `sự tham gia đóng góp ý kiến` của học viên được xem là gì?",
+        "options": [
+          "Một điều không cần thiết.",
+          "Một sự phiền nhiễu đối với tác giả.",
+          "Rất quý giá và được trân trọng.",
+          "Chỉ có giá trị nếu đó là những lời khen."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học nhấn mạnh rằng mọi sự đóng góp ý kiến của học viên, dù là khen hay chê, đều rất quý giá và được tác giả trân trọng vì nó giúp cải thiện chất lượng khóa học."
+      },
+      {
+        "question": "Để tạo một kênh giao tiếp hai chiều giữa giảng viên và học viên trong một ứng dụng MERN, ngoài tính năng bình luận, bạn có thể phát triển thêm tính năng nào?",
+        "options": [
+          "Hệ thống chat thời gian thực (real-time chat) sử dụng Socket.IO.",
+          "Trang giới thiệu về giảng viên.",
+          "Tính năng đăng xuất.",
+          "Trang chính sách bảo mật."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Một hệ thống chat thời gian thực là một tính năng nâng cao tuyệt vời để tạo ra kênh giao tiếp hai chiều, cho phép giảng viên và học viên tương tác trực tiếp và nhanh chóng."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Mongoose Schema cho Feedback",
+        "description": "Hãy định nghĩa một Mongoose Schema để lưu trữ các phản hồi (feedback) của người dùng. Schema cần bao gồm các trường: `username` (String, bắt buộc), `comment` (String, bắt buộc), `rating` (Number, từ 1 đến 5), và `createdAt` (Date, mặc định là thời điểm tạo).",
+        "starterCode": "const mongoose = require('mongoose');\n\n// Your code here\nconst feedbackSchema = new mongoose.Schema({\n  // Define fields here\n});\n\nmodule.exports = mongoose.model('Feedback', feedbackSchema);",
+        "solution": "const mongoose = require('mongoose');\n\nconst feedbackSchema = new mongoose.Schema({\n  username: {\n    type: String,\n    required: true\n  },\n  comment: {\n    type: String,\n    required: true\n  },\n  rating: {\n    type: Number,\n    min: 1,\n    max: 5\n  },\n  createdAt: {\n    type: Date,\n    default: Date.now\n  }\n});\n\nmodule.exports = mongoose.model('Feedback', feedbackSchema);",
+        "testCases": "1. Schema phải có trường `username` kiểu String và là bắt buộc.\n2. Schema phải có trường `comment` kiểu String và là bắt buộc.\n3. Schema phải có trường `rating` kiểu Number.\n4. Schema phải có trường `createdAt` kiểu Date với giá trị mặc định."
+      },
+      {
+        "title": "Bài 2: Tạo Component Form Feedback trong React",
+        "description": "Sử dụng React và hook `useState`, hãy tạo một component `FeedbackForm` cho phép người dùng nhập tên, bình luận và xếp hạng. Component này sẽ nhận một hàm `onSubmit` qua props để xử lý dữ liệu khi form được gửi đi.",
+        "starterCode": "import React, { useState } from 'react';\n\nconst FeedbackForm = ({ onSubmit }) => {\n  // Your state management here\n\n  const handleSubmit = (e) => {\n    e.preventDefault();\n    // Call onSubmit prop here\n  };\n\n  return (\n    <form onSubmit={handleSubmit}>\n      {/* Your form inputs here */}\n      <button type=\"submit\">Gửi</button>\n    </form>\n  );\n};\n\nexport default FeedbackForm;",
+        "solution": "import React, { useState } from 'react';\n\nconst FeedbackForm = ({ onSubmit }) => {\n  const [username, setUsername] = useState('');\n  const [comment, setComment] = useState('');\n  const [rating, setRating] = useState(5);\n\n  const handleSubmit = (e) => {\n    e.preventDefault();\n    onSubmit({ username, comment, rating });\n    setUsername('');\n    setComment('');\n    setRating(5);\n  };\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <input type=\"text\" placeholder=\"Tên của bạn\" value={username} onChange={(e) => setUsername(e.target.value)} required />\n      <textarea placeholder=\"Cảm nghĩ của bạn\" value={comment} onChange={(e) => setComment(e.target.value)} required />\n      <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>\n        <option value={5}>5 sao</option>\n        <option value={4}>4 sao</option>\n        <option value={3}>3 sao</option>\n        <option value={2}>2 sao</option>\n        <option value={1}>1 sao</option>\n      </select>\n      <button type=\"submit\">Gửi</button>\n    </form>\n  );\n};\n\nexport default FeedbackForm;",
+        "testCases": "1. Component phải quản lý được state cho `username`, `comment`, và `rating`.\n2. Khi form được submit, hàm `handleSubmit` phải được gọi.\n3. Hàm `handleSubmit` phải gọi prop `onSubmit` với dữ liệu từ state."
+      },
+      {
+        "title": "Bài 3: Tạo API Endpoint để nhận Feedback",
+        "description": "Sử dụng Express.js, hãy tạo một API endpoint `POST /api/feedback` để nhận dữ liệu phản hồi từ client. Endpoint này sẽ nhận dữ liệu từ `req.body`, tạo một bản ghi `Feedback` mới sử dụng model đã tạo ở Bài 1 và lưu vào cơ sở dữ liệu. Trả về bản ghi đã tạo với status 201.",
+        "starterCode": "const express = require('express');\nconst router = express.Router();\nconst Feedback = require('../models/Feedback'); // Giả sử model ở vị trí này\n\n// Your code here\nrouter.post('/feedback', async (req, res) => {\n  // Your logic here\n});\n\nmodule.exports = router;",
+        "solution": "const express = require('express');\nconst router = express.Router();\nconst Feedback = require('../models/Feedback');\n\nrouter.post('/feedback', async (req, res) => {\n  try {\n    const { username, comment, rating } = req.body;\n    const newFeedback = new Feedback({ username, comment, rating });\n    const savedFeedback = await newFeedback.save();\n    res.status(201).json(savedFeedback);\n  } catch (error) {\n    res.status(400).json({ message: error.message });\n  }\n});\n\nmodule.exports = router;",
+        "testCases": "1. Endpoint phải là `POST /api/feedback`.\n2. Phải đọc được `username`, `comment`, `rating` từ `req.body`.\n3. Phải tạo và lưu thành công một bản ghi `Feedback` mới.\n4. Phải trả về status 201 và dữ liệu của bản ghi vừa tạo nếu thành công."
+      },
+      {
+        "title": "Bài 4: Tạo API Endpoint để lấy danh sách Feedback",
+        "description": "Sử dụng Express.js, hãy tạo một API endpoint `GET /api/feedback` để lấy tất cả các phản hồi từ cơ sở dữ liệu. Kết quả trả về phải được sắp xếp theo thứ tự mới nhất trước (dựa trên trường `createdAt`).",
+        "starterCode": "const express = require('express');\nconst router = express.Router();\nconst Feedback = require('../models/Feedback');\n\n// Your code here\nrouter.get('/feedback', async (req, res) => {\n  // Your logic here\n});\n\nmodule.exports = router;",
+        "solution": "const express = require('express');\nconst router = express.Router();\nconst Feedback = require('../models/Feedback');\n\nrouter.get('/feedback', async (req, res) => {\n  try {\n    const feedbacks = await Feedback.find().sort({ createdAt: -1 });\n    res.status(200).json(feedbacks);\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n});\n\nmodule.exports = router;",
+        "testCases": "1. Endpoint phải là `GET /api/feedback`.\n2. Phải lấy được tất cả các bản ghi `Feedback` từ CSDL.\n3. Kết quả phải được sắp xếp theo `createdAt` giảm dần.\n4. Phải trả về status 200 và một mảng các feedback nếu thành công."
+      },
+      {
+        "title": "Bài 5: Tích hợp Frontend và Backend",
+        "description": "Trong component `FeedbackForm` của React (Bài 2), hãy hoàn thiện hàm `onSubmit` để nó có thể gửi dữ liệu đến API `POST /api/feedback` (Bài 3) bằng cách sử dụng `fetch` hoặc `axios`. Sau khi gửi thành công, hãy gọi một hàm `onFeedbackAdded` (nhận qua props) để cập nhật lại danh sách feedback trên giao diện.",
+        "starterCode": "import React, { useState } from 'react';\n// Giả sử bạn có axios được cài đặt\nimport axios from 'axios';\n\nconst FeedbackForm = ({ onFeedbackAdded }) => {\n  const [username, setUsername] = useState('');\n  const [comment, setComment] = useState('');\n  const [rating, setRating] = useState(5);\n\n  const handleSubmit = async (e) => {\n    e.preventDefault();\n    // Your fetch/axios logic here\n  };\n\n  return (\n    <form onSubmit={handleSubmit}>\n      {/* Form inputs from exercise 2 */}\n      <button type=\"submit\">Gửi</button>\n    </form>\n  );\n};\n\nexport default FeedbackForm;",
+        "solution": "import React, { useState } from 'react';\nimport axios from 'axios';\n\nconst FeedbackForm = ({ onFeedbackAdded }) => {\n  const [username, setUsername] = useState('');\n  const [comment, setComment] = useState('');\n  const [rating, setRating] = useState(5);\n\n  const handleSubmit = async (e) => {\n    e.preventDefault();\n    try {\n      const response = await axios.post('/api/feedback', { username, comment, rating });\n      onFeedbackAdded(response.data); // Cập nhật UI với feedback mới\n      setUsername('');\n      setComment('');\n      setRating(5);\n    } catch (error) {\n      console.error('Failed to submit feedback:', error);\n    }\n  };\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <input type=\"text\" placeholder=\"Tên của bạn\" value={username} onChange={(e) => setUsername(e.target.value)} required />\n      <textarea placeholder=\"Cảm nghĩ của bạn\" value={comment} onChange={(e) => setComment(e.target.value)} required />\n      <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>\n        <option value={5}>5 sao</option>\n        <option value={4}>4 sao</option>\n        <option value={3}>3 sao</option>\n        <option value={2}>2 sao</option>\n        <option value={1}>1 sao</option>\n      </select>\n      <button type=\"submit\">Gửi</button>\n    </form>\n  );\n};\n\nexport default FeedbackForm;",
+        "testCases": "1. Hàm `handleSubmit` phải gửi một POST request đến `/api/feedback`.\n2. Dữ liệu gửi đi phải chứa `username`, `comment`, và `rating`.\n3. Sau khi gửi thành công, hàm `onFeedbackAdded` phải được gọi với dữ liệu trả về từ server.\n4. Các ô input phải được xóa trắng sau khi gửi thành công."
+      }
+    ]
+  }
+}

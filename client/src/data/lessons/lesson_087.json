@@ -1,0 +1,213 @@
+{
+  "id": 87,
+  "title": "BÀI 74: VIẾT 2 APIS TẠO COLUMN & CARD TRONG ỨNG DỤNG TRELLO (PHẦN 1)",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# BÀI 74: VIẾT 2 APIS TẠO COLUMN & CARD TRONG ỨNG DỤNG TRELLO (PHẦN 1)\n\n## MỤC TIÊU BÀI HỌC\n\nTrong bài học này, chúng ta sẽ tập trung vào việc xây dựng hai API quan trọng cho ứng dụng Trello-clone của mình, đó là API để tạo mới một \"Column\" (cột) và một \"Card\" (thẻ). Việc này là nền tảng cho việc phát triển các tính năng phức tạp hơn sau này.\n\n## KIẾN THỨC CHI TIẾT\n\n### 1. Phân tích và thiết kế API\n\nTrước khi bắt tay vào code, chúng ta cần phân tích và thiết kế cấu trúc cho hai API này. Cụ thể:\n\n*   **API tạo Column:**\n    *   **Endpoint:** `POST /columns`\n    *   **Request Body:** `{ \"title\": \"Tên cột\", \"boardId\": \"ID của bảng\" }`\n    *   **Response:** Dữ liệu của column vừa được tạo.\n*   **API tạo Card:**\n    *   **Endpoint:** `POST /cards`\n    *   **Request Body:** `{ \"title\": \"Tên thẻ\", \"columnId\": \"ID của cột\" }`\n    *   **Response:** Dữ liệu của card vừa được tạo.\n\n### 2. Xây dựng API với NodeJS, ExpressJS và MongoDB\n\nChúng ta sẽ sử dụng bộ ba công nghệ này để xây dựng phần backend cho ứng dụng. Dưới đây là các bước chính:\n\n*   **Tạo Router:** Định nghĩa các route cho API trong ExpressJS.\n*   **Tạo Controller:** Viết logic xử lý cho từng API, bao gồm việc nhận request, validate dữ liệu và tương tác với database.\n*   **Tạo Model:** Sử dụng Mongoose để định nghĩa schema cho \"Column\" và \"Card\" trong MongoDB.\n*   **Tương tác với Database:** Sử dụng các phương thức của Mongoose để lưu dữ liệu vào MongoDB.\n\n### 3. Code mẫu (tham khảo)\n\n**Router (column.route.js):**\n\n```javascript\nconst express = require('express');\nconst router = express.Router();\nconst columnController = require('../controllers/column.controller');\n\nrouter.post('/', columnController.create);\n\nmodule.exports = router;\n```\n\n**Controller (column.controller.js):**\n\n```javascript\nconst Column = require('../models/column.model');\n\nexports.create = async (req, res) => {\n  try {\n    const newColumn = new Column(req.body);\n    const savedColumn = await newColumn.save();\n    res.status(201).json(savedColumn);\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n};\n```\n\n## CÁC BƯỚC THỰC HÀNH\n\n1.  **Chuẩn bị môi trường:** Đảm bảo bạn đã cài đặt NodeJS, MongoDB và có một project ExpressJS đã được khởi tạo.\n2.  **Clone project:** Sao chép mã nguồn từ kho GitHub của TrungQuanDev để có bộ mã nguồn hoàn chỉnh.\n3.  **Tạo file:** Tạo các file cần thiết cho router, controller và model.\n4.  **Viết code:** Dựa trên các đoạn code mẫu ở trên, hãy tự mình viết lại các API.\n5.  **Kiểm thử:** Sử dụng các công cụ như Postman hoặc Insomnia để kiểm thử các API vừa tạo.\n\n## LƯU Ý QUAN TRỌNG\n\n*   **Validate dữ liệu:** Luôn luôn validate dữ liệu đầu vào từ client để đảm bảo tính toàn vẹn của dữ liệu.\n*   **Xử lý lỗi:** Xây dựng cơ chế xử lý lỗi chi tiết để dễ dàng debug khi có sự cố xảy ra.\n*   **Bảo mật:** Chú ý đến các vấn đề bảo mật như SQL injection, XSS... (mặc dù trong khuôn khổ bài này chưa đề cập sâu).\n\n## TÀI LIỆU THAM KHẢO\n\n*   **Playlist MERN PRO:** [https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n*   **GitHub Repository:** [https://github.com/trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n*   **Blog TrungQuanDev:** [https://trungquandev.com/](https://trungquandev.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Phương thức HTTP nào được sử dụng để tạo một Column mới theo thiết kế API trong bài học?",
+        "options": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để tạo mới một tài nguyên, phương thức POST thường được sử dụng. Trong bài học, endpoint `POST /columns` được định nghĩa để tạo một cột mới."
+      },
+      {
+        "question": "Endpoint nào được sử dụng để tạo một Card mới?",
+        "options": [
+          "POST /columns",
+          "GET /cards",
+          "POST /cards",
+          "PUT /cards/:id"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Theo phân tích và thiết kế API trong bài, endpoint để tạo một card mới là `POST /cards`."
+      },
+      {
+        "question": "Trường nào là bắt buộc trong Request Body khi tạo một Column mới?",
+        "options": [
+          "title và cardOrder",
+          "title và boardId",
+          "chỉ cần title",
+          "boardId và authorId"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để tạo một Column, cần phải biết nó thuộc Board nào và có tiêu đề là gì. Do đó, `title` và `boardId` là hai trường bắt buộc trong request body."
+      },
+      {
+        "question": "Thành phần nào trong kiến trúc ExpressJS chịu trách nhiệm định nghĩa các tuyến đường (routes) cho API?",
+        "options": [
+          "Controller",
+          "Model",
+          "Router",
+          "Middleware"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Express Router được sử dụng để nhóm các trình xử lý tuyến đường. Trong bài học, `column.route.js` định nghĩa route cho việc tạo column."
+      },
+      {
+        "question": "Thành phần nào chịu trách nhiệm xử lý logic, nhận request và tương tác với database?",
+        "options": [
+          "Router",
+          "Model",
+          "View",
+          "Controller"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Controller chứa logic nghiệp vụ của ứng dụng. Nó nhận request từ router, xử lý và gọi đến Model để tương tác với cơ sở dữ liệu."
+      },
+      {
+        "question": "Thư viện nào được sử dụng để định nghĩa Schema cho `Column` và `Card` trong MongoDB?",
+        "options": [
+          "ExpressJS",
+          "NodeJS",
+          "Mongoose",
+          "MongoDB Driver"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mongoose là một thư viện ODM (Object Data Modeling) cho MongoDB và NodeJS. Nó cung cấp một giải pháp dựa trên schema để mô hình hóa dữ liệu ứng dụng."
+      },
+      {
+        "question": "Trong code mẫu của `column.controller.js`, hàm `res.status(201).json(savedColumn)` có ý nghĩa gì?",
+        "options": [
+          "Trả về lỗi server",
+          "Trả về trạng thái thành công (OK) và dữ liệu column",
+          "Trả về trạng thái đã tạo thành công (Created) và dữ liệu column vừa lưu",
+          "Chuyển hướng người dùng đến trang khác"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Status code 201 (Created) chỉ ra rằng request đã thành công và một tài nguyên mới đã được tạo ra. Response body chứa dữ liệu của tài nguyên đó."
+      },
+      {
+        "question": "Tại sao việc validate dữ liệu đầu vào từ client lại quan trọng?",
+        "options": [
+          "Để làm cho API chạy nhanh hơn",
+          "Để đảm bảo tính toàn vẹn của dữ liệu và tránh lỗi không mong muốn",
+          "Để tăng tính thẩm mỹ cho code",
+          "Để giảm tải cho server"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Validation dữ liệu đầu vào giúp đảm bảo rằng dữ liệu được lưu vào cơ sở dữ liệu là hợp lệ và đúng định dạng, ngăn ngừa lỗi và các lỗ hổng bảo mật."
+      },
+      {
+        "question": "Công cụ nào được gợi ý trong bài học để kiểm thử các API đã tạo?",
+        "options": [
+          "Trình duyệt web",
+          "Postman hoặc Insomnia",
+          "Terminal/Command Line",
+          "Visual Studio Code debugger"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Postman và Insomnia là các công cụ phổ biến cho phép gửi các HTTP request đến API một cách dễ dàng để kiểm thử chức năng của chúng."
+      },
+      {
+        "question": "Trong `column.controller.js`, khối `try...catch` được sử dụng để làm gì?",
+        "options": [
+          "Để validate dữ liệu",
+          "Để kết nối với database",
+          "Để xử lý các lỗi có thể xảy ra trong quá trình thực thi",
+          "Để gửi response về cho client"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khối `try...catch` là một cơ chế xử lý lỗi trong JavaScript. Bất kỳ lỗi nào xảy ra trong khối `try` (ví dụ: lỗi khi lưu vào database) sẽ được bắt và xử lý trong khối `catch`."
+      },
+      {
+        "question": "Mục đích chính của việc tạo Model bằng Mongoose là gì?",
+        "options": [
+          "Để định nghĩa cấu trúc dữ liệu và tương tác với một collection trong MongoDB",
+          "Để xử lý routing trong Express",
+          "Để viết logic nghiệp vụ cho ứng dụng",
+          "Để hiển thị dữ liệu ra cho người dùng"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Mongoose Model cung cấp một giao diện để tạo, truy vấn, cập nhật, xóa bản ghi trong một collection cụ thể của MongoDB, dựa trên schema đã được định nghĩa."
+      },
+      {
+        "question": "Request body để tạo một Card mới cần chứa thông tin gì?",
+        "options": [
+          "title và boardId",
+          "title và description",
+          "title và columnId",
+          "chỉ cần title"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Để tạo một Card, chúng ta cần biết tiêu đề của nó và nó thuộc về Column nào. Vì vậy, `title` và `columnId` là bắt buộc."
+      },
+      {
+        "question": "Lệnh `await newColumn.save()` thực hiện công việc gì?",
+        "options": [
+          "Tạo một đối tượng Column mới trong bộ nhớ",
+          "Lưu đối tượng `newColumn` vào cơ sở dữ liệu MongoDB một cách bất đồng bộ",
+          "Cập nhật một column đã có",
+          "Xóa một column khỏi cơ sở dữ liệu"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Phương thức `.save()` của Mongoose được sử dụng để ghi một document mới vào collection. Từ khóa `await` dùng để đợi cho đến khi thao tác bất đồng bộ này hoàn tất."
+      },
+      {
+        "question": "Nếu có lỗi xảy ra trong hàm `create` của controller, status code nào sẽ được trả về theo code mẫu?",
+        "options": [
+          "200",
+          "201",
+          "404",
+          "500"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Trong khối `catch`, `res.status(500)` được gọi. Status code 500 (Internal Server Error) chỉ ra rằng đã có một lỗi không mong muốn xảy ra trên server."
+      },
+      {
+        "question": "Bộ ba công nghệ nào được sử dụng để xây dựng backend trong bài học?",
+        "options": [
+          "React, NodeJS, MongoDB",
+          "Angular, ExpressJS, MySQL",
+          "NodeJS, ExpressJS, MongoDB",
+          "Vue, Firebase, Firestore"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học tập trung vào việc xây dựng API backend sử dụng NodeJS cho môi trường chạy, ExpressJS làm framework web và MongoDB làm cơ sở dữ liệu."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Card Router",
+        "description": "Dựa vào cấu trúc của `column.route.js`, hãy tạo một file router mới cho `Card` để xử lý request tạo card mới tại endpoint POST '/'.",
+        "starterCode": "const express = require('express');\nconst router = express.Router();\n// Import card controller ở đây\n\n// Định nghĩa route POST '/' ở đây\n\nmodule.exports = router;",
+        "solution": "const express = require('express');\nconst router = express.Router();\nconst cardController = require('../controllers/card.controller');\n\nrouter.post('/', cardController.create);\n\nmodule.exports = router;",
+        "testCases": "Gửi một request POST đến /cards. Server phải gọi đến hàm `create` trong `card.controller.js`."
+      },
+      {
+        "title": "Bài 2: Tạo Card Model",
+        "description": "Hãy tạo một Mongoose Schema và Model cho `Card`. Một card cần có `columnId` (kiểu ObjectId, tham chiếu đến model 'Column'), `title` (kiểu String, bắt buộc), và `createdAt`, `updatedAt` (timestamps).",
+        "starterCode": "const mongoose = require('mongoose');\nconst Schema = mongoose.Schema;\n\nconst CardSchema = new Schema({\n  // Viết schema cho Card ở đây\n}, { timestamps: true });\n\nmodule.exports = mongoose.model('Card', CardSchema);",
+        "solution": "const mongoose = require('mongoose');\nconst Schema = mongoose.Schema;\n\nconst CardSchema = new Schema({\n  columnId: { type: Schema.Types.ObjectId, ref: 'Column', required: true },\n  title: { type: String, required: true, trim: true, minLength: 3, maxLength: 50 },\n  // Thêm các trường khác nếu cần, ví dụ: description, cover...\n}, { timestamps: true });\n\nmodule.exports = mongoose.model('Card', CardSchema);",
+        "testCases": "Model `Card` phải được tạo thành công. Khi tạo một document mới, trường `title` và `columnId` phải là bắt buộc. Các trường `createdAt` và `updatedAt` phải tự động được tạo."
+      },
+      {
+        "title": "Bài 3: Hoàn thiện Card Controller",
+        "description": "Viết logic cho hàm `create` trong `card.controller.js`. Hàm này nhận dữ liệu từ `req.body`, tạo một `Card` mới và lưu vào database. Trả về card vừa tạo với status code 201 nếu thành công, hoặc lỗi 500 nếu thất bại.",
+        "starterCode": "const Card = require('../models/card.model');\n\nexports.create = async (req, res) => {\n  try {\n    // Viết logic tạo card mới ở đây\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n};",
+        "solution": "const Card = require('../models/card.model');\n\nexports.create = async (req, res) => {\n  try {\n    const newCard = new Card(req.body);\n    const savedCard = await newCard.save();\n    res.status(201).json(savedCard);\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n};",
+        "testCases": "Gửi POST request đến /cards với body `{ \"title\": \"Test Card\", \"columnId\": \"<valid_column_id>\" }`. Response phải có status 201 và trả về dữ liệu của card vừa tạo."
+      },
+      {
+        "title": "Bài 4: Thêm Validation cho Column",
+        "description": "Cập nhật hàm `create` trong `column.controller.js` để kiểm tra xem `title` và `boardId` có tồn tại trong `req.body` hay không. Nếu không, trả về lỗi 400 (Bad Request) với một thông báo rõ ràng.",
+        "starterCode": "const Column = require('../models/column.model');\n\nexports.create = async (req, res) => {\n  try {\n    // Thêm logic validation ở đây\n\n    const newColumn = new Column(req.body);\n    const savedColumn = await newColumn.save();\n    res.status(201).json(savedColumn);\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n};",
+        "solution": "const Column = require('../models/column.model');\n\nexports.create = async (req, res) => {\n  try {\n    const { title, boardId } = req.body;\n    if (!title || !boardId) {\n      return res.status(400).json({ message: 'Title and boardId are required' });\n    }\n\n    const newColumn = new Column(req.body);\n    const savedColumn = await newColumn.save();\n    res.status(201).json(savedColumn);\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n};",
+        "testCases": "Gửi POST request đến /columns mà không có `title` hoặc `boardId`. Response phải có status 400 và chứa thông báo lỗi."
+      },
+      {
+        "title": "Bài 5: Cập nhật Column sau khi tạo Card",
+        "description": "Mở rộng hàm `create` trong `card.controller.js`. Sau khi tạo thành công một `Card`, hãy tìm `Column` tương ứng (dựa vào `columnId`) và đẩy `_id` của card vừa tạo vào mảng `cardOrderIds` của column đó.",
+        "starterCode": "const Card = require('../models/card.model');\nconst Column = require('../models/column.model'); // Import Column model\n\nexports.create = async (req, res) => {\n  try {\n    const newCard = new Card(req.body);\n    const savedCard = await newCard.save();\n\n    // Thêm logic cập nhật Column ở đây\n\n    res.status(201).json(savedCard);\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n};",
+        "solution": "const Card = require('../models/card.model');\nconst Column = require('../models/column.model');\n\nexports.create = async (req, res) => {\n  try {\n    const newCard = new Card(req.body);\n    const savedCard = await newCard.save();\n\n    // Tìm column và đẩy card id vào mảng cardOrderIds\n    await Column.findByIdAndUpdate(\n      savedCard.columnId,\n      { $push: { cardOrderIds: savedCard._id } }\n    );\n\n    res.status(201).json(savedCard);\n  } catch (error) {\n    res.status(500).json({ message: error.message });\n  }\n};",
+        "testCases": "Sau khi tạo một card mới, kiểm tra document của column tương ứng trong database. Trường `cardOrderIds` của column đó phải chứa `_id` của card vừa được tạo."
+      }
+    ]
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "id": 38,
+  "title": "Bài 20: Absolute & Relative Import trong ReactJS",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Bài 20: Absolute & Relative Import trong ReactJS\n\n## I. Mục tiêu bài học\n\nVideo này giúp chúng ta hiểu rõ về hai khái niệm **Absolute Import** và **Relative Import** trong các dự án ReactJS, đặc biệt là khi cấu trúc thư mục ngày càng phức tạp. Chúng ta sẽ học cách xử lý và cấu hình để sử dụng Absolute Import một cách hiệu quả, giúp code sạch sẽ, dễ đọc và dễ bảo trì hơn.\n\n## II. Kiến thức chi tiết\n\n### 1. Relative Import (Import tương đối)\n\nĐây là cách import mặc định và phổ biến nhất trong các dự án JavaScript. Đường dẫn đến module được xác định dựa trên vị trí tương đối của file hiện tại.\n\n**Ví dụ:**\n\nGiả sử chúng ta có cấu trúc thư mục sau:\n\n```\nsrc/\n|-- components/\n|   |-- Button/\n|   |   |-- Button.jsx\n|-- pages/\n|   |-- Home/\n|   |   |-- HomePage.jsx\n```\n\nĐể import `Button.jsx` từ `HomePage.jsx`, chúng ta sẽ viết:\n\n```javascript\nimport Button from '../../components/Button/Button';\n```\n\n**Nhược điểm:**\n\n- **\"Dấu chấm địa ngục\" (Dot Hell):** Khi dự án lớn dần, cấu trúc thư mục sâu hơn, việc sử dụng `../` lặp đi lặp lại khiến đường dẫn trở nên dài và khó theo dõi.\n- **Khó khăn khi di chuyển file:** Nếu bạn di chuyển file `HomePage.jsx` đến một vị trí khác, bạn sẽ phải cập nhật lại tất cả các đường dẫn import tương đối bên trong nó.\n\n### 2. Absolute Import (Import tuyệt đối)\n\nAbsolute Import cho phép chúng ta import module dựa trên một đường dẫn gốc (thường là thư mục `src`). Điều này giúp đường dẫn import trở nên ngắn gọn và nhất quán hơn.\n\n**Ví dụ:**\n\nVới cùng cấu trúc thư mục như trên, chúng ta có thể import `Button.jsx` từ `HomePage.jsx` như sau:\n\n```javascript\nimport Button from 'components/Button/Button';\n```\n\n**Ưu điểm:**\n\n- **Code sạch sẽ, dễ đọc:** Đường dẫn import ngắn gọn, rõ ràng và không phụ thuộc vào vị trí của file hiện tại.\n- **Dễ dàng di chuyển file:** Khi di chuyển file, bạn không cần phải thay đổi đường dẫn import.\n- **Dễ dàng tìm kiếm và thay thế:** Việc tìm kiếm và thay thế hàng loạt các đường dẫn import trở nên đơn giản hơn.\n\n## III. Các bước thực hành\n\nĐể cấu hình Absolute Import trong một dự án ReactJS được tạo bằng Create React App (CRA), chúng ta cần tạo một file `jsconfig.json` (cho dự án JavaScript) hoặc `tsconfig.json` (cho dự án TypeScript) ở thư mục gốc của dự án.\n\n**Bước 1: Tạo file `jsconfig.json`**\n\nTạo một file mới có tên `jsconfig.json` trong thư mục gốc của dự án với nội dung sau:\n\n```json\n{\n  \"compilerOptions\": {\n    \"baseUrl\": \"src\"\n  },\n  \"include\": [\"src\"]\n}\n```\n\n**Giải thích:**\n\n- `\"baseUrl\": \"src\"`: Thiết lập thư mục `src` làm đường dẫn gốc cho các import tuyệt đối.\n- `\"include\": [\"src\"]`: Chỉ định rằng chỉ các file trong thư mục `src` mới được áp dụng cấu hình này.\n\n**Bước 2: Khởi động lại server**\n\nSau khi tạo file `jsconfig.json`, bạn cần khởi động lại server phát triển (development server) để các thay đổi có hiệu lực.\n\n**Bước 3: Sử dụng Absolute Import**\n\nBây giờ bạn có thể sử dụng Absolute Import trong toàn bộ dự án của mình.\n\n**Lưu ý với Vite:**\n\nĐối với các dự án sử dụng Vite, bạn cần cấu hình trong file `vite.config.js`:\n\n```javascript\nimport { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\n// https://vitejs.dev/config/\nexport default defineConfig({\n  plugins: [react()],\n  resolve: {\n    alias: {\n      '~': '/src'\n    }\n  }\n});\n```\n\nSau đó, bạn có thể import như sau:\n\n```javascript\nimport Button from '~/components/Button/Button';\n```\n\n## IV. Lưu ý quan trọng\n\n- **VS Code IntelliSense:** Sau khi cấu hình `jsconfig.json`, VS Code sẽ tự động nhận diện và gợi ý các đường dẫn import tuyệt đối.\n- **ESLint:** Nếu bạn sử dụng ESLint, bạn có thể cần cài đặt và cấu hình thêm plugin `eslint-plugin-import` để tránh các lỗi liên quan đến đường dẫn import.\n- **Nhất quán:** Hãy thống nhất một kiểu import (tuyệt đối hoặc tương đối) trong toàn bộ dự án để đảm bảo tính nhất quán và dễ bảo trì.\n\n## V. Tài liệu tham khảo\n\n- [Create React App: Absolute Imports](https://create-react-app.dev/docs/importing-a-component/#absolute-imports)\n- [Vite: `resolve.alias`](https://vitejs.dev/config/#resolve-alias)\n- [TrungQuanDev Blog](https://trungquandev.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Đâu là cách import mặc định và phổ biến nhất trong các dự án JavaScript?",
+        "options": [
+          "Absolute Import",
+          "Relative Import",
+          "Dynamic Import",
+          "Direct Import"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Relative Import là cách import mặc định, trong đó đường dẫn đến module được xác định dựa trên vị trí tương đối của file hiện tại."
+      },
+      {
+        "question": "Nhược điểm chính của Relative Import khi dự án lớn dần là gì?",
+        "options": [
+          "Khó cấu hình",
+          "Tốc độ biên dịch chậm",
+          "Gây ra \"Dấu chấm địa ngục\" (Dot Hell)",
+          "Không được hỗ trợ bởi các bundler hiện đại"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi cấu trúc thư mục sâu, việc sử dụng lặp đi lặp lại `../` trong Relative Import khiến đường dẫn trở nên dài, khó đọc và khó bảo trì, một tình trạng được gọi là \"Dot Hell\"."
+      },
+      {
+        "question": "Absolute Import cho phép import module dựa trên điều gì?",
+        "options": [
+          "Một đường dẫn URL từ xa",
+          "Vị trí tương đối của file",
+          "Một đường dẫn gốc được cấu hình (thường là thư mục `src`)",
+          "Tên của package trong `node_modules`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Absolute Import cho phép chúng ta import module dựa trên một đường dẫn gốc (thường là thư mục `src`), giúp đường dẫn ngắn gọn và nhất quán."
+      },
+      {
+        "question": "Để cấu hình Absolute Import trong một dự án Create React App (CRA) sử dụng JavaScript, bạn cần tạo file gì?",
+        "options": [
+          "package.json",
+          "vite.config.js",
+          "react.config.js",
+          "jsconfig.json"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Trong dự án CRA, chúng ta cần tạo file `jsconfig.json` ở thư mục gốc để cấu hình Absolute Import cho các dự án JavaScript."
+      },
+      {
+        "question": "Trong file `jsconfig.json`, thuộc tính nào được sử dụng để thiết lập thư mục `src` làm đường dẫn gốc?",
+        "options": [
+          "`root`",
+          "`baseUrl`",
+          "`paths`",
+          "`include`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thuộc tính `compilerOptions.baseUrl` được đặt thành `\"src\"` để chỉ định `src` là thư mục gốc cho các import tuyệt đối."
+      },
+      {
+        "question": "Giả sử cấu trúc thư mục là `src/components/Button.jsx` và `src/pages/Home.jsx`. Với Absolute Import đã được cấu hình, cách import `Button.jsx` từ `Home.jsx` nào sau đây là đúng?",
+        "options": [
+          "import Button from '../../components/Button';",
+          "import Button from 'src/components/Button';",
+          "import Button from 'components/Button';",
+          "import Button from './components/Button';"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi `baseUrl` được đặt là `src`, bạn có thể bắt đầu đường dẫn import từ các thư mục con trực tiếp của `src`. Do đó, `components/Button` là đường dẫn chính xác."
+      },
+      {
+        "question": "Lợi ích chính của việc sử dụng Absolute Import là gì?",
+        "options": [
+          "Làm cho ứng dụng chạy nhanh hơn",
+          "Giảm kích thước bundle cuối cùng",
+          "Giúp code sạch sẽ, dễ đọc và dễ bảo trì hơn",
+          "Tự động cài đặt các package còn thiếu"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Absolute Import giúp đường dẫn ngắn gọn, không phụ thuộc vào vị trí file, giúp code dễ đọc, dễ di chuyển file và bảo trì hơn."
+      },
+      {
+        "question": "Trong một dự án sử dụng Vite, file nào được dùng để cấu hình alias cho Absolute Import?",
+        "options": [
+          "jsconfig.json",
+          "package.json",
+          "vite.config.js",
+          "tsconfig.json"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đối với các dự án Vite, việc cấu hình alias cho import tuyệt đối được thực hiện trong file `vite.config.js` thông qua thuộc tính `resolve.alias`."
+      },
+      {
+        "question": "Với cấu hình `resolve: { alias: { '~': '/src' } }` trong Vite, cách import `src/utils/helpers.js` nào là đúng?",
+        "options": [
+          "import helpers from 'src/utils/helpers';",
+          "import helpers from 'utils/helpers';",
+          "import helpers from '~/utils/helpers';",
+          "import helpers from '../utils/helpers';"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Ký tự `~` đã được định nghĩa là một alias cho `/src`, vì vậy bạn có thể sử dụng `~/` để bắt đầu đường dẫn từ thư mục `src`."
+      },
+      {
+        "question": "Hành động nào cần được thực hiện ngay sau khi tạo hoặc thay đổi file `jsconfig.json` trong dự án CRA?",
+        "options": [
+          "Chạy `npm install`",
+          "Xóa thư mục `node_modules`",
+          "Khởi động lại server phát triển (development server)",
+          "Build lại dự án cho production"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sau khi tạo hoặc sửa đổi `jsconfig.json` hoặc `tsconfig.json`, bạn cần khởi động lại server phát triển để các thay đổi có hiệu lực."
+      },
+      {
+        "question": "Tại sao việc duy trì tính nhất quán trong kiểu import (tuyệt đối hoặc tương đối) lại quan trọng?",
+        "options": [
+          "Để tránh lỗi biên dịch",
+          "Để tăng tốc độ của Hot Reload",
+          "Để đảm bảo dự án dễ đọc và dễ bảo trì cho tất cả các thành viên trong nhóm",
+          "Để giảm việc sử dụng bộ nhớ"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc thống nhất một kiểu import trong toàn bộ dự án giúp code base trở nên nhất quán, dễ dàng hơn cho các lập trình viên khi đọc, hiểu và bảo trì code."
+      },
+      {
+        "question": "Nếu bạn sử dụng ESLint, plugin nào có thể cần được cài đặt để hỗ trợ và tránh lỗi với Absolute Import?",
+        "options": [
+          "eslint-plugin-react",
+          "eslint-plugin-jsx-a11y",
+          "eslint-plugin-import",
+          "eslint-plugin-promise"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Plugin `eslint-plugin-import` cung cấp các quy tắc linting cho các câu lệnh import/export, giúp ESLint hiểu và xác thực các đường dẫn import tuyệt đối một cách chính xác."
+      },
+      {
+        "question": "Việc di chuyển một file component sang thư mục khác sẽ gây ra ít vấn đề hơn khi sử dụng loại import nào?",
+        "options": [
+          "Relative Import",
+          "Absolute Import",
+          "Cả hai đều như nhau",
+          "Không loại nào"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Với Absolute Import, đường dẫn không phụ thuộc vào vị trí của file hiện tại. Do đó, khi bạn di chuyển file, bạn không cần phải cập nhật các câu lệnh import bên trong nó."
+      },
+      {
+        "question": "Cấu hình nào sau đây trong `jsconfig.json` là đúng để thiết lập Absolute Import?",
+        "options": [
+          "{\"compilerOptions\": {\"baseUrl\": \"./src\"}}",
+          "{\"options\": {\"baseUrl\": \"src\"}}",
+          "{\"compilerOptions\": {\"baseUrl\": \"src\"}, \"include\": [\"src\"]}",
+          "{\"compilerOptions\": {\"root\": \"src\"}}"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cấu hình đầy đủ và chính xác cần cả `compilerOptions.baseUrl` để đặt thư mục gốc và `include` để chỉ định phạm vi áp dụng cấu hình."
+      },
+      {
+        "question": "Absolute Import có phải là một tính năng riêng của React không?",
+        "options": [
+          "Có, nó chỉ hoạt động với Create React App",
+          "Có, nó được tích hợp sẵn trong thư viện React",
+          "Không, nó là một tính năng được hỗ trợ bởi các công cụ xây dựng (bundler) và môi trường phát triển như Webpack, Vite, và TypeScript/JavaScript language servers",
+          "Không, nó chỉ là một quy ước đặt tên"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Absolute Import không phải là của riêng React. Nó là một quy ước về đường dẫn được kích hoạt và giải quyết bởi các công cụ như bundler (Webpack, Vite) và được hỗ trợ bởi các trình soạn thảo code thông qua cấu hình (jsconfig/tsconfig)."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Chuyển đổi Relative sang Absolute Import",
+        "description": "Trong file `HomePage.jsx`, hãy refactor câu lệnh import cho component `Header` từ việc sử dụng Relative Import sang Absolute Import. Giả sử `jsconfig.json` đã được cấu hình với `baseUrl` là `\"src\"`.",
+        "starterCode": "// src/pages/Home/HomePage.jsx\n\nimport React from 'react';\nimport Header from '../../components/Layout/Header'; // <-- Cần refactor dòng này\nimport Footer from '../../components/Layout/Footer'; // <-- Cần refactor dòng này\n\nconst HomePage = () => {\n  return (\n    <div>\n      <Header />\n      <h1>Welcome to the Home Page</h1>\n      <Footer />\n    </div>\n  );\n};\n\nexport default HomePage;\n",
+        "solution": "// src/pages/Home/HomePage.jsx\n\nimport React from 'react';\nimport Header from 'components/Layout/Header';\nimport Footer from 'components/Layout/Footer';\n\nconst HomePage = () => {\n  return (\n    <div>\n      <Header />\n      <h1>Welcome to the Home Page</h1>\n      <Footer />\n    </div>\n  );\n};\n\nexport default HomePage;\n",
+        "testCases": "Sau khi thay đổi, ứng dụng vẫn phải render component `Header` và `Footer` mà không có lỗi. Đường dẫn import phải bắt đầu từ `components/`."
+      },
+      {
+        "title": "Bài 2: Tạo file cấu hình `jsconfig.json`",
+        "description": "Dự án của bạn được tạo bằng Create React App. Hãy tạo nội dung cho file `jsconfig.json` để kích hoạt tính năng Absolute Import, với thư mục `src` là thư mục gốc.",
+        "starterCode": "// Đây là file jsconfig.json, hãy điền nội dung đúng vào đây\n",
+        "solution": "{\n  \"compilerOptions\": {\n    \"baseUrl\": \"src\"\n  },\n  \"include\": [\"src\"]\n}\n",
+        "testCases": "File `jsconfig.json` phải là một file JSON hợp lệ. Sau khi tạo file và khởi động lại server, các import tuyệt đối như `import Component from 'components/MyComponent'` phải hoạt động."
+      },
+      {
+        "title": "Bài 3: Refactor nhiều Relative Imports",
+        "description": "File `UserProfile.jsx` đang sử dụng nhiều Relative Import từ các thư mục khác nhau. Hãy refactor tất cả chúng để sử dụng Absolute Import.",
+        "starterCode": "// src/pages/Users/UserProfile.jsx\n\nimport React from 'react';\nimport Avatar from '../../components/UI/Avatar';\nimport Button from '../../components/UI/Button';\nimport { getUserData } from '../../../services/api';\nimport { formatName } from '../../utils/formatters';\n\nconst UserProfile = ({ userId }) => {\n  // ... component logic\n  return <div>Profile Page</div>;\n};\n\nexport default UserProfile;\n",
+        "solution": "// src/pages/Users/UserProfile.jsx\n\nimport React from 'react';\nimport Avatar from 'components/UI/Avatar';\nimport Button from 'components/UI/Button';\nimport { getUserData } from 'services/api';\nimport { formatName } from 'utils/formatters';\n\nconst UserProfile = ({ userId }) => {\n  // ... component logic\n  return <div>Profile Page</div>;\n};\n\nexport default UserProfile;\n",
+        "testCases": "Tất cả các câu lệnh import phải được chuyển đổi sang Absolute Import. Không còn đường dẫn nào chứa `../`. Code phải chạy mà không có lỗi import."
+      },
+      {
+        "title": "Bài 4: Cấu hình Absolute Import cho dự án Vite",
+        "description": "Bạn đang làm việc với một dự án React sử dụng Vite. Hãy sửa đổi file `vite.config.js` để cấu hình Absolute Import. Sử dụng ký tự `@` làm alias cho thư mục `/src`.",
+        "starterCode": "// vite.config.js\n\nimport { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\n// https://vitejs.dev/config/\nexport default defineConfig({\n  plugins: [react()],\n  // Thêm cấu hình resolve vào đây\n});\n",
+        "solution": "// vite.config.js\n\nimport { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\n\n// https://vitejs.dev/config/\nexport default defineConfig({\n  plugins: [react()],\n  resolve: {\n    alias: {\n      '@': '/src'\n    }\n  }\n});\n",
+        "testCases": "File `vite.config.js` phải hợp lệ. Sau khi cấu hình, một import như `import Component from '@/components/MyComponent'` phải hoạt động chính xác."
+      },
+      {
+        "title": "Bài 5: Sử dụng Alias trong Vite để Refactor",
+        "description": "Sau khi cấu hình alias `@` cho `/src` trong `vite.config.js` ở bài tập trước, hãy refactor file `Dashboard.jsx` để sử dụng alias này cho tất cả các import.",
+        "starterCode": "// src/admin/pages/Dashboard.jsx\n\nimport React from 'react';\nimport Chart from '../../components/Charts/LineChart';\nimport StatCard from '../../components/Cards/StatCard';\nimport { fetchDashboardData } from '../../services/api/admin';\n\nconst Dashboard = () => {\n  // ... component logic\n  return <div>Admin Dashboard</div>;\n};\n\nexport default Dashboard;\n",
+        "solution": "// src/admin/pages/Dashboard.jsx\n\nimport React from 'react';\nimport Chart from '@/components/Charts/LineChart';\nimport StatCard from '@/components/Cards/StatCard';\nimport { fetchDashboardData } from '@/services/api/admin';\n\nconst Dashboard = () => {\n  // ... component logic\n  return <div>Admin Dashboard</div>;\n};\n\nexport default Dashboard;\n",
+        "testCases": "Tất cả các import trong `Dashboard.jsx` phải được thay thế để sử dụng alias `@`. Không còn đường dẫn tương đối (`../`). Ứng dụng phải hoạt động bình thường sau khi refactor."
+      }
+    ]
+  }
+}

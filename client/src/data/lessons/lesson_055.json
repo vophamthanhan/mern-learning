@@ -1,0 +1,213 @@
+{
+  "id": 55,
+  "title": "Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\n\n## Mục tiêu bài học\n\nVideo này hướng dẫn chi tiết cách để một lập trình viên có thể tự mình khởi tạo một dự án Back-end API hoàn chỉnh từ đầu, sử dụng nền tảng NodeJS và cơ sở dữ liệu MongoDB. Sau khi hoàn thành bài học, người xem sẽ có khả năng:\n\n*   Hiểu và tự xây dựng được cấu trúc thư mục cho một dự án Back-end chuyên nghiệp.\n*   Biết cách sử dụng `npm` hoặc `yarn` để khởi tạo dự án và quản lý các gói phụ thuộc.\n*   Cài đặt và cấu hình các thư viện cần thiết như Express.js để tạo server, `nodemon` để tự động khởi động lại server khi có thay đổi code.\n*   Hiểu được vai trò và cách sử dụng các biến môi trường (`environment variables`) để quản lý cấu hình ứng dụng một cách linh hoạt và an toàn.\n*   Kết nối thành công ứng dụng NodeJS với cơ sở dữ liệu MongoDB Atlas (phiên bản cloud).\n\n## Kiến thức chi tiết\n\n### 1. Giới thiệu và Chuẩn bị\n\nTrước khi bắt đầu, tác giả TrungQuanDev nhấn mạnh tầm quan trọng của việc xây dựng một nền tảng (boilerplate) vững chắc cho các dự án Back-end. Một dự án được tổ chức tốt ngay từ đầu sẽ dễ dàng hơn cho việc phát triển, bảo trì và mở rộng sau này.\n\n**Công cụ cần thiết:**\n\n*   **Node.js:** Nền tảng để chạy mã JavaScript phía server.\n*   **npm** hoặc **Yarn:** Trình quản lý gói để cài đặt các thư viện.\n*   **Visual Studio Code (VS Code):** Trình soạn thảo mã nguồn phổ biến.\n*   **Tài khoản MongoDB Atlas:** Để tạo và quản lý cơ sở dữ liệu MongoDB trên cloud.\n\n### 2. Khởi tạo dự án\n\nDự án được khởi tạo bằng các lệnh cơ bản trong terminal.\n\n```bash\n# Tạo một thư mục mới cho dự án\nmkdir trello-api\ncd trello-api\n\n# Khởi tạo dự án Node.js với yarn (hoặc npm init -y)\nyarn init -y\n```\n\nLệnh `yarn init -y` sẽ tạo ra một file `package.json` với các giá trị mặc định. Đây là file trung tâm, chứa các thông tin meta về dự án và danh sách các thư viện phụ thuộc.\n\n### 3. Cài đặt thư viện và Cấu hình\n\nCác thư viện cốt lõi được cài đặt để xây dựng server API.\n\n```bash\n# Cài đặt Express.js\nyarn add express\n\n# Cài đặt nodemon để tự động restart server khi code thay đổi (cài đặt dưới dạng dev dependency)\nyarn add -D nodemon\n```\n\n*   **Express.js:** Là một framework web tối giản và linh hoạt cho Node.js, cung cấp một bộ tính năng mạnh mẽ để phát triển ứng dụng web và API.\n*   **Nodemon:** Là một công cụ giúp tăng hiệu suất làm việc bằng cách tự động khởi động lại ứng dụng Node.js khi phát hiện có sự thay đổi trong file mã nguồn.\n\nTiếp theo, chúng ta cần cấu hình `scripts` trong file `package.json` để có thể khởi chạy server một cách tiện lợi.\n\n```json\n// package.json\n\"scripts\": {\n  \"test\": \"echo \\\"Error: no test specified\\\" && exit 1\",\n  \"start\": \"nodemon src/server.js\"\n},\n```\n\nVới cấu hình này, chúng ta có thể chạy server bằng lệnh `yarn start` (hoặc `npm start`).\n\n### 4. Xây dựng Server Express đơn giản\n\nChúng ta tạo file `src/server.js` và viết những dòng code đầu tiên để khởi tạo một server Express.\n\n```javascript\n// src/server.js\nconst express = require('express')\n\nconst app = express()\nconst port = 8017\n\napp.get('/', (req, res) => {\n  res.send('Hello World!')\n})\n\napp.listen(port, () => {\n  console.log(`Example app listening on port ${port}`)\n})\n```\n\nĐoạn mã trên thực hiện các công việc sau:\n\n1.  Import thư viện `express`.\n2.  Tạo một instance của ứng dụng Express.\n3.  Định nghĩa một route cho phương thức `GET` tại đường dẫn gốc (`/`). Khi có request đến, server sẽ trả về chuỗi `Hello World!`.\n4.  Lắng nghe các kết nối đến trên một port cụ thể (ở đây là `8017`).\n\n### 5. Biến môi trường (Environment Variables)\n\nĐể tránh việc \"hard-code\" (ghi cứng) các giá trị cấu hình như port, chuỗi kết nối database... vào trong mã nguồn, chúng ta sử dụng biến môi trường. Thư viện `dotenv` được sử dụng để tải các biến môi trường từ file `.env` vào `process.env` của Node.js.\n\n```bash\n# Cài đặt dotenv\nyarn add dotenv\n```\n\n**Tạo file `.env` ở thư mục gốc:**\n\n```\n# .env\nAPP_HOST=localhost\nAPP_PORT=8017\n```\n\n**Cập nhật `server.js` để sử dụng biến môi trường:**\n\n```javascript\n// src/server.js\nrequire('dotenv').config()\nconst express = require('express')\n\nconst app = express()\n\nconst hostname = process.env.APP_HOST\nconst port = process.env.APP_PORT\n\napp.get('/', (req, res) => {\n  res.send('<h1>Hello World!</h1>')\n})\n\napp.listen(port, hostname, () => {\n  console.log(`Hello, I am running at ${hostname}:${port}/`)\n})\n```\n\n**Quan trọng:** Luôn thêm file `.env` vào `.gitignore` để không đưa các thông tin nhạy cảm (như mật khẩu, API keys) lên Git repository.\n\n### 6. Kết nối Cơ sở dữ liệu MongoDB\n\nPhần cuối của video tập trung vào việc kết nối ứng dụng với MongoDB. Tác giả sử dụng MongoDB Atlas, dịch vụ database-as-a-service (DBaaS) trên nền tảng đám mây.\n\n**Các bước chính:**\n\n1.  **Tạo tài khoản MongoDB Atlas:** Đăng ký và tạo một cluster miễn phí.\n2.  **Lấy chuỗi kết nối (Connection String):** MongoDB Atlas sẽ cung cấp một chuỗi URI để ứng dụng có thể kết nối đến. Chuỗi này cần được thay đổi username và password.\n3.  **Cài đặt driver MongoDB:**\n\n    ```bash\n    yarn add mongodb\n    ```\n4.  **Tổ chức code kết nối:** Tạo một file riêng `src/config/mongodb.js` để quản lý việc kết nối, giúp mã nguồn sạch sẽ và dễ bảo trì hơn.\n\n**Mã nguồn kết nối (ví dụ):**\n\n```javascript\n// src/config/mongodb.js\nimport { MongoClient, ServerApiVersion } from 'mongodb'\nimport 'dotenv/config'\n\nlet trelloDatabaseInstance = null\n\nconst mongoClientInstance = new MongoClient(process.env.MONGODB_URI, {\n  serverApi: {\n    version: ServerApiVersion.v1,\n    strict: true,\n    deprecationErrors: true\n  }\n})\n\nexport const CONNECT_DB = async () => {\n  // Kết nối tới MongoDB Atlas với URI đã khai báo trong file .env\n  await mongoClientInstance.connect()\n  // Kết nối thành công thì lấy ra database theo tên và gán vào biến trelloDatabaseInstance\n  trelloDatabaseInstance = mongoClientInstance.db(process.env.DATABASE_NAME)\n}\n\n// Function GET_DB (không async) để export ra trelloDatabaseInstance sau khi đã connect thành công\nexport const GET_DB = () => {\n  if (!trelloDatabaseInstance) throw new Error('Must connect to Database first!')\n  return trelloDatabaseInstance\n}\n```\n\nSau đó, gọi hàm `CONNECT_DB` trong file `server.js` trước khi khởi động server để đảm bảo kết nối đã sẵn sàng.\n\n## Các bước thực hành\n\n1.  **Tạo thư mục dự án:** `mkdir trello-api && cd trello-api`.\n2.  **Khởi tạo dự án:** `yarn init -y`.\n3.  **Cài đặt thư viện:** `yarn add express dotenv mongodb` và `yarn add -D nodemon`.\n4.  **Tạo cấu trúc thư mục:** Tạo thư mục `src` và các file `src/server.js`, `src/config/mongodb.js`.\n5.  **Cấu hình `package.json`:** Thêm script `\"start\": \"nodemon src/server.js\"`.\n6.  **Tạo file `.env`:** Thêm các biến `APP_HOST`, `APP_PORT`, `MONGODB_URI`, `DATABASE_NAME`.\n7.  **Viết mã nguồn:**\n    *   Viết code khởi tạo server Express trong `server.js`.\n    *   Viết code kết nối MongoDB trong `src/config/mongodb.js`.\n    *   Import và gọi hàm kết nối database trong `server.js`.\n8.  **Chạy dự án:** `yarn start` và kiểm tra log xem server đã chạy và kết nối database thành công chưa.\n\n## Lưu ý quan trọng\n\n*   **Bảo mật:** Tuyệt đối không public file `.env` hoặc các thông tin nhạy cảm lên các kho mã nguồn công khai. Luôn sử dụng `.gitignore`.\n*   **Cấu trúc dự án:** Việc chia tách các phần của ứng dụng (config, routes, controllers, models...) thành các file và thư mục riêng biệt là một good practice, giúp dự án dễ quản lý hơn khi phát triển.\n*   **Error Handling:** Trong thực tế, cần có cơ chế xử lý lỗi chi tiết cho cả việc khởi động server và kết nối database để ứng dụng hoạt động ổn định.\n*   **Phiên bản:** Luôn chú ý đến phiên bản của các thư viện (Node.js, Express, MongoDB driver) để đảm bảo tính tương thích.\n\n## Tài liệu tham khảo\n\n*   **Video gốc:** [39. Khởi tạo dự án Back-end API từ con số 0 | NodeJS + MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=Lj-QNEo07yg&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=45)\n*   **Trang chủ Express.js:** [https://expressjs.com/](https://expressjs.com/)\n*   **Trang chủ MongoDB Node.js Driver:** [https://www.mongodb.com/docs/drivers/node/current/](https://www.mongodb.com/docs/drivers/node/current/)\n*   **Blog TrungQuanDev:** [https://trungquandev.com/](https.trungquandev.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", khái niệm cơ bản được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến khái niệm cơ bản",
+          "Phương án B liên quan đến khái niệm cơ bản",
+          "Phương án C liên quan đến khái niệm cơ bản",
+          "Phương án D liên quan đến khái niệm cơ bản"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về khái niệm cơ bản."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", cú pháp được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cú pháp",
+          "Phương án B liên quan đến cú pháp",
+          "Phương án C liên quan đến cú pháp",
+          "Phương án D liên quan đến cú pháp"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cú pháp."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", cách sử dụng được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cách sử dụng",
+          "Phương án B liên quan đến cách sử dụng",
+          "Phương án C liên quan đến cách sử dụng",
+          "Phương án D liên quan đến cách sử dụng"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cách sử dụng."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", ưu điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ưu điểm",
+          "Phương án B liên quan đến ưu điểm",
+          "Phương án C liên quan đến ưu điểm",
+          "Phương án D liên quan đến ưu điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ưu điểm."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", nhược điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến nhược điểm",
+          "Phương án B liên quan đến nhược điểm",
+          "Phương án C liên quan đến nhược điểm",
+          "Phương án D liên quan đến nhược điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về nhược điểm."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", so sánh được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến so sánh",
+          "Phương án B liên quan đến so sánh",
+          "Phương án C liên quan đến so sánh",
+          "Phương án D liên quan đến so sánh"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về so sánh."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", ứng dụng thực tế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ứng dụng thực tế",
+          "Phương án B liên quan đến ứng dụng thực tế",
+          "Phương án C liên quan đến ứng dụng thực tế",
+          "Phương án D liên quan đến ứng dụng thực tế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ứng dụng thực tế."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", best practices được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến best practices",
+          "Phương án B liên quan đến best practices",
+          "Phương án C liên quan đến best practices",
+          "Phương án D liên quan đến best practices"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về best practices."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", cấu hình được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cấu hình",
+          "Phương án B liên quan đến cấu hình",
+          "Phương án C liên quan đến cấu hình",
+          "Phương án D liên quan đến cấu hình"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cấu hình."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", xử lý lỗi được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến xử lý lỗi",
+          "Phương án B liên quan đến xử lý lỗi",
+          "Phương án C liên quan đến xử lý lỗi",
+          "Phương án D liên quan đến xử lý lỗi"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về xử lý lỗi."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", tối ưu hóa được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến tối ưu hóa",
+          "Phương án B liên quan đến tối ưu hóa",
+          "Phương án C liên quan đến tối ưu hóa",
+          "Phương án D liên quan đến tối ưu hóa"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về tối ưu hóa."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", bảo mật được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến bảo mật",
+          "Phương án B liên quan đến bảo mật",
+          "Phương án C liên quan đến bảo mật",
+          "Phương án D liên quan đến bảo mật"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về bảo mật."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", kiến trúc được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến kiến trúc",
+          "Phương án B liên quan đến kiến trúc",
+          "Phương án C liên quan đến kiến trúc",
+          "Phương án D liên quan đến kiến trúc"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về kiến trúc."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", thiết kế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến thiết kế",
+          "Phương án B liên quan đến thiết kế",
+          "Phương án C liên quan đến thiết kế",
+          "Phương án D liên quan đến thiết kế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về thiết kế."
+      },
+      {
+        "question": "Trong bài \"Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB\", triển khai được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến triển khai",
+          "Phương án B liên quan đến triển khai",
+          "Phương án C liên quan đến triển khai",
+          "Phương án D liên quan đến triển khai"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về triển khai."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài tập 1: Thực hành Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 2: Thực hành Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 3: Thực hành Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 4: Thực hành Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 5: Thực hành Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      }
+    ]
+  }
+}

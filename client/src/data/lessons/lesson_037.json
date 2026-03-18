@@ -1,0 +1,213 @@
+{
+  "id": 37,
+  "title": "Buổi 19: Tính năng Card Members và Input Auto Search Board",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Buổi 19: Tính năng Card Members và Input Auto Search Board\n\n## Mục tiêu bài học\n\nVideo này tập trung vào việc hướng dẫn xây dựng hai tính năng quan trọng trong một ứng dụng quản lý dự án kiểu Trello:\n\n1.  **Tính năng Thành viên của Thẻ (Card Members):** Cho phép người dùng tham gia (join), được thêm vào (add), hoặc bị xóa khỏi (remove) một thẻ công việc cụ thể. Tính năng này giúp xác định rõ người chịu trách nhiệm và liên quan đến công việc.\n2.  **Tính năng Tìm kiếm Board tự động (Input Auto Search Board):** Cung cấp một ô tìm kiếm cho phép người dùng nhanh chóng lọc và tìm kiếm các board dự án mà họ quan tâm dựa trên từ khóa nhập vào.\n\n## Kiến thức chi tiết\n\nDựa trên tiêu đề và kinh nghiệm chuyên môn về MERN Stack, nội dung của video có thể bao gồm các phần sau:\n\n### 1. Tính năng Card Members (Join, Add, Remove)\n\nĐây là một tính năng cốt lõi trong các ứng dụng quản lý công việc, yêu cầu sự kết hợp giữa cập nhật giao diện người dùng (UI) ở phía Front-end và xử lý logic nghiệp vụ, cập nhật cơ sở dữ liệu ở phía Back-end.\n\n#### a. Cập nhật Schema và Model (Back-end)\n\nĐể lưu trữ thông tin thành viên trong mỗi thẻ, chúng ta cần cập nhật Mongoose Schema.\n\n-   **`cardModel.js`**: Thêm một trường `memberIds` vào Card Schema. Trường này sẽ là một mảng chứa các `ObjectId` tham chiếu đến `userModel`.\n\n    ```javascript\n    // src/models/cardModel.js\n    const cardSchema = new Schema({\n      // ...các trường khác\n      memberIds: [{\n        type: Schema.Types.ObjectId,\n        ref: 'user'\n      }]\n    });\n    ```\n\n#### b. Xây dựng API Endpoints (Back-end)\n\nCần tạo các API endpoint để Front-end có thể tương tác và quản lý thành viên của thẻ.\n\n-   **`POST /v1/cards/{id}/members`**: Thêm một thành viên mới vào thẻ.\n    -   **Validation**: Kiểm tra xem `userId` gửi lên có hợp lệ không, người dùng có phải là thành viên của board không, và người dùng đó chưa phải là thành viên của thẻ.\n    -   **Controller**: Nhận request, gọi service để xử lý.\n    -   **Service**: Sử dụng phương thức `findOneAndUpdate` của Mongoose với toán tử `$addToSet` để thêm `userId` vào mảng `memberIds`, đảm bảo không có giá trị trùng lặp.\n\n-   **`DELETE /v1/cards/{id}/members`**: Xóa một thành viên khỏi thẻ.\n    -   **Validation**: Tương tự như khi thêm, nhưng kiểm tra xem người dùng có thực sự là thành viên của thẻ hay không.\n    -   **Service**: Sử dụng toán tử `$pull` để xóa `userId` khỏi mảng `memberIds`.\n\n#### c. Tích hợp giao diện người dùng (Front-end)\n\n-   **Hiển thị thành viên**: Hiển thị avatar của các thành viên trên mỗi thẻ hoặc trong chi tiết thẻ.\n-   **Popover/Modal quản lý thành viên**: Khi người dùng click vào mục \"Members\" trên thẻ, một popover sẽ hiện ra, cho phép:\n    -   Tìm kiếm và thêm thành viên mới từ danh sách thành viên của board.\n    -   Hiển thị danh sách thành viên hiện tại của thẻ.\n    -   Cung cấp nút \"Remove\" để xóa thành viên (chỉ quản trị viên hoặc người tạo thẻ mới có quyền này).\n    -   Cung cấp nút \"Join\" để người dùng hiện tại tự tham gia vào thẻ.\n-   **Quản lý State (Redux Toolkit)**: Tạo các `slice` và `asyncThunk` để gọi API thêm/xóa thành viên, sau đó cập nhật lại state của board để giao diện tự động render lại thông tin mới nhất.\n\n### 2. Tính năng Input Auto Search Board\n\nTính năng này cải thiện trải nghiệm người dùng bằng cách cho phép họ tìm kiếm board nhanh chóng.\n\n#### a. Xây dựng API Search (Back-end)\n\n-   **`GET /v1/boards/search`**: Tạo một API endpoint mới để xử lý việc tìm kiếm.\n    -   **Query Parameter**: Nhận một tham số truy vấn, ví dụ `?q=keyword`.\n    -   **Service**: Sử dụng phương thức `find` của Mongoose với các toán tử truy vấn để tìm kiếm.\n        -   Sử dụng biểu thức chính quy (Regular Expression) với cờ `i` (không phân biệt chữ hoa/thường) để tìm các board có `title` hoặc `description` chứa từ khóa.\n        -   Sử dụng `$text` search nếu đã tạo text index trong MongoDB để tối ưu hiệu suất tìm kiếm toàn văn.\n\n    ```javascript\n    // src/services/boardService.js\n    const searchBoards = async (keyword) => {\n      const query = {\n        title: { $regex: keyword, $options: 'i' }\n        // Hoặc có thể tìm trong cả description\n        // $or: [\n        //   { title: { $regex: keyword, $options: 'i' } },\n        //   { description: { $regex: keyword, $options: 'i' } }\n        // ]\n      };\n      const boards = await boardModel.find(query);\n      return boards;\n    };\n    ```\n\n#### b. Tích hợp giao diện người dùng (Front-end)\n\n-   **Tạo Component Search Input**: Tạo một ô input trong thanh điều hướng (AppBar).\n-   **Xử lý sự kiện `onChange`**: Khi người dùng nhập văn bản vào ô tìm kiếm:\n    -   Sử dụng kỹ thuật \"debouncing\" để tránh việc gọi API liên tục mỗi khi người dùng gõ một ký tự. Một khoảng trễ (ví dụ: 500ms) sẽ được đặt ra, và API chỉ được gọi sau khi người dùng ngừng gõ trong khoảng thời gian đó.\n    -   Gọi API `GET /v1/boards/search` với từ khóa người dùng nhập.\n-   **Hiển thị kết quả**: Kết quả tìm kiếm (danh sách các board) sẽ được hiển thị trong một dropdown hoặc một danh sách ngay bên dưới ô tìm kiếm, cho phép người dùng click để điều hướng đến board tương ứng.\n\n## Các bước thực hành\n\n1.  **Back-end:**\n    1.  Cập nhật `cardModel.js` để thêm trường `memberIds`.\n    2.  Trong `cardValidation.js`, `cardController.js`, và `cardService.js`, thêm logic và code để xử lý việc thêm/xóa thành viên.\n    3.  Trong `boardService.js`, tạo hàm `searchBoards` để xử lý logic tìm kiếm.\n    4.  Định nghĩa các route mới trong `boardRoute.js` và `cardRoute.js`.\n2.  **Front-end:**\n    1.  Tạo một component Popover/Modal để quản lý thành viên trên thẻ.\n    2.  Trong Card component, thêm chức năng hiển thị avatar và mở popover quản lý thành viên.\n    3.  Tạo các `asyncThunk` trong Redux slice để gọi API thêm/xóa thành viên.\n    4.  Tạo component Search Input trên AppBar.\n    5.  Sử dụng `useState`, `useEffect` và kỹ thuật debouncing để quản lý việc gọi API tìm kiếm.\n    6.  Hiển thị kết quả tìm kiếm và xử lý điều hướng.\n\n## Lưu ý quan trọng\n\n-   **Phân quyền (Authorization)**: Cần xác định rõ ai có quyền thêm/xóa thành viên khỏi thẻ. Thông thường, chỉ những người là quản trị viên (admin) của board hoặc người tạo board mới có quyền này.\n-   **Tối ưu hiệu suất**: Đối với tính năng tìm kiếm, việc sử dụng text index trong MongoDB sẽ cho hiệu suất tốt hơn nhiều so với việc sử dụng regex trên các tập dữ liệu lớn.\n-   **Debouncing**: Đây là một kỹ thuật bắt buộc phải có ở Front-end cho các tính năng tìm kiếm tự động để tránh làm quá tải máy chủ Back-end với các yêu cầu không cần thiết.\n-   **Real-time Update**: Mặc dù tiêu đề video không đề cập, nhưng trong một dự án thực tế, sau khi thêm/xóa thành viên, thông tin nên được cập nhật real-time cho tất cả những người dùng khác đang xem board đó (thường được triển khai bằng WebSocket với thư viện như Socket.IO).\n\n## Tài liệu tham khảo\n\n-   [Mongoose Docs - $addToSet](https://mongoosejs.com/docs/api/model.html#model_Model-findByIdAndUpdate)\n-   [Mongoose Docs - $pull](https://mongoosejs.com/docs/api/model.html#model_Model-findByIdAndUpdate)\n-   [MongoDB Docs - Text Search](https://www.mongodb.com/docs/manual/text-search/)\n-   [Debouncing in React](https://usehooks.com/useDebounce/)\n-   [TrungQuanDev GitHub](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Để lưu trữ danh sách thành viên trong một thẻ (Card), trường `memberIds` trong `cardModel` nên được định nghĩa với kiểu dữ liệu nào?",
+        "options": [
+          "Một mảng các String chứa username của thành viên.",
+          "Một mảng các ObjectId tham chiếu đến `userModel`.",
+          "Một Object với key là userId và value là `true`.",
+          "Một String duy nhất chứa danh sách userId, phân tách bởi dấu phẩy."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sử dụng một mảng các `ObjectId` tham chiếu đến `userModel` là cách làm đúng đắn trong MongoDB để tạo mối quan hệ, cho phép `populate` và đảm bảo tính toàn vẹn dữ liệu."
+      },
+      {
+        "question": "Toán tử Mongoose nào được sử dụng để thêm một `userId` vào mảng `memberIds` và đảm bảo không có giá trị nào bị trùng lặp?",
+        "options": [
+          "`$push`",
+          "`$add`",
+          "`$addToSet`",
+          "`$insert`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`$addToSet` là toán tử lý tưởng để thêm một phần tử vào một mảng, nhưng chỉ khi phần tử đó chưa tồn tại trong mảng, giúp ngăn chặn việc thêm trùng lặp thành viên."
+      },
+      {
+        "question": "Khi xóa một thành viên khỏi thẻ, API endpoint nào sau đây là phù hợp nhất theo nguyên tắc RESTful?",
+        "options": [
+          "`POST /v1/cards/{id}/remove-member`",
+          "`GET /v1/cards/{id}/members/delete`",
+          "`PUT /v1/cards/{id}/members`",
+          "`DELETE /v1/cards/{id}/members`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Sử dụng phương thức `DELETE` trên resource con (`/members`) của một resource cụ thể (`/cards/{id}`) là cách thiết kế API RESTful chuẩn để thể hiện hành động xóa."
+      },
+      {
+        "question": "Toán tử Mongoose nào được dùng để xóa một `userId` cụ thể khỏi mảng `memberIds`?",
+        "options": [
+          "`$remove`",
+          "`$delete`",
+          "`$pull`",
+          "`$pop`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`$pull` được sử dụng để xóa tất cả các instance của một giá trị cụ thể khỏi một mảng trong tài liệu MongoDB."
+      },
+      {
+        "question": "Kỹ thuật \"debouncing\" trong tính năng tìm kiếm ở Front-end có mục đích chính là gì?",
+        "options": [
+          "Làm cho animation của ô tìm kiếm mượt mà hơn.",
+          "Mã hóa từ khóa tìm kiếm trước khi gửi lên server.",
+          "Trì hoãn việc gọi API cho đến khi người dùng ngừng gõ để giảm tải cho server.",
+          "Tự động hoàn thành từ khóa tìm kiếm cho người dùng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Debouncing giúp ngăn chặn việc gửi yêu cầu API một cách liên tục mỗi khi người dùng gõ một ký tự, thay vào đó nó sẽ đợi một khoảng thời gian ngắn sau khi người dùng ngừng gõ rồi mới gửi yêu cầu, giúp tối ưu hiệu suất."
+      },
+      {
+        "question": "Để tìm kiếm các board có `title` chứa một từ khóa không phân biệt chữ hoa/thường, ta nên sử dụng toán tử truy vấn nào của MongoDB?",
+        "options": [
+          "`{ title: keyword }`",
+          "`{ title: { $eq: keyword, $case: 'insensitive' } }`",
+          "`{ title: { $regex: keyword, $options: 'i' } }`",
+          "`{ title: { $contains: keyword } }`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng biểu thức chính quy (`$regex`) với tùy chọn `i` (insensitive) là cách chuẩn để thực hiện tìm kiếm chuỗi không phân biệt chữ hoa/thường trong MongoDB."
+      },
+      {
+        "question": "Để tối ưu hiệu suất tìm kiếm toàn văn (full-text search) trên một tập dữ liệu lớn trong MongoDB, phương pháp nào sau đây là hiệu quả nhất?",
+        "options": [
+          "Sử dụng `$regex` với tùy chọn `i`.",
+          "Tạo một text index trên các trường cần tìm kiếm và sử dụng toán tử `$text`.",
+          "Lấy tất cả dữ liệu về client và tìm kiếm ở phía Front-end.",
+          "Tăng RAM cho server MongoDB."
+        ],
+        "correctAnswer": 1,
+        "explanation": "MongoDB cung cấp tính năng `text search` được tối ưu hóa cao thông qua việc tạo `text index`. Sử dụng toán tử `$text` với index này cho hiệu suất tốt hơn nhiều so với `$regex` trên các bộ dữ liệu lớn."
+      },
+      {
+        "question": "Trong Redux Toolkit, thành phần nào được sử dụng để xử lý các tác vụ bất đồng bộ như gọi API?",
+        "options": [
+          "`createReducer`",
+          "`createAction`",
+          "`createSlice`",
+          "`createAsyncThunk`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`createAsyncThunk` là một abstraction giúp đơn giản hóa việc thực hiện các yêu cầu bất đồng bộ và quản lý các trạng thái (pending, fulfilled, rejected) một cách tự động."
+      },
+      {
+        "question": "Khi thêm một thành viên vào thẻ, tại sao cần phải kiểm tra xem người dùng đó có phải là thành viên của board hay không?",
+        "options": [
+          "Để đảm bảo chỉ những người có quyền truy cập vào board mới có thể được thêm vào thẻ.",
+          "Để tăng độ phức tạp cho hệ thống.",
+          "Đây là yêu cầu của Mongoose.",
+          "Để giới hạn số lượng thành viên trong một thẻ."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Việc kiểm tra này là một bước quan trọng trong việc phân quyền (Authorization), đảm bảo tính bảo mật và logic của ứng dụng, rằng chỉ những ai thuộc về không gian làm việc (board) mới có thể tham gia vào các công việc (card) trong đó."
+      },
+      {
+        "question": "API endpoint `GET /v1/boards/search` nên nhận từ khóa tìm kiếm thông qua thành phần nào của HTTP request?",
+        "options": [
+          "Request Body",
+          "Request Headers",
+          "URL Path (ví dụ: `/v1/boards/search/keyword`)",
+          "Query Parameters (ví dụ: `?q=keyword`)"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Đối với các yêu cầu `GET` nhằm mục đích truy vấn hoặc lọc dữ liệu, việc truyền tham số qua Query Parameters là cách làm chuẩn và được khuyến khích."
+      },
+      {
+        "question": "Trong Front-end, sau khi gọi API thêm thành viên thành công, hành động tiếp theo nên là gì để cập nhật giao diện?",
+        "options": [
+          "Tải lại toàn bộ trang web.",
+          "Yêu cầu người dùng tự refresh trang.",
+          "Dispatch một action để cập nhật lại state của board trong Redux store.",
+          "Không làm gì cả, giao diện sẽ tự cập nhật."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sau khi thao tác dữ liệu ở backend, cần cập nhật state ở client để giao diện phản ánh sự thay đổi đó. Trong Redux, điều này được thực hiện bằng cách dispatch một action, thường là action `fulfilled` của `asyncThunk`."
+      },
+      {
+        "question": "Phân quyền (Authorization) trong tính năng quản lý thành viên của thẻ có nghĩa là gì?",
+        "options": [
+          "Xác thực xem người dùng có đăng nhập hay không.",
+          "Kiểm tra xem ai có quyền thực hiện hành động (ví dụ: chỉ admin mới được xóa thành viên).",
+          "Mã hóa mật khẩu người dùng.",
+          "Ghi lại log các hành động của người dùng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Authorization là quá trình xác định quyền hạn của một người dùng đã được xác thực (Authenticated). Trong ngữ cảnh này, nó quyết định xem người dùng có được phép thêm hoặc xóa thành viên khỏi thẻ hay không."
+      },
+      {
+        "question": "Lợi ích của việc sử dụng `ref` trong Mongoose Schema khi định nghĩa trường `memberIds` là gì?",
+        "options": [
+          "Giúp giảm kích thước của database.",
+          "Cho phép sử dụng phương thức `.populate()` để tự động lấy thông tin chi tiết của thành viên từ `userModel`.",
+          "Tăng tốc độ ghi dữ liệu vào database.",
+          "Không có lợi ích gì, chỉ làm code phức tạp hơn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thuộc tính `ref` tạo ra một tham chiếu đến một model khác, cho phép Mongoose thực hiện các phép `join` ở cấp độ ứng dụng thông qua phương thức `.populate()`, giúp lấy dữ liệu liên quan một cách dễ dàng."
+      },
+      {
+        "question": "Khi người dùng tự tham gia (Join) vào một thẻ, logic ở backend nên xử lý như thế nào?",
+        "options": [
+          "Tạo một thẻ mới và gán người dùng đó vào.",
+          "Thêm `userId` của người dùng hiện tại vào mảng `memberIds` của thẻ đó.",
+          "Gửi email thông báo cho quản trị viên board.",
+          "Yêu cầu người dùng nhập lại mật khẩu."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hành động \"Join\" về bản chất cũng là thêm một thành viên vào thẻ. Do đó, logic backend chỉ cần lấy `userId` của người dùng đang thực hiện yêu cầu và thêm nó vào mảng `memberIds`."
+      },
+      {
+        "question": "Trong file `cardRoute.js`, để xử lý việc thêm thành viên vào card, bạn sẽ định nghĩa route như thế nào?",
+        "options": [
+          "`router.route('/:id/members').post(cardController.addMember)`",
+          "`router.route('/:id/members').get(cardController.addMember)`",
+          "`router.route('/members').post(cardController.addMember)`",
+          "`router.route('/:id').put(cardController.addMember)`"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Route cần phải xác định card cụ thể (`/:id`), resource con (`/members`), và sử dụng phương thức HTTP `POST` để thể hiện việc tạo mới hoặc thêm mới một thực thể (trong trường hợp này là một thành viên trong danh sách)."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cập nhật Card Schema",
+        "description": "Chỉnh sửa `cardModel.js` để thêm một trường mới có tên `memberIds`. Trường này phải là một mảng chứa các ObjectId tham chiếu đến model 'user'.",
+        "starterCode": "const cardSchema = new Schema({\n  boardId: { type: Schema.Types.ObjectId, required: true },\n  columnId: { type: Schema.Types.ObjectId, required: true },\n  title: { type: String, required: true },\n  // ... các trường khác\n\n  // Thêm trường memberIds vào đây\n});",
+        "solution": "const cardSchema = new Schema({\n  boardId: { type: Schema.Types.ObjectId, required: true },\n  columnId: { type: Schema.Types.ObjectId, required: true },\n  title: { type: String, required: true },\n  // ... các trường khác\n\n  memberIds: [{\n    type: Schema.Types.ObjectId,\n    ref: 'user'\n  }]\n});",
+        "testCases": "Kiểm tra model sau khi cập nhật có chứa trường `memberIds` với kiểu dữ liệu và tham chiếu chính xác hay không."
+      },
+      {
+        "title": "Bài 2: Service thêm thành viên vào Card",
+        "description": "Hoàn thành hàm `addMemberToCard` trong `cardService.js`. Hàm này nhận vào `cardId` và `userId`, sau đó sử dụng phương thức `findOneAndUpdate` với toán tử `$addToSet` để thêm thành viên mới.",
+        "starterCode": "const addMemberToCard = async (cardId, userId) => {\n  try {\n    // Viết code của bạn ở đây\n    // Sử dụng findOneAndUpdate để thêm userId vào mảng memberIds của card có id là cardId\n    const updatedCard = await cardModel.findOneAndUpdate(\n      // ...\n    );\n    return updatedCard;\n  } catch (error) { throw error; }\n};",
+        "solution": "const addMemberToCard = async (cardId, userId) => {\n  try {\n    const updatedCard = await cardModel.findOneAndUpdate(\n      { _id: cardId },\n      { $addToSet: { memberIds: userId } },\n      { new: true }\n    );\n    return updatedCard;\n  } catch (error) { throw error; }\n};",
+        "testCases": "Gọi hàm với một `cardId` và `userId` hợp lệ. Kiểm tra xem card trả về có chứa `userId` đó trong mảng `memberIds` hay không. Gọi lại lần nữa với cùng `userId` và kiểm tra mảng `memberIds` không thay đổi kích thước."
+      },
+      {
+        "title": "Bài 3: Service xóa thành viên khỏi Card",
+        "description": "Hoàn thành hàm `removeMemberFromCard` trong `cardService.js`. Hàm này nhận vào `cardId` và `userId`, sau đó sử dụng phương thức `findOneAndUpdate` với toán tử `$pull` để xóa thành viên.",
+        "starterCode": "const removeMemberFromCard = async (cardId, userId) => {\n  try {\n    // Viết code của bạn ở đây\n    // Sử dụng findOneAndUpdate để xóa userId khỏi mảng memberIds\n    const updatedCard = await cardModel.findOneAndUpdate(\n      // ...\n    );\n    return updatedCard;\n  } catch (error) { throw error; }\n};",
+        "solution": "const removeMemberFromCard = async (cardId, userId) => {\n  try {\n    const updatedCard = await cardModel.findOneAndUpdate(\n      { _id: cardId },\n      { $pull: { memberIds: userId } },\n      { new: true }\n    );\n    return updatedCard;\n  } catch (error) { throw error; }\n};",
+        "testCases": "Thêm một thành viên vào card trước. Sau đó gọi hàm `removeMemberFromCard` với `cardId` và `userId` tương ứng. Kiểm tra xem card trả về không còn chứa `userId` đó trong mảng `memberIds`."
+      },
+      {
+        "title": "Bài 4: Service tìm kiếm Board",
+        "description": "Hoàn thành hàm `searchBoards` trong `boardService.js`. Hàm này nhận một từ khóa (keyword) và trả về tất cả các board có trường `title` chứa từ khóa đó, không phân biệt chữ hoa/thường.",
+        "starterCode": "const searchBoards = async (keyword) => {\n  try {\n    // Viết query tìm kiếm ở đây\n    const query = {\n      // ...\n    };\n    const boards = await boardModel.find(query);\n    return boards;\n  } catch (error) { throw error; }\n};",
+        "solution": "const searchBoards = async (keyword) => {\n  try {\n    const query = {\n      title: { $regex: keyword, $options: 'i' }\n    };\n    const boards = await boardModel.find(query);\n    return boards;\n  } catch (error) { throw error; }\n};",
+        "testCases": "Tạo một vài board với các title khác nhau. Gọi hàm `searchBoards` với một phần của title (ví dụ: tìm \"proj\" trong \"Project A\"). Kiểm tra xem hàm có trả về đúng board mong muốn hay không."
+      },
+      {
+        "title": "Bài 5: React Hook cho Debouncing",
+        "description": "Viết một custom hook trong React tên là `useDebounce`. Hook này nhận vào một giá trị (`value`) và một khoảng thời gian trễ (`delay`), và chỉ trả về giá trị mới nhất sau khi `value` không thay đổi trong khoảng `delay` đó.",
+        "starterCode": "import { useState, useEffect } from 'react';\n\nfunction useDebounce(value, delay) {\n  // State và effect để giữ giá trị đã debounce\n  const [debouncedValue, setDebouncedValue] = useState(value);\n\n  useEffect(() => {\n    // Viết logic của bạn ở đây\n    // Cập nhật debouncedValue sau khi delay\n    \n  }, [value, delay]); // Chỉ chạy lại effect nếu value hoặc delay thay đổi\n\n  return debouncedValue;\n}",
+        "solution": "import { useState, useEffect } from 'react';\n\nfunction useDebounce(value, delay) {\n  const [debouncedValue, setDebouncedValue] = useState(value);\n\n  useEffect(() => {\n    // Thiết lập một timeout để cập nhật giá trị đã debounce\n    const handler = setTimeout(() => {\n      setDebouncedValue(value);\n    }, delay);\n\n    // Cleanup function: hủy timeout nếu value hoặc delay thay đổi trước khi timeout kết thúc\n    return () => {\n      clearTimeout(handler);\n    };\n  }, [value, delay]);\n\n  return debouncedValue;\n}",
+        "testCases": "Sử dụng hook trong một component SearchInput. Gõ nhanh vào input và kiểm tra console log. API call (được giả lập bằng console.log) chỉ nên được thực hiện một lần sau khi ngừng gõ, thay vì mỗi lần gõ."
+      }
+    ]
+  }
+}

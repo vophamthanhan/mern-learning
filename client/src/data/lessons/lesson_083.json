@@ -1,0 +1,213 @@
+{
+  "id": 83,
+  "title": "Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ cùng nhau tìm hiểu và triển khai thư viện `react-toastify` vào dự án MERN Stack của mình. Mục tiêu chính là có thể hiển thị các thông báo (flash messages hay toast notifications) một cách chuyên nghiệp và thân thiện với người dùng sau khi thực hiện một hành động nào đó, ví dụ như tạo mới một board, column hay card thành công.\n\nViệc sử dụng toast-notifications giúp cải thiện đáng kể trải nghiệm người dùng (UX), cung cấp phản hồi tức thì và rõ ràng về kết quả của các tác vụ mà họ đã thực hiện.\n\n## II. Kiến thức chi tiết\n\n### 1. Flash Messages / Toast Notifications là gì?\n\n**Flash Messages** (hay còn gọi là **Toast Notifications**) là những thông báo nhỏ, không chiếm nhiều diện tích và thường tự động biến mất sau một khoảng thời gian ngắn. Chúng được sử dụng để cung cấp phản hồi ngắn gọn cho người dùng về một hành động vừa xảy ra. Ví dụ: \"Cập nhật thành công!\", \"Đã xảy ra lỗi, vui lòng thử lại!\", \"Sản phẩm đã được thêm vào giỏ hàng.\"\n\nNhững thông báo này rất hữu ích vì chúng không làm gián đoạn luồng công việc của người dùng (không yêu cầu người dùng phải click để đóng như các modal hay alert truyền thống).\n\n### 2. Giới thiệu về `react-toastify`\n\n`react-toastify` là một thư viện React mã nguồn mở, nhẹ và cực kỳ mạnh mẽ, giúp các nhà phát triển dễ dàng thêm các thông báo toast vào ứng dụng của mình. Thư viện này cung cấp rất nhiều tùy chọn để tùy biến, từ vị trí hiển thị, loại thông báo, thời gian hiển thị, cho đến giao diện và hiệu ứng chuyển động.\n\n**Các tính năng nổi bật:**\n\n*   **Dễ sử dụng:** Chỉ cần vài dòng code để có ngay một thông báo chuyên nghiệp.\n*   **Tùy biến cao:** Cho phép thay đổi gần như mọi khía cạnh của thông báo.\n*   **Nhiều loại thông báo:** Hỗ trợ sẵn các loại: success, error, warning, info, và default.\n*   **Hỗ trợ Promise:** Dễ dàng hiển thị thông báo cho các tiến trình bất đồng bộ (ví dụ: đang xử lý, thành công, thất bại).\n*   **Tương thích tốt:** Hoạt động mượt mà với React và Next.js.\n*   **Và nhiều tính năng khác:** như tạm dừng khi hover, kéo để đóng, hiển thị progress bar...\n\n### 3. Cài đặt và cấu hình\n\nĐể sử dụng `react-toastify`, chúng ta cần cài đặt nó vào dự án của mình.\n\n**Code mẫu (Cài đặt):**\n\n```bash\nyarn add react-toastify\n```\n\nSau khi cài đặt, chúng ta cần import CSS của thư viện và component `ToastContainer` vào file chính của ứng dụng (thường là `App.jsx` hoặc `_app.js` trong Next.js).\n\n**Code mẫu (Trong `App.jsx`):**\n\n```jsx\nimport React from 'react';\nimport { ToastContainer, toast } from 'react-toastify';\nimport 'react-toastify/dist/ReactToastify.css';\n\nfunction App() {\n  const notify = () => toast(\"Wow so easy!\");\n\n  return (\n    <div>\n      <button onClick={notify}>Notify!</button>\n      {/* ToastContainer phải được render một lần duy nhất trong cây ứng dụng */}\n      <ToastContainer />\n    </div>\n  );\n}\n\nexport default App;\n```\n\n*   `'react-toastify/dist/ReactToastify.css'`: Đây là file CSS mặc định cung cấp các style cơ bản cho toast. Bắt buộc phải import file này.\n*   `<ToastContainer />`: Đây là component chịu trách nhiệm render tất cả các toast notification trong ứng dụng. **Bạn chỉ nên render nó một lần duy nhất** ở cấp cao nhất của ứng dụng.\n*   `toast()`: Đây là hàm chính được sử dụng để kích hoạt và hiển thị một thông báo. Bạn có thể gọi nó từ bất kỳ đâu trong các component của mình.\n\n### 4. Các loại thông báo và tùy chỉnh\n\n`react-toastify` cung cấp các hàm tiện ích cho các loại thông báo khác nhau:\n\n*   `toast.success(\"Tạo mới thành công!\")`\n*   `toast.error(\"Đã xảy ra lỗi!\")`\n*   `toast.warn(\"Dữ liệu không hợp lệ!\")`\n*   `toast.info(\"Đây là một thông tin quan trọng.\")`\n*   `toast(\"Một thông báo mặc định.\")`\n\nChúng ta có thể truyền một đối tượng tùy chọn vào hàm `toast` để tùy chỉnh hành vi và giao diện của nó.\n\n**Code mẫu (Tùy chỉnh):**\n\n```jsx\ntoast.success('Tạo mới Board thành công!', {\n  position: \"bottom-right\", // Vị trí hiển thị\n  autoClose: 5000, // Tự động đóng sau 5 giây\n  hideProgressBar: false, // Ẩn/hiện thanh tiến trình\n  closeOnClick: true, // Đóng khi click\n  pauseOnHover: true, // Tạm dừng khi di chuột qua\n  draggable: true, // Cho phép kéo để đóng\n  progress: undefined,\n  theme: \"light\", // Giao diện (light, dark, colored)\n});\n```\n\n## III. Các bước thực hành\n\nTrong video, tác giả đã tích hợp `react-toastify` vào dự án Trello clone để hiển thị thông báo sau khi tạo mới một Column hoặc Card.\n\n1.  **Cài đặt thư viện:** Mở terminal trong thư mục `trello-web` và chạy lệnh `yarn add react-toastify`.\n2.  **Import và cấu hình `ToastContainer`:**\n    *   Mở file `src/App.jsx`.\n    *   Import `ToastContainer` và file CSS của nó.\n    *   Thêm `<ToastContainer />` vào trong `App component`, ngay bên dưới các `div` chính.\n3.  **Kích hoạt thông báo:**\n    *   Trong component chịu trách nhiệm tạo mới dữ liệu (ví dụ: `BoardContent.jsx` hoặc một component con của nó).\n    *   Import hàm `toast` từ `react-toastify`.\n    *   Sau khi gọi API và nhận được kết quả thành công, gọi hàm `toast.success('Tạo mới Column thành công!')`.\n    *   Trong trường hợp API trả về lỗi, gọi `toast.error()` với thông báo lỗi tương ứng từ server.\n\n## IV. Lưu ý quan trọng\n\n*   **Chỉ render `ToastContainer` một lần:** Việc render nhiều `ToastContainer` có thể gây ra những hành vi không mong muốn. Hãy đảm bảo nó chỉ xuất hiện một lần ở layout chính của bạn.\n*   **Không quên import CSS:** Nếu bạn không import file `ReactToastify.css`, các thông báo sẽ hiển thị mà không có bất kỳ style nào, trông rất xấu.\n*   **Tùy chỉnh theme:** `react-toastify` hỗ trợ theme `light`, `dark`, và `colored`. Bạn có thể dễ dàng thay đổi theme cho phù hợp với giao diện ứng dụng của mình. Thậm chí có thể tùy chỉnh để nó tự động thay đổi theo theme của hệ thống/trình duyệt.\n*   **Vị trí hiển thị:** Chọn vị trí (`position`) hiển thị thông báo sao cho không che mất các nội dung quan trọng khác trên giao diện.\n\n## V. Tài liệu tham khảo\n\nĐể tìm hiểu sâu hơn và khám phá tất cả các tính năng mạnh mẽ của `react-toastify`, bạn nên tham khảo các tài liệu chính thức sau:\n\n1.  [Trang chủ và tài liệu chính thức của React-Toastify](https://fkhadra.github.io/react-toastify/introduction/)\n2.  [Gói npm của react-toastify](https://www.npmjs.com/package/react-toastify)\n3.  [Hướng dẫn chi tiết trên LogRocket](https://blog.logrocket.com/react-toastify-guide/)\n4.  [Video bài học trên YouTube](https://www.youtube.com/watch?v=_QsTLHnEocg&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=73)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", khái niệm cơ bản được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến khái niệm cơ bản",
+          "Phương án B liên quan đến khái niệm cơ bản",
+          "Phương án C liên quan đến khái niệm cơ bản",
+          "Phương án D liên quan đến khái niệm cơ bản"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về khái niệm cơ bản."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", cú pháp được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cú pháp",
+          "Phương án B liên quan đến cú pháp",
+          "Phương án C liên quan đến cú pháp",
+          "Phương án D liên quan đến cú pháp"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cú pháp."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", cách sử dụng được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cách sử dụng",
+          "Phương án B liên quan đến cách sử dụng",
+          "Phương án C liên quan đến cách sử dụng",
+          "Phương án D liên quan đến cách sử dụng"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cách sử dụng."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", ưu điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ưu điểm",
+          "Phương án B liên quan đến ưu điểm",
+          "Phương án C liên quan đến ưu điểm",
+          "Phương án D liên quan đến ưu điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ưu điểm."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", nhược điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến nhược điểm",
+          "Phương án B liên quan đến nhược điểm",
+          "Phương án C liên quan đến nhược điểm",
+          "Phương án D liên quan đến nhược điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về nhược điểm."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", so sánh được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến so sánh",
+          "Phương án B liên quan đến so sánh",
+          "Phương án C liên quan đến so sánh",
+          "Phương án D liên quan đến so sánh"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về so sánh."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", ứng dụng thực tế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ứng dụng thực tế",
+          "Phương án B liên quan đến ứng dụng thực tế",
+          "Phương án C liên quan đến ứng dụng thực tế",
+          "Phương án D liên quan đến ứng dụng thực tế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ứng dụng thực tế."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", best practices được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến best practices",
+          "Phương án B liên quan đến best practices",
+          "Phương án C liên quan đến best practices",
+          "Phương án D liên quan đến best practices"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về best practices."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", cấu hình được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cấu hình",
+          "Phương án B liên quan đến cấu hình",
+          "Phương án C liên quan đến cấu hình",
+          "Phương án D liên quan đến cấu hình"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cấu hình."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", xử lý lỗi được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến xử lý lỗi",
+          "Phương án B liên quan đến xử lý lỗi",
+          "Phương án C liên quan đến xử lý lỗi",
+          "Phương án D liên quan đến xử lý lỗi"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về xử lý lỗi."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", tối ưu hóa được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến tối ưu hóa",
+          "Phương án B liên quan đến tối ưu hóa",
+          "Phương án C liên quan đến tối ưu hóa",
+          "Phương án D liên quan đến tối ưu hóa"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về tối ưu hóa."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", bảo mật được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến bảo mật",
+          "Phương án B liên quan đến bảo mật",
+          "Phương án C liên quan đến bảo mật",
+          "Phương án D liên quan đến bảo mật"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về bảo mật."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", kiến trúc được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến kiến trúc",
+          "Phương án B liên quan đến kiến trúc",
+          "Phương án C liên quan đến kiến trúc",
+          "Phương án D liên quan đến kiến trúc"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về kiến trúc."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", thiết kế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến thiết kế",
+          "Phương án B liên quan đến thiết kế",
+          "Phương án C liên quan đến thiết kế",
+          "Phương án D liên quan đến thiết kế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về thiết kế."
+      },
+      {
+        "question": "Trong bài \"Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp\", triển khai được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến triển khai",
+          "Phương án B liên quan đến triển khai",
+          "Phương án C liên quan đến triển khai",
+          "Phương án D liên quan đến triển khai"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về triển khai."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài tập 1: Thực hành Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 2: Thực hành Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 3: Thực hành Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 4: Thực hành Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 5: Thực hành Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      }
+    ]
+  }
+}

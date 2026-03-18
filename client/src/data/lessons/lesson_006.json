@@ -1,0 +1,213 @@
+{
+  "id": 6,
+  "title": "Buổi 4: React Router DOM & React Hook Form, Auth (Login Register) & 404 pages",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Buổi 4: React Router DOM & React Hook Form, Auth (Login Register) & 404 pages\n\n## Mục tiêu bài học\n\nBài học này tập trung vào việc xây dựng các tính năng nền tảng và thiết yếu cho bất kỳ ứng dụng web hiện đại nào sử dụng ReactJS. Sau khi hoàn thành bài học, học viên sẽ có khả năng:\n\n- **Xây dựng hệ thống định tuyến (routing)** cho ứng dụng Single Page Application (SPA) bằng cách sử dụng thư viện `react-router-dom`.\n- **Tạo và quản lý biểu mẫu (forms)** một cách hiệu quả, tối ưu về hiệu năng với `react-hook-form`, bao gồm cả việc xác thực dữ liệu (validation).\n- **Triển khai tính năng xác thực người dùng (authentication)**, bao gồm đăng ký (Register) và đăng nhập (Login).\n- **Tạo và quản lý các trang không tìm thấy (404 Not Found)** để cải thiện trải nghiệm người dùng.\n- **Hiểu và áp dụng các khái niệm** như Protected Routes để bảo vệ các trang yêu cầu đăng nhập.\n\n## Kiến thức chi tiết được trình bày trong video\n\nDựa trên tiêu đề và bối cảnh của khóa học MERN Stack Pro, nội dung chi tiết của video có thể được phân tích thành các phần chính sau đây.\n\n### 1. React Router DOM\n\n`react-router-dom` là thư viện tiêu chuẩn để tạo định tuyến phía client (client-side routing) trong các ứng dụng React. Nó cho phép ứng dụng của bạn có nhiều URL khác nhau tương ứng với các giao diện khác nhau mà không cần tải lại toàn bộ trang từ server.\n\n#### Các thành phần cốt lõi:\n\n- **`<BrowserRouter>`**: Component bọc ngoài cùng, sử dụng HTML5 history API để giữ cho giao diện đồng bộ với URL.\n- **`<Routes>`**: Component chứa danh sách các định tuyến (`<Route>`).\n- **`<Route>`**: Định nghĩa một định tuyến. Nó nhận vào hai thuộc tính chính là `path` (đường dẫn URL) và `element` (component sẽ được render khi URL khớp).\n- **`<Link>`**: Component dùng để tạo các liên kết điều hướng giữa các trang, tương tự thẻ `<a>` trong HTML nhưng không gây tải lại trang.\n- **`useNavigate`**: Một hook cho phép bạn điều hướng người dùng một cách có lập trình (ví dụ: sau khi đăng nhập thành công).\n- **`useParams`**: Hook để truy cập các tham số động trên URL (ví dụ: `/users/:userId`).\n\n#### Code mẫu: Cấu hình Routing cơ bản\n\n```javascript\n// main.jsx hoặc App.jsx\nimport React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport { BrowserRouter, Routes, Route } from 'react-router-dom';\nimport HomePage from './pages/HomePage';\nimport LoginPage from './pages/LoginPage';\nimport RegisterPage from './pages/RegisterPage';\nimport NotFoundPage from './pages/NotFoundPage';\n\nReactDOM.createRoot(document.getElementById('root')).render(\n  <React.StrictMode>\n    <BrowserRouter>\n      <Routes>\n        <Route path=\"/\" element={<HomePage />} />\n        <Route path=\"/login\" element={<LoginPage />} />\n        <Route path=\"/register\" element={<RegisterPage />} />\n        {/* Route cho trang 404 */}\n        <Route path=\"*\" element={<NotFoundPage />} />\n      </Routes>\n    </BrowserRouter>\n  </React.StrictMode>\n);\n```\n\n### 2. React Hook Form\n\n`react-hook-form` là một thư viện mạnh mẽ và hiệu quả để quản lý biểu mẫu trong React. Nó tận dụng các hook của React để giảm thiểu số lần render lại không cần thiết, giúp cải thiện hiệu năng đáng kể so với các thư viện form khác.\n\n#### Các khái niệm chính:\n\n- **`useForm()`**: Hook chính cung cấp các phương thức để làm việc với form.\n- **`register`**: Phương thức để \"đăng ký\" một input vào `react-hook-form`, cho phép theo dõi giá trị, xác thực và thu thập dữ liệu.\n- **`handleSubmit`**: Một hàm bậc cao hơn, nhận vào hàm callback của bạn. Nó sẽ chỉ gọi callback nếu form đã được xác thực thành công.\n- **`formState: { errors }`**: Một đối tượng chứa thông tin về trạng thái của form, trong đó `errors` là đối tượng chứa các lỗi xác thực.\n\n#### Code mẫu: Form Đăng nhập với Validation\n\n```javascript\n// components/LoginForm.jsx\nimport { useForm } from 'react-hook-form';\n\nfunction LoginForm() {\n  const { register, handleSubmit, formState: { errors } } = useForm();\n\n  const onSubmit = (data) => {\n    console.log('Dữ liệu form:', data);\n    // Gọi API đăng nhập ở đây\n  };\n\n  return (\n    <form onSubmit={handleSubmit(onSubmit)}>\n      <div>\n        <label>Email</label>\n        <input \n          type=\"email\" \n          {...register('email', { \n            required: 'Email là bắt buộc', \n            pattern: {\n              value: /^\\S+@\\S+$/i,\n              message: 'Email không hợp lệ'\n            }\n          })} \n        />\n        {errors.email && <p style={{ color: 'red' }}>{errors.email.message}</p>}\n      </div>\n\n      <div>\n        <label>Password</label>\n        <input \n          type=\"password\" \n          {...register('password', { required: 'Mật khẩu là bắt buộc' })} \n        />\n        {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}\n      </div>\n\n      <button type=\"submit\">Đăng nhập</button>\n    </form>\n  );\n}\n```\n\n### 3. Authentication (Login/Register)\n\nĐây là luồng xử lý cốt lõi để xác thực người dùng, thường bao gồm các bước sau:\n\n1.  **Giao diện (Frontend)**: Người dùng nhập thông tin vào form Đăng ký hoặc Đăng nhập được tạo bằng `react-hook-form`.\n2.  **Gửi yêu cầu (Request)**: Khi người dùng nhấn submit, hàm `onSubmit` được gọi. Frontend sử dụng một thư viện như `axios` để gửi thông tin (email, password) đến API của backend.\n3.  **Xử lý (Backend)**: \n    - **Register**: Backend nhận dữ liệu, xác thực, mã hóa mật khẩu và lưu người dùng mới vào cơ sở dữ liệu (MongoDB).\n    - **Login**: Backend nhận dữ liệu, tìm người dùng trong DB, so sánh mật khẩu đã mã hóa. \n4.  **Tạo Token (Backend)**: Nếu thông tin hợp lệ, backend tạo ra một JSON Web Token (JWT). Token này chứa thông tin định danh người dùng và có chữ ký số để đảm bảo tính toàn vẹn.\n5.  **Gửi phản hồi (Response)**: Backend gửi JWT về cho frontend.\n6.  **Lưu trữ (Frontend)**: Frontend nhận JWT và lưu trữ nó một cách an toàn. Các lựa chọn phổ biến là `localStorage` hoặc `HttpOnly Cookie`. Trạng thái đăng nhập của người dùng (ví dụ: thông tin user, token) cũng thường được lưu vào một state quản lý toàn cục như Redux Toolkit (đã được đề cập trong các buổi học trước).\n7.  **Xác thực các yêu cầu sau**: Với mỗi yêu cầu cần xác thực sau này, frontend sẽ đính kèm JWT vào header `Authorization` (thường là `Authorization: Bearer <token>`).\n\n### 4. Protected Routes và 404 Pages\n\n- **404 Pages**: Như trong ví dụ routing ở trên, một `Route` với `path=\"*\"` sẽ hoạt động như một \"catch-all route\". Bất kỳ URL nào không khớp với các định tuyến đã định nghĩa trước đó sẽ bị bắt lại và hiển thị component `NotFoundPage`.\n\n- **Protected Routes**: Đây là các route chỉ có thể truy cập được khi người dùng đã đăng nhập. Chúng ta có thể tạo một component đặc biệt để kiểm tra trạng thái đăng nhập (dựa vào token đã lưu) trước khi cho phép render component của trang đó.\n\n#### Code mẫu: Component ProtectedRoute\n\n```javascript\nimport { Navigate, Outlet } from 'react-router-dom';\n\n// Giả sử bạn có một hàm để kiểm tra trạng thái đăng nhập\n// Ví dụ: đọc từ Redux store hoặc localStorage\nconst useAuth = () => {\n  const user = useSelector(state => state.user); // Lấy từ Redux\n  return user && user.token;\n};\n\nconst ProtectedRoute = () => {\n  const isAuth = useAuth();\n  // Nếu đã đăng nhập, cho phép truy cập các route con (sử dụng Outlet)\n  // Nếu chưa, điều hướng về trang /login\n  return isAuth ? <Outlet /> : <Navigate to=\"/login\" />;\n};\n\n// Sử dụng trong file routing\n<Routes>\n  <Route path=\"/login\" element={<LoginPage />} />\n  {/* Các route cần bảo vệ sẽ được đặt bên trong ProtectedRoute */}\n  <Route element={<ProtectedRoute />}>\n    <Route path=\"/dashboard\" element={<DashboardPage />} />\n    <Route path=\"/profile\" element={<ProfilePage />} />\n  </Route>\n  <Route path=\"*\" element={<NotFoundPage />} />\n</Routes>\n```\n\n## Các bước thực hành\n\n1.  **Cài đặt thư viện**: `npm install react-router-dom react-hook-form` hoặc `yarn add react-router-dom react-hook-form`.\n2.  **Cấu trúc thư mục**: Tạo cấu trúc thư mục cho các `pages` (HomePage, LoginPage, RegisterPage, NotFoundPage, DashboardPage) và `components` (LoginForm, RegisterForm, Header, ...).\n3.  **Thiết lập Router**: Bọc toàn bộ ứng dụng trong `<BrowserRouter>` và định nghĩa các `<Route>` trong `<Routes>` như ví dụ trên.\n4.  **Xây dựng Form**: Tạo các component form cho Login và Register bằng `react-hook-form`, bao gồm cả các quy tắc validation.\n5.  **Tích hợp API**: Viết các hàm `onSubmit` để gọi API đăng nhập/đăng ký bằng `axios`. Xử lý kết quả trả về, lưu token và thông tin người dùng vào Redux store.\n6.  **Tạo Protected Routes**: Tạo component `ProtectedRoute` để kiểm tra xác thực và áp dụng nó cho các trang cần bảo vệ như Dashboard.\n7.  **Hoàn thiện giao diện**: Thêm các `<Link>` vào Header hoặc các vị trí khác để người dùng có thể điều hướng qua lại giữa các trang.\n\n## Lưu ý quan trọng\n\n- **Bảo mật JWT**: Lưu trữ JWT trong `localStorage` tiện lợi cho việc phát triển nhưng có thể bị tấn công XSS. `HttpOnly Cookie` là một giải pháp an toàn hơn vì nó không thể bị truy cập bởi JavaScript phía client. Khóa học có thể sẽ đề cập đến vấn đề này trong các buổi sau (như Buổi 8).\n- **Quản lý State**: Việc tích hợp với Redux (đã học ở các buổi trước) là rất quan trọng để quản lý trạng thái đăng nhập một cách nhất quán trên toàn bộ ứng dụng.\n- **Trải nghiệm người dùng (UX)**: Sau khi đăng nhập, hãy điều hướng người dùng đến trang họ muốn truy cập ban đầu hoặc trang dashboard. Tương tự, sau khi đăng xuất, hãy điều hướng họ về trang chủ hoặc trang đăng nhập.\n- **Error Handling**: Luôn xử lý các lỗi từ API một cách tường minh và hiển thị thông báo phù hợp cho người dùng (ví dụ: \"Sai email hoặc mật khẩu\").\n\n## Tài liệu tham khảo\n\n- [React Router DOM Documentation](https://reactrouter.com/en/main)\n- [React Hook Form Documentation](https://react-hook-form.com/)\n- [JSON Web Tokens (JWT)](https://jwt.io/)\n- [Axios Documentation](https://axios-http.com/docs/intro)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Thành phần nào của `react-router-dom` được sử dụng để bọc toàn bộ ứng dụng và kích hoạt tính năng routing?",
+        "options": [
+          "A. <Routes>",
+          "B. <BrowserRouter>",
+          "C. <Link>",
+          "D. <Route>"
+        ],
+        "correctAnswer": 1,
+        "explanation": "<BrowserRouter> là thành phần nên được đặt ở cấp cao nhất của ứng dụng để cung cấp context routing, sử dụng HTML5 history API để đồng bộ UI với URL."
+      },
+      {
+        "question": "Hook nào của `react-router-dom` cho phép bạn truy cập các tham số động trên URL, ví dụ như `:id` trong `/products/:id`?",
+        "options": [
+          "A. useNavigate",
+          "B. useLocation",
+          "C. useParams",
+          "D. useRoutes"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useParams` là hook được thiết kế đặc biệt để trích xuất các tham số từ URL, trả về một object chứa các cặp key/value của tham số đó."
+      },
+      {
+        "question": "Để tạo một route \"bắt tất cả\" (catch-all) cho trang 404 Not Found, bạn nên sử dụng `path` nào cho component `<Route>`?",
+        "options": [
+          "A. path=\"/404\"",
+          "B. path=\"*\"",
+          "C. path=\"/not-found\"",
+          "D. Không cần `path`, chỉ cần đặt ở cuối cùng"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một `<Route>` với `path=\"*\"` sẽ khớp với bất kỳ URL nào không khớp với các route đã được định nghĩa trước đó, lý tưởng cho việc hiển thị trang 404."
+      },
+      {
+        "question": "Lợi ích chính của việc sử dụng `react-hook-form` so với các thư viện quản lý form khác là gì?",
+        "options": [
+          "A. Giảm thiểu số lần re-render không cần thiết, cải thiện hiệu năng.",
+          "B. Cung cấp nhiều component UI có sẵn hơn.",
+          "C. Dễ dàng tích hợp với Redux hơn.",
+          "D. Hỗ trợ tốt hơn cho Class Components."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`react-hook-form` tối ưu hóa hiệu năng bằng cách giảm thiểu re-render thông qua việc sử dụng uncontrolled inputs và hooks, chỉ re-render khi cần thiết (ví dụ: khi có lỗi)."
+      },
+      {
+        "question": "Phương thức nào từ hook `useForm()` được dùng để đăng ký một input field và áp dụng các quy tắc validation?",
+        "options": [
+          "A. handleSubmit",
+          "B. watch",
+          "C. formState",
+          "D. register"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Hàm `register` được sử dụng để \"đăng ký\" một input vào thư viện, cho phép nó theo dõi giá trị, xử lý validation và thu thập dữ liệu khi form được submit."
+      },
+      {
+        "question": "Trong `react-hook-form`, làm thế nào để hiển thị một thông báo lỗi khi một trường `email` không hợp lệ?",
+        "options": [
+          "A. `errors.email.message`",
+          "B. `formState.email.error`",
+          "C. `validation.email.text`",
+          "D. `email.error.message`"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đối tượng `errors` được cung cấp bởi `formState` chứa tất cả các lỗi validation hiện tại. Bạn có thể truy cập thông báo lỗi của một trường cụ thể qua `errors.fieldName.message`."
+      },
+      {
+        "question": "Luồng xác thực (Authentication) thường kết thúc bằng việc backend tạo và gửi gì về cho frontend?",
+        "options": [
+          "A. Một session ID",
+          "B. Toàn bộ thông tin người dùng bao gồm cả mật khẩu",
+          "C. Một JSON Web Token (JWT)",
+          "D. Một cookie chứa thông tin đăng nhập"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sau khi xác thực thành công, backend sẽ tạo một JWT chứa thông tin định danh người dùng và gửi nó về cho client. Client sẽ sử dụng token này cho các yêu cầu tiếp theo."
+      },
+      {
+        "question": "Đâu là cách phổ biến và an toàn hơn để lưu trữ JWT ở phía client nhằm chống lại tấn công XSS (Cross-Site Scripting)?",
+        "options": [
+          "A. `localStorage`",
+          "B. `sessionStorage`",
+          "C. Biến toàn cục trong JavaScript",
+          "D. `HttpOnly Cookie`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`HttpOnly Cookie` là lựa chọn an toàn hơn vì nó không thể được truy cập bởi JavaScript phía client, do đó giảm thiểu nguy cơ bị đánh cắp token qua các cuộc tấn công XSS."
+      },
+      {
+        "question": "Mục đích của một `ProtectedRoute` trong React là gì?",
+        "options": [
+          "A. Bảo vệ server khỏi các cuộc tấn công.",
+          "B. Chỉ cho phép người dùng đã đăng nhập truy cập vào một số route nhất định.",
+          "C. Tối ưu hóa tốc độ tải của các route.",
+          "D. Mã hóa dữ liệu được gửi qua route."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`ProtectedRoute` là một component hoạt động như một người gác cổng, kiểm tra xem người dùng đã được xác thực hay chưa trước khi cho phép họ truy cập vào các trang yêu cầu đăng nhập."
+      },
+      {
+        "question": "Trong component `ProtectedRoute`, nếu người dùng chưa được xác thực, hành động phổ biến nhất là gì?",
+        "options": [
+          "A. Hiển thị một trang lỗi 403 Forbidden.",
+          "B. Điều hướng (redirect) người dùng đến trang đăng nhập.",
+          "C. Gửi một yêu cầu đến server để đăng ký người dùng mới.",
+          "D. Hiển thị một thông báo trống."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu người dùng chưa đăng nhập, `ProtectedRoute` sẽ sử dụng component `<Navigate>` của `react-router-dom` để điều hướng họ đến trang đăng nhập, đảm bảo họ không thể truy cập nội dung được bảo vệ."
+      },
+      {
+        "question": "Component `<Link to=\"/about\">` của `react-router-dom` được render ra thành phần HTML nào?",
+        "options": [
+          "A. `<a href=\"/about\">`",
+          "B. `<div onClick={...}>`",
+          "C. `<span href=\"/about\">`",
+          "D. `<button>`"
+        ],
+        "correctAnswer": 0,
+        "explanation": "`<Link>` được thiết kế để thay thế cho thẻ `<a>` truyền thống. Nó render ra một thẻ `<a>` nhưng xử lý việc điều hướng ở phía client mà không cần tải lại trang."
+      },
+      {
+        "question": "Hàm `handleSubmit` từ `react-hook-form` có vai trò gì?",
+        "options": [
+          "A. Gửi dữ liệu form đến server ngay lập tức.",
+          "B. Chỉ đăng ký các trường input.",
+          "C. Là một hàm bậc cao, nhận hàm callback và chỉ gọi nó khi form đã valid.",
+          "D. Reset lại toàn bộ form."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`handleSubmit` là một hàm bao bọc (wrapper). Bạn truyền hàm `onSubmit` của mình vào đó. `handleSubmit` sẽ tự động xử lý việc ngăn chặn hành vi mặc định của form và chỉ thực thi callback của bạn nếu không có lỗi validation."
+      },
+      {
+        "question": "Khi tích hợp API đăng nhập, bạn thường gửi yêu cầu HTTP với phương thức gì?",
+        "options": [
+          "A. GET",
+          "B. POST",
+          "C. PUT",
+          "D. DELETE"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc gửi thông tin nhạy cảm như email và mật khẩu để xác thực nên được thực hiện qua phương thức POST để dữ liệu được chứa trong body của request, an toàn hơn là trên URL."
+      },
+      {
+        "question": "Component `<Outlet />` trong `react-router-dom` được sử dụng để làm gì?",
+        "options": [
+          "A. Điều hướng ra một trang web bên ngoài.",
+          "B. Hiển thị thông báo lỗi.",
+          "C. Render các component con của một route lồng nhau (nested route).",
+          "D. Đăng xuất người dùng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`<Outlet />` được sử dụng bên trong một component cha của route (ví dụ: `ProtectedRoute` hoặc một layout chung) để làm điểm đánh dấu nơi các component con của route lồng nhau sẽ được render."
+      },
+      {
+        "question": "Để thực hiện điều hướng có lập trình (programmatic navigation), ví dụ sau khi đăng nhập thành công, bạn nên sử dụng hook nào?",
+        "options": [
+          "A. `useHistory` (trong v5)",
+          "B. `useParams`",
+          "C. `useNavigate`",
+          "D. `useLink`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hook `useNavigate` (trong v6) trả về một hàm cho phép bạn điều hướng người dùng đến một URL khác một cách linh hoạt trong code, ví dụ như trong một hàm xử lý sự kiện."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cấu hình Router cơ bản",
+        "description": "Thiết lập một cấu trúc routing đơn giản cho một ứng dụng có 3 trang: Trang chủ (`/`), trang Giới thiệu (`/about`), và trang Đăng nhập (`/login`).",
+        "starterCode": "import { BrowserRouter, Routes, Route } from 'react-router-dom';\n\n// Giả sử các component HomePage, AboutPage, LoginPage đã tồn tại\nimport HomePage from './pages/HomePage';\nimport AboutPage from './pages/AboutPage';\nimport LoginPage from './pages/LoginPage';\n\nfunction App() {\n  return (\n    <BrowserRouter>\n      {/* Viết code của bạn ở đây */}\n    </BrowserRouter>\n  );\n}\n\nexport default App;",
+        "solution": "import { BrowserRouter, Routes, Route } from 'react-router-dom';\n\nimport HomePage from './pages/HomePage';\nimport AboutPage from './pages/AboutPage';\nimport LoginPage from './pages/LoginPage';\n\nfunction App() {\n  return (\n    <BrowserRouter>\n      <Routes>\n        <Route path=\"/\" element={<HomePage />} />\n        <Route path=\"/about\" element={<AboutPage />} />\n        <Route path=\"/login\" element={<LoginPage />} />\n      </Routes>\n    </BrowserRouter>\n  );\n}\n\nexport default App;",
+        "testCases": "1. Truy cập URL `/` sẽ render component `HomePage`.\n2. Truy cập URL `/about` sẽ render component `AboutPage`.\n3. Truy cập URL `/login` sẽ render component `LoginPage`."
+      },
+      {
+        "title": "Bài 2: Tạo Form Đăng ký với React Hook Form",
+        "description": "Xây dựng một form đăng ký đơn giản với hai trường: `email` và `password`. Sử dụng `react-hook-form` để quản lý form và thêm validation: cả hai trường đều là bắt buộc.",
+        "starterCode": "import { useForm } from 'react-hook-form';\n\nfunction RegisterForm() {\n  const { register, handleSubmit, formState: { errors } } = useForm();\n\n  const onSubmit = (data) => {\n    console.log(data);\n  };\n\n  return (\n    <form onSubmit={handleSubmit(onSubmit)}>\n      <div>\n        <label>Email</label>\n        {/* Thêm input cho email với validation */}\n      </div>\n      <div>\n        <label>Password</label>\n        {/* Thêm input cho password với validation */}\n      </div>\n      <button type=\"submit\">Đăng ký</button>\n    </form>\n  );\n}\n\nexport default RegisterForm;",
+        "solution": "import { useForm } from 'react-hook-form';\n\nfunction RegisterForm() {\n  const { register, handleSubmit, formState: { errors } } = useForm();\n\n  const onSubmit = (data) => {\n    console.log(data);\n  };\n\n  return (\n    <form onSubmit={handleSubmit(onSubmit)}>\n      <div>\n        <label>Email</label>\n        <input {...register('email', { required: 'Email là bắt buộc' })} />\n        {errors.email && <p>{errors.email.message}</p>}\n      </div>\n      <div>\n        <label>Password</label>\n        <input type=\"password\" {...register('password', { required: 'Mật khẩu là bắt buộc' })} />\n        {errors.password && <p>{errors.password.message}</p>}\n      </div>\n      <button type=\"submit\">Đăng ký</button>\n    </form>\n  );\n}\n\nexport default RegisterForm;",
+        "testCases": "1. Khi chưa nhập gì và nhấn submit, thông báo lỗi \"Email là bắt buộc\" và \"Mật khẩu là bắt buộc\" sẽ hiển thị.\n2. Khi chỉ nhập email và nhấn submit, chỉ thông báo lỗi của mật khẩu hiển thị.\n3. Khi nhập đủ cả hai trường, hàm `onSubmit` được gọi và log dữ liệu ra console."
+      },
+      {
+        "title": "Bài 3: Thêm Validation Nâng cao cho Email",
+        "description": "Cải tiến form ở Bài 2. Thêm một quy tắc validation cho trường `email` để kiểm tra xem nó có đúng định dạng email hay không.",
+        "starterCode": "import { useForm } from 'react-hook-form';\n\nfunction RegisterFormAdvanced() {\n  const { register, handleSubmit, formState: { errors } } = useForm();\n\n  const onSubmit = (data) => {\n    console.log(data);\n  };\n\n  return (\n    <form onSubmit={handleSubmit(onSubmit)}>\n      <div>\n        <label>Email</label>\n        <input {...register('email', { \n          required: 'Email là bắt buộc',\n          // Thêm pattern validation ở đây\n        })} />\n        {errors.email && <p>{errors.email.message}</p>}\n      </div>\n      <div>\n        <label>Password</label>\n        <input type=\"password\" {...register('password', { required: 'Mật khẩu là bắt buộc' })} />\n        {errors.password && <p>{errors.password.message}</p>}\n      </div>\n      <button type=\"submit\">Đăng ký</button>\n    </form>\n  );\n}\n\nexport default RegisterFormAdvanced;",
+        "solution": "import { useForm } from 'react-hook-form';\n\nfunction RegisterFormAdvanced() {\n  const { register, handleSubmit, formState: { errors } } = useForm();\n\n  const onSubmit = (data) => {\n    console.log(data);\n  };\n\n  return (\n    <form onSubmit={handleSubmit(onSubmit)}>\n      <div>\n        <label>Email</label>\n        <input {...register('email', { \n          required: 'Email là bắt buộc',\n          pattern: {\n            value: /^\\S+@\\S+$/i,\n            message: 'Email không hợp lệ'\n          }\n        })} />\n        {errors.email && <p>{errors.email.message}</p>}\n      </div>\n      <div>\n        <label>Password</label>\n        <input type=\"password\" {...register('password', { required: 'Mật khẩu là bắt buộc' })} />\n        {errors.password && <p>{errors.password.message}</p>}\n      </div>\n      <button type=\"submit\">Đăng ký</button>\n    </form>\n  );\n}\n\nexport default RegisterFormAdvanced;",
+        "testCases": "1. Nhập \"test\" vào trường email và nhấn submit, thông báo lỗi \"Email không hợp lệ\" sẽ hiển thị.\n2. Nhập \"test@example.com\" vào trường email và không nhập mật khẩu, chỉ lỗi mật khẩu hiển thị.\n3. Nhập đúng định dạng email và có nhập mật khẩu, form submit thành công."
+      },
+      {
+        "title": "Bài 4: Tạo một Route 404",
+        "description": "Trong cấu hình router của bạn, hãy thêm một route cuối cùng để xử lý tất cả các URL không xác định và hiển thị một component `NotFoundPage`.",
+        "starterCode": "import { BrowserRouter, Routes, Route } from 'react-router-dom';\n\nimport HomePage from './pages/HomePage';\nimport AboutPage from './pages/AboutPage';\n// Giả sử component NotFoundPage đã tồn tại\nimport NotFoundPage from './pages/NotFoundPage';\n\nfunction App() {\n  return (\n    <BrowserRouter>\n      <Routes>\n        <Route path=\"/\" element={<HomePage />} />\n        <Route path=\"/about\" element={<AboutPage />} />\n        {/* Thêm route 404 ở đây */}\n      </Routes>\n    </BrowserRouter>\n  );\n}\n\nexport default App;",
+        "solution": "import { BrowserRouter, Routes, Route } from 'react-router-dom';\n\nimport HomePage from './pages/HomePage';\nimport AboutPage from './pages/AboutPage';\nimport NotFoundPage from './pages/NotFoundPage';\n\nfunction App() {\n  return (\n    <BrowserRouter>\n      <Routes>\n        <Route path=\"/\" element={<HomePage />} />\n        <Route path=\"/about\" element={<AboutPage />} />\n        <Route path=\"*\" element={<NotFoundPage />} />\n      </Routes>\n    </BrowserRouter>\n  );\n}\n\nexport default App;",
+        "testCases": "1. Truy cập URL `/` render `HomePage`.\n2. Truy cập URL `/about` render `AboutPage`.\n3. Truy cập một URL không tồn tại như `/random-page` sẽ render `NotFoundPage`."
+      },
+      {
+        "title": "Bài 5: Xây dựng ProtectedRoute",
+        "description": "Tạo một component `ProtectedRoute` để bảo vệ route `/dashboard`. Nếu người dùng đã đăng nhập (giả sử `isAuth` là `true`), hiển thị trang Dashboard. Nếu không, điều hướng họ về trang `/login`.",
+        "starterCode": "import { Routes, Route, Navigate, Outlet } from 'react-router-dom';\n\n// Giả sử các component đã tồn tại\nimport LoginPage from './pages/LoginPage';\nimport DashboardPage from './pages/DashboardPage';\n\nconst useAuth = () => {\n  // Trong thực tế, bạn sẽ kiểm tra token từ localStorage hoặc Redux\n  // Ở đây chúng ta giả lập là người dùng chưa đăng nhập\n  return false; \n};\n\nconst ProtectedRoute = () => {\n  const isAuth = useAuth();\n  // Viết logic kiểm tra và điều hướng ở đây\n  // Sử dụng <Outlet /> và <Navigate />\n};\n\nfunction App() {\n  return (\n    <Routes>\n      <Route path=\"/login\" element={<LoginPage />} />\n      <Route element={<ProtectedRoute />}>\n        <Route path=\"/dashboard\" element={<DashboardPage />} />\n      </Route>\n    </Routes>\n  );\n}\n\nexport default App;",
+        "solution": "import { Routes, Route, Navigate, Outlet } from 'react-router-dom';\n\nimport LoginPage from './pages/LoginPage';\nimport DashboardPage from './pages/DashboardPage';\n\nconst useAuth = (isLoggedIn = false) => {\n  // Giả lập trạng thái đăng nhập\n  return isLoggedIn;\n};\n\nconst ProtectedRoute = ({ isLoggedIn }) => {\n  const isAuth = useAuth(isLoggedIn);\n  return isAuth ? <Outlet /> : <Navigate to=\"/login\" />;\n};\n\nfunction App({ isLoggedIn }) {\n  return (\n    <Routes>\n      <Route path=\"/login\" element={<LoginPage />} />\n      <Route element={<ProtectedRoute isLoggedIn={isLoggedIn} />}>\n        <Route path=\"/dashboard\" element={<DashboardPage />} />\n      </Route>\n    </Routes>\n  );\n}\n\nexport default App;",
+        "testCases": "1. Khi `isLoggedIn` là `false` và truy cập `/dashboard`, người dùng bị điều hướng đến `/login`.\n2. Khi `isLoggedIn` là `true` và truy cập `/dashboard`, component `DashboardPage` được render.\n3. Khi `isLoggedIn` là `false` và truy cập `/login`, component `LoginPage` được render bình thường."
+      }
+    ]
+  }
+}

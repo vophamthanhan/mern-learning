@@ -1,0 +1,213 @@
+{
+  "id": 85,
+  "title": "Bài 70: Hoàn thiện tích hợp kéo thả Columns với API",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# Bài 70: Hoàn thiện tích hợp kéo thả Columns với API\n\n## I. Mục tiêu bài học\n\nVideo này là một phần của series hướng dẫn xây dựng một ứng dụng clone Trello sử dụng MERN Stack. Mục tiêu chính của bài học này là hoàn thiện tính năng kéo thả (drag and drop) các cột (columns) và cập nhật vị trí mới của chúng vào cơ sở dữ liệu thông qua API.\n\nSau khi hoàn thành bài học, học viên sẽ có khả năng:\n\n-   Hiểu cách tích hợp thư viện `dnd-kit` ở phía front-end để xử lý sự kiện kéo thả.\n-   Biết cách gọi API từ ứng dụng React để cập nhật dữ liệu lên server.\n-   Xây dựng được API ở phía back-end (sử dụng NodeJS, ExpressJS) để xử lý yêu cầu cập nhật thứ tự các cột.\n-   Nắm được luồng dữ liệu hoàn chỉnh từ front-end đến back-end khi thực hiện một thao tác của người dùng.\n-   Áp dụng kỹ thuật \"Optimistic UI Update\" để cải thiện trải nghiệm người dùng.\n\n## II. Kiến thức chi tiết\n\n### 1. Luồng hoạt động tổng quan\n\nKhi người dùng kéo và thả một cột sang vị trí mới, luồng hoạt động của ứng dụng sẽ diễn ra như sau:\n\n1.  **Front-end (ReactJS):** Thư viện `dnd-kit` phát hiện sự kiện `onDragEnd`.\n2.  **Front-end (ReactJS):** Cập nhật ngay lập tức trạng thái (state) của UI để phản ánh vị trí mới của cột (Optimistic UI Update). Điều này mang lại cảm giác ứng dụng phản hồi nhanh chóng.\n3.  **Front-end (ReactJS):** Gọi một API request (thường là `PUT` hoặc `PATCH`) đến back-end, gửi kèm theo thứ tự mới của các cột trong board.\n4.  **Back-end (NodeJS/ExpressJS):** API nhận request, xác thực dữ liệu đầu vào.\n5.  **Back-end (NodeJS/ExpressJS):** Cập nhật lại trường `columnOrderIds` trong document của board tương ứng trong cơ sở dữ liệu MongoDB.\n6.  **Back-end (NodeJS/ExpressJS):** Gửi response về cho front-end để thông báo kết quả (thành công hoặc thất bại).\n7.  **Front-end (ReactJS):** Xử lý response từ back-end. Nếu thất bại, có thể revert lại thay đổi trên UI và hiển thị thông báo lỗi.\n\n### 2. Front-end (ReactJS & dnd-kit)\n\nPhía front-end tập trung vào việc xử lý sự kiện kéo thả và giao tiếp với API.\n\n#### a. Xử lý sự kiện `onDragEnd`\n\nĐây là sự kiện quan trọng nhất, được kích hoạt khi người dùng kết thúc thao tác kéo thả. Trong hàm xử lý sự kiện này, chúng ta cần:\n\n-   Kiểm tra xem vị trí của cột có thực sự thay đổi hay không. Nếu không, bỏ qua.\n-   Lấy ra thứ tự các cột mới sau khi đã sắp xếp.\n-   Cập nhật lại state của component để giao diện được render lại với thứ tự cột mới.\n-   Gọi API để lưu sự thay đổi này.\n\n```javascript\n// Ví dụ mã giả trong một component React\n\nconst handleDragEnd = (event) => {\n  const { active, over } = event;\n\n  // Nếu không có vị trí mới hoặc vị trí không thay đổi thì bỏ qua\n  if (!over || active.id === over.id) {\n    return;\n  }\n\n  // Lấy danh sách các cột hiện tại\n  const { columns } = board;\n  const oldIndex = columns.findIndex(c => c._id === active.id);\n  const newIndex = columns.findIndex(c => c._id === over.id);\n\n  // Sắp xếp lại mảng columns\n  const orderedColumns = arrayMove(columns, oldIndex, newIndex);\n  \n  // Cập nhật UI (Optimistic Update)\n  setOrderedColumns(orderedColumns);\n\n  // Lấy ra mảng ID của các cột theo thứ tự mới\n  const orderedColumnIds = orderedColumns.map(c => c._id);\n\n  // Gọi API để cập nhật backend\n  updateBoardApi(board._id, { columnOrderIds: orderedColumnIds });\n};\n\n```\n\n#### b. Gọi API cập nhật Board\n\nChúng ta sẽ tạo một hàm chuyên để gọi API, giúp mã nguồn sạch sẽ và dễ quản lý hơn.\n\n```javascript\n// services/boardService.js\n\nimport axios from 'axios';\n\nexport const updateBoardApi = async (boardId, data) => {\n  try {\n    const response = await axios.put(`/api/boards/${boardId}`, data);\n    return response.data;\n  } catch (error) {\n    // Xử lý lỗi\n    console.error('Error updating board:', error);\n    throw error;\n  }\n};\n```\n\n### 3. Back-end (NodeJS, ExpressJS, MongoDB)\n\nPhía back-end chịu trách nhiệm cung cấp API để front-end có thể cập nhật dữ liệu.\n\n#### a. Định tuyến (Routing)\n\nChúng ta cần định nghĩa một route, ví dụ `PUT /boards/:id`, để xử lý việc cập nhật board.\n\n```javascript\n// routes/boardRoute.js\n\nimport express from 'express';\nimport { boardController } from '~/controllers/boardController';\nimport { boardValidation } from '~/validations/boardValidation';\n\nconst router = express.Router();\n\nrouter.route('/:id')\n  .put(boardValidation.update, boardController.update);\n\nexport const boardRoute = router;\n```\n\n#### b. Validation (Joi)\n\nTrước khi xử lý logic, chúng ta cần đảm bảo dữ liệu gửi lên từ client là hợp lệ. Thư viện `Joi` là một lựa chọn phổ biến cho việc này.\n\n```javascript\n// validations/boardValidation.js\n\nimport Joi from 'joi';\nimport { StatusCodes } from 'http-status-codes';\n\nconst update = async (req, res, next) => {\n  const correctCondition = Joi.object({\n    columnOrderIds: Joi.array().items(Joi.string()).required()\n    // Lưu ý: Chỉ validate những trường cho phép cập nhật\n  });\n\n  try {\n    await correctCondition.validateAsync(req.body, { abortEarly: false, allowUnknown: true });\n    next();\n  } catch (error) {\n    res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ errors: new Error(error).message });\n  }\n};\n\nexport const boardValidation = { update };\n```\n\n`allowUnknown: true` cho phép client có thể gửi lên các trường khác ngoài `columnOrderIds` mà không gây ra lỗi validation. Điều này hữu ích khi API cập nhật được dùng cho nhiều mục đích khác nhau.\n\n#### c. Controller và Service\n\nController sẽ gọi đến service để thực hiện logic chính là cập nhật vào cơ sở dữ liệu.\n\n```javascript\n// controllers/boardController.js\n\nimport { StatusCodes } from 'http-status-codes';\nimport { boardService } from '~/services/boardService';\n\nconst update = async (req, res, next) => {\n  try {\n    const updatedBoard = await boardService.update(req.params.id, req.body);\n    res.status(StatusCodes.OK).json(updatedBoard);\n  } catch (error) {\n    next(error);\n  }\n};\n\nexport const boardController = { update };\n```\n\n```javascript\n// services/boardService.js\n\nimport { boardModel } from '~/models/boardModel';\n\nconst update = async (boardId, updateData) => {\n  try {\n    const result = await boardModel.update(boardId, updateData);\n    return result;\n  } catch (error) { throw error; }\n};\n\nexport const boardService = { update };\n```\n\n#### d. Model\n\nLớp Model sẽ trực tiếp tương tác với MongoDB để cập nhật dữ liệu.\n\n```javascript\n// models/boardModel.js\n\nimport { getDB } from '~/config/mongodb';\nimport { ObjectId } from 'mongodb';\n\nconst update = async (id, data) => {\n  try {\n    const result = await getDB().collection('boards').findOneAndUpdate(\n      { _id: new ObjectId(id) },\n      { $set: data },\n      { returnDocument: 'after' } // Trả về document sau khi đã cập nhật\n    );\n    return result.value;\n  } catch (error) { throw new Error(error); }\n};\n\nexport const boardModel = { update };\n```\n\n## III. Các bước thực hành\n\n1.  **Front-end:**\n    -   Mở file component chứa board (ví dụ: `BoardContent.jsx`).\n    -   Tìm đến hàm xử lý sự kiện `onDragEnd` của `DndContext`.\n    -   Implement logic để sắp xếp lại mảng `columns` dựa trên `active` và `over` id.\n    -   Gọi API service đã tạo, truyền vào `boardId` và object chứa `columnOrderIds` mới.\n2.  **Back-end:**\n    -   Tạo file `boardValidation.js` và viết hàm `update` để validate dữ liệu.\n    -   Trong `boardRoute.js`, thêm middleware validation vào route `PUT /:id`.\n    -   Trong `boardController.js`, viết hàm `update` để nhận request và gọi service.\n    -   Trong `boardService.js`, viết hàm `update` để gọi đến model.\n    -   Trong `boardModel.js`, viết hàm `update` sử dụng `findOneAndUpdate` để cập nhật document trong MongoDB.\n3.  **Kiểm tra:**\n    -   Chạy cả front-end và back-end.\n    -   Mở ứng dụng trên trình duyệt, kéo một cột sang vị trí khác.\n    -   Quan sát UI xem cột có được cập nhật ngay lập tức không.\n    -   Kiểm tra tab \"Network\" trong Developer Tools để xem request API có được gửi đi thành công không.\n    -   Kiểm tra cơ sở dữ liệu MongoDB (sử dụng MongoDB Compass hoặc shell) để xác nhận rằng trường `columnOrderIds` đã được cập nhật đúng.\n    -   Tải lại trang và kiểm tra xem thứ tự cột có được giữ nguyên hay không.\n\n## IV. Lưu ý quan trọng\n\n-   **Optimistic UI:** Việc cập nhật UI ngay lập tức trước khi có phản hồi từ server là một kỹ thuật quan trọng giúp cải thiện trải nghiệm người dùng. Tuy nhiên, cần có cơ chế xử lý khi API call thất bại (ví dụ: hiển thị thông báo và revert lại trạng thái UI).\n-   **Validation:** Luôn luôn validate dữ liệu ở phía back-end. Không bao giờ tin tưởng dữ liệu gửi lên từ client.\n-   **Bất biến (Immutability):** Khi làm việc với state trong React, hãy đảm bảo rằng bạn không thay đổi trực tiếp state cũ mà tạo ra một object hoặc array mới. Các thư viện như `immer` có thể giúp đơn giản hóa việc này.\n-   **Error Handling:** Xây dựng cơ chế xử lý lỗi đầy đủ ở cả front-end và back-end để ứng dụng hoạt động ổn định và dễ dàng debug.\n\n## V. Tài liệu tham khảo\n\n-   [Trang chủ dnd-kit](https://dndkit.com/)\n-   [Tài liệu Joi](https://joi.dev/)\n-   [Tài liệu Mongoose](https://mongoosejs.com/docs/api.html)\n-   [GitHub của TrungQuanDev](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của bài học số 70 là gì?",
+        "options": [
+          "A. Xây dựng tính năng chat real-time cho Trello clone",
+          "B. Hoàn thiện tích hợp kéo thả Columns và cập nhật vị trí vào CSDL qua API",
+          "C. Triển khai xác thực người dùng bằng JWT",
+          "D. Tối ưu hóa hình ảnh được tải lên trong ứng dụng"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mục tiêu của bài học là hoàn thiện tính năng kéo thả các cột (columns) và cập nhật vị trí mới của chúng vào cơ sở dữ liệu thông qua API, như đã nêu trong phần I của tài liệu."
+      },
+      {
+        "question": "Kỹ thuật \"Optimistic UI Update\" được sử dụng trong bài học để làm gì?",
+        "options": [
+          "A. Để xác thực dữ liệu từ server trước khi cập nhật giao diện",
+          "B. Để giảm tải cho server bằng cách chỉ gửi những thay đổi cần thiết",
+          "C. Để cập nhật giao diện người dùng ngay lập tức mà không cần chờ phản hồi từ server, tạo cảm giác ứng dụng nhanh và mượt",
+          "D. Để mã hóa dữ liệu trước khi gửi lên server"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Optimistic UI Update được áp dụng để cải thiện trải nghiệm người dùng bằng cách cập nhật UI ngay lập tức, tạo cảm giác ứng dụng phản hồi nhanh chóng, như được giải thích trong luồng hoạt động tổng quan."
+      },
+      {
+        "question": "Sự kiện nào của thư viện `dnd-kit` được sử dụng để xử lý khi người dùng kết thúc thao tác kéo thả?",
+        "options": [
+          "A. onDragStart",
+          "B. onDragOver",
+          "C. onDragEnd",
+          "D. onDrop"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sự kiện `onDragEnd` được kích hoạt khi người dùng kết thúc thao tác kéo thả, và đây là nơi logic chính để xử lý việc cập nhật thứ tự được thực hiện."
+      },
+      {
+        "question": "Luồng hoạt động nào sau đây là ĐÚNG khi người dùng kéo thả một cột?",
+        "options": [
+          "A. Backend cập nhật CSDL -> Frontend gọi API -> Frontend cập nhật UI",
+          "B. Frontend gọi API -> Backend cập nhật CSDL -> Frontend cập nhật UI",
+          "C. Frontend cập nhật UI -> Frontend gọi API -> Backend cập nhật CSDL",
+          "D. Frontend gọi API -> Frontend cập nhật UI -> Backend cập nhật CSDL"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Luồng hoạt động đúng là: Frontend cập nhật UI trước (Optimistic Update), sau đó gọi API, và cuối cùng Backend cập nhật vào cơ sở dữ liệu."
+      },
+      {
+        "question": "Trong ví dụ code front-end, hàm `arrayMove` được dùng để làm gì?",
+        "options": [
+          "A. Di chuyển một phần tử trong mảng từ vị trí cũ sang vị trí mới",
+          "B. Xóa một phần tử khỏi mảng",
+          "C. Thêm một phần tử mới vào mảng",
+          "D. Sao chép một mảng"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Hàm `arrayMove(columns, oldIndex, newIndex)` được sử dụng để sắp xếp lại mảng `columns` bằng cách di chuyển cột từ `oldIndex` đến `newIndex`."
+      },
+      {
+        "question": "Phương thức HTTP nào thường được sử dụng cho API cập nhật thứ tự các cột trong board?",
+        "options": [
+          "A. GET",
+          "B. POST",
+          "C. PUT hoặc PATCH",
+          "D. DELETE"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề cập đến việc sử dụng `PUT` hoặc `PATCH` cho API request cập nhật dữ liệu của board, và route được định nghĩa là `PUT /boards/:id`."
+      },
+      {
+        "question": "Thư viện nào được sử dụng ở back-end để validate dữ liệu đầu vào từ client?",
+        "options": [
+          "A. Express-validator",
+          "B. Joi",
+          "C. Yup",
+          "D. Zod"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học sử dụng thư viện `Joi` để thực hiện validation dữ liệu ở phía back-end, đảm bảo `columnOrderIds` được gửi lên là hợp lệ."
+      },
+      {
+        "question": "Tùy chọn `{ abortEarly: false }` trong `validateAsync` của Joi có ý nghĩa gì?",
+        "options": [
+          "A. Dừng validation ngay khi phát hiện lỗi đầu tiên",
+          "B. Bỏ qua tất cả các lỗi validation",
+          "C. Cho phép các trường không xác định trong schema",
+          "D. Trả về tất cả các lỗi validation thay vì chỉ lỗi đầu tiên"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`abortEarly: false` đảm bảo rằng Joi sẽ kiểm tra tất cả các quy tắc và trả về toàn bộ các lỗi tìm thấy, thay vì dừng lại ở lỗi đầu tiên."
+      },
+      {
+        "question": "Tùy chọn `{ allowUnknown: true }` trong `validateAsync` của Joi có tác dụng gì?",
+        "options": [
+          "A. Báo lỗi nếu client gửi lên các trường không được định nghĩa trong schema",
+          "B. Tự động xóa các trường không được định nghĩa trong schema",
+          "C. Cho phép client gửi lên các trường không được định nghĩa trong schema mà không gây lỗi",
+          "D. Yêu cầu tất cả các trường trong schema phải được gửi lên"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`allowUnknown: true` cho phép đối tượng được validate chứa các khóa không xác định mà không báo lỗi, hữu ích khi một API được dùng cho nhiều mục đích cập nhật khác nhau."
+      },
+      {
+        "question": "Trong kiến trúc back-end, lớp nào chịu trách nhiệm thực hiện logic chính và gọi đến Model?",
+        "options": [
+          "A. Route",
+          "B. Controller",
+          "C. Service",
+          "D. Validation"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Controller nhận request, gọi đến Service. Service chứa logic nghiệp vụ chính và tương tác với lớp Model để truy vấn cơ sở dữ liệu."
+      },
+      {
+        "question": "Hàm `findOneAndUpdate` của MongoDB được sử dụng để làm gì trong bài học?",
+        "options": [
+          "A. Tìm một document và xóa nó",
+          "B. Tìm nhiều document và cập nhật chúng",
+          "C. Tìm một document, cập nhật nó, và trả về document đó",
+          "D. Chỉ tìm một document mà không cập nhật"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`findOneAndUpdate` được dùng để tìm một document theo điều kiện, cập nhật nó với dữ liệu mới. Tùy chọn `returnDocument: 'after'` đảm bảo nó trả về document sau khi đã cập nhật."
+      },
+      {
+        "question": "Tại sao cần phải luôn validate dữ liệu ở phía back-end?",
+        "options": [
+          "A. Vì front-end không thể thực hiện validation",
+          "B. Để giảm bớt code ở phía front-end",
+          "C. Vì không bao giờ được tin tưởng dữ liệu gửi lên từ client",
+          "D. Để tăng tốc độ phản hồi của API"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đây là một nguyên tắc bảo mật cơ bản. Dữ liệu từ client có thể bị giả mạo hoặc không hợp lệ, vì vậy back-end phải luôn xác thực để đảm bảo tính toàn vẹn của hệ thống."
+      },
+      {
+        "question": "Khái niệm \"Bất biến\" (Immutability) trong React có nghĩa là gì?",
+        "options": [
+          "A. Bạn có thể thay đổi trực tiếp state và props của component",
+          "B. Bạn không nên thay đổi trực tiếp state, mà hãy tạo ra một bản sao mới với giá trị đã thay đổi",
+          "C. State trong React là không thể thay đổi sau khi đã khởi tạo",
+          "D. Props có thể được thay đổi trực tiếp từ bên trong component con"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bất biến có nghĩa là không thay đổi trực tiếp dữ liệu (object, array). Thay vào đó, bạn tạo ra một object hoặc array mới để React có thể phát hiện sự thay đổi và render lại một cách hiệu quả."
+      },
+      {
+        "question": "Làm thế nào để xử lý trường hợp API call cập nhật thứ tự cột thất bại khi đã áp dụng Optimistic UI?",
+        "options": [
+          "A. Không cần làm gì cả, người dùng sẽ tự tải lại trang",
+          "B. Hiển thị thông báo lỗi và revert lại trạng thái của UI về trước khi thay đổi",
+          "C. Thử gọi lại API liên tục cho đến khi thành công",
+          "D. Xóa cột bị lỗi khỏi giao diện"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi API thất bại, cần có cơ chế xử lý để đưa UI trở lại trạng thái đúng (trước khi thay đổi) và thông báo cho người dùng biết rằng thao tác không thành công."
+      },
+      {
+        "question": "Trong file `boardModel.js`, `new ObjectId(id)` được sử dụng để làm gì?",
+        "options": [
+          "A. Tạo một ID mới cho document",
+          "B. Chuyển đổi một chuỗi ID thành kiểu dữ liệu ObjectId của MongoDB để truy vấn",
+          "C. Lấy ID của document vừa được cập nhật",
+          "D. Xóa một document bằng ID"
+        ],
+        "correctAnswer": 1,
+        "explanation": "MongoDB lưu trữ `_id` dưới dạng kiểu dữ liệu ObjectId, không phải chuỗi. Do đó, khi truy vấn bằng ID, chuỗi ID từ `req.params` cần được chuyển đổi thành đối tượng ObjectId."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Sắp xếp lại mảng",
+        "description": "Viết một hàm `moveElement` nhận vào một mảng, vị trí cũ (oldIndex) và vị trí mới (newIndex), sau đó trả về một mảng mới với phần tử đã được di chuyển. Không được thay đổi mảng ban đầu.",
+        "starterCode": "function moveElement(array, oldIndex, newIndex) {\n  // Viết code của bạn ở đây\n}",
+        "solution": "function moveElement(array, oldIndex, newIndex) {\n  const newArray = [...array];\n  const [element] = newArray.splice(oldIndex, 1);\n  newArray.splice(newIndex, 0, element);\n  return newArray;\n}",
+        "testCases": "let arr = ['A', 'B', 'C', 'D'];\nconsole.log(moveElement(arr, 1, 3)); // Expected: ['A', 'C', 'D', 'B']\nconsole.log(arr); // Expected: ['A', 'B', 'C', 'D'] (mảng ban đầu không đổi)"
+      },
+      {
+        "title": "Bài 2: Viết Schema Validation với Joi",
+        "description": "Sử dụng thư viện Joi, hãy viết một schema để validate body của request cập nhật board. Schema chỉ cho phép cập nhật trường `columnOrderIds`, và trường này phải là một mảng các chuỗi (string). Cho phép các trường không xác định khác được gửi lên.",
+        "starterCode": "import Joi from 'joi';\n\nconst updateSchema = Joi.object({\n  // Viết schema của bạn ở đây\n});\n\n// Test\nconst validBody = { columnOrderIds: ['id-1', 'id-2'], title: 'New Title' };\nconst invalidBody = { title: 'New Title' };\n\n// console.log(updateSchema.validate(validBody, { allowUnknown: true }));\n// console.log(updateSchema.validate(invalidBody, { allowUnknown: true }));",
+        "solution": "import Joi from 'joi';\n\nconst updateSchema = Joi.object({\n  columnOrderIds: Joi.array().items(Joi.string()).required()\n});",
+        "testCases": "Schema nên báo lỗi khi `columnOrderIds` không được cung cấp hoặc không phải là mảng các chuỗi. Schema không nên báo lỗi khi có các trường khác như `title` được gửi kèm theo nếu `allowUnknown` là true."
+      },
+      {
+        "title": "Bài 3: Hoàn thiện hàm xử lý sự kiện Front-end",
+        "description": "Hoàn thiện hàm `handleDragEnd` bên dưới. Hàm này cần sắp xếp lại mảng `columns` dựa vào `active.id` và `over.id`, sau đó gọi hàm `updateColumnOrderApi` với mảng ID cột đã được sắp xếp.",
+        "starterCode": "const handleDragEnd = (event, columns, boardId) => {\n  const { active, over } = event;\n\n  if (!over || active.id === over.id) {\n    return;\n  }\n\n  // Hàm giả lập việc gọi API\n  const updateColumnOrderApi = (boardId, orderedIds) => {\n    console.log(`API called for board ${boardId} with order:`, orderedIds);\n  };\n\n  // Viết code của bạn ở đây\n  // 1. Tìm oldIndex và newIndex\n  // 2. Tạo mảng columns mới đã được sắp xếp (orderedColumns)\n  // 3. Tạo mảng chỉ chứa ID các cột (orderedColumnIds)\n  // 4. Gọi updateColumnOrderApi\n};",
+        "solution": "const handleDragEnd = (event, columns, boardId) => {\n  const { active, over } = event;\n\n  if (!over || active.id === over.id) {\n    return;\n  }\n\n  const updateColumnOrderApi = (boardId, orderedIds) => {\n    console.log(`API called for board ${boardId} with order:`, orderedIds);\n  };\n\n  const oldIndex = columns.findIndex(c => c._id === active.id);\n  const newIndex = columns.findIndex(c => c._id === over.id);\n\n  const orderedColumns = [...columns]; // Tạo bản sao\n  const [movedColumn] = orderedColumns.splice(oldIndex, 1);\n  orderedColumns.splice(newIndex, 0, movedColumn);\n\n  const orderedColumnIds = orderedColumns.map(c => c._id);\n\n  updateColumnOrderApi(boardId, orderedColumnIds);\n};",
+        "testCases": "Khi gọi hàm với event, mảng columns và boardId, console sẽ log ra thông báo gọi API với đúng thứ tự ID các cột đã được sắp xếp lại."
+      },
+      {
+        "title": "Bài 4: Viết Controller và Route cho Back-end",
+        "description": "Sử dụng Express, hãy viết một route `PUT /boards/:id` và hàm controller `update` tương ứng. Controller cần lấy `id` từ params, `updateData` từ body, sau đó gọi một hàm `boardService.update` (giả lập) và trả về kết quả với status 200.",
+        "starterCode": "import express from 'express';\nconst router = express.Router();\n\n// Hàm service giả lập\nconst boardService = {\n  update: async (id, data) => {\n    console.log(`Updating board ${id} with`, data);\n    return { id, ...data };\n  }\n};\n\nconst updateController = async (req, res) => {\n  // Viết code của bạn ở đây\n};\n\nrouter.route('/:id').put(updateController);\n\n// export default router; (để chạy test)",
+        "solution": "import express from 'express';\nconst router = express.Router();\n\nconst boardService = {\n  update: async (id, data) => {\n    console.log(`Updating board ${id} with`, data);\n    return { _id: id, ...data };\n  }\n};\n\nconst updateController = async (req, res) => {\n  try {\n    const { id } = req.params;\n    const updateData = req.body;\n    const result = await boardService.update(id, updateData);\n    res.status(200).json(result);\n  } catch (error) {\n    res.status(500).json({ error: error.message });\n  }\n};\n\nrouter.route('/:id').put(updateController);",
+        "testCases": "Khi gửi một request PUT đến `/boards/some-id` với một body JSON, response trả về phải có status 200 và body là object JSON chứa ID và dữ liệu đã gửi lên."
+      },
+      {
+        "title": "Bài 5: Viết hàm cập nhật trong Model",
+        "description": "Hoàn thiện hàm `update` trong `boardModel`. Hàm này nhận vào `id` của board và `data` cần cập nhật. Sử dụng phương thức `findOneAndUpdate` của một collection MongoDB (giả lập) để tìm và cập nhật document, sau đó trả về document đã được cập nhật.",
+        "starterCode": "import { ObjectId } from 'mongodb';\n\n// Giả lập collection của MongoDB\nconst mockCollection = {\n  _data: [{ _id: new ObjectId('60d5ecb3b3f4a3b3f4a3b3f4'), name: 'Test Board' }],\n  async findOneAndUpdate(filter, update, options) {\n    const doc = this._data.find(d => d._id.equals(filter._id));\n    if (doc) {\n      Object.assign(doc, update.$set);\n      return options.returnDocument === 'after' ? { value: doc } : { value: null };\n    }\n    return { value: null };\n  }\n};\n\nconst boardModel = {\n  update: async (id, data) => {\n    try {\n      // Viết code của bạn ở đây\n      // Sử dụng mockCollection.findOneAndUpdate\n    } catch (error) {\n      throw new Error(error);\n    }\n  }\n};",
+        "solution": "import { ObjectId } from 'mongodb';\n\nconst mockCollection = {\n  _data: [{ _id: new ObjectId('60d5ecb3b3f4a3b3f4a3b3f4'), name: 'Test Board' }],\n  async findOneAndUpdate(filter, update, options) {\n    const doc = this._data.find(d => d._id.equals(filter._id));\n    if (doc) {\n      Object.assign(doc, update.$set);\n      return options.returnDocument === 'after' ? { value: doc } : { value: null };\n    }\n    return { value: null };\n  }\n};\n\nconst boardModel = {\n  update: async (id, data) => {\n    try {\n      const result = await mockCollection.findOneAndUpdate(\n        { _id: new ObjectId(id) },\n        { $set: data },\n        { returnDocument: 'after' }\n      );\n      return result.value;\n    } catch (error) {\n      throw new Error(error);\n    }\n  }\n};",
+        "testCases": "Gọi `boardModel.update('60d5ecb3b3f4a3b3f4a3b3f4', { columnOrderIds: ['col-1'] })` sẽ trả về object document đã được cập nhật, chứa cả `name` và `columnOrderIds`."
+      }
+    ]
+  }
+}

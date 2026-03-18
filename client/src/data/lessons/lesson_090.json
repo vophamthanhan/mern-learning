@@ -1,0 +1,213 @@
+{
+  "id": 90,
+  "title": "Bài học 76: Deploy miễn phí ReactJS Front-end lên Vercel",
+  "category": "deploy",
+  "categoryName": "Deploy & Production",
+  "content": "# Bài học 76: Deploy miễn phí ReactJS Front-end lên Vercel\n\n## Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tìm hiểu cách để deploy một ứng dụng Front-end ReactJS lên nền tảng Vercel một cách hoàn toàn miễn phí. Sau khi hoàn thành bài học, bạn sẽ có thể:\n\n- Hiểu rõ về Vercel và những ưu điểm của nó trong việc triển khai các ứng dụng web hiện đại.\n- Nắm vững quy trình các bước để deploy một dự án ReactJS từ local lên Vercel thông qua GitHub.\n- Biết cách cấu hình các thiết lập cơ bản cho project trên Vercel.\n\n## Kiến thức chi tiết\n\n### Vercel là gì?\n\nVercel là một nền tảng cloud dành cho các nhà phát triển front-end, cung cấp một quy trình làm việc hiệu quả để phát triển, xem trước và triển khai ứng dụng web. Vercel được tạo ra bởi những người đứng sau Next.js, một framework React phổ biến.\n\n### Tại sao nên sử dụng Vercel?\n\n- **Miễn phí:** Vercel cung cấp một gói miễn phí (Hobby) rất hào phóng cho các dự án cá nhân và mã nguồn mở, cho phép bạn deploy và hosting ứng dụng mà không tốn chi phí.\n- **Tích hợp Git:** Vercel tích hợp liền mạch với các nhà cung cấp Git phổ biến như GitHub, GitLab và Bitbucket. Mỗi khi bạn push code lên repository, Vercel sẽ tự động build và deploy phiên bản mới nhất của ứng dụng.\n- **CI/CD tích hợp sẵn:** Quy trình Continuous Integration và Continuous Deployment được tự động hóa. Bạn không cần phải cấu hình các công cụ CI/CD phức tạp.\n- **Hiệu suất cao:** Vercel sử dụng mạng lưới phân phối nội dung (CDN) toàn cầu để đảm bảo ứng dụng của bạn có tốc độ tải nhanh chóng từ bất kỳ đâu trên thế giới.\n- **Dễ sử dụng:** Giao diện của Vercel rất trực quan và thân thiện với người dùng, giúp cho việc deploy ứng dụng trở nên đơn giản hơn bao giờ hết.\n\n### Chuẩn bị project ReactJS\n\nĐể deploy lên Vercel, project ReactJS của bạn cần được build ra các file tĩnh (HTML, CSS, JavaScript). Hầu hết các công cụ tạo project React như `Create React App` hay `Vite` đều đã cấu hình sẵn script `build` trong file `package.json`.\n\nKhi bạn chạy lệnh `npm run build` hoặc `yarn build`, một thư mục `build` (hoặc `dist` đối với Vite) sẽ được tạo ra, chứa tất cả các file tĩnh đã được tối ưu hóa.\n\n## Các bước thực hành\n\n**Bước 1: Chuẩn bị project ReactJS và đẩy lên GitHub**\n\n1.  Tạo một project ReactJS mới nếu bạn chưa có:\n\n    ```bash\n    npx create-react-app my-react-app\n    cd my-react-app\n    ```\n\n2.  Tạo một repository mới trên GitHub.\n\n3.  Kết nối project local với repository trên GitHub và đẩy code lên:\n\n    ```bash\n    git remote add origin <URL_CUA_REPOSITORY>\n    git branch -M main\n    git push -u origin main\n    ```\n\n**Bước 2: Đăng ký và đăng nhập Vercel**\n\n1.  Truy cập trang chủ của Vercel tại [https://vercel.com](https://vercel.com).\n2.  Đăng ký một tài khoản mới bằng cách chọn \"Continue with GitHub\". Việc này sẽ giúp kết nối tài khoản Vercel của bạn với GitHub một cách dễ dàng.\n\n**Bước 3: Import và Deploy project**\n\n1.  Sau khi đăng nhập, bạn sẽ được chuyển đến dashboard của Vercel. Nhấp vào nút \"Add New...\" và chọn \"Project\".\n2.  Vercel sẽ hiển thị danh sách các repository từ tài khoản GitHub của bạn. Tìm và chọn repository của project ReactJS mà bạn muốn deploy, sau đó nhấp vào \"Import\".\n3.  Vercel sẽ tự động nhận diện project của bạn là một ứng dụng React (hoặc Vite). Các thiết lập build thường sẽ được tự động điền chính xác:\n    - **Framework Preset:** Create React App (hoặc Vite).\n    - **Build Command:** `npm run build` (hoặc `yarn build`).\n    - **Output Directory:** `build` (hoặc `dist`).\n4.  Bạn có thể tùy chỉnh các thiết lập này nếu cần. Sau đó, nhấp vào nút \"Deploy\".\n\n**Bước 4: Hoàn tất**\n\nVercel sẽ bắt đầu quá trình build và deploy. Quá trình này có thể mất vài phút. Sau khi hoàn tất, Vercel sẽ cung cấp cho bạn một URL duy nhất (ví dụ: `my-react-app.vercel.app`) để truy cập vào ứng dụng của bạn.\n\n## Lưu ý quan trọng\n\n- **Biến môi trường (Environment Variables):** Nếu project của bạn sử dụng các biến môi trường (ví dụ: API keys), bạn cần phải cấu hình chúng trong phần Settings > Environment Variables của project trên Vercel dashboard. Điều này giúp giữ an toàn cho các thông tin nhạy cảm.\n- **Custom Domains:** Vercel cho phép bạn dễ dàng thêm tên miền tùy chỉnh (custom domain) cho project của mình.\n\n## Tài liệu tham khảo\n\n- **Trang chủ Vercel:** [https://vercel.com](https://vercel.com)\n- **Tài liệu chính thức của Vercel:** [https://vercel.com/docs](https://vercel.com/docs)\n- **Create React App Deployment:** [https://create-react-app.dev/docs/deployment/](https://create-react-app.dev/docs/deployment/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Vercel là gì?",
+        "options": [
+          "Một framework JavaScript để xây dựng giao diện người dùng.",
+          "Một nền tảng cloud để phát triển, xem trước và triển khai ứng dụng web front-end.",
+          "Một hệ quản trị cơ sở dữ liệu NoSQL.",
+          "Một công cụ để quản lý các package trong dự án Node.js."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Vercel là một nền tảng cloud dành cho các nhà phát triển front-end, cung cấp một quy trình làm việc hiệu quả để phát triển, xem trước và triển khai ứng dụng web."
+      },
+      {
+        "question": "Ưu điểm nào sau đây KHÔNG phải của Vercel?",
+        "options": [
+          "Cung cấp gói miễn phí cho các dự án cá nhân.",
+          "Tích hợp sẵn CI/CD.",
+          "Yêu cầu cấu hình máy chủ phức tạp.",
+          "Sử dụng CDN toàn cầu để tăng tốc độ tải trang."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vercel tự động hóa quy trình CI/CD và không yêu cầu người dùng phải cấu hình máy chủ phức tạp, đó là một trong những ưu điểm lớn của nó."
+      },
+      {
+        "question": "Lệnh nào được sử dụng để build một dự án ReactJS tạo bằng `Create React App` thành các file tĩnh?",
+        "options": [
+          "npm start",
+          "npm test",
+          "npm run build",
+          "npm deploy"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lệnh `npm run build` được sử dụng để tạo ra một thư mục `build` chứa các file tĩnh đã được tối ưu hóa của ứng dụng React."
+      },
+      {
+        "question": "Thư mục mặc định chứa các file tĩnh sau khi build một dự án ReactJS với `Create React App` là gì?",
+        "options": [
+          "dist",
+          "public",
+          "build",
+          "static"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đối với `Create React App`, thư mục đầu ra mặc định sau khi build là `build`. Đối với `Vite`, nó thường là `dist`."
+      },
+      {
+        "question": "Để deploy một dự án lên Vercel, bạn nên kết nối tài khoản Vercel với dịch vụ nào để có quy trình làm việc liền mạch nhất?",
+        "options": [
+          "Docker Hub",
+          "npm",
+          "GitHub",
+          "Dropbox"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vercel tích hợp liền mạch với các nhà cung cấp Git như GitHub, GitLab, và Bitbucket. Kết nối với GitHub cho phép Vercel tự động deploy mỗi khi có code mới được push lên."
+      },
+      {
+        "question": "Khi import một project từ GitHub vào Vercel, Vercel thường tự động nhận diện được thông tin gì?",
+        "options": [
+          "Framework Preset (ví dụ: Create React App)",
+          "Build Command (ví dụ: `npm run build`)",
+          "Output Directory (ví dụ: `build`)",
+          "Tất cả các đáp án trên"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Vercel có khả năng tự động nhận diện framework, lệnh build và thư mục output của các project phổ biến, giúp đơn giản hóa quá trình cấu hình deploy."
+      },
+      {
+        "question": "Nếu project React của bạn sử dụng biến môi trường (ví dụ: API keys), bạn nên cấu hình chúng ở đâu trên Vercel?",
+        "options": [
+          "Trong file `.env` và commit lên GitHub.",
+          "Trong phần Settings > Environment Variables của project trên Vercel.",
+          "Hard-code trực tiếp trong code React.",
+          "Không cần cấu hình, Vercel sẽ tự động tìm thấy."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để giữ an toàn cho các thông tin nhạy cảm, biến môi trường phải được cấu hình trong phần cài đặt của project trên Vercel, không nên commit chúng lên repository."
+      },
+      {
+        "question": "Mỗi khi bạn push code lên repository đã kết nối, Vercel sẽ làm gì?",
+        "options": [
+          "Gửi email thông báo cho bạn.",
+          "Tự động tạo một nhánh mới.",
+          "Tự động build và deploy phiên bản mới nhất của ứng dụng.",
+          "Yêu cầu bạn xác nhận deploy thủ công."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Nhờ tích hợp CI/CD, Vercel sẽ tự động lắng nghe các sự kiện push và triển khai phiên bản mới một cách tự động."
+      },
+      {
+        "question": "Vercel được tạo ra bởi đội ngũ phát triển đứng sau framework nào?",
+        "options": [
+          "Angular",
+          "Vue.js",
+          "Next.js",
+          "Svelte"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vercel được tạo ra bởi những người đứng sau Next.js, một framework React phổ biến, và có sự tối ưu đặc biệt cho các dự án Next.js."
+      },
+      {
+        "question": "Mạng lưới phân phối nội dung (CDN) của Vercel có tác dụng chính là gì?",
+        "options": [
+          "Bảo vệ trang web khỏi các cuộc tấn công DDoS.",
+          "Đảm bảo ứng dụng có tốc độ tải nhanh chóng từ bất kỳ đâu trên thế giới.",
+          "Lưu trữ các phiên bản cũ của trang web.",
+          "Phân tích lưu lượng truy cập của người dùng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "CDN của Vercel lưu trữ các bản sao của tài nguyên tĩnh trên nhiều máy chủ toàn cầu, giúp giảm độ trễ và tăng tốc độ tải cho người dùng ở khắp nơi."
+      },
+      {
+        "question": "Lệnh git nào dùng để kết nối một project local với một repository trên GitHub?",
+        "options": [
+          "git clone <URL>",
+          "git push origin main",
+          "git remote add origin <URL>",
+          "git init"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lệnh `git remote add origin <URL>` được sử dụng để thiết lập một liên kết từ xa (remote) có tên là `origin` đến URL của repository trên GitHub."
+      },
+      {
+        "question": "Sau khi deploy thành công, Vercel cung cấp cho bạn điều gì để truy cập ứng dụng?",
+        "options": [
+          "Một địa chỉ IP.",
+          "Một file thực thi để tải về.",
+          "Một URL duy nhất (ví dụ: `my-app.vercel.app`).",
+          "Một đoạn mã để nhúng vào website khác."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vercel sẽ tự động tạo và cung cấp một tên miền phụ dưới dạng `.vercel.app` để bạn có thể truy cập và chia sẻ ứng dụng của mình ngay lập tức."
+      },
+      {
+        "question": "Gói miễn phí (Hobby) của Vercel phù hợp nhất cho đối tượng nào?",
+        "options": [
+          "Các doanh nghiệp lớn có hàng triệu người dùng.",
+          "Các dự án thương mại điện tử cần băng thông cực lớn.",
+          "Các dự án cá nhân, mã nguồn mở và mục đích học tập.",
+          "Các ứng dụng yêu cầu cơ sở dữ liệu quan hệ phức tạp."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Gói Hobby của Vercel rất hào phóng và lý tưởng cho các nhà phát triển cá nhân, các dự án mã nguồn mở hoặc để thử nghiệm và học hỏi."
+      },
+      {
+        "question": "Trong Vercel, `Output Directory` là gì?",
+        "options": [
+          "Thư mục chứa mã nguồn của dự án.",
+          "Thư mục chứa các file tĩnh sau khi thực hiện lệnh build.",
+          "Thư mục chứa các file cấu hình của Vercel.",
+          "Thư mục chứa các thư viện của dự án."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`Output Directory` là thư mục mà Vercel sẽ phục vụ các file tĩnh cho người dùng. Đây chính là kết quả của quá trình build dự án."
+      },
+      {
+        "question": "Tại sao việc đăng ký Vercel bằng tài khoản GitHub lại được khuyến khích?",
+        "options": [
+          "Để nhận được giảm giá cho các gói trả phí.",
+          "Để có giao diện tối màu.",
+          "Để dễ dàng kết nối và import các repository từ GitHub.",
+          "Để tăng cường bảo mật hai lớp."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đăng ký bằng GitHub giúp liên kết hai tài khoản một cách liền mạch, cho phép Vercel truy cập và hiển thị danh sách các repository của bạn để import và deploy một cách thuận tiện."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Project React và Đẩy lên GitHub",
+        "description": "Thực hiện các lệnh cần thiết để tạo một project React mới có tên `my-vercel-app`, sau đó khởi tạo git và thêm remote `origin` trỏ đến repository `https://github.com/user/my-vercel-app.git`.",
+        "starterCode": "# Viết các lệnh của bạn vào đây",
+        "solution": "npx create-react-app my-vercel-app\ncd my-vercel-app\ngit init\ngit remote add origin https://github.com/user/my-vercel-app.git",
+        "testCases": "Kiểm tra xem project `my-vercel-app` có được tạo không và remote `origin` có được thêm chính xác không."
+      },
+      {
+        "title": "Bài 2: Chỉnh sửa file package.json",
+        "description": "Thêm một script có tên `deploy` vào file `package.json` để thực hiện lệnh build. Script này sẽ được sử dụng trong các bước CI/CD sau này.",
+        "starterCode": "{\n  \"name\": \"my-app\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"dependencies\": { ... },\n  \"scripts\": {\n    \"start\": \"react-scripts start\",\n    \"build\": \"react-scripts build\",\n    \"test\": \"react-scripts test\",\n    \"eject\": \"react-scripts eject\"\n  }\n}",
+        "solution": "{\n  \"name\": \"my-app\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"dependencies\": { ... },\n  \"scripts\": {\n    \"start\": \"react-scripts start\",\n    \"build\": \"react-scripts build\",\n    \"test\": \"react-scripts test\",\n    \"eject\": \"react-scripts eject\",\n    \"deploy\": \"npm run build\"\n  }\n}",
+        "testCases": "Kiểm tra xem file `package.json` có chứa script `deploy` với giá trị `npm run build` hay không."
+      },
+      {
+        "title": "Bài 3: Tạo file cấu hình Vercel",
+        "description": "Tạo một file `vercel.json` ở thư mục gốc của dự án để cấu hình lệnh build và thư mục output cho Vercel, thay vì dùng cài đặt tự động. Giả sử dự án của bạn dùng Vite.",
+        "starterCode": "// Tạo nội dung cho file vercel.json",
+        "solution": "{\n  \"builds\": [\n    {\n      \"src\": \"package.json\",\n      \"use\": \"@vercel/static-build\",\n      \"config\": { \"distDir\": \"dist\" }\n    }\n  ]\n}",
+        "testCases": "Kiểm tra nội dung file `vercel.json` có đúng cấu trúc và chỉ định `distDir` là `dist` hay không."
+      },
+      {
+        "title": "Bài 4: Sử dụng Biến Môi trường trong React",
+        "description": "Viết một component React đơn giản hiển thị giá trị của một biến môi trường có tên `REACT_APP_API_URL`. Lưu ý cách React xử lý các biến môi trường.",
+        "starterCode": "import React from 'react';\n\nfunction App() {\n  // Lấy và hiển thị biến môi trường\n  return (\n    <div className=\"App\">\n      <h1>API URL: {/** Code ở đây **/}</h1>\n    </div>\n  );\n}\n\nexport default App;",
+        "solution": "import React from 'react';\n\nfunction App() {\n  return (\n    <div className=\"App\">\n      <h1>API URL: {process.env.REACT_APP_API_URL}</h1>\n    </div>\n  );\n}\n\nexport default App;",
+        "testCases": "Component phải render ra thẻ h1 chứa chuỗi `API URL: ` theo sau là giá trị của biến môi trường `REACT_APP_API_URL`."
+      },
+      {
+        "title": "Bài 5: Thêm Custom Domain vào Vercel",
+        "description": "Mô tả các bước cần thiết trong cài đặt DNS của nhà cung cấp tên miền để trỏ một tên miền tùy chỉnh (ví dụ: `mydomain.com`) đến ứng dụng Vercel của bạn.",
+        "starterCode": "// Mô tả các bước dưới dạng bình luận",
+        "solution": "// 1. Truy cập trang quản lý DNS của nhà cung cấp tên miền.\n// 2. Tạo một bản ghi CNAME (Canonical Name).\n// 3. Đặt `Host` (hoặc `Name`) là `www` (để trỏ `www.mydomain.com`).\n// 4. Đặt `Value` (hoặc `Points to`) là `cname.vercel-dns.com`.\n// 5. Tạo một bản ghi A (Address).\n// 6. Đặt `Host` (hoặc `Name`) là `@` (để trỏ tên miền gốc `mydomain.com`).\n// 7. Đặt `Value` (hoặc `Points to`) là địa chỉ IP của Vercel: `76.76.21.21`.\n// 8. Lưu lại các thay đổi và chờ DNS cập nhật.",
+        "testCases": "Mô tả phải bao gồm việc tạo cả bản ghi CNAME cho `www` và bản ghi A cho tên miền gốc (`@`)."
+      }
+    ]
+  }
+}

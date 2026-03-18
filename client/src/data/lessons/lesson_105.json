@@ -1,0 +1,213 @@
+{
+  "id": 105,
+  "title": "Bài học: Code thanh Trello AppBar - Xử lý Responsive (part 3)",
+  "category": "layout",
+  "categoryName": "Layout & Giao diện",
+  "content": "# Bài học: Code thanh Trello AppBar - Xử lý Responsive (part 3)\n\n## 1. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tập trung vào việc xử lý **Responsive** cho thành phần **AppBar** (thanh ứng dụng) của ứng dụng Trello clone. Mục tiêu chính là đảm bảo giao diện của AppBar hiển thị tối ưu trên các kích thước màn hình khác nhau, từ desktop cho đến thiết bị di động, mang lại trải nghiệm người dùng tốt nhất.\n\n## 2. Kiến thức chi tiết\n\nVideo này là phần tiếp theo trong chuỗi video xây dựng thanh AppBar cho ứng dụng Trello, tập trung vào việc áp dụng các kỹ thuật responsive design sử dụng **Material-UI (MUI)** trong một dự án **ReactJS**.\n\n### 2.1. Responsive Design là gì?\n\n**Responsive Web Design (RWD)** là một phương pháp thiết kế web giúp nội dung trang web có thể tự động điều chỉnh và hiển thị một cách tối ưu trên nhiều loại thiết bị với các kích thước màn hình khác nhau. Thay vì tạo ra các phiên bản website riêng biệt cho mobile, tablet, và desktop, RWD cho phép một phiên bản duy nhất có thể \"thích ứng\" với mọi môi trường.\n\nTrong bối cảnh của Material-UI, responsive design được thực hiện chủ yếu thông qua:\n\n*   **Hệ thống Grid:** Sắp xếp layout một cách linh hoạt.\n*   **Breakpoints:** Các điểm ngắt được định nghĩa trước (ví dụ: `xs`, `sm`, `md`, `lg`, `xl`) để áp dụng các style khác nhau tại các ngưỡng kích thước màn hình nhất định.\n*   **Thuộc tính `sx`:** Một công cụ mạnh mẽ cho phép viết các CSS tùy chỉnh trực tiếp trên component, bao gồm cả việc sử dụng các media query dựa trên breakpoints của theme.\n\n### 2.2. Xử lý Responsive cho AppBar với Material-UI\n\nTrong video, tác giả tập trung vào việc tùy chỉnh hiển thị của các thành phần bên trong `AppBar` khi kích thước màn hình thay đổi. Cụ thể, một số thành phần có thể bị ẩn đi hoặc thay đổi cách hiển thị trên màn hình nhỏ (mobile) để tiết kiệm không gian.\n\n**Ví dụ về cách tiếp cận:**\n\nChúng ta sẽ sử dụng thuộc tính `sx` của các component trong Material-UI để định nghĩa các style riêng cho từng breakpoint. Cú pháp chung thường có dạng:\n\n```javascript\n<Box sx={{\n  display: 'flex',\n  alignItems: 'center',\n  // Hiển thị trên màn hình lớn\n  display: { xs: 'none', md: 'flex' }, \n  // Ẩn trên màn hình nhỏ (extra-small) và hiển thị dạng flex trên màn hình vừa (medium) trở lên\n}}>\n  {/* Nội dung chỉ hiển thị trên màn hình lớn */}\n</Box>\n```\n\n**Giải thích chi tiết các thành phần và thuộc tính được sử dụng:**\n\n*   **`<AppBar>`:** Component chính tạo ra thanh ứng dụng. Thường được đặt ở vị trí `fixed` hoặc `sticky`.\n*   **`<Toolbar>`:** Component con của `AppBar`, được sử dụng để chứa các nội dung như logo, tiêu đề, các nút hành động. Nó giúp căn chỉnh các item một cách hợp lý.\n*   **`<Box>`:** Một component đa dụng của MUI, thường được dùng như một `div` để nhóm các phần tử và áp dụng style. Nó hỗ trợ rất tốt thuộc tính `sx`.\n*   **`theme.breakpoints`:** Hệ thống breakpoint của MUI cho phép chúng ta truy cập vào các giá trị ngưỡng (ví dụ: `theme.breakpoints.down('sm')` sẽ áp dụng style cho các màn hình có chiều rộng nhỏ hơn breakpoint `sm`).\n\n**Code mẫu minh họa:**\n\nGiả sử chúng ta có một `AppBar` với logo, tên ứng dụng, một số nút chức năng và avatar người dùng. Trên màn hình nhỏ, chúng ta muốn ẩn đi tên ứng dụng và các nút chức năng, chỉ để lại logo và avatar.\n\n```jsx\nimport AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport Typography from '@mui/material/Typography';\nimport Box from '@mui/material/Box';\nimport Button from '@mui/material/Button';\nimport SvgIcon from '@mui/material/SvgIcon';\nimport { ReactComponent as TrelloIcon } from '~/assets/trello.svg'; // Ví dụ import logo\n\nfunction BoardBar() {\n  return (\n    <AppBar position=\"static\" sx={{ /* các style chung */ }}>\n      <Toolbar sx={{ justifyContent: 'space-between' }}>\n        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>\n          <SvgIcon component={TrelloIcon} inheritViewBox sx={{ color: 'white' }} />\n          <Typography variant=\"h6\" sx={{ display: { xs: 'none', md: 'block' }, color: 'white' }}>\n            Trello\n          </Typography>\n          \n          {/* Các nút chức năng chỉ hiển thị trên màn hình lớn */}\n          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>\n            <Button variant=\"outlined\" sx={{ color: 'white' }}>Starred</Button>\n            <Button variant=\"outlined\" sx={{ color: 'white' }}>Recent</Button>\n          </Box>\n        </Box>\n\n        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>\n          {/* Các nút khác như Search, Notifications */}\n          <Avatar \n            alt=\"TrungQuanDev\"\n            src=\"https://trungquandev.com/avatar.jpg\" \n            sx={{ width: 34, height: 34 }}\n          />\n        </Box>\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default BoardBar;\n```\n\nTrong ví dụ trên:\n\n*   `Typography` chứa tên \"Trello\" và `Box` chứa các `Button` được thiết lập `display: { xs: 'none', md: 'block' }` hoặc `display: { xs: 'none', md: 'flex' }`. Điều này có nghĩa là chúng sẽ bị ẩn (`display: 'none'`) trên các màn hình có kích thước từ `xs` (extra-small) trở lên nhưng nhỏ hơn `md` (medium), và sẽ hiển thị (`display: 'block'` hoặc `'flex'`) trên các màn hình từ `md` trở lên.\n\n## 3. Các bước thực hành\n\n1.  **Xác định các thành phần cần thay đổi:** Phân tích `AppBar` và quyết định những yếu tố nào (logo, menu, nút, text...) cần thay đổi hoặc ẩn/hiện trên các kích thước màn hình khác nhau.\n2.  **Sử dụng thuộc tính `sx`:** Mở file component chứa `AppBar` (ví dụ: `AppBar.jsx`).\n3.  **Áp dụng style theo breakpoint:** Đối với mỗi thành phần cần xử lý responsive, thêm thuộc tính `sx` và định nghĩa các giá trị `display` (hoặc các thuộc tính CSS khác) cho các breakpoint mong muốn (`xs`, `sm`, `md`...).\n4.  **Kiểm tra trên trình duyệt:** Sử dụng công cụ Developer Tools (F12) của trình duyệt để mô phỏng các kích thước màn hình khác nhau và kiểm tra xem giao diện đã hiển thị đúng như mong đợi chưa.\n5.  **Tinh chỉnh:** Điều chỉnh lại các giá trị breakpoint và style cho đến khi đạt được giao diện hoàn hảo trên mọi thiết bị.\n\n## 4. Lưu ý quan trọng\n\n*   **Mobile-First vs. Desktop-First:** Bạn có thể chọn cách tiếp cận \"Mobile-First\" (thiết kế cho mobile trước, sau đó mở rộng cho desktop) hoặc \"Desktop-First\". Trong ví dụ trên, chúng ta đang dùng cách tiếp cận Desktop-First, ẩn các phần tử trên màn hình nhỏ. Cả hai cách đều có ưu và nhược điểm riêng.\n*   **Sử dụng `Box` và `Stack`:** Thay vì dùng `div` thông thường, hãy tận dụng các component `Box` và `Stack` của MUI. Chúng được tối ưu hóa để làm việc với hệ thống style và `sx` của MUI, giúp code của bạn sạch sẽ và dễ bảo trì hơn.\n*   **Kiểm tra kỹ lưỡng:** Luôn kiểm tra responsive trên nhiều trình duyệt và thiết bị (hoặc trình giả lập) khác nhau để đảm bảo tính nhất quán.\n*   **Không lạm dụng:** Chỉ ẩn những thông tin phụ hoặc các chức năng ít quan trọng trên màn hình nhỏ. Đảm bảo các chức năng cốt lõi vẫn có thể truy cập được, có thể thông qua một menu ẩn (Drawer).\n\n## 5. Tài liệu tham khảo\n\n1.  **Video gốc trên YouTube:** [23. Code thanh Trello AppBar - Xử lý Responsive (part 3) | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=ml2OTGABoi0)\n2.  **Tài liệu về AppBar của Material-UI:** [MUI App Bar Component](https://mui.com/material-ui/react-app-bar/)\n3.  **Tài liệu về Responsive Design của Material-UI:** [MUI Responsive Design](https://mui.com/material-ui/customization/responsive-values/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Phương pháp thiết kế web nào giúp nội dung tự động điều chỉnh để hiển thị tối ưu trên nhiều kích thước màn hình khác nhau?",
+        "options": [
+          "Static Web Design",
+          "Responsive Web Design (RWD)",
+          "Adaptive Web Design (AWD)",
+          "Fluid Web Design"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Responsive Web Design (RWD) là phương pháp cho phép một phiên bản website duy nhất có thể \"thích ứng\" với mọi môi trường hiển thị, từ mobile đến desktop."
+      },
+      {
+        "question": "Trong Material-UI, công cụ nào cho phép viết CSS tùy chỉnh, bao gồm cả media query, trực tiếp trên một component?",
+        "options": [
+          "Thuộc tính `style`",
+          "Hàm `makeStyles`",
+          "Thuộc tính `sx`",
+          "Component `StyledBox`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `sx` là một công cụ mạnh mẽ của MUI cho phép áp dụng style tùy chỉnh, bao gồm cả việc sử dụng các breakpoints để xử lý responsive một cách nhanh chóng."
+      },
+      {
+        "question": "Để ẩn một component trên màn hình nhỏ (xs) và hiển thị dạng flex trên màn hình vừa (md) trở lên, cú pháp nào sau đây là đúng khi dùng thuộc tính `sx`?",
+        "options": [
+          "`display: { sm: 'none', md: 'flex' }`",
+          "`display: { xs: 'none', md: 'flex' }`",
+          "`visibility: { xs: 'hidden', md: 'visible' }`",
+          "`display: ['none', 'flex']`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cú pháp `display: { xs: 'none', md: 'flex' }` sử dụng object key là các breakpoint (`xs`, `md`) để định nghĩa giá trị của thuộc tính `display` tại các ngưỡng kích thước màn hình đó."
+      },
+      {
+        "question": "Thành phần (component) nào của Material-UI thường được dùng để chứa các nội dung bên trong `<AppBar>` như logo, tiêu đề, và các nút hành động?",
+        "options": [
+          "`<Container>`",
+          "`<Box>`",
+          "`<Paper>`",
+          "`<Toolbar>`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`<Toolbar>` là component con của `<AppBar>`, được thiết kế để chứa và căn chỉnh các item bên trong thanh ứng dụng một cách hợp lý."
+      },
+      {
+        "question": "Trong Material-UI, `xs`, `sm`, `md`, `lg`, `xl` là các giá trị được định nghĩa trước cho khái niệm nào?",
+        "options": [
+          "Color Palette",
+          "Typography Variants",
+          "Breakpoints",
+          "Spacing Units"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đây là các breakpoints (điểm ngắt) mặc định của MUI, được sử dụng để áp dụng các style khác nhau tại các ngưỡng kích thước màn hình nhất định."
+      },
+      {
+        "question": "Mục tiêu chính của việc xử lý responsive cho thanh AppBar trong bài học là gì?",
+        "options": [
+          "Thay đổi màu sắc của AppBar trên mỗi thiết bị",
+          "Thêm nhiều nút hơn trên màn hình di động",
+          "Đảm bảo giao diện hiển thị tối ưu và mang lại trải nghiệm người dùng tốt trên các kích thước màn hình khác nhau",
+          "Làm cho AppBar luôn cố định ở đầu trang"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mục tiêu chính là đảm bảo AppBar có giao diện tối ưu, dễ sử dụng trên mọi thiết bị, từ desktop đến mobile, bằng cách điều chỉnh sự hiển thị của các thành phần bên trong."
+      },
+      {
+        "question": "Component nào của MUI được mô tả là \"đa dụng\", thường được dùng như một `div` để nhóm các phần tử và áp dụng style?",
+        "options": [
+          "`<Stack>`",
+          "`<Grid>`",
+          "`<Box>`",
+          "`<Paper>`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`<Box>` là một component đa dụng, hoạt động tương tự như một thẻ `div` và hỗ trợ rất tốt thuộc tính `sx`, làm cho nó trở thành lựa chọn phổ biến để bọc các phần tử và áp dụng style."
+      },
+      {
+        "question": "Cách tiếp cận \"Mobile-First\" trong responsive design có nghĩa là gì?",
+        "options": [
+          "Thiết kế giao diện cho desktop trước, sau đó điều chỉnh cho mobile",
+          "Chỉ thiết kế cho thiết bị di động",
+          "Thiết kế giao diện cho mobile trước, sau đó mở rộng và bổ sung cho các màn hình lớn hơn",
+          "Ưu tiên hiệu năng trên thiết bị di động"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mobile-First là chiến lược thiết kế bắt đầu với phiên bản cho màn hình nhỏ nhất (mobile), sau đó cải tiến và thêm các yếu tố phức tạp hơn cho các màn hình lớn hơn như tablet và desktop."
+      },
+      {
+        "question": "Trong đoạn code `sx={{ display: { xs: 'none', md: 'block' } }}`, phần tử sẽ có giá trị `display` là gì trên màn hình `sm`?",
+        "options": [
+          "`block`",
+          "`none`",
+          "`flex`",
+          "Không xác định, sẽ lấy giá trị mặc định của trình duyệt"
+        ],
+        "correctAnswer": 1,
+        "explanation": "MUI sử dụng cách tiếp cận mobile-first cho việc định nghĩa breakpoint trong `sx`. Style của `xs` (`none`) sẽ được áp dụng cho tất cả các kích thước từ `xs` trở lên cho đến khi có một định nghĩa khác. Do đó, `sm` cũng sẽ có `display: 'none'`."
+      },
+      {
+        "question": "Tại sao nên sử dụng các component `Box` và `Stack` của MUI thay vì `div` thông thường?",
+        "options": [
+          "Vì chúng có hiệu năng tốt hơn `div`",
+          "Vì chúng được tối ưu hóa để làm việc với hệ thống style và thuộc tính `sx` của MUI",
+          "Vì `div` không được hỗ trợ trong React",
+          "Vì chúng tự động xử lý state"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc sử dụng `Box` và `Stack` giúp code sạch sẽ, dễ bảo trì hơn vì chúng tích hợp liền mạch với hệ thống design token của MUI (theme, `sx`, ...)."
+      },
+      {
+        "question": "Công cụ nào của trình duyệt thường được sử dụng để kiểm tra responsive design?",
+        "options": [
+          "Console",
+          "Network Tab",
+          "Developer Tools (F12) với chế độ mô phỏng thiết bị",
+          "Application Tab"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Developer Tools (thường mở bằng phím F12) cung cấp chế độ mô phỏng thiết bị (Device Simulation) cho phép lập trình viên xem trang web sẽ hiển thị như thế nào trên các kích thước màn hình khác nhau."
+      },
+      {
+        "question": "Khi xử lý responsive, tại sao không nên ẩn các chức năng cốt lõi trên màn hình nhỏ?",
+        "options": [
+          "Vì sẽ làm giảm hiệu năng ứng dụng",
+          "Vì sẽ gây lỗi trong code React",
+          "Vì người dùng trên thiết bị di động cũng cần truy cập các chức năng quan trọng để có trải nghiệm hoàn chỉnh",
+          "Vì điều đó là không thể với Material-UI"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc ẩn các chức năng cốt lõi sẽ làm giảm tính khả dụng của ứng dụng trên màn hình nhỏ. Thay vào đó, chúng nên được đặt trong một menu ẩn (ví dụ: Drawer) để người dùng vẫn có thể truy cập."
+      },
+      {
+        "question": "Trong ví dụ code của bài học, thuộc tính `justifyContent: 'space-between'` trên `<Toolbar>` có tác dụng gì?",
+        "options": [
+          "Căn giữa tất cả các mục",
+          "Tạo khoảng trống đều nhau giữa các mục",
+          "Đẩy hai nhóm mục con về hai phía đối diện của Toolbar",
+          "Xếp chồng các mục lên nhau"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`justifyContent: 'space-between'` trong một flex container sẽ đẩy item đầu tiên về điểm bắt đầu, item cuối cùng về điểm kết thúc, và phân bổ đều không gian còn lại cho các item ở giữa (nếu có)."
+      },
+      {
+        "question": "Để import một file SVG và sử dụng nó như một component trong React với MUI, cú pháp nào thường được dùng?",
+        "options": [
+          "`import TrelloIcon from '~/assets/trello.svg';`",
+          "`import { ReactComponent as TrelloIcon } from '~/assets/trello.svg';`",
+          "`const TrelloIcon = require('~/assets/trello.svg');`",
+          "`import '~/assets/trello.svg';`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Với Create React App, cú pháp `import { ReactComponent as TrelloIcon } from '...'` cho phép bạn import một file SVG trực tiếp như một React component, sau đó có thể truyền vào prop `component` của `<SvgIcon>`."
+      },
+      {
+        "question": "Thuộc tính nào của `<AppBar>` giúp nó luôn hiển thị ở đầu trang ngay cả khi cuộn?",
+        "options": [
+          "`position=\"static\"`",
+          "`position=\"relative\"`",
+          "`position=\"absolute\"`",
+          "`position=\"sticky\"` hoặc `position=\"fixed\"`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`position=\"sticky\"` giữ cho AppBar ở đầu viewport khi cuộn xuống, trong khi `position=\"fixed\"` giữ nó ở vị trí cố định so với viewport bất kể cuộn trang."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Ẩn tiêu đề trên màn hình nhỏ",
+        "description": "Tạo một thanh AppBar đơn giản với một logo (dạng text) và một tiêu đề. Sử dụng thuộc tính `sx` để làm cho tiêu đề (`Typography`) bị ẩn trên các màn hình có kích thước `xs` và hiển thị dạng `block` trên các màn hình từ `md` trở lên.",
+        "starterCode": "import AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport Typography from '@mui/material/Typography';\nimport Box from '@mui/material/Box';\n\nfunction SimpleAppBar() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\" sx={{ color: 'white' }}>\n          Logo\n        </Typography>\n        {/* Thêm Typography cho tiêu đề và áp dụng sx prop tại đây */}\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default SimpleAppBar;",
+        "solution": "import AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport Typography from '@mui/material/Typography';\nimport Box from '@mui/material/Box';\n\nfunction SimpleAppBar() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\" sx={{ color: 'white' }}>\n          Logo\n        </Typography>\n        <Typography variant=\"h6\" sx={{ display: { xs: 'none', md: 'block' }, color: 'white', ml: 2 }}>\n          My App\n        </Typography>\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default SimpleAppBar;",
+        "testCases": "1. Mở trên màn hình lớn (lớn hơn 900px), cả \"Logo\" và \"My App\" đều hiển thị.\n2. Thu nhỏ màn hình (nhỏ hơn 600px), chỉ có \"Logo\" hiển thị, \"My App\" bị ẩn đi."
+      },
+      {
+        "title": "Bài 2: Hiển thị nhóm nút trên màn hình lớn",
+        "description": "Mở rộng AppBar từ bài 1. Thêm một nhóm gồm hai `Button` (ví dụ: \"Login\", \"Register\"). Nhóm nút này phải được bọc trong một component `Box` và chỉ hiển thị (dạng `flex`) trên các màn hình từ `sm` trở lên, còn trên màn hình `xs` thì bị ẩn.",
+        "starterCode": "import AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport Typography from '@mui/material/Typography';\nimport Box from '@mui/material/Box';\nimport Button from '@mui/material/Button';\n\nfunction AppBarWithButtons() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar sx={{ justifyContent: 'space-between' }}>\n        <Typography variant=\"h6\" sx={{ color: 'white' }}>\n          MyApp\n        </Typography>\n        {/* Thêm Box chứa các Button và áp dụng sx prop tại đây */}\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default AppBarWithButtons;",
+        "solution": "import AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport Typography from '@mui/material/Typography';\nimport Box from '@mui/material/Box';\nimport Button from '@mui/material/Button';\n\nfunction AppBarWithButtons() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar sx={{ justifyContent: 'space-between' }}>\n        <Typography variant=\"h6\" sx={{ color: 'white' }}>\n          MyApp\n        </Typography>\n        <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>\n          <Button sx={{ color: 'white' }} variant=\"outlined\">Login</Button>\n          <Button sx={{ color: 'white' }} variant=\"outlined\">Register</Button>\n        </Box>\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default AppBarWithButtons;",
+        "testCases": "1. Trên màn hình `sm` (>=600px) trở lên, hai nút Login và Register hiển thị ở bên phải.\n2. Trên màn hình `xs` (<600px), hai nút Login và Register bị ẩn đi."
+      },
+      {
+        "title": "Bài 3: Sử dụng Stack cho các mục menu",
+        "description": "Tạo một AppBar chứa một logo và ba mục menu (dưới dạng `Button`). Sử dụng component `<Stack>` thay vì `<Box>` để sắp xếp các mục menu. `<Stack>` này chỉ hiển thị trên màn hình `md` trở lên.",
+        "starterCode": "import AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport Typography from '@mui/material/Typography';\nimport Stack from '@mui/material/Stack';\nimport Button from '@mui/material/Button';\n\nfunction AppBarWithStack() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\" sx={{ flexGrow: 1 }}>\n          Logo\n        </Typography>\n        {/* Sử dụng Stack để chứa các Button và áp dụng responsive sx prop */}\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default AppBarWithStack;",
+        "solution": "import AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport Typography from '@mui/material/Typography';\nimport Stack from '@mui/material/Stack';\nimport Button from '@mui/material/Button';\n\nfunction AppBarWithStack() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\" sx={{ flexGrow: 1 }}>\n          Logo\n        </Typography>\n        <Stack direction=\"row\" spacing={2} sx={{ display: { xs: 'none', md: 'flex' } }}>\n          <Button sx={{ color: 'white' }}>Features</Button>\n          <Button sx={{ color: 'white' }}>Pricing</Button>\n          <Button sx={{ color: 'white' }}>About</Button>\n        </Stack>\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default AppBarWithStack;",
+        "testCases": "1. Trên màn hình `md` (>=900px) trở lên, ba nút Features, Pricing, About hiển thị.\n2. Trên màn hình `sm` và `xs`, ba nút này bị ẩn."
+      },
+      {
+        "title": "Bài 4: Tiếp cận Mobile-First",
+        "description": "Xây dựng một `AppBar` theo hướng mobile-first. Mặc định (cho `xs`), chỉ hiển thị một `IconButton` (ví dụ: menu icon). Từ breakpoint `sm` trở lên, hiển thị thêm một ô tìm kiếm (`TextField`). Từ `md` trở lên, hiển thị thêm tên ứng dụng (`Typography`).",
+        "starterCode": "import AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport IconButton from '@mui/material/IconButton';\nimport MenuIcon from '@mui/icons-material/Menu';\nimport Typography from '@mui/material/Typography';\nimport TextField from '@mui/material/TextField';\nimport Box from '@mui/material/Box';\n\nfunction MobileFirstAppBar() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar>\n        {/* Code mobile-first của bạn ở đây */}\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default MobileFirstAppBar;",
+        "solution": "import AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport IconButton from '@mui/material/IconButton';\nimport MenuIcon from '@mui/icons-material/Menu';\nimport Typography from '@mui/material/Typography';\nimport TextField from '@mui/material/TextField';\nimport Box from '@mui/material/Box';\n\nfunction MobileFirstAppBar() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar>\n        <IconButton edge=\"start\" color=\"inherit\" aria-label=\"menu\">\n          <MenuIcon />\n        </IconButton>\n        <Typography variant=\"h6\" sx={{ display: { xs: 'none', md: 'block' }, ml: 2 }}>\n          App Name\n        </Typography>\n        <Box flexGrow={1} />\n        <TextField \n          label=\"Search\" \n          variant=\"outlined\" \n          size=\"small\"\n          sx={{ display: { xs: 'none', sm: 'block' }, backgroundColor: 'white', borderRadius: 1 }}\n        />\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default MobileFirstAppBar;",
+        "testCases": "1. Trên `xs`: chỉ có icon menu hiển thị.\n2. Trên `sm`: icon menu và ô tìm kiếm hiển thị.\n3. Trên `md`: icon menu, tên ứng dụng và ô tìm kiếm đều hiển thị."
+      },
+      {
+        "title": "Bài 5: Hoàn thiện Trello AppBar Responsive",
+        "description": "Tái tạo lại một phiên bản AppBar hoàn chỉnh như trong bài học. Bao gồm: Logo, Tên board (ẩn trên `xs`), các nút Starred, Recent (ẩn trên `md` trở xuống), một ô tìm kiếm, chuông thông báo và avatar người dùng. Sử dụng `Box`, `Stack` và `sx` prop để sắp xếp và xử lý responsive.",
+        "starterCode": "import AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport Typography from '@mui/material/Typography';\nimport Box from '@mui/material/Box';\nimport Button from '@mui/material/Button';\nimport Stack from '@mui/material/Stack';\nimport Avatar from '@mui/material/Avatar';\nimport SearchIcon from '@mui/icons-material/Search';\nimport NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';\n\nfunction TrelloAppBar() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar sx={{ justifyContent: 'space-between' }}>\n        {/* Nhóm bên trái: Logo, Title, Starred, Recent */}\n        <Box>\n          {/* Code here */}\n        </Box>\n\n        {/* Nhóm bên phải: Search, Notifications, Avatar */}\n        <Box>\n          {/* Code here */}\n        </Box>\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default TrelloAppBar;",
+        "solution": "import AppBar from '@mui/material/AppBar';\nimport Toolbar from '@mui/material/Toolbar';\nimport Typography from '@mui/material/Typography';\nimport Box from '@mui/material/Box';\nimport Button from '@mui/material/Button';\nimport Stack from '@mui/material/Stack';\nimport Avatar from '@mui/material/Avatar';\nimport SearchIcon from '@mui/icons-material/Search';\nimport NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';\nimport AppsIcon from '@mui/icons-material/Apps';\n\nfunction TrelloAppBar() {\n  return (\n    <AppBar position=\"static\" sx={{ bgcolor: '#026AA7' }}>\n      <Toolbar sx={{ justifyContent: 'space-between', minHeight: 56 }}>\n        <Stack direction=\"row\" alignItems=\"center\" spacing={1}>\n          <AppsIcon sx={{ color: 'white' }} />\n          <Typography variant=\"h6\" sx={{ display: { xs: 'none', md: 'block' }, color: 'white' }}>\n            Trello\n          </Typography>\n          <Box sx={{ display: { xs: 'none', lg: 'flex' }, gap: 1 }}>\n            <Button variant=\"outlined\" size=\"small\" sx={{ color: 'white', borderColor: 'white' }}>Starred</Button>\n            <Button variant=\"outlined\" size=\"small\" sx={{ color: 'white', borderColor: 'white' }}>Recent</Button>\n          </Box>\n        </Stack>\n\n        <Stack direction=\"row\" alignItems=\"center\" spacing={1}>\n          <SearchIcon sx={{ color: 'white' }} />\n          <NotificationsNoneIcon sx={{ color: 'white' }} />\n          <Avatar \n            alt=\"User\"\n            src=\"/static/images/avatar/1.jpg\" \n            sx={{ width: 32, height: 32 }}\n          />\n        </Stack>\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default TrelloAppBar;",
+        "testCases": "1. Trên `xs`: Chỉ hiển thị logo icon, search, notification, avatar.\n2. Trên `md`: Hiển thị thêm tên \"Trello\".\n3. Trên `lg`: Hiển thị đầy đủ các nút Starred và Recent."
+      }
+    ]
+  }
+}

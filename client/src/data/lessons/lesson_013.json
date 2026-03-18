@@ -1,0 +1,213 @@
+{
+  "id": 13,
+  "title": "Bài học 7: Material UI, TailwindCSS, Bootstrap - Chọn cái nào?",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài học 7: Material UI, TailwindCSS, Bootstrap - Chọn cái nào?\n\n## 1. Mục tiêu bài học\n\nBài học này tập trung vào việc phân tích, so sánh ba trong số các công cụ phổ biến nhất để xây dựng giao diện người dùng trong phát triển web hiện đại: **Material UI (MUI)**, **TailwindCSS**, và **Bootstrap**. Mục tiêu chính là giúp lập trình viên, đặc biệt là những người làm việc với ReactJS, hiểu rõ ưu nhược điểm của từng công cụ để có thể đưa ra lựa chọn phù hợp nhất cho dự án của mình. Cuối cùng, bài học giải thích lý do tại sao **Material UI** được chọn làm thư viện chính cho chuỗi series \"MERN PRO\".\n\n## 2. Kiến thức chi tiết\n\nTrong video, tác giả TrungQuanDev đã đưa ra những phân tích sâu sắc về ba công cụ dựa trên kinh nghiệm thực tế. Dưới đây là tổng hợp chi tiết các kiến thức được trình bày.\n\n### 2.1. Bootstrap\n\n> Bootstrap là một framework CSS mã nguồn mở và miễn phí, được phát triển bởi Twitter. Nó là một trong những framework front-end đầu tiên và phổ biến nhất, giúp các nhà phát triển web thiết kế giao diện một cách nhanh chóng và dễ dàng.\n\n- **Triết lý hoạt động**: Cung cấp một bộ sưu tập lớn các **components dựng sẵn** (pre-built components) như buttons, forms, navbars, modals, và một hệ thống lưới (grid system) mạnh mẽ để tạo layout responsive.\n- **Ưu điểm**:\n    - **Dễ học và nhanh chóng**: Rất phù hợp cho người mới bắt đầu hoặc khi cần xây dựng các sản phẩm khả thi tối thiểu (MVP) trong thời gian ngắn.\n    - **Cộng đồng lớn và tài liệu tốt**: Dễ dàng tìm kiếm sự hỗ trợ và các tài liệu hướng dẫn chi tiết.\n    - **Hệ thống Grid mạnh mẽ**: Hệ thống lưới 12 cột của Bootstrap rất trực quan và hiệu quả cho việc xây dựng layout responsive.\n- **Nhược điểm**:\n    - **Khó tùy biến sâu**: Việc tùy chỉnh giao diện để tạo ra một thiết kế độc đáo, khác biệt so với mặc định của Bootstrap có thể khá phức tạp và tốn thời gian.\n    - **Tính nhận diện cao**: Các trang web sử dụng Bootstrap thường có vẻ ngoài khá giống nhau, dễ bị nhận ra.\n\n### 2.2. TailwindCSS\n\n> TailwindCSS là một **utility-first CSS framework**. Thay vì cung cấp các components dựng sẵn, nó cung cấp các lớp tiện ích (utility classes) cấp thấp để bạn có thể xây dựng các thiết kế hoàn toàn tùy chỉnh trực tiếp trong HTML.\n\n- **Triết lý hoạt động**: Thay vì viết CSS trong một file `.css` riêng biệt, bạn sẽ áp dụng các class tiện ích như `flex`, `pt-4` (padding-top), `text-center` trực tiếp vào các phần tử HTML.\n- **Ưu điểm**:\n    - **Tùy biến không giới hạn**: Cung cấp sự tự do tối đa để xây dựng bất kỳ thiết kế nào mà không cần phải thoát ra khỏi file HTML hay viết thêm CSS tùy chỉnh.\n    - **Hiệu suất cao**: File CSS cuối cùng thường rất nhỏ vì nó chỉ bao gồm những class tiện ích mà bạn thực sự sử dụng trong dự án.\n    - **Không \"đổi ngữ cảnh\"**: Lập trình viên có thể tập trung vào markup mà không cần chuyển qua lại giữa file HTML và CSS.\n- **Nhược điểm**:\n    - **HTML \"bẩn\"**: Markup có thể trở nên rất dài và khó đọc với hàng loạt các class được áp dụng cho một phần tử.\n    - **Đường cong học tập**: Cần thời gian để học và ghi nhớ hệ thống các lớp tiện ích của Tailwind.\n    - **Không có component dựng sẵn**: Bạn phải tự xây dựng mọi thứ từ đầu, điều này có thể làm chậm quá trình phát triển ban đầu.\n\n### 2.3. Material-UI (MUI)\n\n> Material-UI là một thư viện React UI implement theo ngôn ngữ thiết kế **Material Design** của Google. Nó cung cấp một bộ sưu tập phong phú các components React đã được thiết kế sẵn, đẹp mắt và có tính nhất quán cao.\n\n- **Triết lý hoạt động**: Cung cấp các React components chất lượng cao, tuân thủ chặt chẽ các nguyên tắc của Material Design, giúp tạo ra giao diện người dùng chuyên nghiệp và hiện đại.\n- **Ưu điểm**:\n    - **Thiết kế chuyên nghiệp**: Giao diện mặc định rất đẹp, hiện đại và tuân thủ các nguyên tắc thiết kế tốt, mang lại trải nghiệm người dùng tuyệt vời.\n    - **Tích hợp sâu với React**: Là một thư viện được xây dựng riêng cho React, MUI tận dụng tối đa các tính năng của React, giúp việc phát triển trở nên mượt mà.\n    - **Khả năng tùy biến cao**: Cung cấp hệ thống **Theming** mạnh mẽ và **`sx` prop** linh hoạt, cho phép tùy chỉnh giao diện một cách dễ dàng mà không mất đi tính nhất quán.\n    - **Tiết kiệm thời gian**: Với bộ components phong phú, lập trình viên không cần phải xây dựng lại \"bánh xe\", giúp đẩy nhanh đáng kể tốc độ phát triển.\n- **Nhược điểm**:\n    - **Kích thước bundle**: Nếu không được tối ưu hóa (ví dụ: import toàn bộ thư viện thay vì từng component), kích thước bundle cuối cùng có thể khá lớn.\n    - **Gò bó trong Material Design**: Mặc dù có khả năng tùy biến, việc tạo ra một thiết kế hoàn toàn khác biệt so với Material Design có thể không phải là lựa chọn tối ưu.\n\n### 2.4. Bảng so sánh và Lựa chọn cho dự án\n\n| Tiêu chí             | Bootstrap                               | TailwindCSS                             | Material-UI (MUI)                       |\n| :-------------------- | :-------------------------------------- | :-------------------------------------- | :-------------------------------------- |\n| **Triết lý**          | Component-based                         | Utility-first                           | Component-based (Material Design)       |\n| **Components**        | Có sẵn, đa dạng                         | Không có sẵn, tự xây dựng               | Có sẵn, tuân thủ Material Design        |\n| **Khả năng tùy biến** | Hạn chế                                 | Rất cao                                 | Cao (thông qua Theming và `sx` prop)    |\n| **Tốc độ phát triển** | Nhanh cho các layout chuẩn              | Nhanh khi đã quen thuộc                 | Rất nhanh với các component có sẵn      |\n| **Đường cong học tập**| Dễ                                      | Trung bình                              | Dễ đến trung bình                       |\n| **Phù hợp cho**       | MVP, dự án nhỏ, trang admin đơn giản    | Các dự án yêu cầu thiết kế độc đáo      | Ứng dụng React cần giao diện chuyên nghiệp |\n\n**Lý do chọn Material-UI cho khóa học:** Tác giả nhấn mạnh rằng trong một dự án thực tế, đặc biệt là các dự án lớn và chuyên nghiệp, việc có một hệ thống thiết kế (Design System) nhất quán và các components chất lượng cao là cực kỳ quan trọng. MUI không chỉ cung cấp điều đó mà còn giúp lập trình viên tập trung vào logic nghiệp vụ thay vì tốn quá nhiều thời gian vào việc style từng chi tiết nhỏ. Điều này giúp đẩy nhanh tiến độ dự án mà vẫn đảm bảo chất lượng giao diện ở mức cao nhất.\n\n## 3. Các bước thực hành\n\nVideo này chủ yếu tập trung vào lý thuyết và không có các bước thực hành code cụ thể. Tuy nhiên, kiến thức trong bài là tiền đề quan trọng cho các bài học tiếp theo, nơi chúng ta sẽ bắt đầu cài đặt và sử dụng Material UI trong dự án ReactJS.\n\n1.  **Nghiền ngẫm**: Dành thời gian suy nghĩ về các dự án bạn đã làm hoặc sẽ làm. Dựa trên các phân tích ở trên, hãy thử xác định công cụ nào sẽ là lựa chọn tốt nhất cho từng dự án đó.\n2.  **Xem trước**: Truy cập trang chủ của Material UI, TailwindCSS và Bootstrap để xem qua tài liệu và các ví dụ của họ.\n3.  **Chuẩn bị**: Sẵn sàng cho bài học tiếp theo, nơi chúng ta sẽ chính thức tích hợp Material UI vào dự án Trello Clone.\n\n## 4. Lưu ý quan trọng\n\n- **Không có công cụ nào là tốt nhất cho mọi trường hợp**: Lựa chọn công cụ phụ thuộc hoàn toàn vào yêu cầu của dự án, quy mô đội nhóm, và kỹ năng của lập trình viên. Một công cụ có thể hoàn hảo cho dự án này nhưng lại không phù hợp với dự án khác.\n- **Hiểu rõ triết lý**: Điều quan trọng nhất là phải hiểu triết lý đằng sau mỗi công cụ. Hiểu được \"tại sao\" nó được tạo ra sẽ giúp bạn sử dụng nó một cách hiệu quả nhất.\n- **MUI là lựa chọn của khóa học**: Việc lựa chọn MUI cho khóa học này không có nghĩa là các công cụ khác không tốt. Đây là lựa chọn dựa trên mục tiêu của khóa học là xây dựng một ứng dụng hoàn chỉnh, chuyên nghiệp trong thời gian hợp lý.\n\n## 5. Tài liệu tham khảo\n\n- [1] [Video 7. Material UI, TailwindCSS, Bootstrap - Chọn cái nào? | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=VIDEO_11&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=11)\n- [2] [Bài viết tương ứng trên blog TrungQuanDev](https://trungquandev.com/7-material-ui-tailwindcss-bootstrap-chon-cai-nao-reactjs-material-ui-trungquandev/)\n- [3] [Trang chủ Material-UI (MUI)](https://mui.com/)\n- [4] [Trang chủ TailwindCSS](https://tailwindcss.com/)\n- [5] [Trang chủ Bootstrap](https://getbootstrap.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Theo bài học, triết lý hoạt động chính của Bootstrap là gì?",
+        "options": [
+          "Cung cấp các lớp tiện ích (utility classes) để xây dựng giao diện tùy chỉnh.",
+          "Cung cấp một bộ sưu tập lớn các components dựng sẵn (pre-built components).",
+          "Tập trung vào việc implement ngôn ngữ thiết kế Material Design của Google.",
+          "Tạo ra file CSS cuối cùng có kích thước nhỏ nhất có thể."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bootstrap hoạt động dựa trên việc cung cấp một bộ sưu tập lớn các components dựng sẵn như buttons, forms, navbars, giúp xây dựng giao diện nhanh chóng."
+      },
+      {
+        "question": "Đâu là nhược điểm chính của Bootstrap được đề cập trong bài học?",
+        "options": [
+          "Rất khó học cho người mới bắt đầu.",
+          "Hiệu suất rất thấp và làm chậm trang web.",
+          "Khó tùy biến sâu để tạo ra một thiết kế độc đáo.",
+          "Không có hệ thống lưới (grid system) mạnh mẽ."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học chỉ ra rằng việc tùy chỉnh giao diện Bootstrap để tạo ra một thiết kế độc đáo có thể khá phức tạp và tốn thời gian, và các trang web dùng Bootstrap thường trông giống nhau."
+      },
+      {
+        "question": "TailwindCSS được mô tả là một framework theo triết lý nào?",
+        "options": [
+          "Component-based",
+          "Utility-first",
+          "Object-oriented CSS",
+          "Atomic CSS-in-JS"
+        ],
+        "correctAnswer": 1,
+        "explanation": "TailwindCSS là một utility-first CSS framework, cung cấp các lớp tiện ích cấp thấp để xây dựng thiết kế tùy chỉnh trực tiếp trong HTML."
+      },
+      {
+        "question": "Ưu điểm lớn nhất của TailwindCSS là gì?",
+        "options": [
+          "Cung cấp nhiều components dựng sẵn đẹp mắt.",
+          "Rất dễ học cho người mới bắt đầu.",
+          "Tùy biến không giới hạn và tự do sáng tạo tối đa.",
+          "HTML luôn sạch sẽ và gọn gàng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "TailwindCSS cung cấp sự tự do tối đa để xây dựng bất kỳ thiết kế nào mà không cần phải viết thêm CSS tùy chỉnh, cho phép tùy biến không giới hạn."
+      },
+      {
+        "question": "Nhược điểm nào sau đây được cho là của TailwindCSS?",
+        "options": [
+          "Kích thước bundle cuối cùng rất lớn.",
+          "Markup HTML có thể trở nên dài và khó đọc (HTML \"bẩn\").",
+          "Cộng đồng hỗ trợ nhỏ và tài liệu nghèo nàn.",
+          "Không thể tạo ra các thiết kế responsive."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Với hàng loạt các class được áp dụng cho một phần tử, markup HTML khi dùng TailwindCSS có thể trở nên rất dài và khó đọc."
+      },
+      {
+        "question": "Material-UI (MUI) là thư viện React UI implement theo ngôn ngữ thiết kế nào?",
+        "options": [
+          "Fluent Design của Microsoft",
+          "Human Interface Guidelines của Apple",
+          "Material Design của Google",
+          "Ant Design của Ant Group"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Material-UI là một thư viện React UI implement theo ngôn ngữ thiết kế Material Design của Google, mang lại giao diện hiện đại và chuyên nghiệp."
+      },
+      {
+        "question": "Công cụ nào trong MUI cho phép tùy chỉnh giao diện một cách linh hoạt mà vẫn giữ tính nhất quán?",
+        "options": [
+          "Hệ thống Grid",
+          "Các utility classes",
+          "Hệ thống Theming và `sx` prop",
+          "Các pre-built components"
+        ],
+        "correctAnswer": 2,
+        "explanation": "MUI cung cấp hệ thống Theming mạnh mẽ và `sx` prop linh hoạt, cho phép tùy chỉnh giao diện một cách dễ dàng mà không mất đi tính nhất quán của Material Design."
+      },
+      {
+        "question": "Theo tác giả, tại sao Material-UI được chọn cho khóa học MERN PRO?",
+        "options": [
+          "Vì nó là công cụ dễ học nhất cho người mới bắt đầu.",
+          "Vì nó giúp tạo ra các trang web có giao diện độc đáo nhất.",
+          "Vì nó giúp tập trung vào logic nghiệp vụ và đẩy nhanh tiến độ dự án với giao diện chất lượng cao.",
+          "Vì nó tạo ra kích thước bundle nhỏ nhất so với các công cụ khác."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tác giả chọn MUI vì nó cung cấp hệ thống thiết kế nhất quán và components chất lượng, giúp lập trình viên tập trung vào logic nghiệp vụ thay vì style, đẩy nhanh tiến độ mà vẫn đảm bảo chất lượng giao diện."
+      },
+      {
+        "question": "Công cụ nào phù hợp nhất cho việc xây dựng một sản phẩm khả thi tối thiểu (MVP) trong thời gian ngắn?",
+        "options": [
+          "TailwindCSS",
+          "Material-UI",
+          "Bootstrap",
+          "Tự viết CSS thuần"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bootstrap rất phù hợp cho người mới bắt đầu hoặc khi cần xây dựng các sản phẩm khả thi tối thiểu (MVP) trong thời gian ngắn nhờ vào các components dựng sẵn."
+      },
+      {
+        "question": "Nếu dự án yêu cầu một thiết kế độc đáo, hoàn toàn khác biệt, công cụ nào sẽ là lựa chọn tốt nhất?",
+        "options": [
+          "Bootstrap",
+          "TailwindCSS",
+          "Material-UI",
+          "Một thư viện component khác như Ant Design"
+        ],
+        "correctAnswer": 1,
+        "explanation": "TailwindCSS là lựa chọn hàng đầu cho các dự án yêu cầu thiết kế độc đáo vì triết lý utility-first của nó cho phép xây dựng mọi thứ từ đầu với độ tùy biến tối đa."
+      },
+      {
+        "question": "Phát biểu nào sau đây là ĐÚNG theo nội dung bài học?",
+        "options": [
+          "TailwindCSS cung cấp rất nhiều component dựng sẵn.",
+          "Bootstrap rất khó để tùy biến.",
+          "MUI chỉ phù hợp cho các dự án nhỏ.",
+          "Lựa chọn công cụ CSS phụ thuộc vào yêu cầu của từng dự án cụ thể."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bài học nhấn mạnh rằng không có công cụ nào là tốt nhất cho mọi trường hợp; lựa chọn phụ thuộc hoàn toàn vào yêu cầu dự án, quy mô đội nhóm và kỹ năng lập trình viên."
+      },
+      {
+        "question": "Đặc điểm \"HTML bẩn\" là nhược điểm của công cụ nào?",
+        "options": [
+          "Material-UI",
+          "Bootstrap",
+          "TailwindCSS",
+          "Tất cả các công cụ trên"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Do sử dụng hàng loạt utility classes trực tiếp trong markup, HTML của TailwindCSS có thể trở nên dài và khó đọc, thường được gọi là \"HTML bẩn\"."
+      },
+      {
+        "question": "Hệ thống lưới (grid system) 12 cột là một tính năng mạnh mẽ và nổi bật của công cụ nào?",
+        "options": [
+          "Bootstrap",
+          "TailwindCSS",
+          "Material-UI",
+          "CSS thuần (Flexbox/Grid)"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Hệ thống lưới 12 cột của Bootstrap rất trực quan và hiệu quả cho việc xây dựng layout responsive, là một trong những tính năng nổi bật nhất của nó."
+      },
+      {
+        "question": "Triết lý \"utility-first\" có nghĩa là gì?",
+        "options": [
+          "Ưu tiên xây dựng các component lớn trước tiên.",
+          "Cung cấp các lớp CSS cấp thấp, mỗi lớp thực hiện một chức năng duy nhất.",
+          "Tập trung vào trải nghiệm người dùng là ưu tiên hàng đầu.",
+          "Viết CSS trong các file riêng biệt thay vì inline."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Triết lý \"utility-first\" của TailwindCSS có nghĩa là cung cấp các lớp tiện ích cấp thấp, có thể tái sử dụng (như `flex`, `pt-4`, `text-center`) để xây dựng giao diện trực tiếp trong HTML."
+      },
+      {
+        "question": "Đâu là một nhược điểm tiềm tàng của Material-UI nếu không được sử dụng cẩn thận?",
+        "options": [
+          "Khó học và sử dụng.",
+          "Kích thước bundle cuối cùng có thể lớn nếu import không đúng cách.",
+          "Không thể tùy biến giao diện.",
+          "Thiếu tài liệu và cộng đồng hỗ trợ."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu không tối ưu hóa (ví dụ: import toàn bộ thư viện thay vì từng component), kích thước bundle cuối cùng của một ứng dụng dùng MUI có thể khá lớn."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo một Button đơn giản với Bootstrap",
+        "description": "Sử dụng các class của Bootstrap để tạo một button màu xanh (primary) với nội dung \"Click Me\".",
+        "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Bootstrap Button</title>\n  <link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">\n</head>\n<body>\n\n  <!-- Your code here -->\n\n</body>\n</html>",
+        "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Bootstrap Button</title>\n  <link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">\n</head>\n<body>\n\n  <button class=\"btn btn-primary\">Click Me</button>\n\n</body>\n</html>",
+        "testCases": "Mở file HTML trong trình duyệt. Phải thấy một button màu xanh dương với chữ \"Click Me\"."
+      },
+      {
+        "title": "Bài 2: Tạo Card đơn giản với TailwindCSS",
+        "description": "Sử dụng các utility classes của TailwindCSS để tạo một card đơn giản có bo tròn, đổ bóng, padding và một tiêu đề bên trong.",
+        "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <title>TailwindCSS Card</title>\n  <script src=\"https://cdn.tailwindcss.com\"></script>\n</head>\n<body class=\"bg-gray-100 p-8\">\n\n  <!-- Your code here -->\n\n</body>\n</html>",
+        "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <title>TailwindCSS Card</title>\n  <script src=\"https://cdn.tailwindcss.com\"></script>\n</head>\n<body class=\"bg-gray-100 p-8\">\n\n  <div class=\"max-w-sm rounded overflow-hidden shadow-lg bg-white p-6\">\n    <div class=\"font-bold text-xl mb-2\">Card Title</div>\n  </div>\n\n</body>\n</html>",
+        "testCases": "Mở file HTML trong trình duyệt. Phải thấy một card màu trắng trên nền xám, có đổ bóng, góc bo tròn và chứa dòng chữ \"Card Title\"."
+      },
+      {
+        "title": "Bài 3: Tạo Button với Icon trong React Material-UI",
+        "description": "Sử dụng component `Button` và `Icon` từ Material-UI trong một ứng dụng React để tạo một button có icon `Delete` ở đầu.",
+        "starterCode": "import * as React from 'react';\nimport Button from '@mui/material/Button';\nimport DeleteIcon from '@mui/icons-material/Delete';\n\nexport default function IconLabelButtons() {\n  return (\n    // Your code here\n  );\n}",
+        "solution": "import * as React from 'react';\nimport Button from '@mui/material/Button';\nimport DeleteIcon from '@mui/icons-material/Delete';\n\nexport default function IconLabelButtons() {\n  return (\n    <Button variant=\"outlined\" startIcon={<DeleteIcon />}>\n      Delete\n    </Button>\n  );\n}",
+        "testCases": "Chạy ứng dụng React. Phải thấy một button có viền, bên trong có icon thùng rác và chữ \"Delete\"."
+      },
+      {
+        "title": "Bài 4: Xây dựng Layout Responsive với Grid của Bootstrap",
+        "description": "Sử dụng hệ thống grid của Bootstrap để tạo một layout có 3 cột bằng nhau trên màn hình lớn (large), 2 cột trên màn hình vừa (medium) và 1 cột trên màn hình nhỏ (small).",
+        "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Bootstrap Grid</title>\n  <link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">\n  <style>\n    .box { background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 1rem; text-align: center; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"row\">\n      <!-- Your code here -->\n    </div>\n  </div>\n</body>\n</html>",
+        "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Bootstrap Grid</title>\n  <link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css\">\n  <style>\n    .box { background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 1rem; text-align: center; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"row\">\n      <div class=\"col-lg-4 col-md-6 col-sm-12\"><div class=\"box\">Column 1</div></div>\n      <div class=\"col-lg-4 col-md-6 col-sm-12\"><div class=\"box\">Column 2</div></div>\n      <div class=\"col-lg-4 col-md-12 col-sm-12\"><div class=\"box\">Column 3</div></div>\n    </div>\n  </div>\n</body>\n</html>",
+        "testCases": "Mở file HTML và thay đổi kích thước cửa sổ trình duyệt. Trên màn hình lớn, 3 cột phải nằm trên cùng một hàng. Trên màn hình vừa, cột 1 và 2 ở hàng đầu, cột 3 ở hàng hai. Trên màn hình nhỏ, mỗi cột chiếm một hàng."
+      },
+      {
+        "title": "Bài 5: Tùy chỉnh màu sắc trong TailwindCSS",
+        "description": "Sử dụng cú pháp `JIT (Just-In-Time)` của TailwindCSS để tạo một thẻ `div` với màu nền tùy chỉnh không có trong bảng màu mặc định (ví dụ: màu `#123456`).",
+        "starterCode": "<!DOCTYPE html>\n<html>\n<head>\n  <title>TailwindCSS Custom Color</title>\n  <script src=\"https://cdn.tailwindcss.com\"></script>\n</head>\n<body class=\"p-8\">\n\n  <!-- Your code here: Create a div with a custom background color -->\n\n</body>\n</html>",
+        "solution": "<!DOCTYPE html>\n<html>\n<head>\n  <title>TailwindCSS Custom Color</title>\n  <script src=\"https://cdn.tailwindcss.com\"></script>\n</head>\n<body class=\"p-8\">\n\n  <div class=\"h-24 w-full bg-[#123456] text-white flex items-center justify-center\">\n    Custom Color Box\n  </div>\n\n</body>\n</html>",
+        "testCases": "Mở file HTML trong trình duyệt. Phải thấy một hình chữ nhật có màu nền là `#123456` (một màu xanh đậm) và chứa dòng chữ \"Custom Color Box\"."
+      }
+    ]
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "id": 32,
+  "title": "Bài 17: Phân tích Layout trang Trello Web (Kỹ Năng Quan Trọng)",
+  "category": "layout",
+  "categoryName": "Layout & Giao diện",
+  "content": "# Bài 17: Phân tích Layout trang Trello Web (Kỹ Năng Quan Trọng)\n\n## I. Mục tiêu bài học\n\nBài học này tập trung vào một kỹ năng cực kỳ quan trọng trong lập trình front-end: **phân tích giao diện (layout)** của một ứng dụng web trước khi bắt tay vào code. Cụ thể, chúng ta sẽ phân tích chi tiết layout của trang Trello, một ứng dụng quản lý công việc phổ biến, để hiểu cách cấu trúc và tổ chức các thành phần giao diện một cách hiệu quả.\n\nViệc phân tích layout giúp chúng ta:\n\n*   **Hình dung rõ ràng cấu trúc tổng thể của ứng dụng:** Thay vì code một cách mò mẫm, chúng ta sẽ có một \"bản đồ\" chi tiết về các thành phần cần xây dựng.\n*   **Phân chia công việc hiệu quả:** Dễ dàng bóc tách các thành phần (components) để tái sử dụng và quản lý code tốt hơn.\n*   **Dự trù được các vấn đề tiềm ẩn:** Lường trước được những thách thức về giao diện, responsive và tương tác người dùng.\n*   **Tăng tốc độ phát triển:** Có một kế hoạch rõ ràng sẽ giúp quá trình code diễn ra nhanh chóng và ít lỗi hơn.\n\n## II. Kiến thức chi tiết\n\nTrong video, tác giả TrungQuanDev đã hướng dẫn cách phân tích layout trang Trello bằng cách chia nhỏ giao diện thành các thành phần chính. Dưới đây là tổng hợp chi tiết các kiến thức được trình bày:\n\n### 1. Phân tích cấu trúc tổng thể\n\nTrang Trello được chia thành 3 thành phần chính theo chiều dọc:\n\n*   **Thanh ứng dụng (App Bar):** Nằm ở trên cùng, chứa logo, các menu điều hướng chính và thông tin người dùng.\n*   **Thanh bảng (Board Bar):** Nằm ngay dưới App Bar, chứa tên của bảng (board) hiện tại và các menu liên quan đến bảng đó.\n*   **Nội dung bảng (Board Content):** Là phần chính của giao diện, chứa các cột (columns) và các thẻ (cards) công việc. Phần này có tính năng cuộn ngang (horizontal scrolling) để xem tất cả các cột.\n\n### 2. Chi tiết từng thành phần\n\n#### a. Thanh ứng dụng (App Bar)\n\n*   **Chiều cao:** Được xác định là một hằng số, ví dụ: `58px`.\n*   **Thành phần con:**\n    *   Logo Trello\n    *   Menu \"Workspaces\", \"Recent\", \"Starred\", \"Templates\"\n    *   Nút \"Create\"\n    *   Thanh tìm kiếm\n    *   Nút thông báo (Notifications)\n    *   Thông tin tài khoản người dùng (Avatar)\n\n#### b. Thanh bảng (Board Bar)\n\n*   **Chiều cao:** Tương tự App Bar, cũng được xác định là một hằng số, ví dụ: `60px`.\n*   **Thành phần con:**\n    *   Tên bảng\n    *   Nút \"Add to favorites\"\n    *   Menu \"Board\", \"View\"\n    *   Avatar của các thành viên trong bảng\n    *   Nút \"Share\"\n    *   Menu \"...\" (More options)\n\n#### c. Nội dung bảng (Board Content)\n\n*   **Chiều cao:** Đây là phần quan trọng nhất. Chiều cao của Board Content được tính toán động bằng công thức:\n\n    ```css\n    height: calc(100vh - (AppBar Height) - (BoardBar Height));\n    ```\n\n    Trong đó `100vh` là chiều cao của viewport (khung nhìn trình duyệt). Công thức này đảm bảo rằng Board Content sẽ lấp đầy phần còn lại của màn hình, tạo ra một giao diện toàn màn hình (full-screen) và không bị cuộn trang dọc (vertical scrolling) không mong muốn.\n\n*   **Thành phần con:**\n    *   **Các cột (Columns):** Được sắp xếp theo chiều ngang. Mỗi cột chứa các thẻ công việc.\n    *   **Các thẻ (Cards):** Nằm bên trong các cột, đại diện cho các công việc cụ thể.\n\n### 3. Kỹ thuật CSS quan trọng\n\n*   **`calc()`:** Hàm `calc()` trong CSS được sử dụng để thực hiện các phép tính toán giá trị thuộc tính. Trong bài học này, nó được dùng để tính toán chiều cao của Board Content một cách linh hoạt.\n*   **`vh` (Viewport Height):** Đơn vị `vh` đại diện cho tỷ lệ phần trăm của chiều cao viewport. `100vh` tương đương với 100% chiều cao của khung nhìn trình duyệt.\n*   **`overflow-x: auto;`:** Thuộc tính này được áp dụng cho Board Content để cho phép cuộn ngang khi số lượng cột vượt quá chiều rộng của màn hình.\n\n## III. Các bước thực hành\n\n1.  **Quan sát và chụp ảnh màn hình:** Mở trang Trello và chụp lại ảnh màn hình giao diện chính.\n2.  **Sử dụng công cụ vẽ sơ đồ:** Dùng một công cụ như `app.diagrams.net` (trước đây là `draw.io`) hoặc bất kỳ phần mềm chỉnh sửa ảnh nào để vẽ các khối (boxes) bao quanh các thành phần chính đã xác định (App Bar, Board Bar, Board Content).\n3.  **Ghi chú chi tiết:** Ghi chú lại tên, kích thước (chiều cao, chiều rộng ước tính) và các thành phần con của mỗi khối.\n4.  **Xác định các hằng số:** Xác định các giá trị không đổi như chiều cao của App Bar và Board Bar. Đây sẽ là các biến (constants) trong code của bạn.\n5.  **Viết công thức tính toán:** Viết ra công thức CSS để tính toán các kích thước động, đặc biệt là chiều cao của Board Content.\n\n## IV. Lưu ý quan trọng\n\n*   **Tầm quan trọng của việc phân tích:** Đây là một kỹ năng nền tảng và cực kỳ quan trọng đối với bất kỳ lập trình viên front-end nào. Đừng bao giờ xem nhẹ bước này.\n*   **Tư duy \"chia để trị\":** Luôn cố gắng chia nhỏ các giao diện phức tạp thành các thành phần đơn giản hơn. Điều này giúp code dễ quản lý, bảo trì và tái sử dụng.\n*   **Sử dụng hằng số:** Việc định nghĩa các giá trị không đổi (như màu sắc, kích thước) thành các hằng số giúp code nhất quán và dễ dàng thay đổi sau này.\n*   **Responsive:** Mặc dù video chưa đề cập sâu về responsive, nhưng khi phân tích layout, hãy luôn suy nghĩ về cách giao diện sẽ hiển thị trên các kích thước màn hình khác nhau (desktop, tablet, mobile).\n\n## V. Tài liệu tham khảo\n\n*   **Video bài học:** [17. Phân tích Layout trang Trello Web (Kỹ Năng Quan Trọng) | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=w9dvyXBW1pY)\n*   **Blog TrungQuanDev:** [https://trungquandev.com/](https://trungquandev.com/)\n*   **GitHub Repo (tham khảo):** [https://github.com/trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Theo bài học, kỹ năng nào được coi là cực kỳ quan trọng trong lập trình front-end trước khi bắt tay vào code?",
+        "options": [
+          "Viết code nhanh",
+          "Phân tích giao diện (layout)",
+          "Tối ưu hóa hiệu năng",
+          "Sử dụng thư viện component"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nhấn mạnh rằng phân tích layout là một kỹ năng nền tảng và cực kỳ quan trọng, giúp hình dung cấu trúc, phân chia công việc và tăng tốc độ phát triển."
+      },
+      {
+        "question": "Giao diện trang Trello được phân tích thành mấy thành phần chính theo chiều dọc?",
+        "options": [
+          "2 thành phần: Header và Content",
+          "3 thành phần: App Bar, Board Bar và Board Content",
+          "4 thành phần: Header, Sidebar, Content và Footer",
+          "1 thành phần duy nhất"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trang Trello được chia thành 3 thành phần chính theo chiều dọc: Thanh ứng dụng (App Bar), Thanh bảng (Board Bar), và Nội dung bảng (Board Content)."
+      },
+      {
+        "question": "Chiều cao của phần \"Nội dung bảng\" (Board Content) trong Trello được tính toán như thế nào để lấp đầy phần còn lại của màn hình?",
+        "options": [
+          "Sử dụng giá trị cố định bằng pixel, ví dụ: 800px",
+          "Sử dụng tỷ lệ phần trăm, ví dụ: height: 80%",
+          "Sử dụng JavaScript để tính toán sau khi trang tải xong",
+          "Sử dụng hàm `calc()` của CSS: `calc(100vh - (AppBar Height) - (BoardBar Height))`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Công thức `calc(100vh - (AppBar Height) - (BoardBar Height))` đảm bảo Board Content sẽ lấp đầy chính xác phần không gian còn lại của viewport theo chiều cao."
+      },
+      {
+        "question": "Đơn vị `vh` trong CSS đại diện cho điều gì?",
+        "options": [
+          "Tỷ lệ phần trăm của chiều rộng viewport",
+          "Tỷ lệ phần trăm của chiều cao phần tử cha",
+          "Tỷ lệ phần trăm của chiều cao viewport",
+          "Một giá trị pixel cố định"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`vh` là viết tắt của Viewport Height. `1vh` tương đương với 1% chiều cao của khung nhìn trình duyệt."
+      },
+      {
+        "question": "Thuộc tính CSS nào được sử dụng để cho phép cuộn ngang trong phần \"Nội dung bảng\" (Board Content) của Trello?",
+        "options": [
+          "`overflow-y: scroll`",
+          "`overflow: hidden`",
+          "`overflow-x: auto`",
+          "`scroll-behavior: smooth`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`overflow-x: auto;` được áp dụng cho Board Content để thanh cuộn ngang chỉ xuất hiện khi cần thiết, tức là khi nội dung (các cột) vượt quá chiều rộng của khu vực chứa."
+      },
+      {
+        "question": "Lợi ích chính của việc phân tích layout trước khi code là gì?",
+        "options": [
+          "Chỉ để làm cho code trông đẹp hơn",
+          "Để viết ít code hơn",
+          "Để có kế hoạch rõ ràng, phân chia công việc hiệu quả và dự trù các vấn đề tiềm ẩn",
+          "Để không cần dùng đến CSS"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phân tích layout giúp có một \"bản đồ\" chi tiết, dễ dàng bóc tách components, lường trước thách thức và tăng tốc độ phát triển."
+      },
+      {
+        "question": "Trong phân tích layout Trello, chiều cao của App Bar và Board Bar được xem là gì?",
+        "options": [
+          "Các giá trị động thay đổi theo nội dung",
+          "Các giá trị ngẫu nhiên",
+          "Các hằng số (giá trị không đổi)",
+          "Các giá trị được tính bằng JavaScript"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Chiều cao của App Bar và Board Bar được xác định là các giá trị không đổi (hằng số), ví dụ `58px` và `60px`, để việc tính toán layout trở nên dễ dàng và nhất quán."
+      },
+      {
+        "question": "Hàm `calc()` trong CSS dùng để làm gì?",
+        "options": [
+          "Thực hiện các phép tính toán giá trị thuộc tính",
+          "Gọi một hàm JavaScript",
+          "Tạo hiệu ứng chuyển động",
+          "Định dạng văn bản"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Hàm `calc()` cho phép thực hiện các phép tính (cộng, trừ, nhân, chia) để xác định giá trị cho các thuộc tính CSS, ví dụ như tính toán chiều cao hoặc chiều rộng."
+      },
+      {
+        "question": "Tư duy \"chia để trị\" trong việc phân tích layout có nghĩa là gì?",
+        "options": [
+          "Chia màn hình thành hai nửa",
+          "Viết tất cả code trong một file duy nhất",
+          "Chia nhỏ các giao diện phức tạp thành các thành phần đơn giản, dễ quản lý và tái sử dụng",
+          "Bỏ qua các thành phần phức tạp"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tư duy \"chia để trị\" là nguyên tắc cốt lõi giúp quản lý sự phức tạp bằng cách bóc tách giao diện lớn thành các components nhỏ hơn, độc lập và có thể tái sử dụng."
+      },
+      {
+        "question": "Thành phần nào KHÔNG thuộc \"Thanh ứng dụng\" (App Bar) của Trello theo như phân tích trong bài?",
+        "options": [
+          "Logo Trello",
+          "Thanh tìm kiếm",
+          "Tên của bảng hiện tại",
+          "Nút \"Create\""
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tên của bảng hiện tại thuộc về \"Thanh bảng\" (Board Bar), nằm ngay dưới App Bar."
+      },
+      {
+        "question": "Để tạo một layout có chiều cao nội dung tự động lấp đầy màn hình, công thức `height: calc(100vh - 120px)` giả định điều gì?",
+        "options": [
+          "Tổng chiều cao của các thành phần khác là 120px",
+          "Chiều rộng của trang là 120px",
+          "Nội dung có padding là 120px",
+          "Font size mặc định là 120px"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Công thức này lấy tổng chiều cao của viewport (`100vh`) trừ đi một giá trị cố định (`120px`), giả định rằng 120px là tổng chiều cao của các thành phần khác (ví dụ: header và footer) không co giãn."
+      },
+      {
+        "question": "Theo bài học, một trong những bước thực hành đầu tiên khi phân tích layout là gì?",
+        "options": [
+          "Viết code HTML ngay lập tức",
+          "Chọn màu sắc cho trang web",
+          "Quan sát, chụp ảnh màn hình và dùng công cụ để vẽ các khối bao quanh thành phần chính",
+          "Viết tài liệu API"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bước đầu tiên là trực quan hóa cấu trúc bằng cách quan sát, chụp ảnh màn hình và vẽ các khối để xác định rõ ràng các thành phần chính của giao diện."
+      },
+      {
+        "question": "Việc sử dụng hằng số cho các giá trị như màu sắc, kích thước mang lại lợi ích gì?",
+        "options": [
+          "Làm cho code khó đọc hơn",
+          "Giúp code nhất quán và dễ dàng thay đổi, bảo trì sau này",
+          "Tăng hiệu năng của ứng dụng",
+          "Không mang lại lợi ích nào"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi các giá trị được định nghĩa tập trung tại một nơi dưới dạng hằng số (hoặc biến trong CSS), việc thay đổi chúng trên toàn bộ ứng dụng trở nên rất dễ dàng và đảm bảo tính nhất quán."
+      },
+      {
+        "question": "Thành phần \"Nội dung bảng\" (Board Content) chứa những gì?",
+        "options": [
+          "Chỉ chứa tên bảng",
+          "Menu và nút điều hướng",
+          "Các cột (Columns) và các thẻ (Cards)",
+          "Thông tin tài khoản người dùng"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Board Content là khu vực làm việc chính, chứa các cột công việc được sắp xếp theo chiều ngang, và bên trong mỗi cột là các thẻ công việc."
+      },
+      {
+        "question": "Tại sao việc lường trước các vấn đề tiềm ẩn lại là một lợi ích của việc phân tích layout?",
+        "options": [
+          "Vì nó giúp loại bỏ hoàn toàn lỗi",
+          "Vì nó cho phép chúng ta chuẩn bị các giải pháp cho những thách thức về giao diện, responsive trước khi code",
+          "Vì nó giúp dự đoán chính xác thời gian hoàn thành dự án",
+          "Vì nó không quan trọng"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi phân tích, chúng ta có thể nhận ra các phần phức tạp, các vấn đề về tương tác hoặc cách giao diện sẽ hoạt động trên các thiết bị khác nhau, từ đó có sự chuẩn bị tốt hơn."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Header Cố Định",
+        "description": "Tạo một `div` hoạt động như một thanh header (header bar) với chiều cao cố định là `50px` và màu nền tùy chọn.",
+        "starterCode": "<!-- index.html -->\n<div class=\"app\">\n  <div class=\"header\">My App</div>\n  <div class=\"content\">Page Content</div>\n</div>\n\n<!-- style.css -->\n.header {\n  /* Your code here */\n}\n.content {\n  background-color: #f4f5f7;\n}",
+        "solution": ".header {\n  height: 50px;\n  background-color: #026aa7;\n  color: white;\n  line-height: 50px; /* Căn giữa text theo chiều dọc */\n  padding: 0 10px;\n}",
+        "testCases": "Header phải có chiều cao chính xác là 50px. Header phải có màu nền để có thể nhìn thấy được."
+      },
+      {
+        "title": "Bài 2: Tính Chiều Cao Nội Dung",
+        "description": "Sử dụng kiến thức từ bài học, hãy làm cho `div` có class `content` lấp đầy phần còn lại của màn hình theo chiều cao, sau khi trừ đi chiều cao của header (`50px`).",
+        "starterCode": "<!-- index.html -->\n<div class=\"app\">\n  <div class=\"header\">My App</div>\n  <div class=\"content\">Page Content</div>\n</div>\n\n<!-- style.css -->\nbody {\n  margin: 0;\n}\n.header {\n  height: 50px;\n  background-color: #026aa7;\n}\n.content {\n  /* Your code here */\n  background-color: #f4f5f7;\n}",
+        "solution": ".content {\n  height: calc(100vh - 50px);\n  background-color: #f4f5f7;\n}",
+        "testCases": "Trang không được có thanh cuộn dọc. Phần content phải chiếm hết không gian còn lại bên dưới header."
+      },
+      {
+        "title": "Bài 3: Layout 3 Thành Phần",
+        "description": "Xây dựng layout 3 thành phần tương tự Trello: App Bar (40px), Board Bar (60px), và Board Content lấp đầy phần còn lại. Đặt màu nền khác nhau cho mỗi thành phần để phân biệt.",
+        "starterCode": "<!-- index.html -->\n<div class=\"trello-layout\">\n  <div class=\"app-bar\">App Bar</div>\n  <div class=\"board-bar\">Board Bar</div>\n  <div class=\"board-content\">Board Content</div>\n</div>\n\n<!-- style.css -->\nbody {\n  margin: 0;\n}\n.app-bar {\n  /* Your code here */\n}\n.board-bar {\n  /* Your code here */\n}\n.board-content {\n  /* Your code here */\n}",
+        "solution": ".app-bar {\n  height: 40px;\n  background-color: #026aa7;\n}\n.board-bar {\n  height: 60px;\n  background-color: #0079bf;\n}\n.board-content {\n  height: calc(100vh - 40px - 60px);\n  background-color: #f4f5f7;\n}",
+        "testCases": "App Bar cao 40px. Board Bar cao 60px. Board Content lấp đầy phần còn lại và không có cuộn dọc trên toàn trang."
+      },
+      {
+        "title": "Bài 4: Cuộn Ngang Cho Nội Dung",
+        "description": "Mở rộng bài 3. Thêm nhiều cột vào trong `board-content` để chúng vượt quá chiều rộng màn hình. Sau đó, áp dụng CSS để cho phép cuộn ngang trong `board-content` mà không ảnh hưởng đến các thanh bar ở trên.",
+        "starterCode": "<!-- index.html -->\n<div class=\"trello-layout\">\n  <div class=\"app-bar\">App Bar</div>\n  <div class=\"board-bar\">Board Bar</div>\n  <div class=\"board-content\">\n    <div class=\"columns-wrapper\">\n      <div class=\"column\">Column 1</div>\n      <div class=\"column\">Column 2</div>\n      <div class=\"column\">Column 3</div>\n      <div class=\"column\">Column 4</div>\n      <div class=\"column\">Column 5</div>\n    </div>\n  </div>\n</div>\n\n<!-- style.css -->\n/* ... CSS từ bài 3 ... */\n.board-content {\n  height: calc(100vh - 100px);\n  background-color: #f4f5f7;\n  /* Your code here for horizontal scrolling */\n}\n.columns-wrapper {\n  display: flex;\n  width: 1500px; /* Giả lập nội dung rộng */\n}\n.column {\n  min-width: 300px;\n  padding: 10px;\n  border: 1px solid #ccc;\n}",
+        "solution": ".board-content {\n  height: calc(100vh - 100px);\n  background-color: #f4f5f7;\n  overflow-x: auto;\n  white-space: nowrap; /* Ngăn các cột xuống dòng */\n}",
+        "testCases": "Phải có thanh cuộn ngang xuất hiện ở khu vực Board Content. Cuộn ngang không làm ảnh hưởng hay di chuyển App Bar và Board Bar."
+      },
+      {
+        "title": "Bài 5: Hoàn Thiện Layout Trello Cơ Bản",
+        "description": "Kết hợp tất cả các kiến thức. Tạo layout Trello hoàn chỉnh với App Bar, Board Bar, và Board Content. Trong Board Content, các cột phải được sắp xếp theo hàng ngang (sử dụng Flexbox) và toàn bộ khu vực Board Content có thể cuộn ngang.",
+        "starterCode": "<!-- index.html -->\n<div class=\"screen\">\n  <div class=\"app-bar\">...</div>\n  <div class=\"board-bar\">...</div>\n  <div class=\"board-content\">\n    <div class=\"column\">...</div>\n    <div class=\"column\">...</div>\n    <div class=\"column\">...</div>\n    <!-- Add more columns to test scrolling -->\n  </div>\n</div>\n\n<!-- style.css -->\nbody { margin: 0; }\n.screen {\n  /* Styles for the main container */\n}\n.app-bar { height: 58px; background: #333; }\n.board-bar { height: 60px; background: #555; }\n.board-content {\n  /* Your code here */\n}\n.column {\n  min-width: 272px;\n  margin: 0 4px;\n  background: #ebecf0;\n  border-radius: 3px;\n}",
+        "solution": "body { margin: 0; font-family: sans-serif; }\n.screen {\n  height: 100vh;\n  display: flex;\n  flex-direction: column;\n}\n.app-bar { height: 58px; background: #333; flex-shrink: 0; }\n.board-bar { height: 60px; background: #555; flex-shrink: 0; }\n.board-content {\n  flex-grow: 1; /* Lấp đầy không gian còn lại */\n  display: flex;\n  overflow-x: auto;\n  overflow-y: hidden;\n}\n.column {\n  min-width: 272px;\n  width: 272px;\n  margin: 0 4px;\n  background: #ebecf0;\n  border-radius: 3px;\n  padding: 8px;\n}",
+        "testCases": "Layout phải có 3 phần rõ rệt. Phần nội dung (Board Content) phải lấp đầy không gian dọc còn lại. Các cột phải xếp hàng ngang. Phải cuộn được theo chiều ngang khi có nhiều cột."
+      }
+    ]
+  }
+}

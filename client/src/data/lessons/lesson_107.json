@@ -1,0 +1,213 @@
+{
+  "id": 107,
+  "title": "Bài học: MongoDB vs Mongoose - Đừng nhầm lẫn nữa",
+  "category": "mongodb",
+  "categoryName": "MongoDB & Database",
+  "content": "# Bài học: MongoDB vs Mongoose - Đừng nhầm lẫn nữa\n\n**Video gốc:** [43. MongoDB vs Mongoose - Đừng nhầm lẫn nữa 🥲 | NodeJS | TrungQuanDev](https://www.youtube.com/watch?v=KOvjvVn1j-M)\n\n## 1. Mục tiêu bài học\n\nBài học này giúp chúng ta phân biệt rõ ràng hai khái niệm thường gây nhầm lẫn cho người mới bắt đầu với hệ sinh thái NodeJS và MongoDB: **MongoDB (Native Driver)** và **Mongoose**.\n\nSau khi hoàn thành bài học, bạn sẽ có khả năng:\n\n*   Hiểu rõ vai trò và chức năng của MongoDB Native Driver.\n*   Hiểu rõ Mongoose là gì và tại sao nó được tạo ra (Object Data Modeling - ODM).\n*   So sánh được những điểm khác biệt cốt lõi giữa việc sử dụng driver thuần và Mongoose, đặc biệt là về Schema, validation, và các thao tác dữ liệu.\n*   Đưa ra quyết định lựa chọn công cụ phù hợp cho dự án của mình.\n\n## 2. Kiến thức chi tiết\n\nĐể hiểu được sự khác biệt, trước tiên chúng ta cần định nghĩa rõ từng thành phần.\n\n### MongoDB và Native Driver\n\n*   **MongoDB**: Là một hệ quản trị cơ sở dữ liệu NoSQL hướng tài liệu (document-oriented), lưu trữ dữ liệu dưới dạng các tài liệu JSON (thực chất là BSON - Binary JSON). Ưu điểm lớn của MongoDB là tính linh hoạt, không yêu cầu một cấu trúc (schema) cứng nhắc ngay từ đầu.\n*   **MongoDB Native Driver**: Là thư viện chính thức do MongoDB phát hành để các ứng dụng (viết bằng NodeJS, Python, Java, v.v.) có thể kết nối và tương tác trực tiếp với cơ sở dữ liệu MongoDB. Khi chúng ta nói \"dùng MongoDB thuần\", thực chất là chúng ta đang nói đến việc sử dụng driver này. Nó cung cấp các phương thức ở cấp độ thấp để thực hiện các câu lệnh CRUD (Create, Read, Update, Delete) và các thao tác khác.\n\n### Mongoose là gì?\n\n**Mongoose** là một thư viện **Object Data Modeling (ODM)** dành cho MongoDB, được xây dựng trên nền tảng của MongoDB Native Driver. Mongoose không thay thế driver mà cung cấp một lớp trừu tượng hóa cao hơn, giúp cho việc làm việc với MongoDB trong môi trường NodeJS trở nên dễ dàng và có cấu trúc hơn.\n\nVấn đề chính mà Mongoose giải quyết là sự \"quá linh hoạt\" của MongoDB. Nó cho phép chúng ta định nghĩa một **Schema** (cấu trúc dữ liệu) ở tầng ứng dụng, từ đó đảm bảo tính nhất quán và toàn vẹn của dữ liệu.\n\n### So sánh chi tiết\n\n| Tiêu chí | MongoDB Native Driver | Mongoose |\n| :--- | :--- | :--- |\n| **Bản chất** | Thư viện cấp thấp, giao tiếp trực tiếp với DB. | Thư viện ODM cấp cao, xây dựng trên Native Driver. |\n| **Schema** | Không có khái niệm Schema ở tầng ứng dụng. Hoàn toàn linh hoạt. | Bắt buộc định nghĩa Schema và Model. Cung cấp cấu trúc và ràng buộc cho dữ liệu. |\n| **Validation** | Không có sẵn ở tầng ứng dụng. Phải tự viết logic hoặc dùng Schema Validation của MongoDB ở tầng DB. | Tích hợp sẵn cơ chế validation mạnh mẽ (required, min, max, match, custom...). |\n| **Middleware** | Không có. | Hỗ trợ middleware (pre/post hooks) cho các hành động như `save`, `remove`,... cho phép thực thi logic trước/sau khi thao tác. |\n| **Populate** | Không có. Phải dùng các câu lệnh phức tạp như `$lookup` (aggregation) để join các collection. | Cung cấp phương thức `.populate()` cực kỳ tiện lợi để tham chiếu và lấy dữ liệu từ các collection khác. |\n| **Hiệu năng** | Nhanh hơn do ít lớp trừu tượng hơn, giao tiếp gần với DB hơn. | Có thể chậm hơn một chút do có thêm chi phí xử lý cho việc modeling, validation, và các tính năng khác. |\n| **Sự dễ dùng** | Phức tạp hơn, đòi hỏi lập trình viên phải xử lý nhiều thứ hơn. | Dễ dàng hơn cho người mới bắt đầu, code ngắn gọn và dễ đọc hơn cho các tác vụ phổ thông. |\n\n## 3. Các bước thực hành\n\nĐể thấy rõ sự khác biệt, hãy xem ví dụ về việc tạo một bài viết (post) cho blog.\n\n### Kịch bản 1: Sử dụng MongoDB Native Driver\n\n```javascript\n// 1. Kết nối tới MongoDB\nconst { MongoClient } = require('mongodb');\nconst uri = \"mongodb://localhost:27017\";\nconst client = new MongoClient(uri);\n\nasync function run() {\n  try {\n    await client.connect();\n    const database = client.db('myBlog');\n    const posts = database.collection('posts');\n\n    // 2. Chèn một document mới\n    // Driver không quan tâm bạn chèn trường gì, kiểu dữ liệu ra sao\n    const newPost = {\n      title: 'My First Post with Native Driver',\n      content: 'This is flexible!',\n      author_name: 'John Doe', // Một trường mới không có trong các document khác\n      publishedDate: new Date()\n    };\n\n    const result = await posts.insertOne(newPost);\n    console.log(`A document was inserted with the _id: ${result.insertedId}`);\n\n  } finally {\n    await client.close();\n  }\n}\nrun().catch(console.dir);\n```\n\n### Kịch bản 2: Sử dụng Mongoose\n\n```javascript\n// 1. Kết nối và định nghĩa Schema\nconst mongoose = require('mongoose');\n\nasync function run() {\n  await mongoose.connect('mongodb://localhost:27017/myBlog');\n\n  const postSchema = new mongoose.Schema({\n    title: {\n      type: String,\n      required: true // Bắt buộc phải có\n    },\n    content: {\n      type: String,\n      minLength: 10 // Nội dung phải có ít nhất 10 ký tự\n    },\n    published: {\n      type: Boolean,\n      default: false // Giá trị mặc định\n    },\n    createdAt: {\n      type: Date,\n      default: () => Date.now()\n    }\n  });\n\n  // 2. Tạo Model từ Schema\n  const Post = mongoose.model('Post', postSchema);\n\n  // 3. Tạo một instance của Model (document)\n  const newPost = new Post({\n    title: 'My First Post with Mongoose',\n    content: 'This is structured and validated!'\n    // Nếu bạn thêm một trường không có trong schema, nó sẽ bị bỏ qua\n    // author_name: 'Jane Doe' // Trường này sẽ không được lưu\n  });\n\n  // 4. Lưu document vào database\n  try {\n    const savedPost = await newPost.save();\n    console.log('Post saved successfully:', savedPost);\n  } catch (error) {\n    // Nếu title bị thiếu hoặc content quá ngắn, lỗi sẽ được bắt ở đây\n    console.error('Validation Error:', error.message);\n  }\n\n  await mongoose.connection.close();\n}\n\nrun();\n```\n\n## 4. Lưu ý quan trọng\n\n*   **Không có cái nào \"tốt hơn\" tuyệt đối**: Việc lựa chọn giữa Mongoose và Native Driver phụ thuộc hoàn toàn vào yêu cầu của dự án và kinh nghiệm của đội ngũ phát triển.\n*   **Khi nào nên dùng Mongoose?**: Rất phù hợp cho hầu hết các ứng dụng CRUD thông thường, các dự án cần sự nhất quán về dữ liệu, các đội có thành viên mới hoặc muốn phát triển nhanh. Lớp trừu tượng hóa của nó giúp giảm thiểu lỗi và làm code dễ bảo trì hơn.\n*   **Khi nào nên dùng Native Driver?**: Phù hợp cho các ứng dụng yêu cầu hiệu năng cực cao, cần toàn quyền kiểm soát các câu lệnh gửi đến MongoDB, hoặc khi bạn đang xây dựng một thư viện/framework cấp thấp khác trên nền MongoDB.\n*   **Schema Validation của MongoDB**: Cần lưu ý rằng từ phiên bản 3.6, MongoDB đã hỗ trợ Schema Validation ở tầng cơ sở dữ liệu. Đây là một tính năng mạnh mẽ, đảm bảo dữ liệu tuân thủ quy tắc dù được chèn từ bất kỳ nguồn nào. Tuy nhiên, validation ở tầng ứng dụng của Mongoose vẫn rất hữu ích vì nó cung cấp phản hồi ngay lập tức mà không cần đợi DB trả về lỗi.\n\n## 5. Tài liệu tham khảo\n\n1.  [Video: 43. MongoDB vs Mongoose - Đừng nhầm lẫn nữa | NodeJS | TrungQuanDev](https://www.youtube.com/watch?v=KOvjvVn1j-M)\n2.  [Blog: So sánh Mongoose vs MongoDB NodeJS Driver - Dư Thanh Được](https.duthanhduoc.com/blog/so-sanh-mongoose-vs-mongodb-driver)\n3.  [MongooseJS Official Documentation](https://mongoosejs.com/docs/guide.html)\n4.  [MongoDB NodeJS Driver Official Documentation](https://www.mongodb.com/docs/drivers/node/current/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mongoose là gì?",
+        "options": [
+          "Một hệ quản trị cơ sở dữ liệu NoSQL.",
+          "Một thư viện Object Data Modeling (ODM) cho MongoDB.",
+          "Một driver chính thức để kết nối với MongoDB.",
+          "Một ngôn ngữ truy vấn cho MongoDB."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mongoose là một thư viện ODM được xây dựng trên nền tảng của MongoDB Native Driver, cung cấp một lớp trừu tượng hóa cao hơn để làm việc với MongoDB trong môi trường NodeJS."
+      },
+      {
+        "question": "Lợi ích chính của việc sử dụng Mongoose so với MongoDB Native Driver là gì?",
+        "options": [
+          "Hiệu năng cao hơn do giao tiếp trực tiếp với DB.",
+          "Cung cấp Schema và Validation ở tầng ứng dụng.",
+          "Hoàn toàn linh hoạt, không cần định nghĩa cấu trúc dữ liệu.",
+          "Là thư viện chính thức do MongoDB phát hành."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mongoose giải quyết sự \"quá linh hoạt\" của MongoDB bằng cách cho phép định nghĩa Schema, từ đó đảm bảo tính nhất quán và toàn vẹn của dữ liệu thông qua validation."
+      },
+      {
+        "question": "\u001b[1m\"MongoDB Native Driver\" là gì?",
+        "options": [
+          "Một công cụ để tạo Schema cho MongoDB.",
+          "Một thư viện để kết nối và tương tác trực tiếp với cơ sở dữ liệu MongoDB.",
+          "Một phiên bản khác của cơ sở dữ liệu MongoDB.",
+          "Một lớp trừu tượng hóa cao cấp hơn Mongoose."
+        ],
+        "correctAnswer": 1,
+        "explanation": "MongoDB Native Driver là thư viện chính thức do MongoDB cung cấp để các ứng dụng có thể giao tiếp trực tiếp với cơ sở dữ liệu."
+      },
+      {
+        "question": "Trong Mongoose, `Schema` được dùng để làm gì?",
+        "options": [
+          "Để kết nối trực tiếp tới cơ sở dữ liệu.",
+          "Để định nghĩa cấu trúc, kiểu dữ liệu và các ràng buộc cho documents.",
+          "Để tối ưu hóa hiệu năng truy vấn.",
+          "Để thực hiện các thao tác join giữa các collection."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Schema trong Mongoose là nơi định nghĩa cấu trúc dữ liệu của một collection, bao gồm các trường, kiểu dữ liệu, giá trị mặc định và các quy tắc validation."
+      },
+      {
+        "question": "Tính năng `.populate()` trong Mongoose dùng để làm gì?",
+        "options": [
+          "Chèn một lượng lớn dữ liệu vào collection.",
+          "Tham chiếu và lấy dữ liệu từ các collection khác một cách tiện lợi.",
+          "Xóa toàn bộ dữ liệu trong một collection.",
+          "Kiểm tra tính hợp lệ của dữ liệu trước khi lưu."
+        ],
+        "correctAnswer": 1,
+        "explanation": ".populate() là một tính năng mạnh mẽ của Mongoose giúp thay thế cho các câu lệnh `$lookup` phức tạp, cho phép \"join\" và lấy dữ liệu liên quan từ các collection khác."
+      },
+      {
+        "question": "Khi nào nên cân nhắc sử dụng MongoDB Native Driver thay vì Mongoose?",
+        "options": [
+          "Khi dự án cần phát triển nhanh và code dễ bảo trì.",
+          "Khi ứng dụng yêu cầu hiệu năng cực cao và toàn quyền kiểm soát câu lệnh.",
+          "Khi đội ngũ phát triển có nhiều thành viên mới.",
+          "Khi cần validation dữ liệu mạnh mẽ ở tầng ứng dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Native Driver phù hợp cho các ứng dụng yêu cầu hiệu năng cao nhất vì nó có ít lớp trừu tượng hơn, cho phép giao tiếp gần với DB hơn."
+      },
+      {
+        "question": "Điều gì sẽ xảy ra nếu bạn cố gắng lưu một document trong Mongoose với một trường không được định nghĩa trong Schema?",
+        "options": [
+          "Mongoose sẽ báo lỗi validation.",
+          "Trường đó sẽ được tự động thêm vào Schema.",
+          "Trường đó sẽ bị Mongoose bỏ qua và không được lưu vào database.",
+          "Toàn bộ hoạt động lưu sẽ bị hủy bỏ."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Theo mặc định, Mongoose sẽ lọc và bỏ qua các trường không tồn tại trong Schema trước khi gửi dữ liệu đến MongoDB."
+      },
+      {
+        "question": "Middleware (pre/post hooks) trong Mongoose cho phép làm gì?",
+        "options": [
+          "Thực thi logic trước hoặc sau các hành động như `save`, `remove`.",
+          "Tăng tốc độ kết nối đến cơ sở dữ liệu.",
+          "Tự động tạo các collection mới.",
+          "Bỏ qua hoàn toàn việc validation dữ liệu."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Middleware cho phép bạn định nghĩa các hàm sẽ được thực thi một cách tự động trước (pre) hoặc sau (post) khi một phương thức nhất định (như .save()) được gọi."
+      },
+      {
+        "question": "Đâu là một ví dụ về validation được tích hợp sẵn trong Mongoose Schema?",
+        "options": [
+          "`populate: true`",
+          "`index: true`",
+          "`required: true`",
+          "`unique: false`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`required: true` là một validator trong Mongoose, đảm bảo rằng trường dữ liệu tương ứng phải có giá trị trước khi lưu."
+      },
+      {
+        "question": "Trong đoạn code sử dụng Mongoose, `const Post = mongoose.model('Post', postSchema);` dùng để làm gì?",
+        "options": [
+          "Tạo một document mới.",
+          "Tạo một collection mới trong database.",
+          "Tạo một Model, là một lớp đại diện cho collection và dùng để tương tác với collection đó.",
+          "Định nghĩa một Schema mới."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hàm `mongoose.model()` biên dịch một Schema thành một Model. Model là một constructor cho phép tạo và đọc các document từ collection MongoDB tương ứng."
+      },
+      {
+        "question": "So với Mongoose, MongoDB Native Driver được mô tả là:",
+        "options": [
+          "Cấp cao và dễ sử dụng hơn.",
+          "Cấp thấp và phức tạp hơn.",
+          "Chậm hơn nhưng an toàn hơn.",
+          "Chỉ dành cho các dự án nhỏ."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Native Driver là thư viện cấp thấp, giao tiếp gần với DB hơn, đòi hỏi lập trình viên phải xử lý nhiều thứ hơn, do đó nó phức tạp hơn Mongoose."
+      },
+      {
+        "question": "Mongoose được xây dựng trên nền tảng của công nghệ nào?",
+        "options": [
+          "SQL",
+          "MongoDB Native Driver",
+          "ExpressJS",
+          "GraphQL"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mongoose không thay thế driver mà được xây dựng trên nền tảng của MongoDB Native Driver, cung cấp một lớp trừu tượng hóa cao hơn."
+      },
+      {
+        "question": "Đâu KHÔNG phải là một lợi ích của việc sử dụng Schema trong Mongoose?",
+        "options": [
+          "Đảm bảo tính nhất quán của dữ liệu.",
+          "Tích hợp sẵn cơ chế validation.",
+          "Tăng hiệu năng truy vấn một cách đáng kể so với Native Driver.",
+          "Cung cấp giá trị mặc định cho các trường."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc sử dụng Mongoose có thể làm giảm một chút hiệu năng do có thêm các lớp trừu tượng hóa, modeling, và validation. Nó không làm tăng hiệu năng so với Native Driver."
+      },
+      {
+        "question": "Phương thức `.save()` trên một instance của Model Mongoose có chức năng gì?",
+        "options": [
+          "Chỉ kiểm tra dữ liệu mà không lưu.",
+          "Lưu document vào database và thực thi các validation, middleware.",
+          "Tạo một bản sao của document.",
+          "Xóa document khỏi database."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Phương thức `.save()` là hành động cuối cùng để ghi một document mới hoặc cập nhật một document đã tồn tại vào cơ sở dữ liệu, đồng thời kích hoạt các quy trình validation và middleware đã được định nghĩa."
+      },
+      {
+        "question": "MongoDB lưu trữ dữ liệu dưới dạng các tài liệu BSON. BSON là viết tắt của gì?",
+        "options": [
+          "Basic JSON",
+          "Better JSON",
+          "Binary JSON",
+          "Big JSON"
+        ],
+        "correctAnswer": 2,
+        "explanation": "BSON (Binary JSON) là một định dạng tuần tự hóa nhị phân được sử dụng để lưu trữ tài liệu và thực hiện các cuộc gọi thủ tục từ xa trong MongoDB."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Kết nối Database với Native Driver",
+        "description": "Viết một hàm async sử dụng MongoDB Native Driver để kết nối đến một cơ sở dữ liệu MongoDB tại `mongodb://localhost:27017` và in ra thông báo \"Connected successfully to server\" khi thành công. Đảm bảo client được đóng lại sau khi kết nối.",
+        "starterCode": "const { MongoClient } = require('mongodb');\n\nasync function connectWithNativeDriver() {\n  const uri = \"mongodb://localhost:27017\";\n  const client = new MongoClient(uri);\n\n  // Your code here\n\n}\n\nconnectWithNativeDriver().catch(console.dir);",
+        "solution": "const { MongoClient } = require('mongodb');\n\nasync function connectWithNativeDriver() {\n  const uri = \"mongodb://localhost:27017\";\n  const client = new MongoClient(uri);\n\n  try {\n    await client.connect();\n    console.log(\"Connected successfully to server\");\n  } finally {\n    await client.close();\n  }\n}\n\nconnectWithNativeDriver().catch(console.dir);",
+        "testCases": "Chạy file và kiểm tra xem console có in ra chuỗi \"Connected successfully to server\" hay không."
+      },
+      {
+        "title": "Định nghĩa User Schema với Mongoose",
+        "description": "Sử dụng Mongoose, hãy định nghĩa một `Schema` cho người dùng (User) bao gồm các trường sau: `email` (String, bắt buộc, duy nhất), `username` (String, bắt buộc, độ dài từ 3 đến 20 ký tự), và `createdAt` (Date, mặc định là thời gian hiện tại).",
+        "starterCode": "const mongoose = require('mongoose');\nconst { Schema } = mongoose;\n\n// Your code here\nconst userSchema = null; // Replace null with your schema definition\n\nmodule.exports = userSchema;",
+        "solution": "const mongoose = require('mongoose');\nconst { Schema } = mongoose;\n\nconst userSchema = new Schema({\n  email: {\n    type: String,\n    required: true,\n    unique: true\n  },\n  username: {\n    type: String,\n    required: true,\n    minLength: 3,\n    maxLength: 20\n  },\n  createdAt: {\n    type: Date,\n    default: Date.now\n  }\n});\n\nmodule.exports = userSchema;",
+        "testCases": "Import schema và kiểm tra xem các thuộc tính `type`, `required`, `unique`, `minLength`, `maxLength`, `default` có được định nghĩa chính xác cho từng trường hay không."
+      },
+      {
+        "title": "Tạo và Lưu một Product với Mongoose",
+        "description": "Cho một Product Schema đã được định nghĩa. Hãy tạo một Model tên là `Product`. Sau đó, tạo một instance của Product với `name` là 'Laptop Pro' và `price` là 1500. Cuối cùng, gọi phương thức `.save()` để lưu sản phẩm vào database và in sản phẩm đã lưu ra console.",
+        "starterCode": "const mongoose = require('mongoose');\n\nasync function createProduct() {\n  await mongoose.connect('mongodb://localhost:27017/myShop');\n\n  const productSchema = new mongoose.Schema({\n    name: { type: String, required: true },\n    price: { type: Number, required: true, min: 0 }\n  });\n\n  // Your code here to create Model, create instance, and save it\n\n  await mongoose.connection.close();\n}\n\ncreateProduct();",
+        "solution": "const mongoose = require('mongoose');\n\nasync function createProduct() {\n  await mongoose.connect('mongodb://localhost:27017/myShop');\n\n  const productSchema = new mongoose.Schema({\n    name: { type: String, required: true },\n    price: { type: Number, required: true, min: 0 }\n  });\n\n  const Product = mongoose.model('Product', productSchema);\n\n  const newProduct = new Product({\n    name: 'Laptop Pro',\n    price: 1500\n  });\n\n  try {\n    const savedProduct = await newProduct.save();\n    console.log('Product saved:', savedProduct);\n  } catch (error) {\n    console.error('Error saving product:', error.message);\n  }\n\n  await mongoose.connection.close();\n}\n\ncreateProduct();",
+        "testCases": "Chạy hàm và kiểm tra xem console có in ra object sản phẩm đã lưu, bao gồm `name`, `price`, `_id` và `__v` hay không."
+      },
+      {
+        "title": "Sử dụng Middleware `pre('save')`",
+        "description": "Sửa đổi `userSchema` để thêm một middleware `pre('save')`. Middleware này sẽ mã hóa mật khẩu của người dùng trước khi lưu. Giả sử có một trường `password` (String). Bên trong middleware, hãy thay đổi giá trị của `this.password` thành `HASHED_` + mật khẩu gốc. (Đây là ví dụ đơn giản, không sử dụng trong thực tế).",
+        "starterCode": "const mongoose = require('mongoose');\nconst { Schema } = mongoose;\n\nconst userSchema = new Schema({\n  email: { type: String, required: true },\n  password: { type: String, required: true }\n});\n\n// Your code here to add the pre-save middleware\n\nconst User = mongoose.model('User', userSchema);\nmodule.exports = User;",
+        "solution": "const mongoose = require('mongoose');\nconst { Schema } = mongoose;\n\nconst userSchema = new Schema({\n  email: { type: String, required: true },\n  password: { type: String, required: true }\n});\n\nuserSchema.pre('save', function(next) {\n  if (this.isModified('password')) {\n    this.password = `HASHED_${this.password}`;\n  }\n  next();\n});\n\nconst User = mongoose.model('User', userSchema);\nmodule.exports = User;",
+        "testCases": "Tạo một instance của User, gán một mật khẩu, sau đó gọi `.save()`. Kiểm tra xem giá trị `password` của document được lưu có bắt đầu bằng chuỗi `HASHED_` hay không."
+      },
+      {
+        "title": "Sử dụng `populate` để lấy dữ liệu tham chiếu",
+        "description": "Cho 2 schema: `Author` và `Post`. `Post` schema có một trường `author` tham chiếu đến `Author` model. Viết một hàm async để tìm một bài viết (post) theo ID và sau đó sử dụng `.populate('author')` để lấy đầy đủ thông tin của tác giả thay vì chỉ ID.",
+        "starterCode": "const mongoose = require('mongoose');\nconst { Schema } = mongoose;\n\n// Pre-defined Schemas and Models\nconst Author = mongoose.model('Author', new Schema({ name: String, email: String }));\nconst Post = mongoose.model('Post', new Schema({ title: String, content: String, author: { type: Schema.Types.ObjectId, ref: 'Author' } }));\n\nasync function findPostAndPopulateAuthor(postId) {\n  await mongoose.connect('mongodb://localhost:27017/myBlog');\n\n  // Your code here\n  // Find the post by its ID and populate the author field\n  // console.log the result\n\n  await mongoose.connection.close();\n}\n\n// Assume a valid postId is passed to the function\n// findPostAndPopulateAuthor('some_post_id_here');",
+        "solution": "const mongoose = require('mongoose');\nconst { Schema } = mongoose;\n\nconst Author = mongoose.model('Author', new Schema({ name: String, email: String }));\nconst Post = mongoose.model('Post', new Schema({ title: String, content: String, author: { type: Schema.Types.ObjectId, ref: 'Author' } }));\n\nasync function findPostAndPopulateAuthor(postId) {\n  await mongoose.connect('mongodb://localhost:27017/myBlog');\n\n  try {\n    const post = await Post.findById(postId).populate('author');\n    console.log(post);\n  } catch (error) {\n    console.error('Error:', error.message);\n  }\n\n  await mongoose.connection.close();\n}\n\n// To test, you would first need to create an author and a post,\n// then use the post's ID here.\n// const somePostId = '...';\n// findPostAndPopulateAuthor(somePostId);",
+        "testCases": "Để kiểm tra, cần tạo một Author và một Post trong DB, với Post tham chiếu đến ID của Author. Sau đó gọi hàm với ID của Post. Kết quả in ra phải là một object Post, trong đó trường `author` là một object chứa đầy đủ thông tin của tác giả (name, email), chứ không phải là một ObjectId."
+      }
+    ]
+  }
+}

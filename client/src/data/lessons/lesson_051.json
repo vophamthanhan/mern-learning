@@ -1,0 +1,213 @@
+{
+  "id": 51,
+  "title": "BÀI 33: KÉO THẢ TRELLO CARD VỚI DND-KIT: ONDRAGOVER",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# BÀI 33: KÉO THẢ TRELLO CARD VỚI DND-KIT: ONDRAGOVER\n\n## MỤC TIÊU BÀI HỌC\n\nTrong bài học này, chúng ta sẽ cùng nhau tìm hiểu và triển khai chức năng kéo thả (Drag & Drop) cho các Card trong ứng dụng Trello Clone. Cụ thể, chúng ta sẽ tập trung vào việc xử lý sự kiện `onDragOver` trong thư viện `dnd-kit` để có thể di chuyển một Card qua lại giữa các Column khác nhau hoặc trong cùng một Column.\n\nĐây là một phần kiến thức phức tạp, đòi hỏi sự tập trung cao độ và tư duy logic tốt. Tuy nhiên, qua bài học này, bạn sẽ nắm vững được một trong những kỹ thuật nâng cao và thực tế nhất khi làm việc với ReactJS.\n\n## KIẾN THỨC CHI TIẾT\n\n### 1. Giới thiệu về sự kiện `onDragOver`\n\nSự kiện `onDragOver` trong `dnd-kit` được kích hoạt liên tục khi một phần tử đang được kéo (draggable) di chuyển lên trên một phần tử có thể chứa nó (droppable). Đây là sự kiện then chốt để chúng ta xử lý logic cập nhật giao diện và dữ liệu khi người dùng thực hiện thao tác kéo thả.\n\nTrong bối cảnh của ứng dụng Trello, khi chúng ta kéo một Card, `onDragOver` sẽ được gọi mỗi khi Card đó di chuyển qua một Column hoặc một vị trí mới trong cùng một Column.\n\n### 2. Luồng xử lý chính\n\nLuồng xử lý chính khi kéo thả một Card sẽ bao gồm các bước sau:\n\n1.  **Khởi tạo trạng thái:** Khi bắt đầu kéo một Card (`onDragStart`), chúng ta cần lưu lại thông tin của Card đó (ID, dữ liệu,...) và Column chứa nó.\n2.  **Xử lý `onDragOver`:**\n    *   Kiểm tra xem Card đang được kéo qua một Column mới hay vẫn ở trong Column cũ.\n    *   Nếu là Column mới, chúng ta sẽ thêm Card vào Column đó và xóa nó khỏi Column cũ.\n    *   Nếu vẫn ở trong Column cũ, chúng ta sẽ cập nhật lại vị trí của Card trong danh sách các Card của Column đó.\n3.  **Kết thúc kéo thả (`onDragEnd`):** Cập nhật lại trạng thái cuối cùng của dữ liệu và giao diện.\n\n### 3. Code mẫu và giải thích\n\nChúng ta sẽ tập trung vào hàm `handleDragOver` để xử lý logic chính.\n\n```javascript\nconst handleDragOver = (event) => {\n  const { active, over } = event;\n\n  // Nếu không có over (kéo ra ngoài) thì không làm gì\n  if (!over) return;\n\n  // active là card đang được kéo\n  const { id: activeDraggingCardId, data: { current: activeDraggingCardData } } = active;\n  // over là column hoặc card đang được tương tác\n  const { id: overId } = over;\n\n  // Tìm column chứa card đang được kéo\n  const activeColumn = findColumnByCardId(activeDraggingCardId);\n\n  // Tìm column đang được tương tác\n  const overColumn = over.data.current?.column ? over.data.current.column : findColumnByCardId(overId);\n\n  // Nếu không tìm thấy 1 trong 2 column thì không làm gì\n  if (!activeColumn || !overColumn) return;\n\n  // Xử lý logic khi kéo card qua lại giữa các column khác nhau\n  if (activeColumn._id !== overColumn._id) {\n    // Cập nhật lại state\n    setOrderedColumns(prevColumns => {\n      // Tìm vị trí của overCard trong column đích\n      const overCardIndex = overColumn.cards.findIndex(card => card._id === overId);\n\n      // Logic tính toán newCardIndex\n      let newCardIndex;\n      const isBelowOverItem = active.rect.current.translated &&\n        active.rect.current.translated.top > over.rect.top + over.rect.height;\n      const modifier = isBelowOverItem ? 1 : 0;\n      newCardIndex = overCardIndex >= 0 ? overCardIndex + modifier : overColumn.cards.length + 1;\n\n      // Clone mảng orderedColumns cũ ra một mảng mới để xử lý data\n      const nextColumns = cloneDeep(prevColumns);\n      const nextActiveColumn = nextColumns.find(column => column._id === activeColumn._id);\n      const nextOverColumn = nextColumns.find(column => column._id === overColumn._id);\n\n      // Xóa card ở column cũ\n      if (nextActiveColumn) {\n        nextActiveColumn.cards = nextActiveColumn.cards.filter(card => card._id !== activeDraggingCardId);\n      }\n\n      // Thêm card vào column mới\n      if (nextOverColumn) {\n        // Kiểm tra xem card đã tồn tại ở overColumn chưa, nếu có thì xóa nó trước\n        nextOverColumn.cards = nextOverColumn.cards.filter(card => card._id !== activeDraggingCardId);\n        // Thêm card đang kéo vào overColumn theo vị trí newCardIndex\n        nextOverColumn.cards.splice(newCardIndex, 0, activeDraggingCardData);\n      }\n\n      return nextColumns;\n    });\n  }\n};\n```\n\n**Giải thích chi tiết:**\n\n*   **`active` và `over`:** Đây là hai đối tượng quan trọng do `dnd-kit` cung cấp. `active` đại diện cho phần tử đang được kéo, còn `over` đại diện cho phần tử mà `active` đang di chuyển qua.\n*   **`findColumnByCardId`:** Đây là một hàm helper để tìm ra Column chứa một Card dựa vào ID của Card đó.\n*   **Xử lý kéo thả giữa các Column khác nhau:**\n    *   Chúng ta sẽ clone mảng `orderedColumns` ra một biến mới là `nextColumns` để không làm thay đổi trực tiếp state ban đầu (nguyên tắc của React).\n    *   Tìm và xóa Card đang được kéo khỏi Column cũ.\n    *   Tìm vị trí (`newCardIndex`) để chèn Card vào Column mới. Logic này khá phức tạp, cần tính toán dựa trên vị trí tương đối của Card đang kéo và Card đang được `over`.\n    *   Chèn Card vào Column mới tại vị trí đã tính toán.\n*   **Sử dụng `lodash.cloneDeep`:** Để đảm bảo chúng ta không mutate (thay đổi trực tiếp) state, việc sử dụng `cloneDeep` để tạo ra một bản sao hoàn toàn độc lập của mảng `orderedColumns` là rất quan trọng.\n\n## CÁC BƯỚC THỰC HÀNH\n\n1.  **Cài đặt `dnd-kit` và các thư viện liên quan:**\n\n    ```bash\n    yarn add @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities\n    yarn add lodash\n    ```\n\n2.  **Tích hợp `DndContext`:** Bọc toàn bộ ứng dụng của bạn trong `DndContext` và truyền vào các props cần thiết như `sensors`, `collisionDetection`, `onDragStart`, `onDragOver`, `onDragEnd`.\n\n3.  **Triển khai `handleDragOver`:** Viết logic cho hàm `handleDragOver` như đã giải thích ở trên.\n\n4.  **Tạo các hàm helper:** Viết các hàm phụ trợ như `findColumnByCardId` để giúp code dễ đọc và bảo trì hơn.\n\n5.  **Kiểm tra và gỡ lỗi:** Chạy ứng dụng và kiểm tra kỹ lưỡng chức năng kéo thả. Sử dụng `console.log` để theo dõi giá trị của các biến và luồng đi của dữ liệu để dễ dàng gỡ lỗi.\n\n## LƯU Ý QUAN TRỌNG\n\n*   **Bất biến (Immutability):** Luôn luôn nhớ rằng không được thay đổi trực tiếp state trong React. Hãy sử dụng các phương thức như `map`, `filter`, `slice` hoặc các thư viện như `immer`, `lodash.cloneDeep` để tạo ra các bản sao mới của state trước khi thay đổi.\n*   **Tư duy logic:** Logic kéo thả, đặc biệt là việc tính toán vị trí mới của phần tử, có thể rất phức tạp. Hãy vẽ ra giấy hoặc sử dụng các công cụ để hình dung luồng dữ liệu trước khi bắt tay vào code.\n*   **Tối ưu hiệu năng:** Sự kiện `onDragOver` được gọi rất nhiều lần trong một khoảng thời gian ngắn. Do đó, cần tối ưu code trong hàm `handleDragOver` để tránh gây ra các vấn đề về hiệu năng. Hạn chế các thao tác tính toán phức tạp và không cần thiết.\n\n## TÀI LIỆU THAM KHẢO\n\n*   **dnd-kit Documentation:** [https://dnd-kit.com/](https://dnd-kit.com/)\n*   **Lodash Documentation:** [https://lodash.com/docs/4.17.15](https://lodash.com/docs/4.17.15)\n*   **Video bài học:** [33. Kéo thả Trello Card với Dnd-kit: onDragOver | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=HLBQXmrbHbE&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=37)\n*   **Blog của tác giả:** [https://trungquandev.com/](https://trungquandev.com/)\n*   **GitHub của tác giả:** [https://github.com/trungquandev](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Sự kiện `onDragOver` trong thư viện `dnd-kit` được kích hoạt khi nào?",
+        "options": [
+          "Khi một phần tử bắt đầu được kéo.",
+          "Khi một phần tử kết thúc việc kéo thả.",
+          "Khi một phần tử đang được kéo di chuyển lên trên một phần tử có thể chứa nó (droppable).",
+          "Khi một phần tử được đăng ký là có thể kéo được."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Theo tài liệu, sự kiện `onDragOver` được kích hoạt liên tục khi một phần tử đang được kéo (draggable) di chuyển lên trên một phần tử có thể chứa nó (droppable). Đây là sự kiện mấu chốt để xử lý logic cập nhật giao diện trong quá trình kéo."
+      },
+      {
+        "question": "Trong `dnd-kit`, đối tượng `active` và `over` trong hàm xử lý sự kiện đại diện cho điều gì?",
+        "options": [
+          "`active` là phần tử đang được kéo, `over` là phần tử (column hoặc card) mà `active` đang tương tác.",
+          "`active` là column chứa phần tử, `over` là phần tử đang được kéo.",
+          "Cả hai đều đại diện cho phần tử đang được kéo.",
+          "Cả hai đều đại diện cho column đang được tương tác."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`active` đại diện cho phần tử đang được kéo, trong khi `over` đại diện cho phần tử mà `active` đang di chuyển qua. Đây là thông tin cơ bản mà `dnd-kit` cung cấp để xử lý logic kéo thả."
+      },
+      {
+        "question": "Tại sao cần sử dụng `lodash.cloneDeep` khi cập nhật trạng thái của các cột (columns) trong hàm `handleDragOver`?",
+        "options": [
+          "Để tăng hiệu năng cho ứng dụng.",
+          "Để đảm bảo nguyên tắc bất biến (immutability) trong React, tránh thay đổi trực tiếp state.",
+          "Để đơn giản hóa việc tìm kiếm một phần tử trong mảng.",
+          "Đây là yêu cầu bắt buộc của thư viện `dnd-kit`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "React yêu cầu state không được thay đổi trực tiếp. `lodash.cloneDeep` tạo ra một bản sao sâu (deep copy) của state, cho phép chúng ta chỉnh sửa bản sao đó một cách an toàn trước khi cập nhật state, đảm bảo tính bất biến."
+      },
+      {
+        "question": "Trong luồng xử lý `onDragOver`, điều gì xảy ra khi một card được kéo từ column A sang column B?",
+        "options": [
+          "Card được sao chép từ column A và dán vào column B.",
+          "Card được xóa khỏi column A và được thêm vào column B.",
+          "Chỉ có vị trí của card được cập nhật, nó vẫn thuộc column A.",
+          "Một card mới được tạo ra ở column B."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi kéo một card qua một column khác, logic xử lý sẽ là xóa card đó khỏi mảng `cards` của column cũ và thêm nó vào mảng `cards` của column mới tại vị trí phù hợp."
+      },
+      {
+        "question": "Mục đích của việc kiểm tra `if (!over) return;` ở đầu hàm `handleDragOver` là gì?",
+        "options": [
+          "Để đảm bảo `active` luôn có giá trị.",
+          "Để xử lý trường hợp người dùng kéo phần tử ra ngoài bất kỳ khu vực chứa nào (droppable).",
+          "Để ngăn lỗi khi `active` và `over` là cùng một phần tử.",
+          "Để tối ưu hóa việc render lại component."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi người dùng kéo một phần tử ra khỏi một khu vực `droppable`, đối tượng `over` sẽ trở thành `null`. Dòng kiểm tra này ngăn không cho hàm thực hiện các logic phức tạp phía sau khi không có đích đến hợp lệ."
+      },
+      {
+        "question": "Hàm `findColumnByCardId(cardId)` có chức năng gì?",
+        "options": [
+          "Tìm và trả về dữ liệu của card dựa trên ID.",
+          "Tìm và trả về toàn bộ đối tượng column chứa card có ID tương ứng.",
+          "Xóa một card khỏi column.",
+          "Cập nhật dữ liệu của một column."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đây là một hàm helper được tạo ra để tìm kiếm trong state `orderedColumns` và trả về đối tượng column hoàn chỉnh mà chứa card có `_id` được cung cấp."
+      },
+      {
+        "question": "Nguyên tắc Bất biến (Immutability) trong React có nghĩa là gì?",
+        "options": [
+          "Không bao giờ thay đổi props của component.",
+          "Không được thay đổi trực tiếp state và props.",
+          "Luôn tạo bản sao của state trước khi sửa đổi.",
+          "Cả B và C đều đúng."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Immutability là một nguyên tắc cốt lõi trong React. Nó có nghĩa là bạn không nên thay đổi trực tiếp (mutate) state hoặc props. Thay vào đó, bạn nên tạo ra một bản sao mới của chúng với các giá trị đã được cập nhật."
+      },
+      {
+        "question": "Lệnh `yarn add @dnd-kit/core @dnd-kit/sortable` dùng để làm gì?",
+        "options": [
+          "Cài đặt các thư viện tiện ích cho JavaScript.",
+          "Cài đặt các gói chính của thư viện `dnd-kit` để sử dụng chức năng kéo thả.",
+          "Cài đặt thư viện Lodash.",
+          "Cài đặt React và ReactDOM."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đây là lệnh dùng để cài đặt các gói thư viện cần thiết của `dnd-kit`, trong đó `@dnd-kit/core` là lõi và `@dnd-kit/sortable` cung cấp các tiện ích để sắp xếp phần tử."
+      },
+      {
+        "question": "Trong đoạn code `handleDragOver`, biến `newCardIndex` được tính toán để làm gì?",
+        "options": [
+          "Để xác định vị trí index của card trong column cũ.",
+          "Để xác định vị trí index mới mà card sẽ được chèn vào trong column đích.",
+          "Để lấy ID của card mới.",
+          "Để đếm số lượng card trong column."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Logic tính toán `newCardIndex` rất quan trọng, nó quyết định card đang được kéo sẽ được chèn vào vị trí nào trong mảng `cards` của column mới, đảm bảo trải nghiệm người dùng mượt mà."
+      },
+      {
+        "question": "Tại sao việc tối ưu code trong `handleDragOver` lại quan trọng?",
+        "options": [
+          "Vì nó chỉ được gọi một lần.",
+          "Vì sự kiện `onDragOver` được gọi liên tục với tần suất cao, code không tối ưu có thể gây lag, giật.",
+          "Vì nó xử lý logic bất đồng bộ.",
+          "Vì nó khó gỡ lỗi hơn các hàm khác."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sự kiện `onDragOver` được kích hoạt rất nhiều lần mỗi giây khi người dùng kéo phần tử. Do đó, các phép tính toán phức tạp hoặc không cần thiết trong hàm xử lý sự kiện này có thể làm giảm đáng kể hiệu năng của ứng dụng."
+      },
+      {
+        "question": "Thành phần (Component) nào của `dnd-kit` cần phải bọc toàn bộ ứng dụng hoặc phần có chức năng kéo thả?",
+        "options": [
+          "`Draggable`",
+          "`Droppable`",
+          "`DndContext`",
+          "`SortableContext`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`DndContext` cung cấp context cho tất cả các thành phần con của nó, quản lý trạng thái kéo thả và điều phối các sự kiện. Nó là thành phần gốc bắt buộc phải có."
+      },
+      {
+        "question": "Trong logic `handleDragOver`, khi kéo một card trong cùng một column, mục tiêu chính là gì?",
+        "options": [
+          "Xóa và thêm lại card vào column đó.",
+          "Cập nhật lại thứ tự của các card trong mảng `cards` của column đó.",
+          "Không làm gì cả.",
+          "Tạo một column mới."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học tập trung vào việc kéo thả giữa các column khác nhau, nhưng logic cho việc kéo thả trong cùng một column (được xử lý ở `onDragEnd` hoặc một phần khác của `onDragOver`) sẽ là sắp xếp lại vị trí của card trong chính mảng `cards` của column đó."
+      },
+      {
+        "question": "Biểu thức `active.rect.current.translated.top > over.rect.top + over.rect.height` dùng để làm gì?",
+        "options": [
+          "Kiểm tra xem card đang được kéo có nằm bên dưới card đang được `over` hay không.",
+          "Kiểm tra xem card có đang được kéo ra khỏi màn hình không.",
+          "Kiểm tra xem hai card có chồng lên nhau không.",
+          "Kiểm tra xem card có đang ở column khác không."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đây là một phần của logic để xác định vị trí chèn card mới. Bằng cách so sánh vị trí top của card đang kéo (`active`) với vị trí top và chiều cao của card đích (`over`), chúng ta có thể biết được nên chèn card vào trước hay sau card đích."
+      },
+      {
+        "question": "Nếu không dùng `lodash.cloneDeep`, phương thức nào của mảng JavaScript có thể được dùng để tạo bản sao và tránh mutate state?",
+        "options": [
+          "`push()` và `splice()`",
+          "`map()`, `filter()`, `slice()` và toán tử spread (`...`)",
+          "Gán trực tiếp `const newArray = oldArray;`",
+          "Vòng lặp `forEach()`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Các phương thức như `map`, `filter`, `slice` và toán tử spread (`...`) đều trả về một mảng mới thay vì thay đổi mảng ban đầu, giúp tuân thủ nguyên tắc bất biến trong JavaScript và React."
+      },
+      {
+        "question": "Trong `handleDragOver`, sau khi xóa card khỏi column cũ và thêm vào column mới, bước cuối cùng là gì?",
+        "options": [
+          "Gọi API để lưu thay đổi vào server.",
+          "`console.log` kết quả.",
+          "Trả về mảng `nextColumns` đã được cập nhật để `setOrderedColumns` cập nhật lại state.",
+          "Reset lại state về ban đầu."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sau khi thực hiện tất cả các logic thay đổi trên bản sao `nextColumns`, hàm của `setOrderedColumns` cần trả về mảng `nextColumns` này để React có thể cập nhật state và render lại giao diện với trạng thái mới."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tìm Column chứa Card",
+        "description": "Viết một hàm `findColumnByCardId` nhận vào `columns` (một mảng các đối tượng column) và `cardId`. Hàm này phải tìm và trả về toàn bộ đối tượng column có chứa card với `cardId` tương ứng. Nếu không tìm thấy, trả về `undefined`.",
+        "starterCode": "const findColumnByCardId = (columns, cardId) => {\n  // Viết code của bạn ở đây\n};",
+        "solution": "const findColumnByCardId = (columns, cardId) => {\n  return columns.find(column => \n    column.cards.some(card => card._id === cardId)\n  );\n};",
+        "testCases": "Input: columns = [{ _id: 'col1', cards: [{ _id: 'card1' }] }], cardId = 'card1'. Expected Output: { _id: 'col1', cards: [{ _id: 'card1' }] }."
+      },
+      {
+        "title": "Bài 2: Xóa Card khỏi Column",
+        "description": "Viết một hàm `removeCardFromColumn` nhận vào một đối tượng `column` và `cardId`. Hàm này phải trả về một đối tượng column MỚI với mảng `cards` đã được loại bỏ card có `cardId` tương ứng. Lưu ý không được thay đổi (mutate) đối tượng `column` ban đầu.",
+        "starterCode": "const removeCardFromColumn = (column, cardId) => {\n  // Viết code của bạn ở đây\n};",
+        "solution": "const removeCardFromColumn = (column, cardId) => {\n  const newCards = column.cards.filter(card => card._id !== cardId);\n  return { ...column, cards: newCards };\n};",
+        "testCases": "Input: column = { _id: 'col1', cards: [{ _id: 'card1' }, { _id: 'card2' }] }, cardId = 'card1'. Expected Output: { _id: 'col1', cards: [{ _id: 'card2' }] }."
+      },
+      {
+        "title": "Bài 3: Thêm Card vào Column",
+        "description": "Viết một hàm `addCardToColumn` nhận vào `column`, `cardData` (dữ liệu của card cần thêm), và `index` (vị trí cần chèn). Hàm phải trả về một đối tượng column MỚI với card đã được chèn vào đúng vị trí trong mảng `cards`. Không thay đổi `column` ban đầu.",
+        "starterCode": "const addCardToColumn = (column, cardData, index) => {\n  // Viết code của bạn ở đây\n};",
+        "solution": "const addCardToColumn = (column, cardData, index) => {\n  const newCards = [...column.cards];\n  newCards.splice(index, 0, cardData);\n  return { ...column, cards: newCards };\n};",
+        "testCases": "Input: column = { cards: [{_id: 'a'}] }, cardData = {_id: 'b'}, index = 0. Expected Output: { cards: [{_id: 'b'}, {_id: 'a'}] }."
+      },
+      {
+        "title": "Bài 4: Chuyển Card giữa hai Column",
+        "description": "Sử dụng các hàm đã viết ở trên, tạo hàm `moveCardBetweenColumns`. Hàm này nhận vào `columns`, `activeColumnId`, `overColumnId`, `activeCardId`, `activeCardData`, và `newCardIndex`. Nó phải trả về một mảng `columns` MỚI với card đã được di chuyển từ `activeColumn` sang `overColumn` tại vị trí `newCardIndex`.",
+        "starterCode": "const moveCardBetweenColumns = (columns, activeColumnId, overColumnId, activeCardId, activeCardData, newCardIndex) => {\n  // Gợi ý: Sử dụng cloneDeep hoặc toán tử spread để tạo bản sao sâu\n  // Viết code của bạn ở đây\n};",
+        "solution": "const moveCardBetweenColumns = (columns, activeColumnId, overColumnId, activeCardId, activeCardData, newCardIndex) => {\n  const nextColumns = JSON.parse(JSON.stringify(columns)); // deep clone đơn giản\n\n  const activeColumn = nextColumns.find(c => c._id === activeColumnId);\n  const overColumn = nextColumns.find(c => c._id === overColumnId);\n\n  if (activeColumn) {\n    activeColumn.cards = activeColumn.cards.filter(c => c._id !== activeCardId);\n  }\n\n  if (overColumn) {\n    overColumn.cards.splice(newCardIndex, 0, activeCardData);\n  }\n\n  return nextColumns;\n};",
+        "testCases": "Mô tả: Di chuyển một card từ column đầu tiên sang vị trí đầu tiên của column thứ hai."
+      },
+      {
+        "title": "Bài 5: Hoàn thiện Logic `handleDragOver` (Đơn giản)",
+        "description": "Dựa vào kiến thức trong bài, hãy điền vào phần còn thiếu của hàm `handleDragOver` để xử lý logic khi kéo card qua một column khác. Giả sử các biến `active`, `over`, `activeColumn`, `overColumn` đã có sẵn và hợp lệ. Bạn chỉ cần xử lý phần cập nhật state `columns`.",
+        "starterCode": "const handleDragOverLogic = (columns, activeColumn, overColumn, activeDraggingCardId, activeDraggingCardData) => {\n  // Chỉ xử lý khi kéo qua column khác\n  if (activeColumn._id === overColumn._id) return columns;\n\n  // Viết code của bạn ở đây để trả về mảng columns mới\n  // Giả sử newCardIndex luôn là 0 để đơn giản hóa\n  const newCardIndex = 0;\n\n  // ...\n\n  return nextColumns;\n};",
+        "solution": "const handleDragOverLogic = (columns, activeColumn, overColumn, activeDraggingCardId, activeDraggingCardData) => {\n  if (activeColumn._id === overColumn._id) return columns;\n\n  const newCardIndex = 0;\n  const nextColumns = JSON.parse(JSON.stringify(columns));\n\n  const nextActiveColumn = nextColumns.find(c => c._id === activeColumn._id);\n  const nextOverColumn = nextColumns.find(c => c._id === overColumn._id);\n\n  if (nextActiveColumn) {\n    nextActiveColumn.cards = nextActiveColumn.cards.filter(card => card._id !== activeDraggingCardId);\n  }\n\n  if (nextOverColumn) {\n    nextOverColumn.cards.splice(newCardIndex, 0, activeDraggingCardData);\n  }\n\n  return nextColumns;\n};",
+        "testCases": "Mô tả: Hàm phải trả về một mảng columns mới, trong đó card đã được di chuyển từ `activeColumn` sang `overColumn`."
+      }
+    ]
+  }
+}

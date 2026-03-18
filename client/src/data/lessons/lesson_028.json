@@ -1,0 +1,213 @@
+{
+  "id": 28,
+  "title": "Bài 15: Nắm rõ SX Prop, Styled API và Theme Override trong MUI",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài 15: Nắm rõ SX Prop, Styled API và Theme Override trong MUI\n\n## I. Mục tiêu bài học\n\nVideo này tập trung vào việc phân tích và so sánh ba phương pháp chính để tùy chỉnh (custom) CSS trong thư viện Material-UI (MUI), một công cụ phổ biến để xây dựng giao diện người dùng trong ReactJS. Sau khi hoàn thành bài học, người xem sẽ có khả năng:\n\n- **Phân biệt rõ ràng:** Hiểu được sự khác biệt cơ bản, ưu và nhược điểm của ba cách tiếp cận: `sx` prop, `styled` API, và `theme override`.\n- **Lựa chọn hợp lý:** Biết được khi nào nên sử dụng phương pháp nào để tối ưu hóa code, tăng khả năng tái sử dụng và bảo trì.\n- **Áp dụng thực tế:** Có khả năng vận dụng các kỹ thuật này vào dự án thực tế để xây dựng giao diện một cách linh hoạt và hiệu quả, tuân thủ theo các nguyên tắc thiết kế của MUI.\n\n## II. Kiến thức chi tiết\n\nMaterial-UI cung cấp một hệ thống tùy chỉnh giao diện rất mạnh mẽ. Dưới đây là phân tích chi tiết về ba phương pháp được đề cập trong video.\n\n### 1. `sx` Prop\n\n`sx` prop là một cách tiếp cận mới và được khuyến khích trong MUI v5. Nó được mô tả như một \"supersystem\" cho CSS, cung cấp một cách nhanh chóng và trực tiếp để áp dụng các style tùy chỉnh cho một component.\n\n- **Giải thích:** `sx` là một prop đặc biệt có thể được thêm vào hầu hết các component của MUI. Nó chấp nhận một object chứa các thuộc tính CSS. Điểm đặc biệt của `sx` là nó có quyền truy cập trực tiếp vào các giá trị trong `theme` của bạn, chẳng hạn như `palette`, `spacing`, `typography`... Điều này cho phép bạn viết style một cách nhất quán với hệ thống thiết kế đã định nghĩa.\n\n- **Ưu điểm:**\n    - **Nhanh gọn và tiện lợi:** Rất phù hợp cho các style chỉ áp dụng một lần (one-off styles) mà không cần phải tạo ra một component mới.\n    - **Truy cập theme:** Dễ dàng sử dụng các giá trị từ theme (ví dụ: `color: 'primary.main'`) mà không cần import.\n    - **Hỗ trợ responsive:** Cho phép định nghĩa các style khác nhau cho các breakpoint khác nhau một cách ngắn gọn (ví dụ: `width: { xs: 100, md: 200 }`).\n    - **Hỗ trợ pseudo-classes:** Có thể style các trạng thái như `:hover`, `:focus` trực tiếp (ví dụ: `&:hover: { color: 'secondary.main' }`).\n\n- **Nhược điểm:**\n    - **Khó tái sử dụng:** Nếu một nhóm style được sử dụng ở nhiều nơi, việc lặp lại code `sx` sẽ làm tăng độ phức tạp và khó bảo trì.\n    - **Làm rối JSX:** Lạm dụng `sx` với nhiều style phức tạp có thể làm cho code JSX trở nên khó đọc.\n\n- **Code mẫu:**\n\n  ```jsx\n  import Box from '@mui/material/Box';\n\n  function MyComponent() {\n    return (\n      <Box\n        sx={{\n          width: 300,\n          height: 300,\n          backgroundColor: 'primary.dark',\n          '&:hover': {\n            backgroundColor: 'primary.main',\n            opacity: [0.9, 0.8, 0.7],\n          },\n        }}\n      />\n    );\n  }\n  ```\n\n### 2. `styled` API\n\n`styled` API là một utility được cung cấp bởi Emotion (thư viện CSS-in-JS mà MUI sử dụng mặc định) và được tích hợp sâu vào MUI. Nó cho phép bạn tạo ra các component React mới với các style đã được đính kèm.\n\n- **Giải thích:** Bạn sử dụng hàm `styled` để bọc một component có sẵn (của MUI hoặc của bạn) và định nghĩa các style cho nó. Kết quả trả về là một component mới có thể được tái sử dụng trong toàn bộ ứng dụng.\n\n- **Ưu điểm:**\n    - **Tái sử dụng cao:** Là giải pháp lý tưởng khi bạn có một component với style tùy chỉnh cần được sử dụng ở nhiều nơi.\n    - **Code sạch sẽ:** Tách biệt hoàn toàn logic style ra khỏi JSX, giúp component chính của bạn gọn gàng và dễ đọc hơn.\n    - **Hiệu năng tốt:** Emotion sẽ tối ưu hóa việc generate các class CSS.\n\n- **Nhược điểm:**\n    - **Hơi \"dài dòng\":** Cần phải định nghĩa một component mới, điều này có thể không cần thiết cho các style đơn giản, dùng một lần.\n\n- **Code mẫu:**\n\n  ```jsx\n  import { styled } from '@mui/material/styles';\n  import Button from '@mui/material/Button';\n\n  const MyStyledButton = styled(Button)(({ theme }) => ({\n    padding: theme.spacing(2),\n    color: theme.palette.secondary.contrastText,\n    backgroundColor: theme.palette.secondary.main,\n    '&:hover': {\n      backgroundColor: theme.palette.secondary.dark,\n    },\n  }));\n\n  function Usage() {\n    return <MyStyledButton>Styled Button</MyStyledButton>;\n  }\n  ```\n\n### 3. Theme Override\n\nĐây là phương pháp tùy chỉnh ở cấp độ cao nhất, cho phép bạn thay đổi style mặc định của một loại component trên toàn bộ ứng dụng.\n\n- **Giải thích:** Bạn có thể \"ghi đè\" (override) các style mặc định của các component MUI bằng cách định nghĩa các `styleOverrides` trong object `components` khi tạo theme với `createTheme`.\n\n- **Ưu điểm:**\n    - **Nhất quán toàn cục:** Đảm bảo tất cả các instance của một component (ví dụ: tất cả các `MuiButton`) đều có cùng một giao diện cơ bản, giúp duy trì tính nhất quán của ứng dụng.\n    - **Tránh lặp code:** Bạn chỉ cần định nghĩa style một lần ở cấp độ theme.\n\n- **Nhược điểm:**\n    - **Ảnh hưởng toàn cục:** Bất kỳ thay đổi nào cũng sẽ ảnh hưởng đến tất cả các component liên quan, vì vậy cần phải cân nhắc kỹ lưỡng.\n    - **Kém linh hoạt:** Không phù hợp cho các trường hợp cần style khác biệt cho một component cụ thể.\n\n- **Code mẫu:**\n\n  ```jsx\n  import { createTheme, ThemeProvider } from '@mui/material/styles';\n  import Button from '@mui/material/Button';\n\n  const theme = createTheme({\n    components: {\n      // Tên component bạn muốn override\n      MuiButton: {\n        styleOverrides: {\n          // Tên của slot bạn muốn override (ví dụ: 'root', 'label')\n          root: {\n            fontSize: '1rem',\n            textTransform: 'none', // Bỏ viết hoa chữ của Button\n          },\n        },\n      },\n    },\n  });\n\n  function App() {\n    return (\n      <ThemeProvider theme={theme}>\n        <Button>My Overridden Button</Button>\n      </ThemeProvider>\n    );\n  }\n  ```\n\n## III. Các bước thực hành\n\nĐể hiểu rõ hơn, bạn có thể thực hành theo các bước sau:\n\n1.  **Khởi tạo dự án:** Tạo một dự án React mới và cài đặt Material-UI.\n2.  **Tạo component:** Tạo một component đơn giản, ví dụ như một `Card` chứa một `Button`.\n3.  **Áp dụng `sx` prop:** Thử thay đổi màu nền, padding, và màu chữ của `Card` hoặc `Button` bằng cách sử dụng `sx` prop.\n4.  **Tạo `styled` component:** Tạo một `StyledCard` hoặc `StyledButton` bằng `styled` API với các style tương tự như trên và sử dụng nó thay thế cho component ban đầu.\n5.  **Thực hiện `theme override`:** Trong file theme của bạn, hãy override style của `MuiButton` để tất cả các button trong dự án đều có `border-radius` là `8px` và không viết hoa chữ.\n6.  **So sánh:** Quan sát sự khác biệt trong code và kết quả hiển thị để nhận ra ưu và nhược điểm của từng phương pháp.\n\n## IV. Lưu ý quan trọng\n\n- **Thứ tự ưu tiên:** MUI áp dụng style theo thứ tự ưu tiên sau: `sx` prop > `styled` API > `theme override`. Style từ `sx` prop sẽ ghi đè lên style từ `styled` API, và style từ `styled` API sẽ ghi đè lên style từ theme.\n- **Kết hợp các phương pháp:** Trong một dự án thực tế, bạn sẽ thường xuyên kết hợp cả ba phương pháp này. Dùng `theme override` cho các style chung, `styled` API cho các component tái sử dụng, và `sx` prop cho các tùy chỉnh nhỏ, đặc thù.\n- **Tham khảo tài liệu:** Luôn tham khảo tài liệu chính thức của MUI để biết tên các \"slot\" có thể override trong một component khi sử dụng `theme override`.\n\n## V. Tài liệu tham khảo\n\n1.  **Video gốc:** [15. Nắm rõ SX Prop, Styled API và Theme Override trong MUI | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=VIDEO_19&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=19)\n2.  **MUI `sx` Prop Documentation:** [https://mui.com/system/the-sx-prop/](https://mui.com/system/the-sx-prop/)\n3.  **MUI `styled()` API Documentation:** [https://mui.com/system/styled/](https://mui.com/system/styled/)\n4.  **MUI Customization - Overriding component styles:** [https://mui.com/material-ui/customization/theme-components/](https://mui.com/material-ui/customization/theme-components/)\n5.  **GitHub Repository của khóa học:** [https://github.com/trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Phương pháp nào được khuyến khích sử dụng trong MUI v5 để áp dụng các style tùy chỉnh một cách nhanh chóng và trực tiếp cho một component?",
+        "options": [
+          "sx prop",
+          "styled API",
+          "theme override",
+          "CSS thuần"
+        ],
+        "correctAnswer": 0,
+        "explanation": "`sx` prop là một cách tiếp cận mới và được khuyến khích trong MUI v5, được mô tả như một \"supersystem\" cho CSS để áp dụng style nhanh chóng."
+      },
+      {
+        "question": "Ưu điểm chính của việc sử dụng `styled` API trong MUI là gì?",
+        "options": [
+          "Nhanh gọn cho các style dùng một lần.",
+          "Khả năng tái sử dụng component cao.",
+          "Thay đổi style mặc định trên toàn bộ ứng dụng.",
+          "Không cần import bất kỳ hàm nào."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`styled` API lý tưởng cho việc tạo các component với style tùy chỉnh cần được sử dụng ở nhiều nơi, do đó tăng khả năng tái sử dụng."
+      },
+      {
+        "question": "Khi nào bạn nên sử dụng `theme override` trong MUI?",
+        "options": [
+          "Khi cần áp dụng style đặc thù cho một component duy nhất.",
+          "Khi muốn tạo một component mới có thể tái sử dụng.",
+          "Khi muốn đảm bảo tính nhất quán về giao diện cho một loại component trên toàn bộ ứng dụng.",
+          "Khi cần style cho trạng thái :hover một cách nhanh chóng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`theme override` được sử dụng để thay đổi style mặc định của một loại component trên toàn cục, giúp duy trì tính nhất quán."
+      },
+      {
+        "question": "Thứ tự ưu tiên áp dụng style trong MUI từ cao đến thấp là gì?",
+        "options": [
+          "`styled` API > `sx` prop > `theme override`",
+          "`theme override` > `styled` API > `sx` prop",
+          "`sx` prop > `styled` API > `theme override`",
+          "`sx` prop > `theme override` > `styled` API"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Style từ `sx` prop sẽ ghi đè lên `styled` API, và `styled` API sẽ ghi đè lên `theme override`."
+      },
+      {
+        "question": "Làm thế nào để truy cập các giá trị từ theme (ví dụ: `primary.main`) bên trong `sx` prop?",
+        "options": [
+          "Phải import `useTheme` hook.",
+          "Truy cập trực tiếp qua chuỗi giá trị, ví dụ: `color: 'primary.main'`.",
+          "Sử dụng hàm `theme()` do MUI cung cấp.",
+          "Không thể truy cập giá trị theme từ `sx` prop."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`sx` prop có quyền truy cập trực tiếp vào các giá trị trong theme, cho phép bạn viết style nhất quán một cách dễ dàng."
+      },
+      {
+        "question": "Nhược điểm của việc lạm dụng `sx` prop với nhiều style phức tạp là gì?",
+        "options": [
+          "Làm giảm hiệu năng ứng dụng.",
+          "Làm cho code JSX trở nên khó đọc và khó bảo trì.",
+          "Không hỗ trợ responsive.",
+          "Gây ra lỗi biên dịch."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sử dụng quá nhiều style phức tạp trong `sx` prop có thể làm rối JSX và gây khó khăn cho việc đọc và bảo trì code."
+      },
+      {
+        "question": "`styled` API của MUI được xây dựng dựa trên thư viện CSS-in-JS nào?",
+        "options": [
+          "Styled-components",
+          "Emotion",
+          "JSS",
+          "Aphrodite"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`styled` API là một utility được cung cấp bởi Emotion, thư viện CSS-in-JS mà MUI sử dụng mặc định."
+      },
+      {
+        "question": "Để override style của tất cả các `Button` trong ứng dụng, bạn cần định nghĩa trong object nào của `createTheme`?",
+        "options": [
+          "`MuiButton` trong `styleOverrides`",
+          "`Button` trong `components`",
+          "`MuiButton` trong `components.styleOverrides`",
+          "`MuiButton` trong `components`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bạn cần xác định tên component (ví dụ: `MuiButton`) bên trong object `components` của theme để bắt đầu override."
+      },
+      {
+        "question": "Trong `theme override`, `styleOverrides` cho phép bạn tùy chỉnh các phần cụ thể của một component. Các phần này được gọi là gì?",
+        "options": [
+          "slots",
+          "parts",
+          "elements",
+          "classes"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Các phần có thể override của một component được gọi là \"slots\". Ví dụ: `root`, `label` của `MuiButton`."
+      },
+      {
+        "question": "Đâu là cú pháp đúng để định nghĩa style cho các breakpoint khác nhau trong `sx` prop?",
+        "options": [
+          "`width: [100, 200]`",
+          "`width: { xs: 100, md: 200 }`",
+          "`responsive: { width: ... }`",
+          "`@media (min-width: 600px): { width: 200 }`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`sx` prop cho phép định nghĩa style cho các breakpoint (xs, sm, md, lg, xl) bằng cách sử dụng một object làm giá trị."
+      },
+      {
+        "question": "Hàm `styled` trả về cái gì?",
+        "options": [
+          "Một object chứa các class CSS.",
+          "Một chuỗi CSS.",
+          "Một component React mới.",
+          "Một hook của React."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hàm `styled` bọc một component có sẵn và trả về một component React mới với các style đã được đính kèm."
+      },
+      {
+        "question": "Làm thế nào để style trạng thái `:hover` của một component bằng `sx` prop?",
+        "options": [
+          "Sử dụng pseudo-selector như một key: `'&:hover': { ... }`",
+          "Sử dụng prop `hoverStyle={{...}}`",
+          "Viết một class CSS riêng và áp dụng qua `className`",
+          "Không thể style trạng thái `:hover` bằng `sx` prop."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`sx` prop hỗ trợ các pseudo-classes như `:hover`, `:focus` bằng cách lồng chúng như một key trong object style."
+      },
+      {
+        "question": "Đâu là một nhược điểm của `theme override`?",
+        "options": [
+          "Khó tái sử dụng code.",
+          "Làm rối code JSX.",
+          "Kém linh hoạt cho các trường hợp cần style khác biệt.",
+          "Yêu cầu viết nhiều code hơn `styled` API."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vì `theme override` ảnh hưởng toàn cục, nó không phù hợp cho các trường hợp cần style khác biệt cho một instance component cụ thể."
+      },
+      {
+        "question": "Trong cú pháp `styled(Component)(({ theme }) => ({...}))`, `theme` là gì?",
+        "options": [
+          "Một prop bắt buộc phải truyền vào component.",
+          "Object theme của MUI được tự động truyền vào hàm.",
+          "Một biến toàn cục của trình duyệt.",
+          "Một thư viện bên ngoài cần được import."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi sử dụng `styled` API, object theme của MUI sẽ được tự động cung cấp trong hàm callback, cho phép bạn truy cập các giá trị theme."
+      },
+      {
+        "question": "Mục đích chính của việc kết hợp cả ba phương pháp (`sx`, `styled`, `theme override`) trong một dự án là gì?",
+        "options": [
+          "Để làm cho dự án phức tạp hơn.",
+          "Để tận dụng ưu điểm của mỗi phương pháp cho các trường hợp sử dụng khác nhau, giúp code tối ưu và dễ bảo trì.",
+          "Để chứng tỏ kỹ năng nâng cao về MUI.",
+          "Đó là yêu cầu bắt buộc của MUI."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trong thực tế, việc kết hợp cả ba phương pháp giúp tối ưu hóa code: `theme override` cho style chung, `styled` cho component tái sử dụng, và `sx` cho các tùy chỉnh nhỏ, đặc thù."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Sử dụng `sx` prop để tạo Box đơn giản",
+        "description": "Tạo một component `Box` và sử dụng `sx` prop để đặt chiều rộng, chiều cao và màu nền cho nó. Thêm hiệu ứng thay đổi màu nền khi di chuột qua.",
+        "starterCode": "import Box from '@mui/material/Box';\n\nfunction SimpleBox() {\n  return (\n    <Box\n      // Thêm sx prop ở đây\n    />\n  );\n}\n\nexport default SimpleBox;",
+        "solution": "import Box from '@mui/material/Box';\n\nfunction SimpleBox() {\n  return (\n    <Box\n      sx={{\n        width: 200,\n        height: 200,\n        backgroundColor: 'primary.main',\n        '&:hover': {\n          backgroundColor: 'secondary.main',\n        },\n      }}\n    />\n  );\n}\n\nexport default SimpleBox;",
+        "testCases": "1. Component phải render một thẻ div. 2. Box phải có chiều rộng 200px và chiều cao 200px. 3. Màu nền ban đầu phải là màu `primary.main` của theme. 4. Khi di chuột qua, màu nền phải chuyển thành `secondary.main`."
+      },
+      {
+        "title": "Bài 2: Tạo một Button tùy chỉnh với `styled` API",
+        "description": "Sử dụng `styled` API để tạo một component `CustomButton` mới từ `Button` của MUI. `CustomButton` này phải có padding, màu chữ và màu nền tùy chỉnh.",
+        "starterCode": "import { styled } from '@mui/material/styles';\nimport Button from '@mui/material/Button';\n\n// Tạo CustomButton ở đây\n\nfunction StyledButtonUsage() {\n  return <CustomButton>My Custom Button</CustomButton>;\n}\n\nexport default StyledButtonUsage;",
+        "solution": "import { styled } from '@mui/material/styles';\nimport Button from '@mui/material/Button';\n\nconst CustomButton = styled(Button)(({ theme }) => ({\n  padding: theme.spacing(1, 3),\n  color: theme.palette.getContrastText(theme.palette.success.main),\n  backgroundColor: theme.palette.success.main,\n  '&:hover': {\n    backgroundColor: theme.palette.success.dark,\n  },\n}));\n\nfunction StyledButtonUsage() {\n  return <CustomButton>My Custom Button</CustomButton>;\n}\n\nexport default StyledButtonUsage;",
+        "testCases": "1. `CustomButton` phải được render. 2. Button phải có padding tùy chỉnh. 3. Màu nền phải là màu `success.main`. 4. Khi di chuột, màu nền phải chuyển thành `success.dark`."
+      },
+      {
+        "title": "Bài 3: Override style mặc định của `MuiChip`",
+        "description": "Sử dụng `theme override` để thay đổi style mặc định của tất cả các component `Chip` trong ứng dụng. Cụ thể, hãy thay đổi `borderRadius` và thêm một đường viền (border) mặc định.",
+        "starterCode": "import { createTheme, ThemeProvider } from '@mui/material/styles';\nimport Chip from '@mui/material/Chip';\n\nconst theme = createTheme({\n  components: {\n    // Thêm override cho MuiChip ở đây\n  },\n});\n\nfunction App() {\n  return (\n    <ThemeProvider theme={theme}>\n      <Chip label=\"Overridden Chip\" />\n    </ThemeProvider>\n  );\n}\n\nexport default App;",
+        "solution": "import { createTheme, ThemeProvider } from '@mui/material/styles';\nimport Chip from '@mui/material/Chip';\n\nconst theme = createTheme({\n  components: {\n    MuiChip: {\n      styleOverrides: {\n        root: {\n          borderRadius: 4,\n          border: '1px solid #bdbdbd',\n        },\n      },\n    },\n  },\n});\n\nfunction App() {\n  return (\n    <ThemeProvider theme={theme}>\n      <Chip label=\"Overridden Chip\" />\n    </ThemeProvider>\n  );\n}\n\nexport default App;",
+        "testCases": "1. Component `Chip` phải được render. 2. `Chip` phải có `borderRadius` là 4px. 3. `Chip` phải có đường viền 1px solid màu #bdbdbd."
+      },
+      {
+        "title": "Bài 4: Kết hợp `sx` prop và `styled` API",
+        "description": "Tạo một `StyledCard` bằng `styled` API với padding và shadow. Sau đó, trong một trường hợp cụ thể, sử dụng `sx` prop để ghi đè lại màu nền của `StyledCard` đó.",
+        "starterCode": "import { styled } from '@mui/material/styles';\nimport Card from '@mui/material/Card';\n\nconst StyledCard = styled(Card)(({ theme }) => ({\n  padding: theme.spacing(3),\n  boxShadow: theme.shadows[5],\n  backgroundColor: theme.palette.background.paper,\n}));\n\nfunction CombinedUsage() {\n  return (\n    <StyledCard\n      // Sử dụng sx prop để ghi đè backgroundColor\n    >\n      This card has a different background.\n    </StyledCard>\n  );\n}\n\nexport default CombinedUsage;",
+        "solution": "import { styled } from '@mui/material/styles';\nimport Card from '@mui/material/Card';\n\nconst StyledCard = styled(Card)(({ theme }) => ({\n  padding: theme.spacing(3),\n  boxShadow: theme.shadows[5],\n  backgroundColor: theme.palette.background.paper,\n}));\n\nfunction CombinedUsage() {\n  return (\n    <StyledCard\n      sx={{ backgroundColor: 'warning.light' }}\n    >\n      This card has a different background.\n    </StyledCard>\n  );\n}\n\nexport default CombinedUsage;",
+        "testCases": "1. `StyledCard` phải được render với padding và shadow đã định nghĩa. 2. Mặc dù `StyledCard` có `backgroundColor` mặc định, instance này phải hiển thị với màu nền là `warning.light` do `sx` prop ghi đè."
+      },
+      {
+        "title": "Bài 5: Xây dựng một `ProfileCard` phức tạp",
+        "description": "Tạo một component `ProfileCard` bằng cách kết hợp `styled` API cho các phần tử con (Avatar, Tên, Mô tả) và `sx` prop cho layout chính của Card. Override style của `MuiTypography` để thay đổi font chữ mặc định cho tên.",
+        "starterCode": "import { styled } from '@mui/material/styles';\nimport { createTheme, ThemeProvider } from '@mui/material/styles';\nimport Card from '@mui/material/Card';\nimport Avatar from '@mui/material/Avatar';\nimport Typography from '@mui/material/Typography';\n\n// Override theme cho Typography\nconst theme = createTheme({});\n\n// Styled components cho Avatar và các text\nconst ProfileAvatar = styled(Avatar)({});\nconst Name = styled(Typography)({});\nconst Description = styled(Typography)({});\n\nfunction ProfileCard() {\n  return (\n    <ThemeProvider theme={theme}>\n      <Card sx={{ /* Layout styles */ }}>\n        <ProfileAvatar src=\"/avatar.jpg\" />\n        <Name>John Doe</Name>\n        <Description>Software Developer</Description>\n      </Card>\n    </ThemeProvider>\n  );\n}\n\nexport default ProfileCard;",
+        "solution": "import { styled } from '@mui/material/styles';\nimport { createTheme, ThemeProvider } from '@mui/material/styles';\nimport Card from '@mui/material/Card';\nimport Avatar from '@mui/material/Avatar';\nimport Typography from '@mui/material/Typography';\n\nconst theme = createTheme({\n  components: {\n    MuiTypography: {\n      variants: [\n        {\n          props: { variant: 'h5' },\n          style: { fontFamily: ''Georgia, serif'' },\n        },\n      ],\n    },\n  },\n});\n\nconst ProfileAvatar = styled(Avatar)(({ theme }) => ({\n  width: theme.spacing(10),\n  height: theme.spacing(10),\n  border: `2px solid ${theme.palette.primary.main}`,\n}));\n\nconst Name = styled(Typography)({});\n\nconst Description = styled(Typography)(({ theme }) => ({\n  color: theme.palette.text.secondary,\n}));\n\nfunction ProfileCard() {\n  return (\n    <ThemeProvider theme={theme}>\n      <Card sx={{\n        display: 'flex',\n        flexDirection: 'column',\n        alignItems: 'center',\n        gap: 2,\n        p: 3,\n        maxWidth: 300\n      }}>\n        <ProfileAvatar src=\"/avatar.jpg\" />\n        <Name variant=\"h5\">John Doe</Name>\n        <Description variant=\"body1\">Software Developer</Description>\n      </Card>\n    </ThemeProvider>\n  );\n}\n\nexport default ProfileCard;",
+        "testCases": "1. `ProfileCard` phải hiển thị layout flex column và căn giữa. 2. `ProfileAvatar` phải có kích thước và đường viền tùy chỉnh. 3. Tên (John Doe) phải sử dụng font Georgia do theme override. 4. Mô tả (Software Developer) phải có màu chữ `text.secondary`."
+      }
+    ]
+  }
+}

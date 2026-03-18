@@ -1,0 +1,213 @@
+{
+  "id": 22,
+  "title": "Buổi 12: Xử lý trang Board List: Query, Sort, Pagination",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\n\n## Mục tiêu bài học\n\nBài học này tập trung vào việc xây dựng các chức năng cốt lõi cho trang hiển thị danh sách các \"board\" trong một ứng dụng MERN stack, tương tự như trang chính của Trello. Sau khi hoàn thành bài học, học viên sẽ có khả năng:\n\n- Thiết kế và triển khai API để truy vấn danh sách board từ cơ sở dữ liệu.\n- Tích hợp các chức năng sắp xếp (sort) danh sách board theo nhiều tiêu chí khác nhau.\n- Xây dựng hệ thống phân trang (pagination) hiệu quả để xử lý số lượng lớn board.\n- Implement chức năng tìm kiếm (query/search) để người dùng có thể dễ dàng tìm thấy board mong muốn.\n- Kết nối giữa backend và frontend để hiển thị và tương tác với dữ liệu một cách linh hoạt.\n\n## Kiến thức chi tiết\n\nDựa trên tiêu đề và kiến thức chuyên môn về MERN stack, nội dung video có khả năng cao sẽ bao gồm các phần sau:\n\n### 1. Backend (Node.js, Express.js, MongoDB)\n\nPhía backend sẽ chịu trách nhiệm cung cấp một API endpoint mạnh mẽ và linh hoạt để frontend có thể truy vấn dữ liệu board.\n\n#### a. Thiết kế API Route\n\nChúng ta sẽ định nghĩa một API endpoint, ví dụ `GET /v1/boards`, để trả về danh sách các board. Endpoint này sẽ chấp nhận các query parameters để tùy chỉnh kết quả trả về.\n\n- **Pagination:** `_page` (trang hiện tại) và `_limit` (số lượng item trên mỗi trang).\n- **Sorting:** `_sort` (trường dữ liệu để sắp xếp, ví dụ `title`) và `_order` (thứ tự sắp xếp, `asc` hoặc `desc`).\n- **Searching:** `q` (từ khóa tìm kiếm).\n\n#### b. Controller và Service Layer\n\nLuồng xử lý sẽ đi từ `Route` -> `Controller` -> `Service`.\n\n- **Controller (`boardController.js`):** Lớp này sẽ nhận request từ client, trích xuất các query parameters, và gọi đến service tương ứng để xử lý logic nghiệp vụ. Nó cũng chịu trách nhiệm gửi response (dữ liệu hoặc lỗi) về cho client.\n\n  ```javascript\n  // src/controllers/boardController.js\n  const getBoards = async (req, res, next) => {\n    try {\n      const { _page = 1, _limit = 10, _sort = 'createdAt', _order = 'desc', q = '' } = req.query;\n      const boards = await boardService.getBoards({ _page, _limit, _sort, _order, q });\n      res.status(200).json(boards);\n    } catch (error) {\n      next(error);\n    }\n  };\n  ```\n\n- **Service (`boardService.js`):** Lớp này chứa logic nghiệp vụ chính. Nó sẽ tương tác với Model (MongoDB) để truy vấn dữ liệu dựa trên các tham số nhận được từ Controller.\n\n  ```javascript\n  // src/services/boardService.js\n  const getBoards = async (params) => {\n    const { _page, _limit, _sort, _order, q } = params;\n    const skip = (_page - 1) * _limit;\n    const sortCondition = { [_sort]: _order === 'desc' ? -1 : 1 };\n\n    // Tạo điều kiện tìm kiếm\n    const queryCondition = {};\n    if (q) {\n      queryCondition.title = { $regex: q, $options: 'i' }; // Tìm kiếm không phân biệt hoa thường\n    }\n\n    // Truy vấn CSDL\n    const boards = await boardModel.find(queryCondition)\n      .sort(sortCondition)\n      .skip(skip)\n      .limit(Number(_limit));\n\n    // Lấy tổng số lượng board để phân trang\n    const totalBoards = await boardModel.countDocuments(queryCondition);\n\n    return { \n      data: boards,\n      pagination: {\n        currentPage: Number(_page),\n        limit: Number(_limit),\n        totalPages: Math.ceil(totalBoards / _limit)\n      }\n    };\n  };\n  ```\n\n### 2. Frontend (React.js)\n\nPhía frontend sẽ xây dựng giao diện người dùng (UI) để hiển thị danh sách board và các thành phần tương tác như bộ lọc, sắp xếp, và phân trang.\n\n#### a. Component Structure\n\nChúng ta sẽ có một component chính là `BoardList.jsx` để quản lý toàn bộ trang. Bên trong có thể có các component con cho việc sắp xếp (`SortSelect.jsx`), tìm kiếm (`SearchBar.jsx`), và phân trang (`Pagination.jsx`).\n\n#### b. State Management\n\nSử dụng `useState` và `useEffect` để quản lý trạng thái và vòng đời của component.\n\n```jsx\n// src/pages/Boards/_id.jsx (Ví dụ một trang board list)\nimport { useState, useEffect } from 'react';\n\nfunction BoardList() {\n  const [boards, setBoards] = useState([]);\n  const [pagination, setPagination] = useState({});\n  const [filters, setFilters] = useState({ \n    _page: 1,\n    _limit: 10,\n    _sort: 'createdAt',\n    _order: 'desc',\n    q: ''\n  });\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    const fetchBoards = async () => {\n      try {\n        setLoading(true);\n        // Gọi API với các tham số từ state `filters`\n        const response = await boardAPI.getAll(filters);\n        setBoards(response.data);\n        setPagination(response.pagination);\n      } catch (error) {\n        console.error('Failed to fetch board list:', error);\n      }\n      setLoading(false);\n    };\n\n    fetchBoards();\n  }, [filters]); // Chạy lại useEffect mỗi khi `filters` thay đổi\n\n  // ... JSX để render UI\n}\n```\n\n#### c. UI Components\n\n- **Search Bar:** Một input cho phép người dùng nhập từ khóa tìm kiếm. Khi người dùng nhập, state `filters.q` sẽ được cập nhật.\n- **Sort Select:** Một dropdown (select) cho phép người dùng chọn tiêu chí sắp xếp (ví dụ: 'Ngày tạo', 'Tên A-Z'). Khi chọn, state `filters._sort` và `filters._order` sẽ được cập nhật.\n- **Pagination:** Các nút bấm (Previous, Next, số trang) để điều hướng qua các trang. Khi bấm, state `filters._page` sẽ được cập nhật.\n\n## Các bước thực hành\n\n1.  **Backend:**\n    - Tạo `boardModel.js` với schema cho board (bao gồm các trường như `title`, `description`, `createdAt`).\n    - Tạo `boardRoute.js` để định nghĩa endpoint `GET /v1/boards`.\n    - Implement `boardController.js` và `boardService.js` như các đoạn code mẫu ở trên.\n    - Kết nối route vào file `server.js` chính.\n\n2.  **Frontend:**\n    - Tạo cấu trúc thư mục cho trang board list: `src/pages/Boards/`.\n    - Tạo component `BoardList.jsx`.\n    - Implement logic gọi API trong `useEffect` và quản lý state bằng `useState`.\n    - Xây dựng các component UI cho tìm kiếm, sắp xếp, và phân trang.\n    - Hiển thị danh sách board ra giao diện, cùng với trạng thái loading hoặc thông báo lỗi nếu có.\n\n3.  **Integration:**\n    - Đảm bảo CORS đã được cấu hình đúng ở backend để cho phép frontend gọi API.\n    - Chạy cả server backend và frontend để kiểm tra luồng hoạt động hoàn chỉnh.\n\n## Lưu ý quan trọng\n\n- **Performance:** Đối với các bộ dữ liệu lớn, việc `countDocuments` có thể làm chậm truy vấn. Cân nhắc các giải pháp caching hoặc các kỹ thuật tối ưu hóa database khác.\n- **Security:** Luôn luôn validate và sanitize các query parameters nhận được từ client ở phía backend để tránh các lỗ hổng bảo mật như NoSQL Injection.\n- **User Experience (UX):**\n    - Sử dụng Debouncing cho chức năng tìm kiếm để tránh việc gọi API liên tục mỗi khi người dùng gõ một ký tự.\n    - Hiển thị skeleton loaders trong khi chờ dữ liệu được tải về để cải thiện trải nghiệm người dùng.\n    - Vô hiệu hóa các nút tương tác (sắp xếp, phân trang) khi đang trong quá trình tải dữ liệu.\n\n## Tài liệu tham khảo\n\n- [Express.js routing](https://expressjs.com/en/guide/routing.html)\n- [Mongoose Queries](https://mongoosejs.com/docs/queries.html)\n- [React Hooks: useEffect](https://react.dev/reference/react/useEffect)\n- [React Hooks: useState](https://react.dev/reference/react/useState)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", khái niệm cơ bản được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến khái niệm cơ bản",
+          "Phương án B liên quan đến khái niệm cơ bản",
+          "Phương án C liên quan đến khái niệm cơ bản",
+          "Phương án D liên quan đến khái niệm cơ bản"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về khái niệm cơ bản."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", cú pháp được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cú pháp",
+          "Phương án B liên quan đến cú pháp",
+          "Phương án C liên quan đến cú pháp",
+          "Phương án D liên quan đến cú pháp"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cú pháp."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", cách sử dụng được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cách sử dụng",
+          "Phương án B liên quan đến cách sử dụng",
+          "Phương án C liên quan đến cách sử dụng",
+          "Phương án D liên quan đến cách sử dụng"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cách sử dụng."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", ưu điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ưu điểm",
+          "Phương án B liên quan đến ưu điểm",
+          "Phương án C liên quan đến ưu điểm",
+          "Phương án D liên quan đến ưu điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ưu điểm."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", nhược điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến nhược điểm",
+          "Phương án B liên quan đến nhược điểm",
+          "Phương án C liên quan đến nhược điểm",
+          "Phương án D liên quan đến nhược điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về nhược điểm."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", so sánh được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến so sánh",
+          "Phương án B liên quan đến so sánh",
+          "Phương án C liên quan đến so sánh",
+          "Phương án D liên quan đến so sánh"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về so sánh."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", ứng dụng thực tế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ứng dụng thực tế",
+          "Phương án B liên quan đến ứng dụng thực tế",
+          "Phương án C liên quan đến ứng dụng thực tế",
+          "Phương án D liên quan đến ứng dụng thực tế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ứng dụng thực tế."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", best practices được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến best practices",
+          "Phương án B liên quan đến best practices",
+          "Phương án C liên quan đến best practices",
+          "Phương án D liên quan đến best practices"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về best practices."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", cấu hình được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cấu hình",
+          "Phương án B liên quan đến cấu hình",
+          "Phương án C liên quan đến cấu hình",
+          "Phương án D liên quan đến cấu hình"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cấu hình."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", xử lý lỗi được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến xử lý lỗi",
+          "Phương án B liên quan đến xử lý lỗi",
+          "Phương án C liên quan đến xử lý lỗi",
+          "Phương án D liên quan đến xử lý lỗi"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về xử lý lỗi."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", tối ưu hóa được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến tối ưu hóa",
+          "Phương án B liên quan đến tối ưu hóa",
+          "Phương án C liên quan đến tối ưu hóa",
+          "Phương án D liên quan đến tối ưu hóa"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về tối ưu hóa."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", bảo mật được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến bảo mật",
+          "Phương án B liên quan đến bảo mật",
+          "Phương án C liên quan đến bảo mật",
+          "Phương án D liên quan đến bảo mật"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về bảo mật."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", kiến trúc được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến kiến trúc",
+          "Phương án B liên quan đến kiến trúc",
+          "Phương án C liên quan đến kiến trúc",
+          "Phương án D liên quan đến kiến trúc"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về kiến trúc."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", thiết kế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến thiết kế",
+          "Phương án B liên quan đến thiết kế",
+          "Phương án C liên quan đến thiết kế",
+          "Phương án D liên quan đến thiết kế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về thiết kế."
+      },
+      {
+        "question": "Trong bài \"Buổi 12: Xử lý trang Board List: Query, Sort, Pagination\", triển khai được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến triển khai",
+          "Phương án B liên quan đến triển khai",
+          "Phương án C liên quan đến triển khai",
+          "Phương án D liên quan đến triển khai"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về triển khai."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài tập 1: Thực hành Buổi 12: Xử lý trang Board List: Query, Sort, Pagination",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 2: Thực hành Buổi 12: Xử lý trang Board List: Query, Sort, Pagination",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 3: Thực hành Buổi 12: Xử lý trang Board List: Query, Sort, Pagination",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 4: Thực hành Buổi 12: Xử lý trang Board List: Query, Sort, Pagination",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 5: Thực hành Buổi 12: Xử lý trang Board List: Query, Sort, Pagination",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      }
+    ]
+  }
+}

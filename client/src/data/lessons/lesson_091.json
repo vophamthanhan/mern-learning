@@ -1,0 +1,213 @@
+{
+  "id": 91,
+  "title": "Bài học 77: Ghép 2 APIs tạo Column & Card vào giao diện Trello (phần 2)",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Bài học 77: Ghép 2 APIs tạo Column & Card vào giao diện Trello (phần 2)\n\n## Mục tiêu bài học\n\nVideo này là phần tiếp theo trong series xây dựng ứng dụng Trello clone, tập trung vào việc tích hợp giao diện người dùng (Front-end) với các API đã được xây dựng ở phần Back-end. Mục tiêu chính của bài học này bao gồm:\n\n- **Tích hợp API**: Kết nối và sử dụng 2 API quan trọng là tạo mới cột (Column) và tạo mới thẻ (Card) từ giao diện React vào hệ thống Back-end.\n- **Quản lý State**: Cập nhật trạng thái (state) của ứng dụng một cách hiệu quả sau khi nhận được dữ liệu từ API, đảm bảo giao diện người dùng luôn phản ánh đúng dữ liệu mới nhất.\n- **Xử lý bất đồng bộ**: Nắm vững kỹ thuật xử lý các tác vụ bất đồng bộ khi làm việc với API, cụ thể là sử dụng `async/await` để code sạch sẽ và dễ hiểu hơn.\n- **Tối ưu trải nghiệm người dùng (UX)**: Áp dụng kỹ thuật \"Optimistic UI Update\" để cải thiện trải nghiệm người dùng, giúp ứng dụng mượt mà và phản hồi nhanh hơn.\n- **Xử lý lỗi**: Xây dựng cơ chế xử lý lỗi khi gọi API, đảm bảo ứng dụng hoạt động ổn định và cung cấp thông báo hữu ích cho người dùng khi có sự cố xảy ra.\n\n## Kiến thức chi tiết\n\n### 1. Luồng hoạt động tích hợp API Front-end và Back-end\n\nTrong một ứng dụng MERN Stack, Front-end (React) và Back-end (Node.js/Express) là hai hệ thống riêng biệt. Để chúng có thể giao tiếp với nhau, Front-end sẽ gửi các yêu cầu HTTP (HTTP Requests) đến các điểm cuối (endpoints) API mà Back-end cung cấp. Luồng hoạt động cụ thể trong bài học này như sau:\n\n1.  **Người dùng tương tác**: Người dùng thực hiện một hành động trên giao diện, ví dụ như nhấn nút \"Thêm cột mới\".\n2.  **Front-end gửi yêu cầu**: Ứng dụng React sẽ bắt sự kiện này, thu thập dữ liệu cần thiết (ví dụ: tiêu đề cột mới) và sử dụng một thư viện như `axios` để gửi một yêu cầu `POST` đến API endpoint tương ứng trên Back-end (ví dụ: `/v1/columns`).\n3.  **Back-end xử lý**: Back-end nhận yêu cầu, xác thực dữ liệu, thực hiện logic nghiệp vụ (ví dụ: tạo một document mới trong collection `columns` của MongoDB) và trả về một phản hồi (HTTP Response).\n4.  **Front-end nhận phản hồi**: React nhận phản hồi từ Back-end. Nếu thành công, phản hồi sẽ chứa dữ liệu của đối tượng vừa được tạo (cột mới). Nếu thất bại, phản hồi sẽ chứa thông tin về lỗi.\n5.  **Cập nhật giao diện**: Dựa trên kết quả phản hồi, React sẽ cập nhật lại `state` của ứng dụng, dẫn đến việc giao diện được render lại để hiển thị dữ liệu mới (hiển thị cột mới trên màn hình).\n\n### 2. Sử dụng Axios để gọi API\n\n`axios` là một thư viện HTTP client dựa trên Promise, rất phổ biến trong các ứng dụng React để giao tiếp với API. Nó cung cấp một API đơn giản, dễ sử dụng và nhiều tính năng mạnh mẽ.\n\n**Cài đặt:**\n\n```bash\nyarn add axios\n```\n\n**Tạo một file service để quản lý các lời gọi API:**\n\nViệc gom tất cả các hàm gọi API vào một nơi (ví dụ `src/apis/index.js`) giúp code dễ quản lý và tái sử dụng.\n\n```javascript\n// src/apis/index.js\nimport axios from 'axios';\nimport { API_ROOT } from '~/utils/constants';\n\n// API để tạo một Column mới\nexport const createNewColumnAPI = async (data) => {\n  const response = await axios.post(`${API_ROOT}/v1/columns`, data);\n  return response.data; // axios trả về kết quả trong response.data\n}\n\n// API để tạo một Card mới\nexport const createNewCardAPI = async (data) => {\n  const response = await axios.post(`${API_ROOT}/v1/cards`, data);\n  return response.data;\n}\n```\n\n### 3. Cập nhật State và Kỹ thuật \"Optimistic UI Update\"\n\nKhi tạo mới một cột hoặc thẻ, chúng ta cần cập nhật lại giao diện. Có hai cách tiếp cận chính:\n\n- **Pessimistic Update (Cập nhật bi quan)**: Đây là cách truyền thống. Sau khi gọi API, Front-end sẽ chờ cho đến khi nhận được phản hồi thành công từ Back-end. Sau đó, nó sẽ gọi lại một API khác (ví dụ `fetchBoardDetailsAPI`) để lấy toàn bộ dữ liệu mới nhất của board và cập nhật lại state. Cách này đảm bảo dữ liệu luôn chính xác nhưng có độ trễ, người dùng phải chờ đợi.\n\n- **Optimistic Update (Cập nhật lạc quan)**: Đây là một kỹ thuật nâng cao giúp cải thiện trải nghiệm người dùng. Thay vì chờ đợi, Front-end sẽ giả định rằng yêu cầu API sẽ thành công và cập nhật giao diện ngay lập tức với dữ liệu mới (dữ liệu tạm thời được tạo ở phía client). Sau đó, nó mới gửi yêu cầu API đến Back-end. Nếu API thành công, không có gì xảy ra thêm. Nếu API thất bại, nó sẽ \"rollback\" lại thay đổi trên giao diện về trạng thái ban đầu và hiển thị thông báo lỗi.\n\n**Ví dụ triển khai Optimistic Update khi tạo Column:**\n\n```javascript\n// Trong component BoardContent.jsx\n\nconst createNewColumn = async (data) => {\n  // Dữ liệu để gọi API\n  const newColumnData = {\n    ...data,\n    boardId: board._id\n  };\n\n  // Tạm thời tạo một đối tượng column mới ở phía client\n  // để cập nhật giao diện ngay lập tức\n  const createdColumn = await createNewColumnAPI(newColumnData);\n\n  // Tạo một board mới để cập nhật state\n  const newBoard = { ...board };\n  newBoard.columns.push(createdColumn);\n  newBoard.columnOrderIds.push(createdColumn._id);\n  setBoard(newBoard);\n\n  // Lưu ý: Trong thực tế, bạn cần xử lý rollback nếu API `createNewColumnAPI` thất bại.\n  // Video này có thể tập trung vào luồng thành công trước.\n}\n```\n\n### 4. Xử lý lỗi\n\nViệc xử lý lỗi là cực kỳ quan trọng. Khi gọi API, có nhiều lý do có thể gây ra lỗi: mất kết nối mạng, server gặp sự cố, dữ liệu gửi lên không hợp lệ... Chúng ta cần bắt các lỗi này và thông báo cho người dùng một cách thân thiện.\n\nSử dụng `try...catch` với `async/await` là cách phổ biến để xử lý lỗi.\n\n```javascript\nconst createNewColumn = async (data) => {\n  try {\n    // ... (Phần code xử lý logic thành công như trên)\n  } catch (error) {\n    // Hiển thị thông báo lỗi cho người dùng\n    // Có thể sử dụng thư viện như react-toastify\n    toast.error(error.message);\n    // Rollback lại state nếu cần\n  }\n}\n```\n\n## Các bước thực hành\n\n1.  **Tổ chức lại code API**: Tạo một file `src/apis/index.js` để chứa tất cả các hàm gọi API.\n2.  **Xây dựng hàm `createNewColumnAPI`**: Viết hàm bất đồng bộ sử dụng `axios.post` để gửi yêu cầu tạo cột mới đến Back-end.\n3.  **Tích hợp vào giao diện**: Trong component chịu trách nhiệm thêm cột mới, import và gọi hàm `createNewColumnAPI` khi người dùng xác nhận.\n4.  **Áp dụng Optimistic Update cho Column**: Cập nhật `state` của `board` ngay lập tức sau khi người dùng tạo cột mới, trước khi API hoàn tất.\n5.  **Xây dựng hàm `createNewCardAPI`**: Tương tự như cột, viết hàm để gọi API tạo thẻ mới.\n6.  **Tích hợp và áp dụng Optimistic Update cho Card**: Cập nhật `state` của cột tương ứng để hiển thị thẻ mới ngay lập tức.\n7.  **Xử lý lỗi**: Bọc các lời gọi API trong khối `try...catch` để xử lý các trường hợp lỗi và hiển thị thông báo.\n8.  **Sử dụng `react-toastify`**: Tích hợp thư viện `react-toastify` để hiển thị các thông báo (thành công, lỗi) một cách chuyên nghiệp.\n\n## Lưu ý quan trọng\n\n- **Shallow Copy vs Deep Copy**: Khi cập nhật state là một object hoặc array phức tạp (nested), cần lưu ý về việc copy. Toán tử spread (`...`) chỉ thực hiện \"shallow copy\" (copy nông). Trong nhiều trường hợp, đặc biệt là với \"Optimistic Update\", bạn có thể cần \"deep copy\" để tránh việc thay đổi không mong muốn đến state gốc. Các thư viện như `lodash` (`cloneDeep`) có thể hữu ích.\n- **CORS (Cross-Origin Resource Sharing)**: Đảm bảo rằng Back-end của bạn đã được cấu hình để cho phép các yêu cầu từ địa chỉ của Front-end (ví dụ: `http://localhost:5173`).\n- **Biến môi trường**: Luôn sử dụng biến môi trường (ví dụ: file `.env`) để lưu trữ các thông tin nhạy cảm hoặc các giá trị có thể thay đổi giữa các môi trường (development, production), như `API_ROOT`.\n\n## Tài liệu tham khảo\n\n- **Video bài học**: [69. Ghép 2 APIs tạo Column & Card vào giao diện Trello (phần 2)](https://www.youtube.com/watch?v=HyYsk-zd5IE&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=77)\n- **GitHub Repository (Tham khảo)**: [trungquandev/mern-stack-trello-web](https://github.com/trungquandev/mern-stack-trello-web)\n- **Axios Documentation**: [https://axios-http.com/docs/intro](https://axios-http.com/docs/intro)\n- **Blog TrungQuanDev**: [https://trungquandev.com](https://trungquandev.com)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của kỹ thuật \"Optimistic UI Update\" là gì?",
+        "options": [
+          "Để cải thiện trải nghiệm người dùng bằng cách làm cho ứng dụng có vẻ nhanh hơn và phản hồi ngay lập tức.",
+          "Để đảm bảo dữ liệu trên giao diện luôn khớp 100% với cơ sở dữ liệu trước khi hiển thị.",
+          "Để giảm tải cho máy chủ Back-end bằng cách chỉ gửi yêu cầu khi cần thiết.",
+          "Để đơn giản hóa việc xử lý lỗi trong các ứng dụng React."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Optimistic UI Update giả định rằng yêu cầu API sẽ thành công và cập nhật giao diện ngay lập tức, giúp người dùng cảm thấy ứng dụng phản hồi nhanh chóng mà không cần chờ đợi phản hồi từ máy chủ."
+      },
+      {
+        "question": "Trong luồng hoạt động của \"Optimistic UI Update\", điều gì sẽ xảy ra nếu yêu cầu API đến Back-end thất bại?",
+        "options": [
+          "Giao diện sẽ tự động thử lại yêu cầu API cho đến khi thành công.",
+          "Ứng dụng sẽ bị treo và người dùng cần phải tải lại trang.",
+          "Giao diện sẽ được \"rollback\" (khôi phục) về trạng thái trước khi có sự thay đổi và hiển thị thông báo lỗi.",
+          "Dữ liệu tạm thời ở client sẽ được lưu vào localStorage để sử dụng cho lần sau."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi API thất bại, điều quan trọng là phải khôi phục lại trạng thái giao diện về trạng thái đúng trước đó và thông báo cho người dùng biết rằng hành động của họ không thành công."
+      },
+      {
+        "question": "Thư viện `axios` được sử dụng để làm gì trong bài học?",
+        "options": [
+          "Để quản lý trạng thái (state) của ứng dụng React.",
+          "Để tạo các thành phần giao diện (UI components).",
+          "Để thực hiện các yêu cầu HTTP từ Front-end đến các API của Back-end.",
+          "Để định kiểu (styling) cho ứng dụng Trello clone."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Axios là một HTTP client dựa trên Promise, giúp đơn giản hóa việc gửi các yêu cầu như GET, POST, PUT, DELETE từ trình duyệt hoặc Node.js đến các máy chủ API."
+      },
+      {
+        "question": "Khi sử dụng `axios`, dữ liệu trả về thành công từ máy chủ thường nằm trong thuộc tính nào của đối tượng phản hồi?",
+        "options": [
+          "response.data",
+          "response.body",
+          "response.json",
+          "response.content"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Theo quy ước của axios, toàn bộ dữ liệu mà máy chủ trả về trong body của response sẽ được đặt trong thuộc tính `data` của đối tượng response mà axios trả ra."
+      },
+      {
+        "question": "Cú pháp nào được khuyến khích sử dụng để xử lý các tác vụ bất đồng bộ và bắt lỗi khi gọi API với `axios`?",
+        "options": [
+          "Promise chaining với `.then()` và `.catch()`",
+          "Sử dụng callbacks",
+          "`async/await` kết hợp với khối `try...catch`",
+          "Sử dụng `setTimeout` để chờ đợi"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`async/await` giúp viết code bất đồng bộ trông giống như code đồng bộ, dễ đọc và dễ hiểu hơn. Khối `try...catch` là cách chuẩn để bắt các lỗi có thể xảy ra trong khối `try`."
+      },
+      {
+        "question": "Tại sao việc tách các hàm gọi API ra một file riêng (ví dụ: `src/apis/index.js`) được coi là một thực hành tốt?",
+        "options": [
+          "Để làm cho ứng dụng chạy nhanh hơn.",
+          "Vì đó là yêu cầu bắt buộc của thư viện React.",
+          "Để giúp code dễ quản lý, bảo trì và tái sử dụng ở nhiều nơi trong ứng dụng.",
+          "Để tăng cường bảo mật cho các API endpoint."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc tập trung hóa các lời gọi API giúp mã nguồn có tổ chức, dễ dàng tìm kiếm, chỉnh sửa và tái sử dụng các hàm API mà không cần phải viết lại logic ở nhiều component khác nhau."
+      },
+      {
+        "question": "Sự khác biệt cơ bản giữa \"Pessimistic Update\" và \"Optimistic Update\" là gì?",
+        "options": [
+          "Pessimistic Update cập nhật UI sau khi có xác nhận từ server, Optimistic Update cập nhật UI trước.",
+          "Pessimistic Update luôn thành công, còn Optimistic Update có thể thất bại.",
+          "Pessimistic Update chỉ dùng cho việc xóa, còn Optimistic Update chỉ dùng cho việc tạo mới.",
+          "Không có sự khác biệt nào, chúng chỉ là hai tên gọi khác nhau."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Pessimistic (bi quan) chờ đợi kết quả chắc chắn từ server rồi mới cập nhật UI. Optimistic (lạc quan) thì ngược lại, nó cập nhật UI ngay lập tức và hy vọng rằng server sẽ đồng ý."
+      },
+      {
+        "question": "Khi cập nhật một state là một object hoặc array phức tạp trong React, tại sao toán tử spread (`...`) đôi khi không đủ?",
+        "options": [
+          "Vì toán tử spread không được hỗ trợ trong tất cả các trình duyệt.",
+          "Vì nó chỉ thực hiện \"shallow copy\", có thể gây ra các thay đổi không mong muốn ở các object lồng nhau.",
+          "Vì nó làm giảm hiệu năng của ứng dụng một cách đáng kể.",
+          "Vì nó chỉ hoạt động với array, không hoạt động với object."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Toán tử spread chỉ sao chép các thuộc tính ở cấp đầu tiên. Các object hoặc array lồng bên trong vẫn là tham chiếu đến state cũ, có thể dẫn đến việc thay đổi state gốc một cách không an toàn."
+      },
+      {
+        "question": "CORS (Cross-Origin Resource Sharing) là một cơ chế để làm gì?",
+        "options": [
+          "Nén dữ liệu trước khi gửi từ Back-end về Front-end.",
+          "Cho phép các trang web từ một nguồn (origin) khác có thể yêu cầu tài nguyên từ máy chủ của bạn.",
+          "Mã hóa dữ liệu API để tăng cường bảo mật.",
+          "Xác thực người dùng trước khi cho phép gọi API."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Vì lý do bảo mật, trình duyệt chặn các yêu cầu HTTP đến một domain khác với domain của trang web hiện tại. CORS là cơ chế để nới lỏng chính sách này một cách có kiểm soát trên server."
+      },
+      {
+        "question": "Trong hàm `createNewColumn` ví dụ, tại sao cần tạo một `newBoard` thay vì `push` trực tiếp vào `board.columns`?",
+        "options": [
+          "Để tuân thủ nguyên tắc bất biến (immutability) trong React và kích hoạt việc render lại.",
+          "Để code trông phức tạp và chuyên nghiệp hơn.",
+          "Vì `board.columns` là một thuộc tính chỉ đọc (read-only).",
+          "Để dễ dàng thực hiện rollback khi có lỗi xảy ra."
+        ],
+        "correctAnswer": 0,
+        "explanation": "React xác định việc render lại một component bằng cách so sánh tham chiếu của state. Việc thay đổi trực tiếp state gốc (mutation) sẽ không thay đổi tham chiếu, do đó React sẽ không nhận ra sự thay đổi. Cần tạo một object/array mới để có tham chiếu mới."
+      },
+      {
+        "question": "Thư viện `react-toastify` thường được dùng để làm gì?",
+        "options": [
+          "Quản lý state toàn cục của ứng dụng.",
+          "Hiển thị các thông báo (notifications/toasts) ngắn gọn cho người dùng.",
+          "Tối ưu hóa quá trình build ứng dụng React.",
+          "Thực hiện unit test cho các component."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`react-toastify` cung cấp một cách dễ dàng và linh hoạt để hiển thị các thông báo như \"Tạo thành công\", \"Lỗi kết nối\",... giúp cải thiện giao tiếp với người dùng."
+      },
+      {
+        "question": "Đâu là một nhược điểm của phương pháp \"Pessimistic Update\"?",
+        "options": [
+          "Code khó triển khai và phức tạp hơn Optimistic Update.",
+          "Dữ liệu trên giao diện có thể không nhất quán với server.",
+          "Người dùng phải chờ đợi API hoàn tất, tạo ra độ trễ trong giao diện.",
+          "Khó xử lý lỗi hơn so với Optimistic Update."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Với Pessimistic Update, giao diện sẽ không thay đổi cho đến khi nhận được phản hồi thành công từ server. Quá trình chờ đợi này có thể làm người dùng cảm thấy ứng dụng chậm chạp."
+      },
+      {
+        "question": "Biến môi trường (environment variables) được sử dụng để lưu trữ `API_ROOT` nhằm mục đích gì?",
+        "options": [
+          "Để bất kỳ ai cũng có thể dễ dàng thay đổi địa chỉ API.",
+          "Để che giấu địa chỉ API khỏi người dùng cuối.",
+          "Để có thể sử dụng các địa chỉ API khác nhau cho các môi trường khác nhau (development, production) mà không cần sửa code.",
+          "Để tăng tốc độ gọi API."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Biến môi trường cho phép cấu hình ứng dụng một cách linh hoạt. Chúng ta có thể dùng `http://localhost:8080` khi phát triển và `https://api.trello.com` khi triển khai sản phẩm mà không cần thay đổi mã nguồn."
+      },
+      {
+        "question": "Trong luồng tích hợp API, bước nào xảy ra ngay sau khi Front-end gửi yêu cầu (HTTP Request)?",
+        "options": [
+          "Front-end cập nhật giao diện người dùng.",
+          "Back-end nhận yêu cầu, xác thực và xử lý logic nghiệp vụ.",
+          "Người dùng nhận được thông báo thành công.",
+          "Cơ sở dữ liệu tự động cập nhật."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sau khi Front-end gửi đi yêu cầu, Back-end sẽ là hệ thống tiếp nhận, kiểm tra tính hợp lệ của yêu cầu, thực hiện các thao tác cần thiết (ví dụ: lưu vào DB) và chuẩn bị phản hồi."
+      },
+      {
+        "question": "Để thực hiện một \"deep copy\" một đối tượng phức tạp, phương pháp nào sau đây thường được sử dụng?",
+        "options": [
+          "Sử dụng toán tử spread (`...`) ở cấp cao nhất.",
+          "Sử dụng `Object.assign({}, obj)`.",
+          "Sử dụng các thư viện như `lodash` với hàm `cloneDeep`.",
+          "Gán đối tượng đó cho một biến mới."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Các phương pháp như toán tử spread hay `Object.assign` chỉ thực hiện shallow copy. Để sao chép sâu tất cả các cấp của một đối tượng, cần dùng đến giải pháp đệ quy hoặc sử dụng các hàm tiện ích đã được tối ưu từ thư viện như `lodash.cloneDeep`."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo hàm gọi API tạo Column",
+        "description": "Hoàn thành hàm `createNewColumnAPI` sử dụng `axios` để gửi một yêu cầu POST đến endpoint `${API_ROOT}/v1/columns` với dữ liệu được cung cấp. Hàm này cần là một hàm bất đồng bộ.",
+        "starterCode": "import axios from 'axios';\nimport { API_ROOT } from '~/utils/constants';\n\n// data là một object chứa thông tin column, ví dụ: { title: 'New Column', boardId: 'b-1' }\nexport const createNewColumnAPI = async (data) => {\n  // Viết code của bạn ở đây\n  \n};",
+        "solution": "import axios from 'axios';\nimport { API_ROOT } from '~/utils/constants';\n\nexport const createNewColumnAPI = async (data) => {\n  const response = await axios.post(`${API_ROOT}/v1/columns`, data);\n  return response.data;\n};",
+        "testCases": "Hàm phải sử dụng `axios.post`.\nHàm phải gửi yêu cầu đến đúng endpoint.\nHàm phải trả về `response.data`."
+      },
+      {
+        "title": "Bài 2: Tạo hàm gọi API tạo Card",
+        "description": "Tương tự bài 1, hãy tạo hàm `createNewCardAPI` để gửi yêu cầu POST đến endpoint `${API_ROOT}/v1/cards` và trả về dữ liệu của card vừa được tạo.",
+        "starterCode": "import axios from 'axios';\nimport { API_ROOT } from '~/utils/constants';\n\n// data là một object chứa thông tin card, ví dụ: { title: 'New Card', boardId: 'b-1', columnId: 'c-1' }\nexport const createNewCardAPI = async (data) => {\n  // Viết code của bạn ở đây\n\n};",
+        "solution": "import axios from 'axios';\nimport { API_ROOT } from '~/utils/constants';\n\nexport const createNewCardAPI = async (data) => {\n  const response = await axios.post(`${API_ROOT}/v1/cards`, data);\n  return response.data;\n};",
+        "testCases": "Hàm phải sử dụng `axios.post`.\nHàm phải gửi yêu cầu đến đúng endpoint `/v1/cards`.\nHàm phải trả về `response.data`."
+      },
+      {
+        "title": "Bài 3: Xử lý lỗi khi gọi API",
+        "description": "Viết một hàm `handleCreateNew` nhận vào một hàm `apiCall` và `data`. Hàm này sẽ gọi `apiCall(data)` bên trong một khối `try...catch`. Nếu thành công, nó trả về kết quả. Nếu thất bại, nó sẽ `console.error` thông báo lỗi và trả về `null`.",
+        "starterCode": "const handleCreateNew = async (apiCall, data) => {\n  // Viết code của bạn ở đây\n\n};",
+        "solution": "const handleCreateNew = async (apiCall, data) => {\n  try {\n    const result = await apiCall(data);\n    return result;\n  } catch (error) {\n    console.error('API call failed:', error.message);\n    return null;\n  }\n};",
+        "testCases": "Phải sử dụng `try...catch`.\nPhải gọi `apiCall(data)` bên trong `try`.\nPhải `console.error` khi có lỗi.\nPhải trả về `null` khi có lỗi."
+      },
+      {
+        "title": "Bài 4: Cập nhật State (Optimistic)",
+        "description": "Giả sử bạn có một hàm `setBoard` và một state `board`. Viết một hàm `optimisticAddColumn` nhận vào `newColumnData`. Hàm này sẽ tạo một bản sao của `board`, thêm `newColumnData` vào mảng `columns` và `columnOrderIds`, sau đó gọi `setBoard` với board mới. Đây là bước cập nhật giao diện tạm thời.",
+        "starterCode": "const optimisticAddColumn = (newColumnData, board, setBoard) => {\n  // Giả sử newColumnData đã có _id tạm thời\n  // Viết code của bạn ở đây\n\n};",
+        "solution": "const optimisticAddColumn = (newColumnData, board, setBoard) => {\n  const newBoard = { ...board };\n  newBoard.columns.push(newColumnData);\n  newBoard.columnOrderIds.push(newColumnData._id);\n  setBoard(newBoard);\n};",
+        "testCases": "Phải tạo một bản sao của `board`.\nPhải thêm `newColumnData` vào `newBoard.columns`.\nPhải thêm `newColumnData._id` vào `newBoard.columnOrderIds`.\nPhải gọi `setBoard` với `newBoard`."
+      },
+      {
+        "title": "Bài 5: Hoàn chỉnh luồng tạo Column",
+        "description": "Kết hợp các kiến thức đã học. Viết hàm `submitNewColumn` nhận vào `columnTitle`, `board`, và `setBoard`. Hàm này sẽ: \n1. Chuẩn bị dữ liệu để gọi API. \n2. Gọi hàm `createNewColumnAPI` (giả sử đã có) trong khối `try...catch`. \n3. Nếu thành công, cập nhật state `board` với dữ liệu column trả về từ API. \n4. Nếu thất bại, hiển thị một `alert` với thông báo lỗi.",
+        "starterCode": "import { createNewColumnAPI } from './apis'; // Giả sử đã import\n\nconst submitNewColumn = async (columnTitle, board, setBoard) => {\n  const data = {\n    title: columnTitle,\n    boardId: board._id\n  };\n\n  // Viết code của bạn ở đây\n\n};",
+        "solution": "import { createNewColumnAPI } from './apis';\n\nconst submitNewColumn = async (columnTitle, board, setBoard) => {\n  const data = {\n    title: columnTitle,\n    boardId: board._id\n  };\n\n  try {\n    const createdColumn = await createNewColumnAPI(data);\n\n    const newBoard = { ...board };\n    newBoard.columns.push(createdColumn);\n    newBoard.columnOrderIds.push(createdColumn._id);\n    setBoard(newBoard);\n\n  } catch (error) {\n    alert(error.message);\n  }\n};",
+        "testCases": "Phải gọi `createNewColumnAPI` với dữ liệu chính xác.\nPhải sử dụng `try...catch`.\nKhi thành công, phải cập nhật state `board` một cách bất biến (tạo object mới).\nKhi thất bại, phải gọi `alert`."
+      }
+    ]
+  }
+}

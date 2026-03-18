@@ -1,0 +1,213 @@
+{
+  "id": 15,
+  "title": "BÀI 8: CÀI ĐẶT VÀ SỬ DỤNG MATERIAL UI (EMOTION, FONTS, ICONS…)",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# BÀI 8: CÀI ĐẶT VÀ SỬ DỤNG MATERIAL UI (EMOTION, FONTS, ICONS…)\n\n## MỤC TIÊU BÀI HỌC\n\nTrong bài học này, chúng ta sẽ cùng nhau tìm hiểu cách tích hợp thư viện giao diện người dùng (UI) phổ biến **Material UI (MUI)** vào một dự án ReactJS được khởi tạo bằng Vite. Mục tiêu chính là nắm vững các bước cài đặt, cấu hình và sử dụng các thành phần cơ bản của Material UI, bao gồm cả việc tích hợp Emotion, phông chữ và biểu tượng (icons) để xây dựng một nền tảng giao diện vững chắc cho dự án Trello Clone.\n\n## KIẾN THỨC CHI TIẾT\n\n### 1. Giới thiệu về Material UI (MUI)\n\n**Material UI** là một thư viện mã nguồn mở cung cấp các thành phần (components) React, tuân thủ theo hệ thống thiết kế Material Design của Google. Đây là một trong những thư viện UI phổ biến và mạnh mẽ nhất trong hệ sinh thái React, giúp các nhà phát triển xây dựng giao diện người dùng đẹp mắt, nhất quán và chuyên nghiệp một cách nhanh chóng.\n\n> Material Design là một hệ thống thiết kế được phát triển bởi Google, bao gồm các nguyên tắc, hướng dẫn và thành phần để tạo ra trải nghiệm người dùng đồng nhất trên nhiều nền tảng và thiết bị khác nhau. Các thiết kế của nó lấy cảm hứng từ thế giới vật chất, với các yếu tố như ánh sáng, bóng đổ và chuyển động.\n\n### 2. Engine Tạo Kiểu: Emotion và Styled-Components\n\nKể từ phiên bản 5, Material UI đã chuyển sang sử dụng **Emotion** làm engine tạo kiểu (styling engine) mặc định. Trước đây, MUI sử dụng JSS (CSS-in-JS). Emotion là một thư viện cho phép bạn viết CSS trực tiếp trong file JavaScript của mình, mang lại nhiều lợi ích:\n\n| Tính năng | Lợi ích |\n| --- | --- |\n| **Scoped Styles** | CSS chỉ áp dụng cho thành phần mà nó được định nghĩa, tránh xung đột style toàn cục. |\n| **Dynamic Styling** | Dễ dàng thay đổi style dựa trên props hoặc state của component. |\n| **Developer Experience** | Giữ logic, markup và style của component ở cùng một nơi, giúp dễ quản lý và bảo trì. |\n\nNgoài Emotion, MUI cũng hỗ trợ **styled-components**, một thư viện CSS-in-JS phổ biến khác. Tuy nhiên, trong khuôn khổ khóa học này, chúng ta sẽ tuân thủ theo lựa chọn mặc định của MUI là Emotion để đảm bảo tính tương thích và hiệu suất tốt nhất.\n\n### 3. Cài đặt Material UI và Emotion\n\nĐể bắt đầu, chúng ta cần cài đặt các gói cần thiết vào dự án React. Mở terminal và chạy lệnh sau:\n\n```bash\nnpm install @mui/material @emotion/react @emotion/styled\n```\n\n- **`@mui/material`**: Gói chính chứa tất cả các thành phần cốt lõi của Material UI như Button, Card, TextField, v.v.\n- **`@emotion/react`**: Thư viện cần thiết để Emotion hoạt động với React.\n- **`@emotion/styled`**: Cung cấp một API tương tự như `styled-components` để tạo các thành phần với style tùy chỉnh.\n\n### 4. Tích hợp Phông chữ (Fonts)\n\nMaterial UI được thiết kế để hoạt động tốt nhất với phông chữ **Roboto**. Để đảm bảo giao diện hiển thị đúng chuẩn Material Design, chúng ta cần thêm phông chữ này vào dự án.\n\nCách đơn giản nhất là nhúng nó từ Google Fonts. Mở file `index.html` trong thư mục gốc của dự án và thêm các dòng sau vào trong thẻ `<head>`:\n\n```html\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap\" rel=\"stylesheet\">\n```\n\n### 5. Cài đặt và Sử dụng Biểu tượng (Icons)\n\nMaterial UI cung cấp một gói riêng cho các biểu tượng Material Icons. Để sử dụng, chúng ta cần cài đặt gói `@mui/icons-material`:\n\n```bash\nnpm install @mui/icons-material\n```\n\nSau khi cài đặt, bạn có thể import và sử dụng bất kỳ biểu tượng nào như một thành phần React. Ví dụ:\n\n```jsx\nimport AccessAlarmIcon from '@mui/icons-material/AccessAlarm';\nimport ThreeDRotation from '@mui/icons-material/ThreeDRotation';\n\nfunction MyComponent() {\n  return (\n    <div>\n      <AccessAlarmIcon />\n      <ThreeDRotation />\n    </div>\n  );\n}\n```\n\n### 6. CssBaseline: Chuẩn hóa CSS\n\n`CssBaseline` là một thành phần quan trọng của MUI, giúp chuẩn hóa và đặt lại các style mặc định của trình duyệt, đảm bảo giao diện của bạn hiển thị nhất quán trên mọi môi trường. Nó thực hiện các việc sau:\n\n- Loại bỏ margin mặc định của thẻ `<body>`.\n- Thiết lập `box-sizing: border-box` cho mọi phần tử.\n- Áp dụng các hiệu chỉnh nhỏ để cải thiện khả năng hiển thị trên các trình duyệt khác nhau.\n\nĐể sử dụng, hãy import và đặt `CssBaseline` ở cấp cao nhất của ứng dụng, thường là trong file `App.jsx`.\n\n```jsx\nimport CssBaseline from '@mui/material/CssBaseline';\n\nfunction App() {\n  return (\n    <>\n      <CssBaseline />\n      {/* Các thành phần khác của ứng dụng */}\n    </>\n  );\n}\n\nexport default App;\n```\n\n## CÁC BƯỚC THỰC HÀNH\n\n1.  **Mở dự án ReactJS** của bạn trong Visual Studio Code.\n2.  **Mở Terminal** và chạy lệnh cài đặt MUI và Emotion:\n    ```bash\n    npm install @mui/material @emotion/react @emotion/styled\n    ```\n3.  Tiếp tục cài đặt gói biểu tượng:\n    ```bash\n    npm install @mui/icons-material\n    ```\n4.  Mở file `index.html` và thêm các thẻ `<link>` để nhúng phông chữ Roboto vào trong thẻ `<head>`.\n5.  Mở file `App.jsx`, import và thêm thành phần `<CssBaseline />` vào đầu cây thành phần.\n6.  Xóa bỏ các code mặc định trong `App.jsx` và thử nghiệm một vài thành phần MUI cơ bản để kiểm tra xem việc cài đặt đã thành công chưa.\n\n    ```jsx\n    import Button from '@mui/material/Button';\n    import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';\n    import ThreeDRotation from '@mui/icons-material/ThreeDRotation';\n    import { pink } from '@mui/material/colors';\n\n    function App() {\n      return (\n        <>\n          {/* <CssBaseline /> đã được thêm ở bước trước */}\n          <div>Hello World!</div>\n          <Button variant=\"contained\">Hello World</Button>\n          <Button variant=\"outlined\">Outlined</Button>\n          <br /><br />\n          <AccessAlarmIcon />\n          <ThreeDRotation />\n          <br /><br />\n          <AccessAlarmIcon color=\"primary\" />\n          <AccessAlarmIcon color=\"secondary\" />\n          <AccessAlarmIcon color=\"success\" />\n          <AccessAlarmIcon sx={{ color: pink[500] }} />\n        </>\n      );\n    }\n\n    export default App;\n    ```\n7.  Chạy dự án với lệnh `npm run dev` và kiểm tra kết quả trên trình duyệt. Bạn sẽ thấy các nút và biểu tượng được hiển thị theo phong cách Material Design.\n\n## LƯU Ý QUAN TRỌNG\n\n- **Luôn sử dụng `CssBaseline`**: Đây là bước quan trọng để đảm bảo tính nhất quán của giao diện trên các trình duyệt khác nhau.\n- **Tối ưu hóa import**: Khi sử dụng biểu tượng, hãy import từng biểu tượng riêng lẻ (ví dụ: `import AccessAlarmIcon from '@mui/icons-material/AccessAlarm'`) thay vì import toàn bộ thư viện. Điều này giúp giảm kích thước bundle cuối cùng của ứng dụng.\n- **Tùy chỉnh Style**: `sx` prop là một cách nhanh chóng và tiện lợi để ghi đè hoặc thêm style tùy chỉnh cho một thành phần MUI mà không cần tạo một styled component mới. Nó sử dụng một superset của CSS và có quyền truy cập vào theme của bạn.\n\n## TÀI LIỆU THAM KHẢO\n\n1.  [Video 8: Install and use Material UI (Emotion, Fonts, Icons…etc) | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=VIDEO_12&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=12)\n2.  [Material UI Official Documentation](https://mui.com/material-ui/getting-started/installation/)\n3.  [Material Icons - Material UI](https://mui.com/material-ui/material-icons/)\n4.  [Emotion Documentation](https://emotion.sh/docs/introduction)\n5.  [Google Fonts - Roboto](https://fonts.google.com/specimen/Roboto)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Material UI (MUI) là thư viện React tuân thủ theo hệ thống thiết kế nào?",
+        "options": [
+          "A) Fluent Design",
+          "B) Ant Design",
+          "C) Material Design",
+          "D) Bootstrap"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học nêu rõ Material UI là một thư viện mã nguồn mở cung cấp các thành phần React, tuân thủ theo hệ thống thiết kế Material Design của Google."
+      },
+      {
+        "question": "Engine tạo kiểu (styling engine) mặc định của Material UI phiên bản 5 trở đi là gì?",
+        "options": [
+          "A) JSS",
+          "B) Styled-Components",
+          "C) SASS",
+          "D) Emotion"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Kể từ phiên bản 5, Material UI đã chuyển sang sử dụng Emotion làm engine tạo kiểu (styling engine) mặc định, thay thế cho JSS trước đây."
+      },
+      {
+        "question": "Lệnh `npm` nào sau đây được sử dụng để cài đặt các gói cốt lõi của Material UI và engine tạo kiểu mặc định của nó?",
+        "options": [
+          "A) `npm install @mui/material @emotion/react @emotion/styled`",
+          "B) `npm install @mui/core @emotion/core`",
+          "C) `npm install material-ui emotion`",
+          "D) `npm install @mui/material styled-components`"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đây là lệnh chính xác để cài đặt gói MUI material và các gói phụ thuộc của Emotion cần thiết để tích hợp vào dự án React."
+      },
+      {
+        "question": "Phông chữ nào được Material UI đề xuất sử dụng để có trải nghiệm hiển thị tốt nhất?",
+        "options": [
+          "A) Arial",
+          "B) Times New Roman",
+          "C) Roboto",
+          "D) Open Sans"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học chỉ rõ rằng Material UI được thiết kế để hoạt động tốt nhất với phông chữ Roboto. Việc nhúng phông chữ này từ Google Fonts được khuyến khích."
+      },
+      {
+        "question": "Để sử dụng các biểu tượng (icons) từ Material Design trong dự án MUI, bạn cần cài đặt gói nào?",
+        "options": [
+          "A) `@mui/material-icons`",
+          "B) `@mui/icons-material`",
+          "C) `@material-ui/icons`",
+          "D) `react-icons/mui`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Gói `@mui/icons-material` chứa các thành phần React cho tất cả các biểu tượng Material Icons, sẵn sàng để import và sử dụng."
+      },
+      {
+        "question": "Thành phần `<CssBaseline />` của MUI có công dụng chính là gì?",
+        "options": [
+          "A) Thêm các style tùy chỉnh cho ứng dụng.",
+          "B) Chuẩn hóa và đặt lại CSS mặc định của trình duyệt để đảm bảo tính nhất quán.",
+          "C) Tối ưu hóa hiệu suất của CSS.",
+          "D) Cung cấp các biến màu sắc cho theme."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`CssBaseline` giúp chuẩn hóa style trên các trình duyệt bằng cách loại bỏ margin mặc định, thiết lập box-sizing và các hiệu chỉnh nhỏ khác."
+      },
+      {
+        "question": "Lợi ích chính của việc sử dụng engine CSS-in-JS như Emotion là gì?",
+        "options": [
+          "A) Tăng tốc độ tải trang ban đầu.",
+          "B) CSS chỉ áp dụng cho thành phần được định nghĩa, tránh xung đột style toàn cục.",
+          "C) Viết CSS dễ dàng hơn cho người mới bắt đầu.",
+          "D) Tự động tối ưu hóa hình ảnh."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Emotion giúp tạo ra các style có phạm vi (scoped styles), nghĩa là CSS chỉ ảnh hưởng đến thành phần mà nó được định nghĩa, giúp tránh các xung đột không mong muốn trong các dự án lớn."
+      },
+      {
+        "question": "Để nhúng phông chữ Roboto từ Google Fonts, bạn nên thêm thẻ `<link>` vào file nào?",
+        "options": [
+          "A) `App.jsx`",
+          "B) `main.jsx`",
+          "C) `package.json`",
+          "D) `index.html`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Các tài nguyên bên ngoài như phông chữ từ CDN thường được thêm vào trong thẻ `<head>` của file `index.html`."
+      },
+      {
+        "question": "Cách import nào sau đây được khuyến khích để tối ưu hóa kích thước bundle khi sử dụng biểu tượng MUI?",
+        "options": [
+          "A) `import { AccessAlarmIcon } from '@mui/icons-material';`",
+          "B) `import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';`",
+          "C) `import * as Icons from '@mui/icons-material';`",
+          "D) `import Icons from '@mui/icons-material/utils';`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Import từng biểu tượng riêng lẻ giúp các công cụ build (như Webpack, Vite) có thể loại bỏ các biểu tượng không sử dụng (tree-shaking), làm giảm kích thước bundle cuối cùng."
+      },
+      {
+        "question": "Prop `sx` trong các thành phần MUI dùng để làm gì?",
+        "options": [
+          "A) Định nghĩa hành vi của component khi được click.",
+          "B) Truyền dữ liệu state cho component.",
+          "C) Một cách nhanh chóng để ghi đè hoặc thêm style tùy chỉnh.",
+          "D) Xác định kích thước (size) của component."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Prop `sx` là một tiện ích cho phép áp dụng các style tùy chỉnh trực tiếp lên một thành phần MUI mà không cần tạo styled component mới, và nó có quyền truy cập vào theme."
+      },
+      {
+        "question": "Ngoài Emotion, Material UI cũng hỗ trợ thư viện CSS-in-JS phổ biến nào khác?",
+        "options": [
+          "A) `styled-components`",
+          "B) `SASS`",
+          "C) `LESS`",
+          "D) `Tailwind CSS`"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Bài học có đề cập rằng MUI cũng hỗ trợ `styled-components`, mặc dù Emotion là lựa chọn mặc định."
+      },
+      {
+        "question": "Trong ví dụ thực hành, `variant=\"contained\"` của thành phần `Button` tạo ra một nút như thế nào?",
+        "options": [
+          "A) Nút chỉ có đường viền, không có nền.",
+          "B) Nút có nền màu nổi bật.",
+          "C) Nút dạng văn bản, không có viền hay nền.",
+          "D) Nút hình tròn chứa biểu tượng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`variant=\"contained\"` là kiểu nút mặc định, có nền màu để thu hút sự chú ý của người dùng, thường dùng cho các hành động chính."
+      },
+      {
+        "question": "Để thay đổi màu của một biểu tượng MUI thành màu `secondary` của theme, bạn sử dụng prop nào?",
+        "options": [
+          "A) `style={{ color: 'secondary' }}`",
+          "B) `className=\"color-secondary\"`",
+          "C) `color=\"secondary\"`",
+          "D) `variant=\"secondary\"`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Các thành phần MUI, bao gồm cả biểu tượng, chấp nhận prop `color` với các giá trị như `primary`, `secondary`, `success` để áp dụng màu sắc từ theme."
+      },
+      {
+        "question": "Mục đích của việc đặt `<CssBaseline />` ở cấp cao nhất của ứng dụng là gì?",
+        "options": [
+          "A) Để nó chỉ áp dụng cho trang chủ.",
+          "B) Để đảm bảo các quy tắc chuẩn hóa CSS được áp dụng cho toàn bộ ứng dụng.",
+          "C) Để tăng độ ưu tiên của các style này.",
+          "D) Đây là yêu cầu kỹ thuật của React."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đặt `<CssBaseline />` ở gốc cây thành phần (ví dụ trong `App.jsx`) đảm bảo rằng các style reset của nó được áp dụng một cách nhất quán trên tất cả các trang và thành phần con."
+      },
+      {
+        "question": "Lệnh `npm run dev` trong một dự án Vite dùng để làm gì?",
+        "options": [
+          "A) Build dự án cho môi trường production.",
+          "B) Chạy server phát triển (development server) với hot-reload.",
+          "C) Chạy các bài kiểm tra (tests) của dự án.",
+          "D) Cài đặt các gói phụ thuộc."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trong các dự án được khởi tạo bằng Vite, `npm run dev` là lệnh tiêu chuẩn để khởi động một server phát triển cục bộ, tự động cập nhật trình duyệt khi có thay đổi trong mã nguồn."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Nút Bấm Chào Mừng",
+        "description": "Tạo một thành phần React đơn giản hiển thị một nút bấm (Button) của Material UI. Nút bấm này có `variant` là `\"contained\"` và hiển thị dòng chữ `\"Chào mừng đến với MUI!\"`.",
+        "starterCode": "import React from 'react';\n// import Button từ @mui/material ở đây\n\nfunction WelcomeButton() {\n  return (\n    // Render Button component ở đây\n  );\n}\n\nexport default WelcomeButton;",
+        "solution": "import React from 'react';\nimport Button from '@mui/material/Button';\n\nfunction WelcomeButton() {\n  return (\n    <Button variant=\"contained\">Chào mừng đến với MUI!</Button>\n  );\n}\n\nexport default WelcomeButton;",
+        "testCases": "Thành phần render ra một thẻ `button`. Thẻ button này chứa đúng dòng chữ `\"Chào mừng đến với MUI!\"` và có class CSS tương ứng với `variant=\"contained\"`."
+      },
+      {
+        "title": "Bài 2: Biểu Tượng và Màu Sắc",
+        "description": "Tạo một thành phần hiển thị biểu tượng `Home` từ `@mui/icons-material`. Biểu tượng này phải có màu `primary` của theme.",
+        "starterCode": "import React from 'react';\n// Import biểu tượng Home và các thứ cần thiết khác\n\nfunction HomeIcon() {\n  return (\n    // Render biểu tượng Home với màu primary\n  );\n}\n\nexport default HomeIcon;",
+        "solution": "import React from 'react';\nimport HomeIcon from '@mui/icons-material/Home';\n\nfunction StyledHomeIcon() {\n  return (\n    <HomeIcon color=\"primary\" />\n  );\n}\n\nexport default StyledHomeIcon;",
+        "testCases": "Thành phần render ra một SVG. SVG này có class CSS tương ứng với màu `primary` (ví dụ: `MuiSvgIcon-colorPrimary`)."
+      },
+      {
+        "title": "Bài 3: Kết Hợp Nút và Biểu Tượng",
+        "description": "Tạo một nút bấm có `variant` là `\"outlined\"`, chứa biểu tượng `Delete` và dòng chữ `\"Xóa\"`. Biểu tượng phải được đặt trước dòng chữ.",
+        "starterCode": "import React from 'react';\nimport Button from '@mui/material/Button';\n// Import biểu tượng Delete\n\nfunction DeleteButton() {\n  return (\n    // Render nút bấm với biểu tượng và chữ ở đây\n  );\n}\n\nexport default DeleteButton;",
+        "solution": "import React from 'react';\nimport Button from '@mui/material/Button';\nimport DeleteIcon from '@mui/icons-material/Delete';\n\nfunction DeleteButton() {\n  return (\n    <Button variant=\"outlined\" startIcon={<DeleteIcon />}>\n      Xóa\n    </Button>\n  );\n}\n\nexport default DeleteButton;",
+        "testCases": "Thành phần render ra một nút bấm. Nút bấm có `variant` là `\"outlined\"`. Bên trong nút có một biểu tượng `Delete` và một `span` chứa chữ `\"Xóa\"`."
+      },
+      {
+        "title": "Bài 4: Tùy Chỉnh Style với Prop `sx`",
+        "description": "Tạo một `div` chứa một biểu tượng `AccessAlarm`. Sử dụng prop `sx` để đặt màu cho biểu tượng là màu xanh lá cây (`green[500]`) và tăng kích thước phông chữ lên `40px`.",
+        "starterCode": "import React from 'react';\nimport AccessAlarmIcon from '@mui/icons-material/AccessAlarm';\nimport { green } from '@mui/material/colors';\n\nfunction CustomAlarmIcon() {\n  return (\n    // Render biểu tượng với style tùy chỉnh bằng sx prop\n  );\n}\n\nexport default CustomAlarmIcon;",
+        "solution": "import React from 'react';\nimport AccessAlarmIcon from '@mui/icons-material/AccessAlarm';\nimport { green } from '@mui/material/colors';\n\nfunction CustomAlarmIcon() {\n  return (\n    <AccessAlarmIcon sx={{ color: green[500], fontSize: 40 }} />\n  );\n}\n\nexport default CustomAlarmIcon;",
+        "testCases": "Thành phần render ra một biểu tượng. Biểu tượng có style inline hoặc class được tạo ra bởi `sx` với `color` là `rgb(76, 175, 80)` (mã màu của green[500]) và `font-size` là `40px`."
+      },
+      {
+        "title": "Bài 5: Xây Dựng Card Đơn Giản",
+        "description": "Sử dụng các thành phần `Card`, `CardContent`, và `Typography` của MUI để tạo một thẻ đơn giản. Thẻ này có một tiêu đề `h5` với nội dung \"Card Title\" và một đoạn văn bản `body2` với nội dung \"Đây là nội dung bên trong card.\". Thêm `CssBaseline` vào thành phần cha để đảm bảo chuẩn hóa CSS.",
+        "starterCode": "import React from 'react';\nimport Card from '@mui/material/Card';\nimport CardContent from '@mui/material/CardContent';\nimport Typography from '@mui/material/Typography';\nimport CssBaseline from '@mui/material/CssBaseline';\n\nfunction SimpleCard() {\n  return (\n    <>\n      {/* Thêm CssBaseline ở đây */}\n      {/* Xây dựng cấu trúc Card ở đây */}\n    </>\n  );\n}\n\nexport default SimpleCard;",
+        "solution": "import React from 'react';\nimport Card from '@mui/material/Card';\nimport CardContent from '@mui/material/CardContent';\nimport Typography from '@mui/material/Typography';\nimport CssBaseline from '@mui/material/CssBaseline';\n\nfunction SimpleCard() {\n  return (\n    <>\n      <CssBaseline />\n      <Card sx={{ minWidth: 275 }}>\n        <CardContent>\n          <Typography variant=\"h5\" component=\"div\">\n            Card Title\n          </Typography>\n          <Typography variant=\"body2\">\n            Đây là nội dung bên trong card.\n          </Typography>\n        </CardContent>\n      </Card>\n    </>\n  );\n}\n\nexport default SimpleCard;",
+        "testCases": "Thành phần render ra một `div` có class `MuiCard-root`. Bên trong có một `h5` với nội dung `\"Card Title\"` và một `p` với class `MuiTypography-body2` chứa nội dung `\"Đây là nội dung bên trong card.\"`. Component `CssBaseline` cũng được render."
+      }
+    ]
+  }
+}

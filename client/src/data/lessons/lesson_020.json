@@ -1,0 +1,213 @@
+{
+  "id": 20,
+  "title": "Buổi 10: Các tính năng Setting User, Change Avatar, Password...vv",
+  "category": "auth",
+  "categoryName": "Authentication & Security",
+  "content": "# Buổi 10: Các tính năng Setting User, Change Avatar, Password...vv\n\n## I. Mục tiêu bài học\n\nVideo này tập trung vào việc hướng dẫn học viên cách xây dựng các tính năng quản lý tài khoản người dùng cốt lõi trong một ứng dụng MERN Stack. Dựa trên tiêu đề, mục tiêu chính bao gồm:\n\n1.  **Xây dựng trang cài đặt (Settings):** Tạo giao diện cho phép người dùng xem và cập nhật thông tin cá nhân của họ (ví dụ: tên hiển thị, email, thông tin giới thiệu).\n2.  **Triển khai tính năng thay đổi ảnh đại diện (Avatar):** Cho phép người dùng tải lên và cập nhật ảnh đại diện mới cho tài khoản của mình.\n3.  **Triển khai tính năng thay đổi mật khẩu (Password):** Cung cấp một quy trình an toàn để người dùng có thể thay đổi mật khẩu hiện tại.\n\nSau khi hoàn thành bài học này, học viên sẽ có khả năng tích hợp một hệ thống quản lý người dùng hoàn chỉnh và chuyên nghiệp vào các dự án MERN Stack của mình.\n\n## II. Kiến thức chi tiết\n\nVì đây là video dành cho hội viên, nội dung chi tiết dưới đây được tổng hợp dựa trên tiêu đề và kiến thức chuyên môn về MERN Stack, mô phỏng lại các chủ đề có khả năng được đề cập trong video.\n\n### 1. Xây dựng trang và API cho Cài đặt Người dùng (User Settings)\n\nĐây là tính năng cơ bản nhất, cho phép người dùng cập nhật các thông tin không liên quan đến xác thực.\n\n#### a. Frontend (ReactJS)\n\n*   **Tạo Component:** Xây dựng một component React mới, ví dụ `Settings.js`, để làm giao diện cho trang cài đặt.\n*   **Sử dụng Form:** Dùng các thẻ `<form>` với các trường `<input>` để hiển thị thông tin hiện tại của người dùng (ví dụ: `displayName`, `email`) và cho phép họ chỉnh sửa.\n*   **Quản lý State:** Sử dụng `useState` hook để quản lý trạng thái của form. Dữ liệu ban đầu được lấy từ thông tin người dùng đang đăng nhập (có thể lưu trong Redux store hoặc React Context).\n*   **Gọi API:** Khi người dùng gửi form, sử dụng `axios` hoặc `fetch` để gửi một yêu cầu `PUT` hoặc `PATCH` đến API backend để cập nhật thông tin.\n\n```javascript\n// Ví dụ về việc gửi yêu cầu cập nhật\nconst handleSubmit = async (e) => {\n  e.preventDefault();\n  try {\n    const res = await axios.put('/api/users/me', { displayName });\n    // Xử lý khi thành công, ví dụ: hiển thị thông báo\n  } catch (error) {\n    // Xử lý khi có lỗi\n  }\n};\n```\n\n#### b. Backend (NodeJS & ExpressJS)\n\n*   **Tạo Route:** Định nghĩa một route mới trong Express để xử lý việc cập nhật thông tin người dùng. Route này cần được bảo vệ, chỉ cho phép người dùng đã đăng nhập truy cập.\n\n    ```javascript\n    // routes/userRoutes.js\n    const express = require('express');\n    const router = express.Router();\n    const { protect } = require('../middleware/authMiddleware');\n    const { updateUserProfile } = require('../controllers/userController');\n\n    router.route('/me').put(protect, updateUserProfile);\n\n    module.exports = router;\n    ```\n\n*   **Tạo Controller:** Viết logic trong `userController` để tìm người dùng trong database bằng `req.user.id` (được thêm vào từ middleware `protect`), sau đó cập nhật các trường thông tin được gửi lên từ client.\n\n    ```javascript\n    // controllers/userController.js\n    const User = require('../models/userModel');\n\n    const updateUserProfile = async (req, res) => {\n      const user = await User.findById(req.user.id);\n\n      if (user) {\n        user.displayName = req.body.displayName || user.displayName;\n        // Cập nhật các trường khác nếu có\n\n        const updatedUser = await user.save();\n        res.json({\n          _id: updatedUser._id,\n          displayName: updatedUser.displayName,\n          email: updatedUser.email,\n          avatar: updatedUser.avatar\n        });\n      } else {\n        res.status(404);\n        throw new Error('User not found');\n      }\n    };\n    ```\n\n### 2. Thay đổi Ảnh đại diện (Change Avatar)\n\nTính năng này thường liên quan đến việc xử lý upload file.\n\n#### a. Frontend (ReactJS)\n\n*   **Thêm Input File:** Thêm một trường `<input type=\"file\" />` vào form cài đặt. Có thể ẩn input này và kích hoạt nó thông qua một nút bấm để có giao diện đẹp hơn.\n*   **Xem trước ảnh:** Sử dụng `URL.createObjectURL()` để tạo một URL tạm thời cho file ảnh được chọn và hiển thị nó, giúp người dùng xem trước ảnh đại diện mới.\n*   **Upload ảnh:** Khi người dùng xác nhận, sử dụng `FormData` để đóng gói file ảnh và gửi nó đến API backend thông qua một yêu cầu `POST`.\n\n```javascript\nconst handleAvatarChange = async (e) => {\n  const file = e.target.files[0];\n  const formData = new FormData();\n  formData.append('avatar', file);\n\n  try {\n    const config = {\n      headers: {\n        'Content-Type': 'multipart/form-data',\n      },\n    };\n    const res = await axios.post('/api/users/me/avatar', formData, config);\n    // Cập nhật state với URL avatar mới từ server\n  } catch (error) {\n    // Xử lý lỗi\n  }\n};\n```\n\n#### b. Backend (NodeJS & ExpressJS)\n\n*   **Sử dụng Multer:** Cài đặt và cấu hình `multer`, một middleware phổ biến để xử lý `multipart/form-data` (upload file).\n*   **Upload lên Cloud:** Trong thực tế, không nên lưu file trực tiếp trên server. Thay vào đó, upload file lên một dịch vụ lưu trữ đám mây như **Cloudinary**, **Amazon S3**, hoặc **Google Cloud Storage**. Các dịch vụ này cung cấp API để upload và trả về một URL công khai cho file.\n*   **Tạo Route và Controller:**\n    *   Tạo một route mới, ví dụ `POST /api/users/me/avatar`, và áp dụng middleware `multer` để xử lý file upload.\n    *   Trong controller, sau khi `multer` xử lý file, bạn sẽ có thông tin về file trong `req.file`. Từ đây, bạn có thể upload nó lên dịch vụ cloud.\n    *   Sau khi upload thành công lên cloud và nhận được URL, lưu URL này vào trường `avatar` của user trong MongoDB.\n\n```javascript\n// Ví dụ sử dụng Multer và Cloudinary (đã được cấu hình)\nconst multer = require('multer');\nconst cloudinary = require('cloudinary').v2;\n\n// Cấu hình Multer để lưu file vào bộ nhớ tạm\nconst upload = multer({ storage: multer.memoryStorage() });\n\nrouter.post('/me/avatar', protect, upload.single('avatar'), async (req, res) => {\n  try {\n    // Upload file từ buffer lên Cloudinary\n    const result = await cloudinary.uploader.upload_stream({ resource_type: 'image' }, async (error, result) => {\n        if (error) throw new Error('Cloudinary upload failed');\n\n        const user = await User.findById(req.user.id);\n        user.avatar = result.secure_url;\n        await user.save();\n        res.json({ avatar: result.secure_url });\n    }).end(req.file.buffer);\n\n  } catch (error) {\n      res.status(400).send({ message: error.message });\n  }\n});\n```\n\n### 3. Thay đổi Mật khẩu (Change Password)\n\nĐây là một tính năng nhạy cảm, đòi hỏi các biện pháp bảo mật cẩn thận.\n\n#### a. Frontend (ReactJS)\n\n*   **Tạo Form riêng:** Xây dựng một form riêng cho việc đổi mật khẩu với 3 trường: Mật khẩu hiện tại (`currentPassword`), Mật khẩu mới (`newPassword`), và Xác nhận mật khẩu mới (`confirmPassword`).\n*   **Validation phía Client:** Kiểm tra xem `newPassword` và `confirmPassword` có khớp nhau không trước khi gửi đi.\n*   **Gửi yêu cầu:** Gửi yêu cầu `PUT` đến API backend với cả 3 giá trị.\n\n#### b. Backend (NodeJS & ExpressJS)\n\n*   **Tạo Route và Controller:** Tạo route `PUT /api/users/me/password` và controller tương ứng.\n*   **Xác thực mật khẩu hiện tại:**\n    *   Lấy người dùng từ database.\n    *   Sử dụng phương thức `matchPassword` (đã định nghĩa trong `userModel` với `bcrypt`) để so sánh `currentPassword` từ request với mật khẩu đã hash trong database.\n    *   Nếu không khớp, trả về lỗi.\n*   **Cập nhật mật khẩu mới:**\n    *   Nếu mật khẩu hiện tại chính xác, tiến hành hash `newPassword` bằng `bcrypt`.\n    *   Lưu mật khẩu đã hash mới vào database.\n\n```javascript\n// controllers/userController.js\nconst changePassword = async (req, res) => {\n  const { currentPassword, newPassword } = req.body;\n  const user = await User.findById(req.user.id);\n\n  if (user && (await user.matchPassword(currentPassword))) {\n    user.password = newPassword; // Middleware pre-save trong model sẽ tự động hash\n    await user.save();\n    res.json({ message: 'Password updated successfully' });\n  } else {\n    res.status(401);\n    throw new Error('Invalid current password');\n  }\n};\n\n// userModel.js - Thêm middleware pre-save để hash mật khẩu\nuserSchema.pre('save', async function (next) {\n  if (!this.isModified('password')) {\n    next();\n  }\n  const salt = await bcrypt.genSalt(10);\n  this.password = await bcrypt.hash(this.password, salt);\n});\n```\n\n## III. Các bước thực hành\n\n1.  **Chuẩn bị Backend:**\n    *   Cập nhật `userModel` để có trường `avatar` (kiểu String).\n    *   Tạo các routes và controllers cho việc cập nhật thông tin, avatar và mật khẩu như mô tả ở trên.\n    *   Cài đặt `multer` và một SDK cho dịch vụ cloud (ví dụ: `cloudinary`).\n    *   Bảo vệ các routes bằng middleware xác thực (JWT).\n\n2.  **Xây dựng Frontend:**\n    *   Tạo một trang `Settings` được bảo vệ, chỉ những người dùng đã đăng nhập mới có thể truy cập.\n    *   Xây dựng form cập nhật thông tin cá nhân.\n    *   Tích hợp chức năng upload và xem trước ảnh đại diện.\n    *   Xây dựng form thay đổi mật khẩu với validation.\n\n3.  **Kết nối Frontend và Backend:**\n    *   Viết các hàm gọi API bằng `axios` để kết nối các hành động trên UI với các endpoints tương ứng ở backend.\n    *   Quản lý trạng thái người dùng (ví dụ trong Redux) để giao diện được cập nhật ngay lập tức sau khi thay đổi thành công (ví dụ: hiển thị avatar mới).\n\n4.  **Xử lý lỗi và Thông báo:**\n    *   Hiển thị các thông báo lỗi rõ ràng cho người dùng (ví dụ: \"Mật khẩu hiện tại không đúng\", \"File ảnh quá lớn\").\n    *   Sử dụng các thư viện như `react-toastify` để hiển thị thông báo thành công hoặc thất bại một cách thân thiện.\n\n## IV. Lưu ý quan trọng\n\n*   **Bảo mật:** Luôn validate và sanitize dữ liệu đầu vào ở cả frontend và backend. Không bao giờ tin tưởng dữ liệu từ client. Việc thay đổi mật khẩu phải yêu cầu xác thực lại mật khẩu hiện tại.\n*   **Tách biệt Logic:** Giữ cho controller tinh gọn bằng cách chuyển các logic xử lý phức tạp (ví dụ: logic upload file, tương tác database) sang các tầng `services`.\n*   **Trải nghiệm người dùng (UX):** Cung cấp phản hồi ngay lập tức cho người dùng sau mỗi hành động. Ví dụ, hiển thị một spinner trong khi đang tải ảnh lên, và cập nhật ảnh đại diện ngay khi thành công.\n*   **Quản lý biến môi trường:** Lưu các thông tin nhạy cảm như API keys của Cloudinary, chuỗi bí mật JWT trong file `.env` và không bao giờ commit file này lên Git.\n*   **Xử lý lỗi:** Xây dựng một middleware xử lý lỗi tập trung ở backend để bắt và định dạng các lỗi một cách nhất quán.\n\n## V. Tài liệu tham khảo\n\nDưới đây là một số tài liệu và hướng dẫn liên quan đến các chủ đề được đề cập, giúp bạn tìm hiểu sâu hơn:\n\n1.  [Beginner's Guide to User Authentication in MERN Stack - GeeksforGeeks](https://www.geeksforgeeks.org/mern/beginners-guide-to-user-authentication-in-mern-stack/)\n2.  [Building a Full-Stack Authentication System with MERN - Medium](https://medium.com/@fizamuneer0101/building-a-full-stack-authentication-system-with-mern-6e1b1158031e)\n3.  [#42 Updating Profile pic | MERN stack tutorial | Instagram clone - YouTube](https://www.youtube.com/watch?v=6EPYobfVxak)\n4.  [Full Stack MERN Authentication # 23 - Upload Avatar - YouTube](https://www.youtube.com/watch?v=51LsF903pYY)\n5.  [Forgot Password and Reset Password in MERN Stack - YouTube](https://www.youtube.com/watch?v=YXjORp170Lg)\n6.  [Tài liệu về Multer](https://github.com/expressjs/multer)\n7.  [Tài liệu về Cloudinary (Node.js SDK)](https://cloudinary.com/documentation/node_integration)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong MERN stack, middleware `multer` thường được sử dụng cho mục đích chính nào?",
+        "options": [
+          "Xác thực token JWT",
+          "Xử lý dữ liệu `multipart/form-data` cho việc upload file",
+          "Mã hóa mật khẩu người dùng trước khi lưu",
+          "Ghi log các yêu cầu HTTP"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`multer` là một middleware cho Node.js và Express, được thiết kế đặc biệt để xử lý các request có kiểu content `multipart/form-data`, thường được sử dụng để upload file."
+      },
+      {
+        "question": "Khi xây dựng tính năng thay đổi mật khẩu, bước nào sau đây là quan trọng nhất để đảm bảo an toàn phía backend?",
+        "options": [
+          "Kiểm tra xem mật khẩu mới có đủ mạnh không.",
+          "So sánh mật khẩu mới và mật khẩu xác nhận có trùng khớp không.",
+          "Xác thực mật khẩu hiện tại của người dùng có đúng với mật khẩu đã lưu trong database không.",
+          "Gửi email thông báo cho người dùng sau khi đổi mật khẩu thành công."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trước khi cho phép cập nhật mật khẩu mới, backend phải xác thực danh tính của người yêu cầu bằng cách kiểm tra mật khẩu hiện tại của họ. Đây là bước cốt lõi để ngăn chặn việc thay đổi mật khẩu trái phép."
+      },
+      {
+        "question": "Tại sao việc lưu trữ file (như ảnh đại diện) trên các dịch vụ cloud (Cloudinary, S3) lại được ưu tiên hơn so với lưu trực tiếp trên server ứng dụng?",
+        "options": [
+          "Vì nó rẻ hơn so với việc mua thêm ổ cứng cho server.",
+          "Vì nó cung cấp khả năng mở rộng (scalability), quản lý dễ dàng và tối ưu hóa việc phân phối nội dung (CDN).",
+          "Vì chỉ có dịch vụ cloud mới cho phép upload file.",
+          "Vì nó giúp giảm tải cho database."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Dịch vụ cloud cung cấp giải pháp toàn diện cho việc lưu trữ file, bao gồm khả năng mở rộng không giới hạn, các công cụ quản lý mạnh mẽ, và tích hợp CDN để tăng tốc độ truy cập file từ khắp nơi trên thế giới."
+      },
+      {
+        "question": "Trong React, để gửi file lên server, ta nên sử dụng đối tượng nào để đóng gói dữ liệu?",
+        "options": [
+          "JSON Object",
+          "Array",
+          "String",
+          "FormData"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Đối tượng `FormData` được sử dụng để tạo một tập hợp các cặp key/value để gửi đến server, đặc biệt hữu ích khi gửi file vì nó có thể mô phỏng một form submit đầy đủ."
+      },
+      {
+        "question": "Route API nào sau đây tuân thủ đúng chuẩn RESTful cho việc cập nhật thông tin của người dùng đang đăng nhập?",
+        "options": [
+          "GET /api/users/update",
+          "POST /api/users/me",
+          "PUT /api/users/me",
+          "DELETE /api/users/me"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phương thức `PUT` (hoặc `PATCH`) được dùng để cập nhật tài nguyên đã tồn tại. Endpoint `/api/users/me` là một cách phổ biến để chỉ tài nguyên của chính người dùng đang thực hiện yêu cầu."
+      },
+      {
+        "question": "Hàm `user.matchPassword(password)` trong model thường được cài đặt bằng thư viện nào để so sánh mật khẩu?",
+        "options": [
+          "jsonwebtoken",
+          "moment",
+          "bcrypt",
+          "lodash"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`bcrypt` là thư viện phổ biến và an toàn để hash mật khẩu và cung cấp hàm `compare` để so sánh một mật khẩu thuần với một chuỗi hash mà không cần giải mã."
+      },
+      {
+        "question": "Trong Express, `req.user.id` thường được lấy từ đâu trong một route được bảo vệ?",
+        "options": [
+          "Từ query string của URL.",
+          "Từ `req.body` của request.",
+          "Từ middleware xác thực (ví dụ: JWT) đã giải mã token và gắn thông tin user vào đối tượng `req`.",
+          "Từ session của server."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Một middleware xác thực (ví dụ `protect`) sẽ kiểm tra token, giải mã nó để lấy ID người dùng, sau đó gắn đối tượng user (hoặc chỉ ID) vào `req` để các controller phía sau có thể sử dụng."
+      },
+      {
+        "question": "Để xem trước ảnh vừa chọn từ `<input type=\"file\" />` ở phía client (React), bạn có thể sử dụng API nào của trình duyệt?",
+        "options": [
+          "localStorage.setItem()",
+          "URL.createObjectURL()",
+          "window.alert()",
+          "fetch()"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`URL.createObjectURL(file)` tạo ra một DOMString chứa URL đại diện cho đối tượng `File` được chỉ định. URL này có thể được dùng làm giá trị cho thuộc tính `src` của thẻ `<img>` để hiển thị ảnh."
+      },
+      {
+        "question": "Middleware `pre('save', ...)` trong Mongoose được sử dụng để làm gì trong ngữ cảnh cập nhật mật khẩu?",
+        "options": [
+          "Để xóa người dùng trước khi lưu.",
+          "Để tự động hash mật khẩu nếu trường `password` đã bị thay đổi trước khi tài liệu được lưu.",
+          "Để gửi email cho người dùng sau khi lưu.",
+          "Để validate dữ liệu trước khi controller xử lý."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Middleware `pre('save')` là một hook của Mongoose, cho phép thực thi một hàm ngay trước khi một tài liệu được lưu. Nó rất lý tưởng để tự động hash mật khẩu mới mà không cần gọi hàm hash trong controller."
+      },
+      {
+        "question": "Khi upload file ảnh đại diện, header `Content-Type` của request nên được đặt là gì?",
+        "options": [
+          "application/json",
+          "text/plain",
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Khi request chứa dữ liệu file, `Content-Type` phải là `multipart/form-data`. Thư viện như `axios` thường tự động đặt header này khi bạn truyền một đối tượng `FormData` làm body."
+      },
+      {
+        "question": "Phương thức HTTP nào thường được sử dụng cho API thay đổi mật khẩu?",
+        "options": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`PUT` (hoặc `PATCH`) là phương thức phù hợp vì hành động này là cập nhật một phần thông tin (mật khẩu) của một tài nguyên đã tồn tại (người dùng)."
+      },
+      {
+        "question": "Làm thế nào để backend biết được người dùng nào đang yêu cầu thay đổi thông tin trong một route được bảo vệ?",
+        "options": [
+          "Bằng cách yêu cầu người dùng gửi ID của họ trong `req.body`.",
+          "Bằng cách lấy ID từ token (ví dụ: JWT) đã được giải mã bởi middleware xác thực.",
+          "Bằng cách tra cứu địa chỉ IP của người dùng.",
+          "Bằng cách hỏi người dùng trong một bước riêng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cách làm an toàn và chuẩn nhất là dựa vào thông tin định danh (ví dụ: user ID) được lưu trong token. Middleware xác thực sẽ giải mã token và cung cấp thông tin này một cách đáng tin cậy cho controller."
+      },
+      {
+        "question": "Tại sao không nên lưu các thông tin nhạy cảm như API keys, secret keys trực tiếp trong code?",
+        "options": [
+          "Vì nó làm code khó đọc hơn.",
+          "Vì nó vi phạm nguyên tắc DRY (Don't Repeat Yourself).",
+          "Vì nó tạo ra rủi ro bảo mật nghiêm trọng nếu code bị lộ, đặc biệt khi đưa lên các kho chứa công khai như GitHub.",
+          "Vì các key này thường xuyên thay đổi."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lưu trữ thông tin nhạy cảm trong code là một lỗ hổng bảo mật lớn. Chúng nên được lưu trong các biến môi trường (sử dụng file `.env`) và file `.env` phải được thêm vào `.gitignore`."
+      },
+      {
+        "question": "Trong controller `updateUserProfile`, sau khi cập nhật thành công, tại sao nên trả về thông tin người dùng đã được cập nhật?",
+        "options": [
+          "Để client không cần phải gọi thêm một API để lấy thông tin mới.",
+          "Vì đó là yêu cầu bắt buộc của chuẩn REST.",
+          "Để server có thể lưu lại bản sao của dữ liệu.",
+          "Để tăng dung lượng của response body."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Trả về tài nguyên đã được cập nhật giúp client (ví dụ: ứng dụng React) có thể cập nhật state của nó ngay lập tức mà không cần thực hiện thêm một request `GET`, giúp cải thiện trải nghiệm người dùng và hiệu suất."
+      },
+      {
+        "question": "Nếu việc upload file lên Cloudinary thất bại trong controller, hành động hợp lý tiếp theo là gì?",
+        "options": [
+          "Lưu file tạm thời trên server và thử lại sau.",
+          "Bỏ qua lỗi và trả về response thành công.",
+          "Trả về một response lỗi (ví dụ: status 400 hoặc 500) với thông báo lỗi rõ ràng.",
+          "Xóa tài khoản người dùng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi một thao tác quan trọng thất bại, server phải thông báo cho client biết về lỗi đó để client có thể xử lý và thông báo cho người dùng. Trả về mã lỗi HTTP phù hợp là cách làm chuẩn."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Cập nhật Tên hiển thị Người dùng",
+        "description": "Hoàn thiện controller `updateUserProfile` để cho phép người dùng cập nhật `displayName` của họ. Dữ liệu `displayName` mới được gửi lên trong `req.body`. Nếu không có `displayName` trong body, hãy giữ nguyên giá trị cũ.",
+        "starterCode": "const updateUserProfile = async (req, res) => {\n  const user = await User.findById(req.user.id);\n\n  if (user) {\n    // TODO: Cập nhật displayName của user dựa trên req.body.displayName\n    // và giữ nguyên giá trị cũ nếu không có giá trị mới.\n\n    const updatedUser = await user.save();\n    res.json({\n      _id: updatedUser._id,\n      displayName: updatedUser.displayName,\n      email: updatedUser.email,\n    });\n  } else {\n    res.status(404);\n    throw new Error('User not found');\n  }\n};",
+        "solution": "const updateUserProfile = async (req, res) => {\n  const user = await User.findById(req.user.id);\n\n  if (user) {\n    user.displayName = req.body.displayName || user.displayName;\n\n    const updatedUser = await user.save();\n    res.json({\n      _id: updatedUser._id,\n      displayName: updatedUser.displayName,\n      email: updatedUser.email,\n    });\n  } else {\n    res.status(404);\n    throw new Error('User not found');\n  }\n};",
+        "testCases": "1. Gửi request PUT đến endpoint với `displayName` mới, kiểm tra response trả về có `displayName` đã được cập nhật. 2. Gửi request PUT mà không có `displayName` trong body, kiểm tra `displayName` trong response không thay đổi."
+      },
+      {
+        "title": "Bài 2: Tạo Route Cập nhật Profile",
+        "description": "Trong file `userRoutes.js`, hãy tạo một route mới sử dụng phương thức `PUT` cho đường dẫn `/me`. Route này cần được bảo vệ bởi middleware `protect` và gọi đến controller `updateUserProfile`.",
+        "starterCode": "const express = require('express');\nconst router = express.Router();\nconst { protect } = require('../middleware/authMiddleware');\nconst { updateUserProfile } = require('../controllers/userController');\n\n// TODO: Định nghĩa route để cập nhật profile người dùng tại đây\n\nmodule.exports = router;",
+        "solution": "const express = require('express');\nconst router = express.Router();\nconst { protect } = require('../middleware/authMiddleware');\nconst { updateUserProfile } = require('../controllers/userController');\n\nrouter.route('/me').put(protect, updateUserProfile);\n\nmodule.exports = router;",
+        "testCases": "1. Gọi API `PUT /api/users/me` với token hợp lệ, kiểm tra request có được xử lý bởi `updateUserProfile`. 2. Gọi API `PUT /api/users/me` không có token, kiểm tra nhận được lỗi 401 Unauthorized."
+      },
+      {
+        "title": "Bài 3: Cài đặt Mongoose pre-save hook để hash mật khẩu",
+        "description": "Trong file `userModel.js`, hãy hoàn thiện middleware `pre('save')`. Middleware này phải kiểm tra xem trường `password` có bị thay đổi không. Nếu có, nó phải hash mật khẩu mới bằng `bcrypt` trước khi lưu vào database.",
+        "starterCode": "userSchema.pre('save', async function (next) {\n  // TODO: Kiểm tra nếu mật khẩu không bị thay đổi thì bỏ qua (gọi next())\n  \n  // TODO: Hash mật khẩu mới và gán lại cho this.password\n  const salt = await bcrypt.genSalt(10);\n  this.password = await bcrypt.hash(this.password, salt);\n});",
+        "solution": "userSchema.pre('save', async function (next) {\n  if (!this.isModified('password')) {\n    next();\n  }\n  const salt = await bcrypt.genSalt(10);\n  this.password = await bcrypt.hash(this.password, salt);\n});",
+        "testCases": "1. Tạo một user mới và lưu, kiểm tra mật khẩu trong database đã được hash. 2. Cập nhật `displayName` của một user đã có và lưu, kiểm tra mật khẩu của user đó trong database không bị hash lại."
+      },
+      {
+        "title": "Bài 4: Hoàn thiện Controller Thay đổi Mật khẩu",
+        "description": "Hoàn thiện controller `changePassword`. Controller cần: 1. Tìm người dùng. 2. Xác thực `currentPassword` từ `req.body` có khớp với mật khẩu trong DB không. 3. Nếu khớp, gán `newPassword` cho `user.password` và lưu lại. 4. Nếu không khớp, trả về lỗi 401.",
+        "starterCode": "const changePassword = async (req, res) => {\n  const { currentPassword, newPassword } = req.body;\n  const user = await User.findById(req.user.id);\n\n  // TODO: Kiểm tra user có tồn tại và mật khẩu hiện tại có khớp không\n  if (user && (await user.matchPassword(currentPassword))) {\n    // TODO: Gán mật khẩu mới và lưu user\n    res.json({ message: 'Password updated successfully' });\n  } else {\n    // TODO: Trả về lỗi 401 và thông báo lỗi\n  }\n};",
+        "solution": "const changePassword = async (req, res) => {\n  const { currentPassword, newPassword } = req.body;\n  const user = await User.findById(req.user.id);\n\n  if (user && (await user.matchPassword(currentPassword))) {\n    user.password = newPassword; // Middleware pre-save sẽ tự động hash\n    await user.save();\n    res.json({ message: 'Password updated successfully' });\n  } else {\n    res.status(401);\n    throw new Error('Invalid current password');\n  }\n};",
+        "testCases": "1. Gửi request với `currentPassword` đúng và `newPassword`, kiểm tra nhận được thông báo thành công. 2. Gửi request với `currentPassword` sai, kiểm tra nhận được lỗi 401."
+      },
+      {
+        "title": "Bài 5: Cấu hình Multer và Route Upload Avatar",
+        "description": "Hoàn thiện việc cấu hình `multer` để xử lý upload một file duy nhất có tên là `avatar`. Sau đó, tạo một route `POST` cho đường dẫn `/me/avatar` được bảo vệ, sử dụng middleware `upload.single('avatar')` và một controller (có thể viết inline) để xử lý logic. Controller chỉ cần trả về tên file đã upload.",
+        "starterCode": "const multer = require('multer');\nconst { protect } = require('../middleware/authMiddleware');\n\n// TODO: Cấu hình multer để lưu file vào bộ nhớ (memoryStorage)\nconst upload = multer({ storage: multer.memoryStorage() });\n\n// TODO: Tạo route POST '/me/avatar' với middleware protect và upload.single('avatar')\n// Trong controller, trả về res.json({ fileName: req.file.originalname });\n",
+        "solution": "const multer = require('multer');\nconst { protect } = require('../middleware/authMiddleware');\nconst router = require('express').Router();\n\n// Cấu hình multer để lưu file vào bộ nhớ (memoryStorage)\nconst upload = multer({ storage: multer.memoryStorage() });\n\n// Tạo route POST '/me/avatar' với middleware protect và upload.single('avatar')\nrouter.post('/me/avatar', protect, upload.single('avatar'), (req, res) => {\n  if (!req.file) {\n    return res.status(400).json({ message: 'Please upload a file' });\n  }\n  res.json({ fileName: req.file.originalname });\n});",
+        "testCases": "1. Gửi request POST đến `/api/users/me/avatar` với một file đính kèm tên `avatar` và token hợp lệ, kiểm tra nhận được JSON chứa tên file. 2. Gửi request mà không có file, kiểm tra nhận được lỗi 400."
+      }
+    ]
+  }
+}

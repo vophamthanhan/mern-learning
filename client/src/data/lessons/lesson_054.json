@@ -1,0 +1,213 @@
+{
+  "id": 54,
+  "title": "Bài học 39: Hoàn thiện kéo thả Card trong cùng Column với dnd-kit",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# Bài học 39: Hoàn thiện kéo thả Card trong cùng Column với dnd-kit\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tập trung vào việc hoàn thiện chức năng kéo thả (drag and drop) các \"Card\" trong cùng một \"Column\" của dự án Trello clone. Sử dụng thư viện `dnd-kit`, mục tiêu là cho phép người dùng sắp xếp lại vị trí các Card một cách trực quan, đồng thời cập nhật lại trạng thái (state) của ứng dụng một cách chính xác.\n\n## II. Kiến thức chi tiết\n\nĐể thực hiện chức năng này, chúng ta cần nắm vững các khái niệm và thành phần cốt lõi của thư viện `dnd-kit` cũng như cách áp dụng chúng trong môi trường ReactJS với Material UI.\n\n### 1. Thư viện `dnd-kit`\n\n`dnd-kit` là một bộ công cụ hiện đại, nhẹ và có khả năng tùy biến cao để xây dựng các giao diện kéo thả trong ứng dụng React. Nó cung cấp một tập hợp các hooks và components mạnh mẽ, giúp việc triển khai các tính năng phức tạp trở nên dễ dàng hơn.\n\n### 2. Các thành phần và Hooks chính\n\n- **`DndContext`**: Đây là component cha bao bọc toàn bộ khu vực có khả năng kéo thả. Nó cung cấp context cho tất cả các thành phần con và quản lý các sự kiện kéo thả.\n- **`useSensor` và `useSensors`**: Dùng để định nghĩa các loại cảm biến đầu vào (input sensors) như chuột (`PointerSensor`), bàn phím (`KeyboardSensor`), hoặc cảm ứng (`TouchSensor`). Điều này cho phép `dnd-kit` hoạt động trên nhiều loại thiết bị khác nhau.\n- **`closestCorners`**: Là một trong nhiều thuật toán phát hiện va chạm (collision detection algorithm) mà `dnd-kit` cung cấp. Thuật toán này xác định đối tượng mà con trỏ đang ở gần nhất dựa trên khoảng cách đến các góc của đối tượng đó. Đây là lựa chọn phù hợp cho các danh sách có thể sắp xếp.\n- **`DragOverlay`**: Một component hữu ích để hiển thị một bản sao (clone) của phần tử đang được kéo. Điều này giúp tạo ra hiệu ứng kéo mượt mà và không làm thay đổi layout của danh sách gốc trong quá trình kéo.\n- **`SortableContext`**: Cung cấp context cho các phần tử có thể sắp xếp. Nó yêu cầu một danh sách các `id` duy nhất (`items`) và một `strategy` để xử lý việc sắp xếp (ví dụ: `verticalListSortingStrategy`).\n- **`arrayMove`**: Một hàm tiện ích từ `@dnd-kit/sortable` giúp di chuyển một phần tử từ vị trí cũ sang vị trí mới trong một mảng. Đây là công cụ chính để cập nhật lại thứ tự của mảng `cards` sau khi người dùng thả Card.\n\n### 3. Luồng xử lý sự kiện `onDragEnd`\n\nSự kiện `onDragEnd` là nơi chúng ta xử lý logic chính sau khi người dùng hoàn tất hành động kéo và thả. Luồng xử lý diễn ra như sau:\n\n1.  **Kiểm tra va chạm**: Sự kiện `onDragEnd` trả về hai đối tượng quan trọng là `active` (phần tử đang được kéo) và `over` (phần tử mà `active` được thả lên trên). Chúng ta cần kiểm tra xem `over` có tồn tại hay không và `active.id` có khác `over.id` hay không. Nếu không, nghĩa là người dùng không thả Card vào một vị trí hợp lệ hoặc thả lại vị trí cũ, ta không cần làm gì cả.\n\n2.  **Xác định vị trí cũ và mới**: Lấy `id` của Card đang được kéo (`active.id`) và `id` của Card ở vị trí đích (`over.id`). Dựa vào các `id` này, chúng ta tìm chỉ số (index) cũ và mới của Card trong mảng `cards` của Column hiện tại.\n\n3.  **Cập nhật mảng Cards**: Sử dụng hàm `arrayMove(cards, oldIndex, newIndex)` để tạo ra một mảng `cards` mới đã được sắp xếp lại. `arrayMove` sẽ không làm thay đổi mảng gốc mà trả về một mảng mới.\n\n4.  **Cập nhật State**: Gọi hàm `setColumns` hoặc các hàm cập nhật state tương ứng để cập nhật lại trạng thái của Column với mảng `cards` mới. Điều này sẽ khiến React re-render lại giao diện và hiển thị thứ tự Card mới cho người dùng.\n\n### Code mẫu (minh họa logic trong `onDragEnd`)\n\n```javascript\nconst handleDragEnd = (event) => {\n  const { active, over } = event;\n\n  // Kiểm tra nếu không có vị trí đích hoặc kéo thả lại chính nó\n  if (!over || active.id === over.id) return;\n\n  // Tìm column chứa card đang active\n  const { id: activeColumnId } = active.data.current.column;\n  const activeColumn = orderedColumns.find(c => c._id === activeColumnId);\n\n  // Tìm vị trí cũ và mới của card\n  const oldIndex = activeColumn.cards.findIndex(c => c._id === active.id);\n  const newIndex = activeColumn.cards.findIndex(c => c._id === over.id);\n\n  // Sắp xếp lại mảng cards\n  const dndOrderedCards = arrayMove(activeColumn.cards, oldIndex, newIndex);\n\n  // Cập nhật lại state của column\n  const newColumns = orderedColumns.map(c => {\n    if (c._id === activeColumnId) {\n      return { ...c, cards: dndOrderedCards, cardOrderIds: dndOrderedCards.map(card => card._id) };\n    }\n    return c;\n  });\n\n  setOrderedColumns(newColumns);\n};\n```\n\n## III. Các bước thực hành\n\n1.  **Cài đặt `dnd-kit`**: Nếu chưa có, hãy thêm các gói cần thiết vào dự án của bạn:\n    ```bash\n    yarn add @dnd-kit/core @dnd-kit/sortable\n    ```\n\n2.  **Bao bọc ứng dụng với `DndContext`**: Trong component `BoardContent`, bao bọc toàn bộ layout bằng `<DndContext>` và cấu hình các `sensors` và `collisionDetection`.\n\n3.  **Triển khai `onDragEnd`**: Thêm prop `onDragEnd` vào `DndContext` và viết hàm xử lý logic như đã giải thích ở trên.\n\n4.  **Sử dụng `SortableContext`**: Trong component `Column`, bao bọc danh sách các `Card` bằng `<SortableContext>` và truyền vào mảng `cardOrderIds` cho prop `items`.\n\n5.  **Sử dụng `useSortable`**: Trong component `Card`, sử dụng hook `useSortable` để làm cho Card có thể kéo thả được. Hook này sẽ trả về các thuộc tính (`attributes`, `listeners`) và `ref` cần thiết để gắn vào phần tử DOM của Card.\n\n6.  **Cập nhật State**: Đảm bảo rằng logic cập nhật state trong `handleDragEnd` hoạt động chính xác, cập nhật cả mảng `cards` và mảng `cardOrderIds` để giữ cho dữ liệu và giao diện luôn đồng bộ.\n\n## IV. Lưu ý quan trọng\n\n- **ID duy nhất**: Đảm bảo rằng tất cả các phần tử có thể kéo thả (`Column`, `Card`) đều có một `id` duy nhất và ổn định. `dnd-kit` sử dụng các `id` này để theo dõi các phần tử.\n- **Cấu trúc dữ liệu**: Việc giữ cho cấu trúc dữ liệu (state) của bạn được tổ chức tốt là rất quan trọng. Việc tách `cardOrderIds` ra khỏi `cards` giúp tối ưu hóa hiệu suất re-render, vì bạn chỉ cần cập nhật mảng ID khi sắp xếp lại, thay vì phải xử lý lại toàn bộ mảng đối tượng `cards`.\n- **Bug và các trường hợp đặc biệt**: Như đã được đề cập trong phần bình luận của video, có thể có những bug phát sinh ở các trường hợp đặc biệt, ví dụ như khi kéo Card vào khu vực giao nhau giữa tiêu đề Column và Card đầu tiên. Cần kiểm tra và xử lý kỹ các trường hợp này để đảm bảo trải nghiệm người dùng tốt nhất.\n- **Tối ưu hóa hiệu suất**: Với các danh sách dài, việc sử dụng `DragOverlay` và các chiến lược tối ưu hóa khác (như `virtualization`) là cần thiết để giữ cho ứng dụng mượt mà.\n\n## V. Tài liệu tham khảo\n\n1.  **Video bài học**: [35. Hoàn thiện kéo thả Card trong cùng Column - Dnd-kit | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=H7HqCjCKgcQ&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=39)\n2.  **Tài liệu `dnd-kit`**: [dnd-kit Documentation](https://dndkit.com/)\n3.  **GitHub Repo của tác giả**: [trungquandev on GitHub](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Component nào của `dnd-kit` được sử dụng để bao bọc toàn bộ khu vực có khả năng kéo thả?",
+        "options": [
+          "A. SortableContext",
+          "B. DndContext",
+          "C. DragOverlay",
+          "D. useSensor"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`DndContext` là component cha cung cấp context cho tất cả các thành phần con và quản lý các sự kiện kéo thả trong khu vực đó."
+      },
+      {
+        "question": "Mục đích chính của việc sử dụng `DragOverlay` trong `dnd-kit` là gì?",
+        "options": [
+          "A. Để phát hiện va chạm giữa các phần tử.",
+          "B. Để quản lý trạng thái của các phần tử có thể sắp xếp.",
+          "C. Để hiển thị một bản sao của phần tử đang được kéo, tạo hiệu ứng mượt mà.",
+          "D. Để định nghĩa các loại cảm biến đầu vào như chuột hoặc bàn phím."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`DragOverlay` được sử dụng để hiển thị một bản sao (clone) của phần tử đang được kéo, giúp tạo ra hiệu ứng kéo mượt mà và không làm ảnh hưởng đến layout gốc."
+      },
+      {
+        "question": "Hàm `arrayMove` từ `@dnd-kit/sortable` có chức năng gì?",
+        "options": [
+          "A. Di chuyển một phần tử từ vị trí cũ sang vị trí mới trong một mảng.",
+          "B. Sắp xếp một mảng theo thứ tự bảng chữ cái.",
+          "C. Xóa một phần tử khỏi mảng.",
+          "D. Sao chép một mảng."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`arrayMove` là một hàm tiện ích giúp di chuyển một phần tử từ chỉ số cũ sang chỉ số mới trong một mảng, trả về một mảng mới đã được sắp xếp lại."
+      },
+      {
+        "question": "Trong sự kiện `onDragEnd`, hai đối tượng quan trọng nào được trả về?",
+        "options": [
+          "A. `start` và `end`",
+          "B. `source` và `destination`",
+          "C. `active` và `over`",
+          "D. `dragged` và `dropped`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sự kiện `onDragEnd` trả về đối tượng `event` chứa `active` (phần tử đang được kéo) và `over` (phần tử mà `active` được thả lên trên)."
+      },
+      {
+        "question": "Thuật toán phát hiện va chạm `closestCorners` hoạt động dựa trên nguyên tắc nào?",
+        "options": [
+          "A. Dựa trên điểm trung tâm của các đối tượng.",
+          "B. Dựa trên khoảng cách đến các góc của đối tượng gần nhất.",
+          "C. Dựa trên diện tích chồng chéo của các đối tượng.",
+          "D. Dựa trên vị trí của con trỏ chuột."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`closestCorners` xác định đối tượng va chạm bằng cách tính toán khoảng cách từ con trỏ đến tất cả các góc của các đối tượng khác và chọn đối tượng có khoảng cách gần nhất."
+      },
+      {
+        "question": "Để làm cho một danh sách các phần tử có thể sắp xếp được, bạn nên bao bọc chúng bằng component nào?",
+        "options": [
+          "A. DndContext",
+          "B. SortableContext",
+          "C. DragOverlay",
+          "D. PointerSensor"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`SortableContext` cung cấp context cần thiết cho một nhóm các phần tử có thể sắp xếp, yêu cầu một danh sách các ID duy nhất và một chiến lược sắp xếp."
+      },
+      {
+        "question": "Hook nào trong `dnd-kit` được sử dụng bên trong một component để làm cho nó có thể kéo thả được?",
+        "options": [
+          "A. useDrag",
+          "B. useDrop",
+          "C. useSortable",
+          "D. useDnd"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Hook `useSortable` được sử dụng trong component con của `SortableContext` để cung cấp các thuộc tính và listeners cần thiết để kích hoạt hành vi kéo thả và sắp xếp."
+      },
+      {
+        "question": "Khi nào thì logic bên trong hàm `handleDragEnd` không cần thực thi?",
+        "options": [
+          "A. Khi `active.id` khác `over.id`.",
+          "B. Khi `over` tồn tại.",
+          "C. Khi người dùng kéo một phần tử ra ngoài cửa sổ trình duyệt.",
+          "D. Khi `over` không tồn tại hoặc `active.id` bằng `over.id`."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Nếu không có vị trí đích (`over` là null) hoặc người dùng thả phần tử lại vị trí cũ (`active.id === over.id`), chúng ta không cần cập nhật lại trạng thái."
+      },
+      {
+        "question": "Prop `items` của `SortableContext` yêu cầu loại dữ liệu nào?",
+        "options": [
+          "A. Một mảng các đối tượng component React.",
+          "B. Một mảng các chuỗi ID duy nhất.",
+          "C. Một đối tượng chứa thông tin về layout.",
+          "D. Một hàm callback."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`SortableContext` yêu cầu một mảng các ID ổn định và duy nhất cho prop `items` để theo dõi các phần tử có thể sắp xếp."
+      },
+      {
+        "question": "Tại sao việc đảm bảo các `id` là duy nhất và ổn định lại quan trọng trong `dnd-kit`?",
+        "options": [
+          "A. Để `dnd-kit` có thể áp dụng đúng CSS cho các phần tử.",
+          "B. Để `dnd-kit` có thể theo dõi chính xác các phần tử trong quá trình kéo thả.",
+          "C. Để tăng tốc độ render của ứng dụng React.",
+          "D. Để tuân thủ các tiêu chuẩn về khả năng truy cập web."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`dnd-kit` sử dụng các `id` để xác định và theo dõi các phần tử. Nếu ID không duy nhất hoặc thay đổi giữa các lần render, thư viện sẽ không thể hoạt động chính xác."
+      },
+      {
+        "question": "Trong đoạn code mẫu `handleDragEnd`, biến `dndOrderedCards` được tạo ra bằng cách nào?",
+        "options": [
+          "A. Bằng cách gọi `activeColumn.cards.sort()`",
+          "B. Bằng cách sử dụng hàm `arrayMove()`",
+          "C. Bằng cách lọc mảng `activeColumn.cards`",
+          "D. Bằng cách nối hai mảng lại với nhau"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đoạn code sử dụng `arrayMove(activeColumn.cards, oldIndex, newIndex)` để tạo ra một mảng mới (`dndOrderedCards`) với thứ tự các card đã được thay đổi."
+      },
+      {
+        "question": "Mục đích của việc sử dụng `useSensors` và `useSensor` là gì?",
+        "options": [
+          "A. Để tối ưu hóa hiệu suất của `onDragEnd`.",
+          "B. Để định nghĩa các loại cảm biến đầu vào như chuột, bàn phím, cảm ứng.",
+          "C. Để tạo hiệu ứng động khi kéo thả.",
+          "D. Để kết nối `dnd-kit` với Redux hoặc các thư viện quản lý state khác."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`useSensor` và `useSensors` cho phép cấu hình cách `dnd-kit` lắng nghe các sự kiện đầu vào, giúp nó hoạt động trên nhiều loại thiết bị khác nhau."
+      },
+      {
+        "question": "Trong ngữ cảnh của bài học, `cardOrderIds` được sử dụng để làm gì?",
+        "options": [
+          "A. Để lưu trữ nội dung text của mỗi card.",
+          "B. Để tối ưu hóa hiệu suất re-render bằng cách chỉ cập nhật mảng ID khi sắp xếp.",
+          "C. Để định danh duy nhất cho mỗi column.",
+          "D. Để lưu trữ màu sắc của mỗi card."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc tách `cardOrderIds` ra khỏi mảng `cards` đầy đủ giúp tối ưu hóa hiệu suất. Khi sắp xếp lại, chỉ cần re-render các component liên quan đến mảng ID, thay vì xử lý lại toàn bộ mảng đối tượng `cards`."
+      },
+      {
+        "question": "Để cài đặt các gói cần thiết của `dnd-kit` bằng yarn, bạn sử dụng lệnh nào?",
+        "options": [
+          "A. `yarn add dnd-kit`",
+          "B. `yarn install @dnd-kit/core @dnd-kit/sortable`",
+          "C. `yarn add @dnd-kit/core @dnd-kit/sortable`",
+          "D. `yarn install dnd-kit-react`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lệnh chính xác để thêm các gói core và sortable của `dnd-kit` vào dự án bằng yarn là `yarn add @dnd-kit/core @dnd-kit/sortable`."
+      },
+      {
+        "question": "Hành động nào sau đây sẽ KHÔNG kích hoạt việc cập nhật state trong hàm `handleDragEnd` được cung cấp?",
+        "options": [
+          "A. Kéo Card A và thả lên trên Card B trong cùng một column.",
+          "B. Kéo Card A và thả lại vào đúng vị trí ban đầu của nó.",
+          "C. Kéo Card đầu tiên và thả vào vị trí của card cuối cùng.",
+          "D. Kéo Card cuối cùng và thả vào vị trí của card đầu tiên."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hàm xử lý có điều kiện `if (!over || active.id === over.id) return;`. Nếu `active.id` bằng `over.id`, nghĩa là card được thả lại vị trí cũ, hàm sẽ kết thúc sớm và không cập nhật state."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Thiết lập DndContext",
+        "description": "Bao bọc một component `Board` đơn giản bằng `DndContext` và cấu hình cảm biến chuột (`PointerSensor`). Đây là bước đầu tiên để kích hoạt chức năng kéo thả.",
+        "starterCode": "import React from 'react';\nimport { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';\n\nconst Board = () => {\n  return <div>Board Content</div>;\n};\n\nconst App = () => {\n  // Sử dụng các hook useSensor và useSensors để cấu hình cảm biến\n  const sensors = useSensors(/* Your code here */);\n\n  return (\n    // Bao bọc Board bằng DndContext và truyền vào sensors\n    // <Your code here>\n      <Board />\n    // </Your code here>\n  );\n};\n\nexport default App;",
+        "solution": "import React from 'react';\nimport { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';\n\nconst Board = () => {\n  return <div>Board Content</div>;\n};\n\nconst App = () => {\n  const sensors = useSensors(\n    useSensor(PointerSensor, {\n      activationConstraint: { distance: 10 }\n    })\n  );\n\n  return (\n    <DndContext sensors={sensors}>\n      <Board />\n    </DndContext>\n  );\n};\n\nexport default App;",
+        "testCases": "Kiểm tra xem component `Board` có được render bên trong một `DndContext` hay không. `DndContext` phải có prop `sensors` được cấu hình với ít nhất một `PointerSensor`."
+      },
+      {
+        "title": "Bài 2: Tạo danh sách có thể sắp xếp với SortableContext",
+        "description": "Sử dụng `SortableContext` để bao bọc một danh sách các card. Cung cấp cho nó một danh sách các ID và chiến lược sắp xếp theo chiều dọc.",
+        "starterCode": "import React from 'react';\nimport { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';\n\nconst cardIds = ['1', '2', '3'];\n\nconst CardList = () => {\n  return (\n    // Sử dụng SortableContext để bao bọc danh sách\n    // <Your code here>\n      <div>\n        {cardIds.map(id => <div key={id}>Card {id}</div>)}\n      </div>\n    // </Your code here>\n  );\n};\n\nexport default CardList;",
+        "solution": "import React from 'react';\nimport { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';\n\nconst cardIds = ['1', '2', '3'];\n\nconst CardList = () => {\n  return (\n    <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>\n      <div>\n        {cardIds.map(id => <div key={id}>Card {id}</div>)}\n      </div>\n    </SortableContext>\n  );\n};\n\nexport default CardList;",
+        "testCases": "Kiểm tra xem `SortableContext` có được sử dụng hay không. Nó phải có prop `items` nhận vào mảng `cardIds` và prop `strategy` được gán `verticalListSortingStrategy`."
+      },
+      {
+        "title": "Bài 3: Làm cho Card có thể kéo thả với useSortable",
+        "description": "Tạo một component `Card` và sử dụng hook `useSortable` để nó có thể tương tác được trong một `SortableContext`. Gắn các thuộc tính và listeners cần thiết vào phần tử DOM.",
+        "starterCode": "import React from 'react';\nimport { useSortable } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nconst Card = ({ id }) => {\n  // Sử dụng hook useSortable\n  const { attributes, listeners, setNodeRef, transform, transition } = /* Your code here */;\n\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n    padding: 10,\n    border: '1px solid black',\n    marginBottom: 5\n  };\n\n  return (\n    // Gắn ref, style và các props khác vào div\n    <div ref={/*...*/} style={/*...*/} {...attributes} {...listeners}>\n      Card {id}\n    </div>\n  );\n};\n\nexport default Card;",
+        "solution": "import React from 'react';\nimport { useSortable } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nconst Card = ({ id }) => {\n  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });\n\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n    padding: 10,\n    border: '1px solid black',\n    marginBottom: 5\n  };\n\n  return (\n    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>\n      Card {id}\n    </div>\n  );\n};\n\nexport default Card;",
+        "testCases": "Kiểm tra xem hook `useSortable({ id })` có được gọi hay không. `setNodeRef` phải được gán cho prop `ref` của div. `style` phải được áp dụng. `{...attributes}` và `{...listeners}` phải được truyền vào div."
+      },
+      {
+        "title": "Bài 4: Xử lý sự kiện onDragEnd cơ bản",
+        "description": "Viết một hàm `handleDragEnd` đơn giản. Khi một card được thả, hãy tìm chỉ số cũ và mới của nó, sau đó sử dụng `arrayMove` để tạo ra một mảng mới đã được sắp xếp lại.",
+        "starterCode": "import { arrayMove } from '@dnd-kit/sortable';\nimport { useState } from 'react';\n\nconst initialItems = [\n  { id: '1', text: 'Card 1' },\n  { id: '2', text: 'Card 2' },\n  { id: '3', text: 'Card 3' }\n];\n\nconst SortableList = () => {\n  const [items, setItems] = useState(initialItems);\n\n  const handleDragEnd = (event) => {\n    const { active, over } = event;\n\n    if (active.id !== over.id) {\n      // Tìm oldIndex và newIndex\n      const oldIndex = /* Your code here */;\n      const newIndex = /* Your code here */;\n\n      // Tạo mảng mới và cập nhật state\n      const newItems = arrayMove(items, oldIndex, newIndex);\n      setItems(newItems);\n    }\n  };\n\n  // DndContext và các component khác được giả định đã có\n  return <div>...</div>;\n};",
+        "solution": "import { arrayMove } from '@dnd-kit/sortable';\nimport { useState } from 'react';\n\nconst initialItems = [\n  { id: '1', text: 'Card 1' },\n  { id: '2', text: 'Card 2' },\n  { id: '3', text: 'Card 3' }\n];\n\nconst SortableList = () => {\n  const [items, setItems] = useState(initialItems);\n\n  const handleDragEnd = (event) => {\n    const { active, over } = event;\n\n    if (over && active.id !== over.id) {\n      const oldIndex = items.findIndex(item => item.id === active.id);\n      const newIndex = items.findIndex(item => item.id === over.id);\n\n      const newItems = arrayMove(items, oldIndex, newIndex);\n      setItems(newItems);\n    }\n  };\n\n  // DndContext và các component khác được giả định đã có\n  return <div>...</div>;\n};",
+        "testCases": "Khi `handleDragEnd` được gọi với `active.id` và `over.id` khác nhau, `oldIndex` và `newIndex` phải được tìm thấy chính xác trong mảng `items`. `arrayMove` phải được gọi với các chỉ số này. `setItems` phải được gọi với mảng mới trả về từ `arrayMove`."
+      },
+      {
+        "title": "Bài 5: Hoàn thiện logic onDragEnd cho Column",
+        "description": "Mô phỏng lại logic trong bài học. Cho một danh sách các column, khi một card được kéo thả trong cùng một column, hãy cập nhật lại mảng `cards` và `cardOrderIds` cho column đó.",
+        "starterCode": "import { arrayMove } from '@dnd-kit/sortable';\n\nconst handleDragEnd = (event, orderedColumns, setOrderedColumns) => {\n  const { active, over } = event;\n\n  if (!over || active.id === over.id) return;\n\n  // Giả sử active.data.current.column chứa column chứa card đang kéo\n  const activeColumn = orderedColumns.find(c => c._id === active.data.current.column._id);\n  if (!activeColumn) return;\n\n  const oldIndex = activeColumn.cards.findIndex(c => c._id === active.id);\n  const newIndex = activeColumn.cards.findIndex(c => c._id === over.id);\n\n  // Sắp xếp lại mảng cards\n  const dndOrderedCards = arrayMove(activeColumn.cards, oldIndex, newIndex);\n\n  // Cập nhật lại state của columns\n  // Yêu cầu: Tạo một mảng columns mới, trong đó column bị ảnh hưởng\n  // được cập nhật với mảng cards và cardOrderIds mới.\n  const newColumns = /* Your code here */;\n\n  setOrderedColumns(newColumns);\n};",
+        "solution": "import { arrayMove } from '@dnd-kit/sortable';\n\nconst handleDragEnd = (event, orderedColumns, setOrderedColumns) => {\n  const { active, over } = event;\n\n  if (!over || active.id === over.id) return;\n\n  const activeColumn = orderedColumns.find(c => c.cards.some(card => card._id === active.id));\n  if (!activeColumn) return;\n\n  const oldIndex = activeColumn.cards.findIndex(c => c._id === active.id);\n  const newIndex = activeColumn.cards.findIndex(c => c._id === over.id);\n\n  const dndOrderedCards = arrayMove(activeColumn.cards, oldIndex, newIndex);\n  const dndOrderedCardIds = dndOrderedCards.map(c => c._id);\n\n  const newColumns = orderedColumns.map(c => {\n    if (c._id === activeColumn._id) {\n      return { ...c, cards: dndOrderedCards, cardOrderIds: dndOrderedCardIds };\n    }\n    return c;\n  });\n\n  setOrderedColumns(newColumns);\n};",
+        "testCases": "Kiểm tra xem `newColumns` có được tạo ra chính xác không. Mảng `newColumns` phải có cùng độ dài với `orderedColumns`. Column có `_id` khớp với `activeColumn._id` phải chứa mảng `cards` và `cardOrderIds` đã được cập nhật. Các column khác phải không thay đổi."
+      }
+    ]
+  }
+}

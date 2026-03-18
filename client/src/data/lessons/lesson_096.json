@@ -1,0 +1,213 @@
+{
+  "id": 96,
+  "title": "Bài học 87: DEMO & REVIEW of the full FULL STACK MERN ADVANCED course, Learn practical programming",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# Bài học 87: DEMO & REVIEW of the full FULL STACK MERN ADVANCED course, Learn practical programming\n\n## Mục tiêu bài học\n\nVideo này không phải là một bài học kỹ thuật chứa đựng code hay các khái niệm lập trình cụ thể, mà là một video giới thiệu và review chi tiết về khóa học \"FULL STACK MERN ADVANCED\" của tác giả TrungQuanDev. Mục tiêu chính của video là:\n\n*   **Giới thiệu tổng quan:** Cung cấp một cái nhìn tổng thể về nội dung, cấu trúc và mục tiêu của khóa học MERN Stack Advanced.\n*   **Demo sản phẩm:** Trình diễn các tính năng, giao diện và sản phẩm cuối cùng mà học viên có thể xây dựng được sau khi hoàn thành khóa học.\n*   **Review chi tiết:** Đánh giá và chia sẻ những điểm nổi bật, kiến thức chuyên sâu và kinh nghiệm thực tế sẽ được truyền đạt trong khóa học.\n*   **Định hướng học tập:** Giúp người xem, đặc biệt là những người đã hoàn thành khóa \"MERN Stack Pro\", có đủ thông tin để quyết định xem khóa học nâng cao này có phù hợp với lộ trình phát triển của bản thân hay không.\n\n## Kiến thức chi tiết được trình bày trong video\n\nDựa trên tiêu đề, mô tả và các thông tin thu thập được, nội dung chính của video sẽ tập trung vào việc demo và review khóa học MERN Stack Advanced. Dưới đây là những kiến thức và kỹ năng mà một khóa học nâng cao như vậy thường bao gồm, và có khả năng cao sẽ được đề cập trong video:\n\n### 1. Kiến trúc và Design Patterns nâng cao\n\n*   **Microservices:** Giới thiệu về kiến trúc microservices, cách chia nhỏ một ứng dụng monilithic thành các service nhỏ, độc lập. Điều này giúp ứng dụng dễ dàng mở rộng, bảo trì và triển khai.\n*   **Domain-Driven Design (DDD):** Áp dụng các nguyên tắc của DDD để thiết kế và xây dựng các hệ thống phức tạp, tập trung vào business domain.\n*   **Advanced API Design:** Thiết kế các API theo các tiêu chuẩn cao hơn như RESTful level 3 (HATEOAS), hoặc giới thiệu về GraphQL như một giải pháp thay thế linh hoạt hơn cho REST.\n\n### 2. Front-end (ReactJS) nâng cao\n\n*   **State Management với Redux Toolkit:** Đi sâu vào Redux Toolkit, một công cụ mạnh mẽ và hiệu quả để quản lý trạng thái ứng dụng React một cách chuyên nghiệp, thay thế cho Redux core phức tạp.\n*   **React Hooks nâng cao:** Khám phá các custom hooks, cách tối ưu hóa hiệu năng với `useMemo`, `useCallback`, và xử lý các kịch bản phức tạp với `useReducer`.\n*   **Performance Optimization:** Các kỹ thuật tối ưu hóa hiệu năng cho ứng dụng React như Code Splitting, Lazy Loading, và sử dụng các công cụ như React DevTools để phân tích và gỡ lỗi.\n*   **Testing:** Hướng dẫn viết unit test và integration test cho các component React sử dụng các thư viện như Jest và React Testing Library.\n\n### 3. Back-end (NodeJS & ExpressJS) nâng cao\n\n*   **Authentication & Authorization:** Xây dựng các hệ thống xác thực và phân quyền phức tạp sử dụng JWT (JSON Web Tokens), OAuth 2.0, và triển khai các cơ chế bảo mật như Role-Based Access Control (RBAC).\n*   **Real-time Communication:** Sử dụng WebSockets (với thư viện như Socket.IO) để xây dựng các tính năng real-time như chat, thông báo trực tiếp.\n*   **Background Jobs & Message Queues:** Sử dụng các công cụ như BullMQ hoặc RabbitMQ để xử lý các tác vụ chạy nền, giúp tăng hiệu năng và độ tin cậy của hệ thống.\n*   **Advanced Error Handling:** Xây dựng một hệ thống xử lý lỗi tập trung và nhất quán trên toàn bộ back-end.\n\n### 4. Database (MongoDB) nâng cao\n\n*   **Aggregation Framework:** Sử dụng Aggregation Framework của MongoDB để thực hiện các truy vấn và phân tích dữ liệu phức tạp.\n*   **Indexing và Performance Tuning:** Tìm hiểu về các loại index khác nhau trong MongoDB và cách tối ưu hóa hiệu năng truy vấn.\n*   **Transactions:** Sử dụng transactions để đảm bảo tính toàn vẹn dữ liệu trong các hoạt động ghi phức tạp.\n\n### 5. DevOps và Triển khai\n\n*   **Containerization với Docker:** Đóng gói ứng dụng front-end và back-end vào các Docker container để đảm bảo tính nhất quán giữa các môi trường.\n*   **CI/CD (Continuous Integration/Continuous Deployment):** Thiết lập các pipeline CI/CD tự động sử dụng các công cụ như GitHub Actions để build, test và deploy ứng dụng.\n*   **Deployment lên các nền tảng đám mây:** Hướng dẫn triển khai ứng dụng lên các nền tảng phổ biến như Vercel (cho front-end) và Render (cho back-end).\n\n## Các bước thực hành\n\nVì đây là một video review, các bước thực hành sẽ không phải là code theo, mà là các bước để bạn có thể bắt đầu với khóa học MERN Stack Advanced:\n\n1.  **Xem kỹ video:** Tập trung xem hết video để nắm rõ nội dung và các yêu cầu của khóa học.\n2.  **Đánh giá kiến thức bản thân:** Đối chiếu kiến thức hiện tại của bạn với những gì được yêu cầu trong khóa học. Đảm bảo bạn đã nắm vững các kiến thức trong khóa \"MERN Stack Pro\".\n3.  **Tìm hiểu thông tin khóa học:** Truy cập vào các kênh thông tin chính thức của TrungQuanDev (blog, fanpage, Discord) để tìm hiểu về cách thức đăng ký, học phí và lịch khai giảng.\n4.  **Chuẩn bị môi trường:** Nếu quyết định tham gia, hãy chuẩn bị sẵn sàng môi trường lập trình theo hướng dẫn của khóa học.\n\n## Lưu ý quan trọng\n\n*   **Đây là khóa học nâng cao:** Khóa học này không dành cho người mới bắt đầu. Bạn cần có kiến thức vững chắc về MERN Stack, tốt nhất là đã hoàn thành khóa \"MERN Stack Pro\".\n*   **Tập trung vào thực hành:** Khóa học có tính thực tế cao, đòi hỏi học viên phải dành nhiều thời gian để code và thực hành theo dự án.\n*   **Video này là review:** Nội dung video không phải là bài giảng kỹ thuật, mà là để cung cấp thông tin và định hướng cho người học.\n\n## Tài liệu tham khảo\n\n*   **Playlist MERN Stack Pro trên YouTube:** [https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n*   **Blog của TrungQuanDev:** [https://trungquandev.com/](https://trungquandev.com/)\n*   **GitHub của TrungQuanDev:** [https://github.com/trungquandev](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Theo nội dung bài học, mục tiêu chính của video là gì?",
+        "options": [
+          "Hướng dẫn code một dự án MERN Stack hoàn chỉnh từ đầu.",
+          "Giới thiệu, demo và review chi tiết về khóa học MERN Stack Advanced.",
+          "So sánh ưu và nhược điểm giữa MERN Stack và các stack công nghệ khác.",
+          "Dạy các khái niệm lập trình nâng cao về JavaScript."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Video tập trung vào việc cung cấp cái nhìn tổng quan, demo sản phẩm và đánh giá khóa học MERN Stack Advanced để học viên có đủ thông tin trước khi quyết định tham gia."
+      },
+      {
+        "question": "Kiến trúc nào được đề cập trong khóa học giúp chia nhỏ ứng dụng thành các service độc lập, dễ mở rộng và bảo trì?",
+        "options": [
+          "Monolithic",
+          "Serverless",
+          "Microservices",
+          "MVC (Model-View-Controller)"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học giới thiệu về kiến trúc Microservices như một phần nâng cao, giúp chia nhỏ ứng dụng monolithic thành các service nhỏ, độc lập để dễ dàng mở rộng và quản lý."
+      },
+      {
+        "question": "Công cụ nào được giới thiệu để quản lý trạng thái ứng dụng React một cách chuyên nghiệp, thay thế cho Redux core phức tạp?",
+        "options": [
+          "Context API",
+          "MobX",
+          "Zustand",
+          "Redux Toolkit"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Khóa học nâng cao sẽ đi sâu vào Redux Toolkit, một công cụ mạnh mẽ và hiệu quả được khuyến khích sử dụng để quản lý state trong các ứng dụng React hiện đại."
+      },
+      {
+        "question": "Trong React, cặp hooks nào thường được sử dụng để tối ưu hóa hiệu năng bằng cách ghi nhớ các giá trị và hàm?",
+        "options": [
+          "useState và useEffect",
+          "useContext và useReducer",
+          "useMemo và useCallback",
+          "useRef và useImperativeHandle"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useMemo` được dùng để ghi nhớ (memoize) một giá trị tính toán, trong khi `useCallback` được dùng để ghi nhớ một định nghĩa hàm, tránh việc tạo lại hàm không cần thiết trong mỗi lần render."
+      },
+      {
+        "question": "Kỹ thuật nào KHÔNG được liệt kê như một phương pháp tối ưu hóa hiệu năng cho ứng dụng React?",
+        "options": [
+          "Code Splitting",
+          "Lazy Loading",
+          "Sử dụng `React.memo`",
+          "Tăng số lượng re-render"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Tăng số lượng re-render sẽ làm giảm hiệu năng chứ không phải tối ưu. Các kỹ thuật như Code Splitting, Lazy Loading và `React.memo` (mặc dù không được nhắc đến tường minh nhưng liên quan đến `useMemo`/`useCallback`) đều là các phương pháp tối ưu hóa phổ biến."
+      },
+      {
+        "question": "Giao thức nào được đề cập để xây dựng các tính năng real-time như chat hoặc thông báo trực tiếp?",
+        "options": [
+          "HTTP/2",
+          "FTP",
+          "WebSockets",
+          "gRPC"
+        ],
+        "correctAnswer": 2,
+        "explanation": "WebSockets cung cấp một kênh giao tiếp hai chiều, liên tục giữa client và server, rất lý tưởng cho các ứng dụng yêu cầu cập nhật dữ liệu thời gian thực."
+      },
+      {
+        "question": "Công cụ nào được sử dụng để xử lý các tác vụ chạy nền (background jobs) và quản lý hàng đợi tin nhắn?",
+        "options": [
+          "Nodemon",
+          "PM2",
+          "BullMQ hoặc RabbitMQ",
+          "Webpack"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Các hệ thống hàng đợi tin nhắn như BullMQ hoặc RabbitMQ được sử dụng để xử lý các tác vụ nặng, tốn thời gian ở chế độ nền, giúp giải phóng luồng chính và tăng độ tin cậy của ứng dụng."
+      },
+      {
+        "question": "Tính năng nào của MongoDB cho phép thực hiện các truy vấn và phân tích dữ liệu phức tạp?",
+        "options": [
+          "CRUD Operations",
+          "Indexing",
+          "Aggregation Framework",
+          "Sharding"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Aggregation Framework của MongoDB cung cấp một pipeline gồm nhiều giai đoạn để xử lý, biến đổi và phân tích dữ liệu, cho phép thực hiện các truy vấn phức tạp hơn nhiều so với các câu lệnh tìm kiếm thông thường."
+      },
+      {
+        "question": "Công nghệ nào được sử dụng để \"đóng gói\" ứng dụng (front-end và back-end) để đảm bảo tính nhất quán giữa các môi trường?",
+        "options": [
+          "Git",
+          "Docker",
+          "Kubernetes",
+          "Jenkins"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Docker cho phép đóng gói ứng dụng và các phụ thuộc của nó vào một container, đảm bảo rằng ứng dụng sẽ chạy nhất quán trên mọi môi trường từ local development đến production."
+      },
+      {
+        "question": "Hệ thống CI/CD (Continuous Integration/Continuous Deployment) giúp tự động hóa quy trình nào?",
+        "options": [
+          "Viết code và gỡ lỗi",
+          "Thiết kế giao diện người dùng",
+          "Build, test và deploy ứng dụng",
+          "Quản lý cơ sở dữ liệu"
+        ],
+        "correctAnswer": 2,
+        "explanation": "CI/CD là một tập hợp các thực hành giúp tự động hóa các bước trong quy trình phát triển phần mềm như tích hợp code, chạy kiểm thử, và triển khai sản phẩm."
+      },
+      {
+        "question": "Theo gợi ý trong bài học, nền tảng nào phù hợp để triển khai ứng dụng front-end (ví dụ: React)?",
+        "options": [
+          "Render",
+          "AWS EC2",
+          "Vercel",
+          "DigitalOcean Droplet"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Vercel được tối ưu hóa cho việc triển khai các ứng dụng front-end hiện đại, cung cấp các tính năng như tự động build, deploy từ Git và CDN toàn cầu."
+      },
+      {
+        "question": "Mô hình thiết kế nào tập trung vào business domain để xây dựng các hệ thống phức tạp?",
+        "options": [
+          "Model-View-Controller (MVC)",
+          "Domain-Driven Design (DDD)",
+          "Object-Oriented Programming (OOP)",
+          "Functional Programming (FP)"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Domain-Driven Design (DDD) là một phương pháp tiếp cận phát triển phần mềm, nhấn mạnh việc mô hình hóa phần mềm để phù hợp với miền nghiệp vụ (business domain)."
+      },
+      {
+        "question": "Trong Back-end, cơ chế bảo mật nào được đề cập để kiểm soát quyền truy cập dựa trên vai trò của người dùng?",
+        "options": [
+          "Two-Factor Authentication (2FA)",
+          "IP Whitelisting",
+          "Role-Based Access Control (RBAC)",
+          "Encryption at Rest"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Role-Based Access Control (RBAC) là một phương pháp phổ biến để quản lý phân quyền, trong đó quyền truy cập vào tài nguyên được cấp cho các vai trò (roles) thay vì cho từng người dùng riêng lẻ."
+      },
+      {
+        "question": "Tính năng nào của MongoDB giúp đảm bảo tính toàn vẹn dữ liệu trong các hoạt động ghi phức tạp liên quan đến nhiều collection?",
+        "options": [
+          "Replication",
+          "Indexing",
+          "Transactions",
+          "GridFS"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Transactions cho phép thực hiện một loạt các thao tác ghi trên một hoặc nhiều document/collection như một đơn vị công việc duy nhất (all or nothing), đảm bảo tính toàn vẹn dữ liệu."
+      },
+      {
+        "question": "Khóa học \"MERN Stack Advanced\" được thiết kế cho đối tượng nào?",
+        "options": [
+          "Người mới bắt đầu học lập trình.",
+          "Lập trình viên đã có kiến thức vững chắc về MERN Stack.",
+          "Chuyên gia phân tích dữ liệu.",
+          "Nhà thiết kế UI/UX."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nhấn mạnh rằng đây là một khóa học nâng cao, yêu cầu học viên phải có nền tảng vững chắc, và tốt nhất là đã hoàn thành khóa \"MERN Stack Pro\" trước đó."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo một Custom Hook `useToggle` trong React",
+        "description": "Viết một custom hook tên là `useToggle` nhận vào một giá trị boolean ban đầu. Hook này sẽ trả về một mảng chứa giá trị boolean hiện tại và một hàm để đảo ngược giá trị đó.",
+        "starterCode": "import { useState, useCallback } from 'react';\n\n// Viết code của bạn ở đây\n\nfunction App() {\n  const [isToggled, toggle] = useToggle(false);\n\n  return (\n    <button onClick={toggle}>\n      {isToggled ? 'ON' : 'OFF'}\n    </button>\n  );\n}",
+        "solution": "import { useState, useCallback } from 'react';\n\nexport const useToggle = (initialState = false) => {\n  const [state, setState] = useState(initialState);\n  const toggle = useCallback(() => setState(state => !state), []);\n  return [state, toggle];\n};",
+        "testCases": "1. Hook phải trả về một mảng có 2 phần tử. 2. Phần tử đầu tiên là giá trị boolean. 3. Phần tử thứ hai là một hàm. 4. Gọi hàm toggle sẽ đảo ngược giá trị boolean."
+      },
+      {
+        "title": "Viết Middleware xử lý lỗi cho Express.js",
+        "description": "Tạo một middleware xử lý lỗi chung cho ứng dụng Express. Middleware này sẽ bắt tất cả các lỗi được truyền qua `next(err)` và trả về một phản hồi JSON với status code 500 cùng với thông điệp lỗi.",
+        "starterCode": "const express = require('express');\nconst app = express();\n\napp.get('/', (req, res, next) => {\n  const err = new Error('Something went wrong!');\n  next(err);\n});\n\n// Viết middleware xử lý lỗi của bạn ở đây\n\napp.listen(3000, () => console.log('Server is running on port 3000'));",
+        "solution": "const errorHandlingMiddleware = (err, req, res, next) => {\n  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;\n  res.status(statusCode);\n  res.json({\n    message: err.message,\n    stack: process.env.NODE_ENV === 'production' ? null : err.stack,\n  });\n};\n\napp.use(errorHandlingMiddleware);",
+        "testCases": "1. Khi có lỗi xảy ra, server phải trả về status code 500. 2. Phản hồi phải ở định dạng JSON. 3. Body của phản hồi phải chứa key `message`."
+      },
+      {
+        "title": "Sử dụng MongoDB Aggregation Framework",
+        "description": "Viết một câu lệnh aggregation trong MongoDB để nhóm các tài liệu trong collection `products` theo trường `category` và tính giá trung bình (`avgPrice`) cho mỗi danh mục.",
+        "starterCode": "// Collection: products\n// Documents có dạng: { name: String, category: String, price: Number }\n\ndb.products.aggregate([\n  // Viết các giai đoạn aggregation của bạn ở đây\n]);",
+        "solution": "db.products.aggregate([\n  {\n    $group: {\n      _id: \"$category\",\n      avgPrice: { $avg: \"$price\" }\n    }\n  },\n  {\n    $sort: { avgPrice: -1 }\n  }\n]);",
+        "testCases": "1. Kết quả phải được nhóm theo `category`. 2. Mỗi nhóm phải có một trường `avgPrice`. 3. `avgPrice` phải là giá trị trung bình của các sản phẩm trong danh mục đó."
+      },
+      {
+        "title": "Tạo một Dockerfile đơn giản cho ứng dụng Node.js",
+        "description": "Viết một `Dockerfile` để containerize một ứng dụng Node.js/Express đơn giản. File `package.json` và `server.js` đã tồn tại trong cùng thư mục.",
+        "starterCode": "# Sử dụng một image Node.js chính thức làm base image\n\n# Thiết lập thư mục làm việc trong container\n\n# Sao chép package.json và package-lock.json\n\n# Cài đặt các dependencies\n\n# Sao chép toàn bộ source code của ứng dụng\n\n# Expose cổng mà ứng dụng đang chạy\n\n# Lệnh để khởi chạy ứng dụng",
+        "solution": "FROM node:18-alpine\n\nWORKDIR /usr/src/app\n\nCOPY package*.json ./\n\nRUN npm install\n\nCOPY . .\n\nEXPOSE 3000\n\nCMD [ \"node\", \"server.js\" ]",
+        "testCases": "1. Image phải được build thành công. 2. Container phải khởi động và chạy ứng dụng Node.js trên cổng 3000. 3. Các dependencies từ `package.json` phải được cài đặt."
+      },
+      {
+        "title": "Thiết lập một server WebSocket cơ bản với Socket.IO",
+        "description": "Sử dụng Express và Socket.IO, tạo một server lắng nghe các kết nối WebSocket. Khi một client kết nối, server sẽ log ra `A user connected`. Khi client gửi một sự kiện `chat message`, server sẽ phát lại (broadcast) tin nhắn đó tới tất cả các client khác.",
+        "starterCode": "const express = require('express');\nconst http = require('http');\nconst { Server } = require('socket.io');\n\nconst app = express();\nconst server = http.createServer(app);\nconst io = new Server(server);\n\n// Viết logic Socket.IO của bạn ở đây\n\nserver.listen(3000, () => {\n  console.log('listening on *:3000');\n});",
+        "solution": "io.on('connection', (socket) => {\n  console.log('A user connected');\n\n  socket.on('disconnect', () => {\n    console.log('user disconnected');\n  });\n\n  socket.on('chat message', (msg) => {\n    socket.broadcast.emit('chat message', msg);\n  });\n});",
+        "testCases": "1. Server phải log ra `A user connected` khi có client mới. 2. Khi một client gửi sự kiện `chat message`, các client khác phải nhận được sự kiện đó. 3. Client gửi tin nhắn không được nhận lại tin nhắn của chính mình."
+      }
+    ]
+  }
+}

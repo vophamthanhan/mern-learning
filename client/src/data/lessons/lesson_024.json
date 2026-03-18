@@ -1,0 +1,213 @@
+{
+  "id": 24,
+  "title": "Bài 13: Đồng bộ chuẩn Dark Mode & Light Mode với System",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài 13: Đồng bộ chuẩn Dark Mode & Light Mode với System\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tìm hiểu cách đồng bộ hóa chế độ Dark Mode và Light Mode của ứng dụng ReactJS với cài đặt hệ thống của người dùng. Cụ thể, ứng dụng sẽ tự động chuyển đổi giao diện sáng/tối dựa trên lựa chọn của người dùng trong cài đặt của hệ điều hành (Windows, macOS, Android, iOS). Điều này mang lại trải nghiệm người dùng liền mạch và cá nhân hóa hơn.\n\nChúng ta sẽ sử dụng thư viện Material-UI (MUI) và một hook tiện ích là `useMediaQuery` để lắng nghe và phản hồi lại sự thay đổi theme từ hệ thống.\n\n## II. Kiến thức chi tiết\n\n### 1. `prefers-color-scheme` Media Query\n\nĐây là một tính năng của CSS cho phép chúng ta phát hiện xem người dùng đã yêu cầu hệ thống sử dụng giao diện sáng (`light`) hay tối (`dark`).\n\nCú pháp trong CSS:\n\n```css\n@media (prefers-color-scheme: dark) {\n  /* CSS cho Dark Mode */\n}\n\n@media (prefers-color-scheme: light) {\n  /* CSS cho Light Mode */\n}\n```\n\nTrong JavaScript, chúng ta có thể sử dụng `window.matchMedia('(prefers-color-scheme: dark)')` để kiểm tra điều này. Tuy nhiên, Material-UI cung cấp một cách tiếp cận đơn giản và hiệu quả hơn thông qua hook `useMediaQuery`.\n\n### 2. Hook `useMediaQuery` của Material-UI\n\n`useMediaQuery` là một hook của MUI, giúp chúng ta dễ dàng sử dụng CSS media queries bên trong các component React. Nó lắng nghe sự thay đổi của media query và re-render lại component khi có sự thay đổi.\n\n- **Cú pháp:** `const matches = useMediaQuery(query, [options])`\n- **Tham số:**\n    - `query` (string): Một chuỗi media query, ví dụ: `'(prefers-color-scheme: dark)'`.\n    - `options` (object, tùy chọn): Các tùy chọn bổ sung như `noSsr` (để xử lý Server-Side Rendering).\n- **Giá trị trả về:** `matches` (boolean) - `true` nếu media query khớp và `false` nếu không.\n\n### 3. Tích hợp vào Theme của Material-UI\n\nĐể đồng bộ theme của ứng dụng với hệ thống, chúng ta sẽ thực hiện các bước sau:\n\n1.  Dùng `useMediaQuery` để phát hiện chế độ màu ưa thích của hệ thống.\n2.  Dựa vào kết quả, quyết định sử dụng theme `light` hay `dark`.\n3.  Sử dụng `React.useMemo` để tối ưu hóa, chỉ tạo lại theme khi chế độ màu của hệ thống thay đổi.\n4.  Bọc toàn bộ ứng dụng trong `ThemeProvider` của MUI với theme đã được cấu hình động.\n\n**Code mẫu:**\n\n```jsx\nimport * as React from 'react';\nimport useMediaQuery from '@mui/material/useMediaQuery';\nimport { createTheme, ThemeProvider } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\n\nfunction App() {\n  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');\n\n  const theme = React.useMemo(\n    () =>\n      createTheme({\n        palette: {\n          mode: prefersDarkMode ? 'dark' : 'light',\n        },\n      }),\n    [prefersDarkMode],\n  );\n\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      {/* Các component khác của ứng dụng */}\n    </ThemeProvider>\n  );\n}\n\nexport default App;\n```\n\nTrong đoạn code trên:\n\n- `prefersDarkMode` sẽ là `true` nếu người dùng đang ở chế độ Dark Mode của hệ thống và ngược lại.\n- `React.useMemo` đảm bảo rằng đối tượng `theme` chỉ được tạo lại khi giá trị `prefersDarkMode` thay đổi.\n- `createTheme` sẽ tạo ra một theme hoàn chỉnh của MUI với `mode` được thiết lập là `'dark'` hoặc `'light'`.\n- `CssBaseline` là một component giúp chuẩn hóa CSS và áp dụng màu nền, màu chữ mặc định dựa trên theme.\n\n## III. Các bước thực hành\n\n1.  **Cài đặt Material-UI:** Nếu chưa có, hãy cài đặt MUI và các gói liên quan:\n\n    ```bash\n    npm install @mui/material @emotion/react @emotion/styled\n    ```\n\n2.  **Tạo một file quản lý theme (ví dụ: `theme.js`):**\n\n    ```jsx\n    // src/theme.js\n    import { createTheme } from '@mui/material/styles';\n\n    export const lightTheme = createTheme({\n      palette: {\n        mode: 'light',\n        // Tùy chỉnh các màu sắc khác cho Light Mode\n      },\n    });\n\n    export const darkTheme = createTheme({\n      palette: {\n        mode: 'dark',\n        // Tùy chỉnh các màu sắc khác cho Dark Mode\n      },\n    });\n    ```\n\n3.  **Cập nhật file `App.js` (hoặc component gốc của bạn):**\n\n    ```jsx\n    // src/App.js\n    import React from 'react';\n    import useMediaQuery from '@mui/material/useMediaQuery';\n    import { ThemeProvider } from '@mui/material/styles';\n    import CssBaseline from '@mui/material/CssBaseline';\n    import { lightTheme, darkTheme } from './theme';\n    import YourMainComponent from './YourMainComponent'; // Component chính của bạn\n\n    function App() {\n      const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');\n      const theme = React.useMemo(() => (prefersDarkMode ? darkTheme : lightTheme), [prefersDarkMode]);\n\n      return (\n        <ThemeProvider theme={theme}>\n          <CssBaseline />\n          <YourMainComponent />\n        </ThemeProvider>\n      );\n    }\n\n    export default App;\n    ```\n\n4.  **Kiểm tra kết quả:**\n\n    - Mở ứng dụng của bạn trên trình duyệt.\n    - Thay đổi cài đặt theme của hệ điều hành (ví dụ: trong Settings của Windows/macOS).\n    - Giao diện ứng dụng của bạn sẽ tự động thay đổi theo mà không cần tải lại trang.\n\n## IV. Lưu ý quan trọng\n\n- **Hỗ trợ trình duyệt:** Tính năng `prefers-color-scheme` được hỗ trợ bởi hầu hết các trình duyệt hiện đại. Tuy nhiên, bạn nên kiểm tra trên [Can I use...](https://caniuse.com/prefers-color-scheme) để biết chi tiết.\n- **Server-Side Rendering (SSR):** Khi sử dụng SSR (ví dụ với Next.js), `useMediaQuery` có thể không hoạt động đúng ở lần render đầu tiên trên server vì server không có thông tin về cài đặt hệ thống của client. Bạn có thể sử dụng tùy chọn `noSsr: true` trong `useMediaQuery` hoặc các giải pháp khác dành riêng cho Next.js để xử lý vấn đề này.\n- **Kết hợp với lựa chọn thủ công:** Trong thực tế, nhiều ứng dụng cho phép người dùng chọn theme (Light, Dark, System) một cách thủ công. Bạn có thể mở rộng logic trong bài học này để kết hợp cả lựa chọn của người dùng (lưu trong `localStorage`) và cài đặt hệ thống.\n\n## V. Tài liệu tham khảo\n\n1.  [Material-UI Documentation - Dark mode](https://mui.com/material-ui/customization/dark-mode/)\n2.  [Material-UI Documentation - `useMediaQuery` hook](https://mui.com/material-ui/react-use-media-query/)\n3.  [MDN Web Docs - `prefers-color-scheme`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Tính năng CSS nào được sử dụng để phát hiện chế độ màu (sáng/tối) ưa thích của người dùng trên hệ điều hành?",
+        "options": [
+          "color-scheme-preference",
+          "@media (prefers-color-scheme: ...)",
+          "system-theme-mode",
+          "dark-mode-query"
+        ],
+        "correctAnswer": 1,
+        "explanation": "CSS media query `prefers-color-scheme` được dùng để kiểm tra xem người dùng đã thiết lập hệ thống của họ ở chế độ sáng (light) hay tối (dark)."
+      },
+      {
+        "question": "Hook nào của Material-UI (MUI) giúp lắng nghe sự thay đổi của CSS media queries bên trong component React?",
+        "options": [
+          "useTheme",
+          "useStyle",
+          "useMediaQuery",
+          "useSystemTheme"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useMediaQuery` là một hook của MUI cho phép component của bạn phản ứng với sự thay đổi của bất kỳ CSS media query nào, bao gồm cả `prefers-color-scheme`."
+      },
+      {
+        "question": "Trong đoạn code `const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');`, `prefersDarkMode` sẽ có giá trị là gì nếu người dùng đang sử dụng Light Mode?",
+        "options": [
+          "true",
+          "false",
+          "null",
+          "undefined"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hook `useMediaQuery` trả về một giá trị boolean. Nó sẽ là `true` nếu query khớp (người dùng ở Dark Mode) và `false` nếu không khớp (người dùng ở Light Mode)."
+      },
+      {
+        "question": "Tại sao `React.useMemo` được sử dụng khi tạo theme động với `useMediaQuery`?",
+        "options": [
+          "Để tạo theme một lần duy nhất.",
+          "Để ngăn việc tạo lại đối tượng theme trong mỗi lần render, trừ khi chế độ màu của hệ thống thay đổi.",
+          "Để fetch theme từ server.",
+          "Để áp dụng theme cho các component con."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`React.useMemo` được dùng để tối ưu hóa hiệu suất bằng cách ghi nhớ (memoize) việc tạo đối tượng theme. Hàm tạo theme chỉ chạy lại khi giá trị `prefersDarkMode` (trong mảng dependencies) thay đổi."
+      },
+      {
+        "question": "Component nào của MUI giúp chuẩn hóa CSS và áp dụng màu nền, màu chữ mặc định dựa trên `mode` của theme?",
+        "options": [
+          "Container",
+          "Box",
+          "Typography",
+          "CssBaseline"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`CssBaseline` là một component thiết yếu giúp reset CSS của trình duyệt và áp dụng các style cơ bản (như màu nền, màu chữ) phù hợp với theme hiện tại (dark hoặc light)."
+      },
+      {
+        "question": "Khi tích hợp đồng bộ theme với hệ thống, bạn nên bọc toàn bộ ứng dụng của mình bằng component nào?",
+        "options": [
+          "StyleProvider",
+          "MuiProvider",
+          "ThemeProvider",
+          "AppProvider"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`ThemeProvider` từ `@mui/material/styles` là component dùng để cung cấp đối tượng theme cho tất cả các component Material-UI con trong cây component."
+      },
+      {
+        "question": "Vấn đề chính khi sử dụng `useMediaQuery` với Server-Side Rendering (SSR) là gì?",
+        "options": [
+          "Nó làm chậm tốc độ render của server.",
+          "Server không thể biết cài đặt theme của client, dẫn đến mismatch ở lần render đầu tiên.",
+          "Nó yêu cầu một phiên bản Node.js đặc biệt.",
+          "Nó không tương thích với Next.js."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi render trên server, môi trường thực thi không có thông tin về trình duyệt hay hệ điều hành của người dùng. Do đó, `useMediaQuery` không thể xác định chính xác `prefers-color-scheme` ở phía server."
+      },
+      {
+        "question": "Để tạo một theme trong MUI, hàm nào sau đây được sử dụng?",
+        "options": [
+          "makeTheme",
+          "buildTheme",
+          "initTheme",
+          "createTheme"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`createTheme` là hàm từ `@mui/material/styles` được sử dụng để tạo một đối tượng theme hoàn chỉnh, có thể tùy chỉnh các giá trị mặc định của MUI."
+      },
+      {
+        "question": "Thuộc tính nào trong `palette` của theme MUI được dùng để xác định chế độ sáng hoặc tối?",
+        "options": [
+          "theme",
+          "variant",
+          "mode",
+          "style"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuộc tính `mode` trong `palette` được thiết lập thành `'light'` hoặc `'dark'` để tự động điều chỉnh tất cả các màu sắc trong theme cho phù hợp."
+      },
+      {
+        "question": "Trong JavaScript thuần (không dùng MUI), làm thế nào để kiểm tra `prefers-color-scheme`?",
+        "options": [
+          "document.body.theme === 'dark'",
+          "window.system.colorScheme === 'dark'",
+          "navigator.theme.matches('dark')",
+          "window.matchMedia('(prefers-color-scheme: dark)').matches"
+        ],
+        "correctAnswer": 3,
+        "explanation": "API `window.matchMedia()` của trình duyệt cho phép bạn kiểm tra một media query. Thuộc tính `.matches` của đối tượng trả về sẽ là `true` nếu query khớp."
+      },
+      {
+        "question": "Khi người dùng thay đổi chế độ sáng/tối của hệ điều hành, ứng dụng React sử dụng `useMediaQuery` sẽ...",
+        "options": [
+          "Yêu cầu người dùng tải lại trang.",
+          "Tự động re-render và cập nhật giao diện mà không cần tải lại trang.",
+          "Không có gì xảy ra cho đến khi trang được tải lại.",
+          "Hiển thị một thông báo hỏi người dùng có muốn đổi theme không."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hook `useMediaQuery` sẽ lắng nghe sự kiện thay đổi này và tự động cập nhật state của component, dẫn đến việc re-render với theme mới một cách liền mạch."
+      },
+      {
+        "question": "Để kết hợp cả lựa chọn theme thủ công của người dùng và cài đặt hệ thống, logic ưu tiên nên là gì?",
+        "options": [
+          "Luôn ưu tiên cài đặt hệ thống.",
+          "Luôn ưu tiên lựa chọn thủ công (nếu có).",
+          "Chỉ sử dụng cài đặt hệ thống.",
+          "Kết hợp cả hai bằng cách làm mờ giao diện."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thông thường, nếu người dùng đã có lựa chọn rõ ràng (ví dụ: lưu trong `localStorage`), lựa chọn đó nên được ưu tiên hơn cài đặt mặc định của hệ thống để tôn trọng quyết định của họ."
+      },
+      {
+        "question": "Gói npm nào KHÔNG bắt buộc phải cài đặt để sử dụng `useMediaQuery` và `ThemeProvider`?",
+        "options": [
+          "@mui/material",
+          "@emotion/react",
+          "@emotion/styled",
+          "react-router-dom"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`@mui/material`, `@emotion/react`, và `@emotion/styled` là các gói phụ thuộc cốt lõi của Material-UI v5. `react-router-dom` dùng cho việc định tuyến và không liên quan trực tiếp đến theme."
+      },
+      {
+        "question": "Bạn có thể tùy chỉnh các màu sắc cụ thể cho dark mode ở đâu?",
+        "options": [
+          "Trong component `CssBaseline`.",
+          "Trong hook `useMediaQuery`.",
+          "Trong đối tượng `palette` của theme được tạo bởi `createTheme`.",
+          "Trong file `index.css`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi tạo theme với `createTheme`, bạn có thể cung cấp một đối tượng `palette` với `mode: 'dark'` và sau đó tùy chỉnh các màu khác như `primary`, `background`, `text` trong cùng đối tượng đó."
+      },
+      {
+        "question": "Trang web nào là nguồn đáng tin cậy để kiểm tra khả năng hỗ trợ `prefers-color-scheme` của các trình duyệt?",
+        "options": [
+          "W3Schools",
+          "Stack Overflow",
+          "Can I use...",
+          "MDN Web Docs"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trang web `Can I use...` (caniuse.com) là một tài nguyên chuẩn để kiểm tra mức độ hỗ trợ của các tính năng web (CSS, JavaScript) trên các phiên bản trình duyệt khác nhau."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Hiển thị Chế độ Hiện tại",
+        "description": "Sử dụng hook `useMediaQuery` để tạo một component hiển thị văn bản \"Chế độ tối đang bật\" nếu hệ thống đang ở dark mode, và \"Chế độ sáng đang bật\" nếu ngược lại.",
+        "starterCode": "import React from 'react';\nimport useMediaQuery from '@mui/material/useMediaQuery';\nimport Typography from '@mui/material/Typography';\n\nfunction CurrentModeDisplay() {\n  // Sử dụng useMediaQuery để phát hiện dark mode\n\n  return (\n    <Typography>\n      {/* Hiển thị văn bản tương ứng ở đây */}\n    </Typography>\n  );\n}\n\nexport default CurrentModeDisplay;",
+        "solution": "import React from 'react';\nimport useMediaQuery from '@mui/material/useMediaQuery';\nimport Typography from '@mui/material/Typography';\n\nfunction CurrentModeDisplay() {\n  const isDarkMode = useMediaQuery('(prefers-color-scheme: dark)');\n\n  return (\n    <Typography>\n      {isDarkMode ? 'Chế độ tối đang bật' : 'Chế độ sáng đang bật'}\n    </Typography>\n  );\n}\n\nexport default CurrentModeDisplay;",
+        "testCases": "1. Khi hệ thống ở light mode, component hiển thị \"Chế độ sáng đang bật\".\n2. Khi hệ thống ở dark mode, component hiển thị \"Chế độ tối đang bật\"."
+      },
+      {
+        "title": "Áp dụng Theme Động cho App",
+        "description": "Bọc ứng dụng của bạn trong `ThemeProvider` và sử dụng `createTheme` cùng `useMediaQuery` để tự động chuyển đổi `mode` của palette giữa 'light' và 'dark' theo cài đặt hệ thống.",
+        "starterCode": "import React from 'react';\nimport useMediaQuery from '@mui/material/useMediaQuery';\nimport { createTheme, ThemeProvider } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport Box from '@mui/material/Box';\nimport Typography from '@mui/material/Typography';\n\nfunction App() {\n  // 1. Phát hiện dark mode\n  // 2. Dùng React.useMemo và createTheme để tạo theme động\n\n  return (\n    // 3. Bọc ứng dụng với ThemeProvider và CssBaseline\n    <Box sx={{ bgcolor: 'background.default', color: 'text.primary', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>\n      <Typography variant=\"h4\">Hello World</Typography>\n    </Box>\n  );\n}\n\nexport default App;",
+        "solution": "import React from 'react';\nimport useMediaQuery from '@mui/material/useMediaQuery';\nimport { createTheme, ThemeProvider } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport Box from '@mui/material/Box';\nimport Typography from '@mui/material/Typography';\n\nfunction App() {\n  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');\n\n  const theme = React.useMemo(\n    () =>\n      createTheme({\n        palette: {\n          mode: prefersDarkMode ? 'dark' : 'light',\n        },\n      }),\n    [prefersDarkMode],\n  );\n\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      <Box sx={{ bgcolor: 'background.default', color: 'text.primary', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>\n        <Typography variant=\"h4\">Hello World</Typography>\n      </Box>\n    </ThemeProvider>\n  );\n}\n\nexport default App;",
+        "testCases": "1. Khi hệ thống ở light mode, nền của Box là màu sáng và chữ màu tối.\n2. Khi hệ thống ở dark mode, nền của Box là màu tối và chữ màu sáng."
+      },
+      {
+        "title": "Tách Biệt File Theme",
+        "description": "Tái cấu trúc bài tập trước. Tạo hai đối tượng theme riêng biệt (`lightTheme`, `darkTheme`) trong một file khác. Import chúng vào App.js và chọn theme phù hợp dựa trên `useMediaQuery`.",
+        "starterCode": "// theme.js\nimport { createTheme } from '@mui/material/styles';\n// export lightTheme và darkTheme ở đây\n\n// App.js\nimport React from 'react';\nimport useMediaQuery from '@mui/material/useMediaQuery';\nimport { ThemeProvider } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\n// import { lightTheme, darkTheme } from './theme';\n\nfunction App() {\n  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');\n  // Chọn theme phù hợp từ theme đã import\n  const theme = {}; // Thay thế dòng này\n\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      {/* ... */}\n    </ThemeProvider>\n  );\n}",
+        "solution": "// theme.js\nimport { createTheme } from '@mui/material/styles';\n\nexport const lightTheme = createTheme({\n  palette: {\n    mode: 'light',\n  },\n});\n\nexport const darkTheme = createTheme({\n  palette: {\n    mode: 'dark',\n  },\n});\n\n// App.js\nimport React from 'react';\nimport useMediaQuery from '@mui/material/useMediaQuery';\nimport { ThemeProvider } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport { lightTheme, darkTheme } from './theme';\nimport YourMainComponent from './YourMainComponent';\n\nfunction App() {\n  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');\n  const theme = React.useMemo(() => (prefersDarkMode ? darkTheme : lightTheme), [prefersDarkMode]);\n\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      <YourMainComponent />\n    </ThemeProvider>\n  );\n}",
+        "testCases": "1. Ứng dụng hoạt động giống hệt bài trước.\n2. Code được tổ chức trong hai file riêng biệt: `theme.js` và `App.js`."
+      },
+      {
+        "title": "Thêm Nút Chuyển Đổi Thủ Công",
+        "description": "Thêm một nút (Button) vào ứng dụng. Khi nhấn vào, theme sẽ chuyển đổi giữa sáng và tối, ghi đè lên cài đặt hệ thống. Sử dụng `React.useState` để quản lý trạng thái theme hiện tại.",
+        "starterCode": "import React, { useState, useMemo } from 'react';\nimport useMediaQuery from '@mui/material/useMediaQuery';\nimport { createTheme, ThemeProvider } from '@mui/material/styles';\nimport Button from '@mui/material/Button';\n\nfunction App() {\n  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');\n  // 1. Tạo state để quản lý chế độ theme (ví dụ: 'light', 'dark')\n  // Khởi tạo state dựa trên prefersDarkMode\n\n  // 2. Tạo hàm để toggle state\n\n  const theme = useMemo(\n    () =>\n      createTheme({\n        palette: {\n          // 3. Sử dụng state thay vì prefersDarkMode trực tiếp\n        },\n      }),\n    [/* dependency */],\n  );\n\n  return (\n    <ThemeProvider theme={theme}>\n      {/* ... */}\n      <Button onClick={/* ... */}>Chuyển đổi Theme</Button>\n    </ThemeProvider>\n  );\n}",
+        "solution": "import React, { useState, useMemo, useEffect } from 'react';\nimport useMediaQuery from '@mui/material/useMediaQuery';\nimport { createTheme, ThemeProvider } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport Button from '@mui/material/Button';\nimport Box from '@mui/material/Box';\n\nfunction App() {\n  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');\n  const [mode, setMode] = useState();\n\n  useEffect(() => {\n    setMode(prefersDarkMode ? 'dark' : 'light');\n  }, [prefersDarkMode]);\n\n  const toggleColorMode = () => {\n    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));\n  };\n\n  const theme = useMemo(\n    () =>\n      createTheme({\n        palette: {\n          mode,\n        },\n      }),\n    [mode],\n  );\n\n  if (!mode) return null; // Tránh render khi mode chưa được xác định\n\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      <Box sx={{ textAlign: 'center', mt: 4 }}>\n        <Button variant=\"contained\" onClick={toggleColorMode}>\n          Chuyển sang chế độ {mode === 'light' ? 'tối' : 'sáng'}\n        </Button>\n      </Box>\n    </ThemeProvider>\n  );\n}",
+        "testCases": "1. Ban đầu, theme khớp với hệ thống.\n2. Nhấn nút, theme thay đổi (sáng -> tối hoặc tối -> sáng).\n3. Nhấn nút lần nữa, theme lại thay đổi trở lại."
+      },
+      {
+        "title": "Lưu Lựa Chọn vào Local Storage",
+        "description": "Mở rộng bài tập trước. Khi người dùng nhấn nút chuyển đổi, hãy lưu lựa chọn của họ ('light' hoặc 'dark') vào `localStorage`. Khi ứng dụng tải, hãy ưu tiên đọc giá trị từ `localStorage` trước, nếu không có thì mới dùng đến cài đặt hệ thống.",
+        "starterCode": "import React, { useState, useMemo, useEffect } from 'react';\n// ... imports\n\nfunction App() {\n  // 1. Khi khởi tạo state, đọc từ localStorage trước.\n  // Nếu không có, dùng useMediaQuery.\n  const [mode, setMode] = useState(() => {\n    const savedMode = localStorage.getItem('themeMode');\n    // ... logic khởi tạo\n  });\n\n  // 2. Khi toggle theme, cập nhật cả state và localStorage.\n  const toggleColorMode = () => {\n    // ...\n  };\n\n  const theme = useMemo(/* ... */);\n\n  return (/* ... */);\n}",
+        "solution": "import React, { useState, useMemo, useEffect } from 'react';\nimport useMediaQuery from '@mui/material/useMediaQuery';\nimport { createTheme, ThemeProvider } from '@mui/material/styles';\nimport CssBaseline from '@mui/material/CssBaseline';\nimport Button from '@mui/material/Button';\n\nfunction App() {\n  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');\n\n  const [mode, setMode] = useState(() => {\n    const savedMode = localStorage.getItem('themeMode');\n    if (savedMode) {\n      return savedMode;\n    }\n    return prefersDarkMode ? 'dark' : 'light';\n  });\n\n  useEffect(() => {\n    localStorage.setItem('themeMode', mode);\n  }, [mode]);\n\n  // Cập nhật nếu người dùng đổi theme hệ thống và chưa có lựa chọn thủ công\n  useEffect(() => {\n    const savedMode = localStorage.getItem('themeMode');\n    if (!savedMode) {\n        setMode(prefersDarkMode ? 'dark' : 'light');\n    }\n  }, [prefersDarkMode]);\n\n  const toggleColorMode = () => {\n    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));\n  };\n\n  const theme = useMemo(\n    () =>\n      createTheme({\n        palette: {\n          mode,\n        },\n      }),\n    [mode],\n  );\n\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      <Button onClick={toggleColorMode}>Toggle Theme</Button>\n    </ThemeProvider>\n  );\n}",
+        "testCases": "1. Lần đầu mở app, theme khớp với hệ thống.\n2. Nhấn nút để chuyển sang dark mode. Đóng và mở lại tab, app vẫn ở dark mode.\n3. Xóa localStorage, tải lại trang, theme sẽ lại khớp với hệ thống."
+      }
+    ]
+  }
+}

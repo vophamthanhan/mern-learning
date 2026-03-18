@@ -1,0 +1,213 @@
+{
+  "id": 53,
+  "title": "BÀI 36: HOÀN THIỆN KÉO THẢ CARD GIỮA 2 CỘT KHÁC NHAU VỚI DND-KIT",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# BÀI 36: HOÀN THIỆN KÉO THẢ CARD GIỮA 2 CỘT KHÁC NHAU VỚI DND-KIT\n\n## MỤC TIÊU BÀI HỌC\n\nTrong bài học này, chúng ta sẽ hoàn thiện chức năng kéo thả một Card từ cột này sang cột khác trong dự án Trello Clone. Cụ thể, chúng ta sẽ xử lý logic để cập nhật lại state của cả hai cột (cột nguồn và cột đích) sau khi thả Card, đảm bảo dữ liệu được cập nhật chính xác và giao diện được render lại đúng thứ tự.\n\n## KIẾN THỨC CHI TIẾT\n\nĐể hoàn thành chức năng này, chúng ta cần nắm vững các khái niệm và kỹ thuật sau:\n\n### 1. Sự kiện `onDragEnd` trong `dnd-kit`\n\nSự kiện `onDragEnd` được kích hoạt khi người dùng kết thúc hành động kéo và thả một phần tử. Đây là nơi chúng ta sẽ xử lý logic chính để cập nhật dữ liệu. Hàm xử lý sự kiện này nhận vào một đối tượng `event` chứa thông tin về phần tử đang được kéo (`active`) và container nơi nó được thả (`over`).\n\n### 2. Xác định Kéo thả giữa các Cột khác nhau\n\nChúng ta cần một điều kiện để kiểm tra xem Card có được kéo sang một cột khác hay không. Điều này có thể được thực hiện bằng cách so sánh `active.data.current.columnId` (ID của cột chứa Card đang kéo) và `over.data.current.columnId` (ID của cột nơi Card được thả). Nếu hai ID này khác nhau, chúng ta xác định rằng đây là trường hợp kéo thả giữa hai cột khác nhau.\n\n### 3. Cập nhật State\n\nKhi một Card được di chuyển từ cột A sang cột B, chúng ta cần thực hiện các bước cập nhật state sau:\n\n*   **Tìm cột nguồn (Active Column):** Dựa vào `active.data.current.columnId`, tìm đối tượng cột tương ứng trong state `orderedColumns`.\n*   **Tìm cột đích (Over Column):** Dựa vào `over.data.current.columnId`, tìm đối tượng cột tương ứng trong state `orderedColumns`.\n*   **Xóa Card khỏi Cột nguồn:** Loại bỏ `active.id` (ID của Card đang kéo) khỏi mảng `cardOrderIds` của cột nguồn.\n*   **Thêm Card vào Cột đích:** Thêm `active.id` vào mảng `cardOrderIds` của cột đích. Vị trí thêm vào sẽ phụ thuộc vào vị trí thả (`over.id`).\n*   **Cập nhật lại State:** Tạo một bản sao mới của `orderedColumns` với các thay đổi trên và cập nhật lại state bằng `setOrderedColumns`.\n\n### 4. Sử dụng `toSpliced()` để xử lý mảng (Immutability)\n\nĐể đảm bảo tính bất biến (immutability) trong React, chúng ta nên tránh thay đổi trực tiếp mảng ban đầu. Thay vào đó, ta sử dụng phương thức `toSpliced()` (một phương thức mới của JavaScript) để tạo ra một mảng mới đã được chỉnh sửa. `toSpliced()` hoạt động tương tự như `splice()` nhưng trả về một mảng mới thay vì thay đổi mảng gốc.\n\n**Code mẫu xử lý trong `handleDragEnd`:**\n\n```javascript\n// Chỉ xử lý khi kéo thả Card\nif (activeDragItemType === ACTIVE_DRAG_ITEM_TYPE.CARD) {\n  // ... (xử lý kéo thả trong cùng một cột)\n\n  // Xử lý kéo thả Card giữa 2 cột khác nhau\n  if (oldColumnWhenDraggingCard?.id !== overColumn?.id) {\n    // Tìm cột cũ (active)\n    const oldColumnIndex = orderedColumns.findIndex(c => c.id === oldColumnWhenDraggingCard.id)\n    // Tìm cột mới (over)\n    const newColumnIndex = orderedColumns.findIndex(c => c.id === overColumn.id)\n\n    // Dùng toSpliced để cập nhật mảng cardOrderIds cho cột cũ và mới\n    const newOrderedColumns = [...orderedColumns]\n    newOrderedColumns[oldColumnIndex].cards = oldColumnWhenDraggingCard.cards.filter(c => c.id !== activeDraggingCardId)\n    newOrderedColumns[oldColumnIndex].cardOrderIds = newOrderedColumns[oldColumnIndex].cards.map(c => c.id)\n\n    newOrderedColumns[newColumnIndex].cards = overColumn.cards.toSpliced(newCardIndexInNextColumn, 0, activeDraggingCard)\n    newOrderedColumns[newColumnIndex].cardOrderIds = newOrderedColumns[newColumnIndex].cards.map(c => c.id)\n\n    setOrderedColumns(newOrderedColumns)\n  }\n}\n```\n\n## CÁC BƯỚC THỰC HÀNH\n\n1.  **Mở file `BoardContent.jsx`:** Đây là component chính chứa logic kéo thả của chúng ta.\n2.  **Điều hướng đến hàm `handleDragEnd`:** Tìm đến nơi xử lý logic sau khi kết thúc kéo thả.\n3.  **Thêm điều kiện kiểm tra kéo thả khác cột:** Bổ sung `if (oldColumnWhenDraggingCard?.id !== overColumn?.id)` để phân biệt với trường hợp kéo thả trong cùng một cột.\n4.  **Implement logic cập nhật:**\n    *   Tìm `oldColumnIndex` và `newColumnIndex`.\n    *   Tạo một bản sao `newOrderedColumns` từ `orderedColumns`.\n    *   Cập nhật `cards` và `cardOrderIds` cho `oldColumn` bằng cách `filter` để loại bỏ card đã kéo.\n    *   Cập nhật `cards` và `cardOrderIds` cho `newColumn` bằng cách dùng `toSpliced` để chèn card vào vị trí mới.\n5.  **Cập nhật State:** Gọi `setOrderedColumns(newOrderedColumns)` để render lại giao diện với dữ liệu mới.\n6.  **Kiểm tra:** Chạy ứng dụng và thử kéo một Card từ cột này sang cột khác để đảm bảo chức năng hoạt động đúng như mong đợi.\n\n## LƯU Ý QUAN TRỌNG\n\n*   **Tính bất biến (Immutability):** Luôn tạo ra các bản sao mới của state (mảng, đối tượng) thay vì chỉnh sửa trực tiếp. Đây là nguyên tắc cốt lõi trong React để tránh các lỗi không mong muốn liên quan đến việc render lại component.\n*   **`dnd-kit` Data:** Tận dụng `active.data.current` và `over.data.current` để truyền và truy cập dữ liệu cần thiết (như `columnId`, `cardId`) giữa các sự kiện kéo thả.\n*   **`toSpliced()` vs `splice()`:** `toSpliced()` là một lựa chọn hiện đại và an toàn hơn cho việc xử lý mảng trong React vì nó không làm thay đổi mảng gốc.\n\n## TÀI LIỆU THAM KHẢO\n\n1.  **dnd-kit Documentation:** [https://dndkit.com/](https://dndkit.com/)\n2.  **MDN Web Docs - toSpliced():** [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSpliced](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSpliced)\n3.  **React Docs - Updating Arrays in State:** [https://react.dev/learn/updating-arrays-in-state](https://react.dev/learn/updating-arrays-in-state)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Sự kiện nào trong dnd-kit được kích hoạt khi người dùng hoàn tất hành động kéo và thả?",
+        "options": [
+          "onDragStart",
+          "onDragMove",
+          "onDragEnd",
+          "onDragOver"
+        ],
+        "correctAnswer": 2,
+        "explanation": "onDragEnd là sự kiện được dnd-kit cung cấp để xử lý logic ngay sau khi hành động kéo thả kết thúc."
+      },
+      {
+        "question": "Làm thế nào để xác định một card được kéo sang một cột khác trong hàm xử lý onDragEnd?",
+        "options": [
+          "So sánh active.id và over.id.",
+          "Kiểm tra xem over.data.current.columnId có tồn tại hay không.",
+          "So sánh active.data.current.columnId và over.data.current.columnId.",
+          "Kiểm tra thuộc tính active.isOverNewContext."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bằng cách so sánh ID của cột chứa card đang kéo (active.data.current.columnId) và ID của cột nơi card được thả (over.data.current.columnId), chúng ta có thể xác định việc kéo thả có diễn ra giữa các cột khác nhau hay không."
+      },
+      {
+        "question": "Tại sao nguyên tắc \"bất biến\" (immutability) lại quan trọng khi cập nhật state trong React?",
+        "options": [
+          "Để mã nguồn dễ đọc hơn.",
+          "Để tránh việc render lại không cần thiết và các lỗi không mong muốn.",
+          "Để tăng tốc độ thực thi của JavaScript.",
+          "Vì đó là yêu cầu của thư viện dnd-kit."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc thay đổi trực tiếp state (mutation) có thể khiến React không nhận ra sự thay đổi và bỏ qua việc render lại giao diện, dẫn đến dữ liệu và UI không đồng bộ. Tạo bản sao mới đảm bảo React phát hiện được sự thay đổi."
+      },
+      {
+        "question": "Phương thức `toSpliced()` khác với `splice()` ở điểm nào?",
+        "options": [
+          "toSpliced() nhanh hơn splice().",
+          "toSpliced() trả về một mảng mới và không thay đổi mảng gốc, trong khi splice() thay đổi mảng gốc.",
+          "toSpliced() chỉ có thể xóa phần tử, còn splice() có thể thêm và xóa.",
+          "Không có sự khác biệt nào, toSpliced() chỉ là tên gọi khác của splice()."
+        ],
+        "correctAnswer": 1,
+        "explanation": "toSpliced() được thiết kế để tuân thủ nguyên tắc bất biến. Nó trả về một mảng mới đã được chỉnh sửa, giữ cho mảng ban đầu không bị thay đổi, phù hợp với cách hoạt động của React."
+      },
+      {
+        "question": "Trong hàm `handleDragEnd`, đối tượng `event` chứa thông tin gì quan trọng?",
+        "options": [
+          "Tọa độ con trỏ chuột.",
+          "Đối tượng `active` (phần tử đang kéo) và `over` (nơi phần tử được thả).",
+          "Thời gian diễn ra hành động kéo thả.",
+          "Lịch sử của tất cả các sự kiện kéo thả trước đó."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đối tượng event chứa hai thuộc tính cốt lõi là `active` và `over`, cung cấp toàn bộ thông tin về phần tử được kéo và vị trí nó được thả xuống."
+      },
+      {
+        "question": "Khi di chuyển một card từ cột A sang cột B, hành động nào sau đây KHÔNG cần thiết?",
+        "options": [
+          "Xóa card ID khỏi mảng cardOrderIds của cột A.",
+          "Thêm card ID vào mảng cardOrderIds của cột B.",
+          "Cập nhật lại state của toàn bộ ứng dụng.",
+          "Tạo một bản sao mới của đối tượng card được kéo."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Chúng ta chỉ cần cập nhật state liên quan đến các cột bị ảnh hưởng (orderedColumns), không nhất thiết phải cập nhật lại toàn bộ state của ứng dụng. Việc tạo bản sao của card cũng không cần thiết, chỉ cần di chuyển ID của nó."
+      },
+      {
+        "question": "Đâu là cách đúng để xóa một card (`activeDraggingCardId`) khỏi cột cũ (`oldColumn`) một cách bất biến?",
+        "options": [
+          "oldColumn.cards.pop(activeDraggingCardId);",
+          "delete oldColumn.cards[activeDraggingCardId];",
+          "oldColumn.cards = oldColumn.cards.filter(c => c.id !== activeDraggingCardId);",
+          "oldColumn.cards.splice(oldColumn.cards.findIndex(c => c.id === activeDraggingCardId), 1);"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phương thức `filter` trả về một mảng mới chứa các phần tử thỏa mãn điều kiện, do đó nó không thay đổi mảng gốc và là một cách tiếp cận bất biến."
+      },
+      {
+        "question": "Mục đích của việc lưu `columnId` vào `active.data.current` là gì?",
+        "options": [
+          "Để thay đổi màu sắc của cột khi đang kéo.",
+          "Để truy cập được ID của cột gốc trong sự kiện onDragEnd.",
+          "Để tăng hiệu năng cho dnd-kit.",
+          "Để lưu trữ dữ liệu tạm thời trên trình duyệt."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`data.current` là một cơ chế của dnd-kit cho phép truyền dữ liệu từ lúc bắt đầu kéo (onDragStart) đến các sự kiện sau đó như onDragOver hay onDragEnd, giúp chúng ta có đủ thông tin để xử lý logic."
+      },
+      {
+        "question": "Trong đoạn code mẫu, `newOrderedColumns[newColumnIndex].cards.toSpliced(newCardIndexInNextColumn, 0, activeDraggingCard)` có chức năng gì?",
+        "options": [
+          "Xóa card đang được kéo khỏi cột mới.",
+          "Thay thế một card ở cột mới bằng card đang được kéo.",
+          "Chèn card đang được kéo vào một vị trí cụ thể trong cột mới mà không thay đổi mảng gốc.",
+          "Sao chép tất cả card từ cột cũ sang cột mới."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đoạn code này sử dụng `toSpliced` để chèn `activeDraggingCard` vào vị trí `newCardIndexInNextColumn` của mảng `cards` trong cột mới. Tham số thứ hai là 0 có nghĩa là không xóa phần tử nào."
+      },
+      {
+        "question": "Biến `overColumn` trong logic xử lý kéo thả card thường được lấy từ đâu?",
+        "options": [
+          "Từ state toàn cục của Redux.",
+          "Bằng cách tìm trong mảng `orderedColumns` dựa trên `over.data.current.columnId`.",
+          "Được truyền trực tiếp từ component Card.",
+          "Bằng cách truy vấn DOM để tìm cột chứa con trỏ chuột."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi một card được kéo qua một cột, thông tin của cột đó (bao gồm cả ID) được gắn vào `over.data.current`. Chúng ta dùng ID này để tìm đối tượng cột đầy đủ trong state `orderedColumns`."
+      },
+      {
+        "question": "Nếu `over` là `null` trong `handleDragEnd`, điều đó có nghĩa là gì?",
+        "options": [
+          "Card được thả vào chính nó.",
+          "Có lỗi xảy ra với dnd-kit.",
+          "Card được thả ra ngoài một khu vực có thể thả (droppable area).",
+          "Hành động kéo thả đã bị hủy."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Nếu người dùng thả một mục kéo ra ngoài bất kỳ container/vùng có thể thả nào đã được đăng ký, đối tượng `over` sẽ là `null`. Chúng ta cần xử lý trường hợp này để tránh lỗi."
+      },
+      {
+        "question": "Câu lệnh `const newOrderedColumns = [...orderedColumns]` thực hiện điều gì?",
+        "options": [
+          "Tạo một bản sao sâu (deep copy) của mảng orderedColumns.",
+          "Tạo một tham chiếu mới đến mảng orderedColumns.",
+          "Tạo một bản sao nông (shallow copy) của mảng orderedColumns.",
+          "Lấy phần tử đầu tiên của mảng orderedColumns."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cú pháp spread (...) tạo ra một mảng mới ở cấp cao nhất. Tuy nhiên, các đối tượng bên trong mảng (các cột) vẫn là tham chiếu đến các đối tượng gốc. Đây là một bản sao nông."
+      },
+      {
+        "question": "Tại sao sau khi cập nhật mảng `cards` của một cột, chúng ta cần cập nhật lại mảng `cardOrderIds`?",
+        "options": [
+          "Để đồng bộ thứ tự hiển thị của các card với dữ liệu trong state.",
+          "Vì dnd-kit yêu cầu như vậy.",
+          "Để xóa các card không còn tồn tại.",
+          "Để tăng hiệu suất render."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Mảng `cardOrderIds` quyết định thứ tự render của các card trong một cột. Sau khi thêm hoặc xóa card khỏi mảng `cards`, mảng `cardOrderIds` phải được tạo lại từ mảng `cards` mới để đảm bảo thứ tự là chính xác."
+      },
+      {
+        "question": "File nào được đề cập trong bài học là nơi chứa logic chính cho việc kéo thả?",
+        "options": [
+          "App.js",
+          "Column.jsx",
+          "Card.jsx",
+          "BoardContent.jsx"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Bài học hướng dẫn thực hành trực tiếp trên file `BoardContent.jsx`, vì đây là component cha chứa cả các cột và quản lý state `orderedColumns` cũng như hàm `handleDragEnd`."
+      },
+      {
+        "question": "Nếu không có `overColumn` (ví dụ, kéo card ra khỏi board), logic nào nên được thực thi?",
+        "options": [
+          "Xóa card khỏi cột ban đầu.",
+          "Không làm gì cả và trả về trạng thái ban đầu.",
+          "Thêm card vào cột đầu tiên làm mặc định.",
+          "Hiển thị một thông báo lỗi."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nếu card được thả vào một vị trí không hợp lệ (không có `overColumn`), logic hợp lý nhất là không thực hiện thay đổi nào và giữ nguyên trạng thái của board như trước khi kéo."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Kiểm tra Kéo thả khác cột",
+        "description": "Viết một hàm `isDifferentColumn` nhận vào hai đối tượng `active` và `over` từ dnd-kit. Hàm sẽ trả về `true` nếu card được kéo sang một cột khác, và `false` nếu chúng ở trong cùng một cột. Giả sử `columnId` được lưu trong `data.current`.",
+        "starterCode": "function isDifferentColumn(active, over) {\n  // Viết code của bạn ở đây\n}",
+        "solution": "function isDifferentColumn(active, over) {\n  if (!over) return false;\n  return active.data.current.columnId !== over.data.current.columnId;\n}",
+        "testCases": "isDifferentColumn({ data: { current: { columnId: 'col-1' } } }, { data: { current: { columnId: 'col-2' } } }) === true\nisDifferentColumn({ data: { current: { columnId: 'col-1' } } }, { data: { current: { columnId: 'col-1' } } }) === false\nisDifferentColumn({ data: { current: { columnId: 'col-1' } } }, null) === false"
+      },
+      {
+        "title": "Bài 2: Xóa Card ID khỏi Cột (Immutable)",
+        "description": "Viết một hàm `removeCardFromColumn` nhận vào một đối tượng cột (`column`) và một `cardId` cần xóa. Hàm phải trả về một đối tượng cột MỚI với mảng `cards` và `cardOrderIds` đã được cập nhật một cách bất biến (không thay đổi đối tượng cột ban đầu).",
+        "starterCode": "function removeCardFromColumn(column, cardId) {\n  // Viết code của bạn ở đây\n}",
+        "solution": "function removeCardFromColumn(column, cardId) {\n  const newCards = column.cards.filter(c => c.id !== cardId);\n  const newCardOrderIds = newCards.map(c => c.id);\n  return { ...column, cards: newCards, cardOrderIds: newCardOrderIds };\n}",
+        "testCases": "const col = { id: 'c1', cards: [{id: 'a'}, {id: 'b'}], cardOrderIds: ['a', 'b'] };\nconst newCol = removeCardFromColumn(col, 'a');\n// newCol.cardOrderIds should be ['b']\n// col.cardOrderIds should still be ['a', 'b']"
+      },
+      {
+        "title": "Bài 3: Thêm Card vào Cột (Immutable)",
+        "description": "Viết một hàm `addCardToColumn` nhận vào một đối tượng cột (`column`), một đối tượng card (`card`), và một vị trí (`index`). Hàm phải trả về một đối tượng cột MỚI với card đã được chèn vào mảng `cards` và `cardOrderIds` tại vị trí `index` một cách bất biến.",
+        "starterCode": "function addCardToColumn(column, card, index) {\n  // Viết code của bạn ở đây\n}",
+        "solution": "function addCardToColumn(column, card, index) {\n  const newCards = column.cards.toSpliced(index, 0, card);\n  const newCardOrderIds = newCards.map(c => c.id);\n  return { ...column, cards: newCards, cardOrderIds: newCardOrderIds };\n}",
+        "testCases": "const col = { id: 'c1', cards: [{id: 'a'}, {id: 'c'}], cardOrderIds: ['a', 'c'] };\nconst newCard = {id: 'b'};\nconst newCol = addCardToColumn(col, newCard, 1);\n// newCol.cardOrderIds should be ['a', 'b', 'c']\n// col.cardOrderIds should still be ['a', 'c']"
+      },
+      {
+        "title": "Bài 4: Cập nhật hai cột",
+        "description": "Viết hàm `moveCardBetweenColumns` nhận vào 4 tham số: `oldColumn`, `newColumn`, `activeCard`, `newCardIndex`. Hàm này thực hiện việc xóa `activeCard` khỏi `oldColumn` và thêm nó vào `newColumn` tại vị trí `newCardIndex`. Hàm phải trả về một mảng chứa hai đối tượng cột MỚI đã được cập nhật.",
+        "starterCode": "function moveCardBetweenColumns(oldColumn, newColumn, activeCard, newCardIndex) {\n  // Viết code của bạn ở đây\n}",
+        "solution": "function moveCardBetweenColumns(oldColumn, newColumn, activeCard, newCardIndex) {\n  // Cập nhật cột cũ\n  const updatedOldColumnCards = oldColumn.cards.filter(c => c.id !== activeCard.id);\n  const finalOldColumn = { \n    ...oldColumn, \n    cards: updatedOldColumnCards, \n    cardOrderIds: updatedOldColumnCards.map(c => c.id) \n  };\n\n  // Cập nhật cột mới\n  const updatedNewColumnCards = newColumn.cards.toSpliced(newCardIndex, 0, activeCard);\n  const finalNewColumn = { \n    ...newColumn, \n    cards: updatedNewColumnCards, \n    cardOrderIds: updatedNewColumnCards.map(c => c.id) \n  };\n\n  return [finalOldColumn, finalNewColumn];\n}",
+        "testCases": "const c1 = { id: 'c1', cards: [{id: 'a'}], cardOrderIds: ['a'] };\nconst c2 = { id: 'c2', cards: [{id: 'b'}], cardOrderIds: ['b'] };\nconst cardA = {id: 'a'};\nconst [res1, res2] = moveCardBetweenColumns(c1, c2, cardA, 1);\n// res1.cardOrderIds should be []\n// res2.cardOrderIds should be ['b', 'a']"
+      },
+      {
+        "title": "Bài 5: Hoàn thiện Logic Kéo thả giữa các cột",
+        "description": "Viết một hàm `handleMoveDifferentColumn` mô phỏng logic chính trong `handleDragEnd`. Hàm nhận vào `orderedColumns`, `active`, `over`. Hàm sẽ tìm cột cũ, cột mới, card đang kéo, và vị trí mới của card. Cuối cùng, nó trả về một mảng `orderedColumns` MỚI đã được cập nhật. Giả sử các ID và dữ liệu cần thiết đều hợp lệ.",
+        "starterCode": "function handleMoveDifferentColumn(orderedColumns, active, over) {\n  const { id: activeDraggingCardId, data: { current: { columnId: oldColumnId } } } = active;\n  const { id: overCardId, data: { current: { columnId: newColumnId } } } = over;\n\n  // Tìm cột cũ và cột mới\n  const oldColumn = orderedColumns.find(c => c.id === oldColumnId);\n  const newColumn = orderedColumns.find(c => c.id === newColumnId);\n\n  if (!oldColumn || !newColumn) return orderedColumns;\n\n  // Tìm card đang kéo và vị trí mới\n  const activeDraggingCard = oldColumn.cards.find(c => c.id === activeDraggingCardId);\n  const newCardIndex = newColumn.cards.findIndex(c => c.id === overCardId);\n\n  // Viết logic cập nhật và trả về mảng orderedColumns mới\n}",
+        "solution": "function handleMoveDifferentColumn(orderedColumns, active, over) {\n  const { id: activeDraggingCardId, data: { current: { columnId: oldColumnId } } } = active;\n  const { id: overCardId, data: { current: { columnId: newColumnId } } } = over;\n\n  const oldColumn = orderedColumns.find(c => c.id === oldColumnId);\n  const newColumn = orderedColumns.find(c => c.id === newColumnId);\n\n  if (!oldColumn || !newColumn || !active.data.current.card) return orderedColumns;\n\n  const activeDraggingCard = active.data.current.card;\n  let newCardIndex;\n  if (over.id in newColumn.cards.map(c=>c.id)) {\n    newCardIndex = newColumn.cards.findIndex(c => c.id === overCardId);\n  } else {\n    newCardIndex = newColumn.cards.length;\n  }\n\n  const newOrderedColumns = orderedColumns.map(column => {\n    if (column.id === oldColumn.id) {\n      const newCards = oldColumn.cards.filter(c => c.id !== activeDraggingCardId);\n      return { ...column, cards: newCards, cardOrderIds: newCards.map(c => c.id) };\n    }\n    if (column.id === newColumn.id) {\n      const newCards = newColumn.cards.toSpliced(newCardIndex, 0, activeDraggingCard);\n      return { ...column, cards: newCards, cardOrderIds: newCards.map(c => c.id) };\n    }\n    return column;\n  });\n\n  return newOrderedColumns;\n}",
+        "testCases": "Simulate a full drag and drop scenario with an initial orderedColumns state, active and over objects, and verify the returned new state is correct."
+      }
+    ]
+  }
+}

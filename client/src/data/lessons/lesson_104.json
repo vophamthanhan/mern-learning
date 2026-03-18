@@ -1,0 +1,213 @@
+{
+  "id": 104,
+  "title": "Bài học: Xử lý triệt để Bug nhấp nháy (Flickering) khi kéo thả với dnd-kit",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# Bài học: Xử lý triệt để Bug nhấp nháy (Flickering) khi kéo thả với dnd-kit\n\n**Video:** 42/109\n**Tiêu đề gốc:** 37.1 Xử lý triệt để Bug nhấp nháy khi kéo thả | Dnd-kit | ReactJS + Material UI | TrungQuanDev\n\n## 1. Mục tiêu bài học\n\nBài học này tập trung vào việc giải quyết một lỗi (bug) phổ biến nhưng khó chịu khi làm việc với thư viện kéo thả `dnd-kit` trong ReactJS: hiện tượng \"nhấp nháy\" (flickering). Mục tiêu chính là giúp lập trình viên hiểu rõ nguyên nhân sâu xa của lỗi và cung cấp một giải pháp triệt để để khắc phục, đảm bảo trải nghiệm người dùng mượt mà và chuyên nghiệp hơn khi thực hiện thao tác kéo thả các phần tử.\n\n## 2. Bối cảnh và Nguyên nhân Bug\n\nTrong quá trình phát triển tính năng kéo thả cho ứng dụng Trello clone, cụ thể là kéo các \"Card\" giữa các \"Column\", một bug đã xuất hiện. Khi người dùng kéo một Card đến sát mép trên hoặc mép dưới của một Column, Card đang được kéo sẽ bị nhấp nháy liên tục giữa vị trí hiện tại và vị trí ban đầu. Lỗi này không chỉ ảnh hưởng đến thẩm mỹ mà còn gây khó khăn cho người dùng khi tương tác.\n\nNguyên nhân cốt lõi của vấn đề này nằm ở thuật toán phát hiện va chạm (collision detection) của `dnd-kit`. Cụ thể:\n\n- Khi con trỏ chuột (pointer) di chuyển ra khỏi vùng có thể thả (droppable area) dù chỉ một chút, `dnd-kit` sẽ không tìm thấy bất kỳ vùng va chạm nào. Mảng `intersections` (các vùng giao nhau) trả về sẽ rỗng.\n- Khi không có va chạm, thư viện có thể sẽ coi như Card đã được thả ra ngoài, dẫn đến việc nó bị trả về vị trí cũ.\n- Tuy nhiên, ngay sau đó, con trỏ chuột có thể lại di chuyển vào vùng droppable, và thư viện lại phát hiện va chạm, kéo Card trở lại vị trí mới.\n- Quá trình này lặp đi lặp lại với tốc độ cao, gây ra hiện tượng nhấp nháy khó chịu.\n\nĐây là một vấn đề đã được ghi nhận trong cộng đồng và có nhiều thảo luận trên các diễn đàn như GitHub issues của thư viện [1].\n\n## 3. Kiến thức chi tiết và Giải pháp\n\nĐể xử lý triệt để bug này, chúng ta cần can thiệp vào quá trình phát hiện va chạm bằng cách tạo ra một thuật toán tùy chỉnh (custom collision detection algorithm).\n\n### 3.1. Tư tưởng giải quyết\n\nTư tưởng chính là \"ghi nhớ\" lại `id` của container (Column) cuối cùng mà Card đã đi qua. Nếu con trỏ chuột tạm thời di chuyển ra ngoài và không phát hiện được va chạm mới, thay vì trả về một mảng rỗng, chúng ta sẽ chủ động trả về container cuối cùng đó. Điều này \"đánh lừa\" `dnd-kit` rằng Card vẫn đang nằm trong một vùng hợp lệ, từ đó ngăn chặn hành vi quay về vị trí cũ.\n\n### 3.2. Triển khai Code\n\nChúng ta sẽ tạo một hàm `customCollisionDetection` và sử dụng `useRef` để lưu lại `id` của container gần nhất.\n\n```javascript\n// Sử dụng useRef để lưu lại ID của droppable container cuối cùng mà mục được kéo đi qua.\nconst lastOverId = useRef(null);\n\n// Thuật toán phát hiện va chạm tùy chỉnh\nconst customCollisionDetection = (args) => {\n  // Lấy danh sách các vùng giao nhau bằng thuật toán pointerWithin\n  const pointerIntersections = pointerWithin(args);\n\n  // Nếu không có vùng giao nhau nào được phát hiện (con trỏ ra ngoài tất cả các droppable)\n  // thì không làm gì cả, giữ nguyên trạng thái, tránh flickering.\n  if (!pointerIntersections?.length) {\n    // Nếu trước đó đã có một container được ghi nhận, trả về nó\n    if (lastOverId.current) {\n      return [{ id: lastOverId.current }];\n    }\n    return [];\n  }\n\n  // Tìm container có vùng giao nhau lớn nhất với con trỏ\n  let overId = getFirstCollision(pointerIntersections, 'id');\n\n  if (overId) {\n    // Cập nhật lastOverId với container hiện tại\n    lastOverId.current = overId;\n\n    // Sử dụng thuật toán closestCorners để có trải nghiệm mượt mà hơn\n    const closestCornersCollisions = closestCorners(args);\n    if (closestCornersCollisions.length > 0) {\n      overId = getFirstCollision(closestCornersCollisions, 'id');\n    }\n  }\n  \n  return [{ id: overId }];\n};\n```\n\nSau đó, truyền hàm này vào `DndContext`:\n\n```jsx\n<DndContext collisionDetection={customCollisionDetection} ... >\n  {/* ... các thành phần khác ... */}\n</DndContext>\n```\n\n**Giải thích chi tiết:**\n\n1.  **`pointerWithin(args)`**: Đây là một thuật toán có sẵn của `dnd-kit`, trả về một danh sách các vùng droppable mà con trỏ chuột đang ở bên trong.\n2.  **`if (!pointerIntersections?.length)`**: Đây là mấu chốt của giải pháp. Chúng ta kiểm tra xem con trỏ có đang ở trên bất kỳ container nào không. Nếu không, thay vì để `dnd-kit` tự xử lý (và gây ra lỗi), chúng ta sẽ chủ động kiểm soát.\n3.  **`lastOverId.current`**: Biến `ref` này hoạt động như một bộ nhớ. Nếu con trỏ ra ngoài, chúng ta kiểm tra xem ngay trước đó nó đã ở trên container nào. Nếu có, chúng ta trả về `id` của container đó, duy trì trạng thái kéo một cách ổn định.\n4.  **`closestCorners`**: Trong video, tác giả cũng đề xuất thay thế `closestCenter` bằng `closestCorners`. Thuật toán `closestCorners` tính toán khoảng cách từ các góc của mục đang kéo đến các góc của container, thường cho kết quả chính xác và tự nhiên hơn, đặc biệt là với các item có kích thước khác nhau.\n\n## 4. Các bước thực hành\n\n1.  **Xác định vấn đề**: Kéo một Card trong ứng dụng Trello của bạn đến sát mép trên hoặc dưới của một Column và quan sát hiện tượng nhấp nháy.\n2.  **Tạo biến `ref`**: Trong component chứa `DndContext`, khai báo một biến `ref` để lưu `id` của container cuối cùng: `const lastOverId = useRef(null);`.\n3.  **Viết hàm custom collision**: Tạo hàm `customCollisionDetection` như đoạn code mẫu ở trên.\n4.  **Áp dụng vào `DndContext`**: Tìm component `<DndContext>` và thêm prop `collisionDetection={customCollisionDetection}`.\n5.  **Thay đổi thuật toán (Tùy chọn)**: Nếu bạn đang dùng `closestCenter`, hãy thử nghiệm thay thế bằng `closestCorners` bên trong hàm custom để xem sự khác biệt về trải nghiệm.\n6.  **Kiểm tra lại**: Chạy lại ứng dụng và thực hiện lại thao tác kéo thả. Lỗi nhấp nháy sẽ không còn nữa.\n\n## 5. Lưu ý quan trọng\n\n- **Hiểu sâu về `dnd-kit`**: Giải pháp này đòi hỏi sự hiểu biết nhất định về cách hoạt động của `dnd-kit`, đặc biệt là các thuật toán phát hiện va chạm. Đây là một kỹ năng nâng cao nhưng rất hữu ích.\n- **Không phải lúc nào cũng cần**: Bug này chỉ xảy ra trong một số trường hợp cụ thể. Nếu ứng dụng của bạn không gặp phải, bạn không cần thiết phải áp dụng giải pháp này.\n- **Tối ưu hóa**: Logic bên trong hàm `customCollisionDetection` có thể được tối ưu hóa thêm tùy thuộc vào độ phức tạp của ứng dụng. Ví dụ, bạn có thể kết hợp nhiều thuật toán va chạm khác nhau để xử lý các kịch bản đa dạng.\n\n## 6. Tài liệu tham khảo\n\n1.  [GitHub - clauderic/dnd-kit Issue #671](https://github.com/clauderic/dnd-kit/issues/671): Một trong những thảo luận trên GitHub về lỗi flickering, cung cấp bối cảnh về vấn đề.\n2.  [Dnd-kit Documentation - Collision detection algorithms](https://dndkit.com/legacy/api-documentation/context-provider/collision-detection-algorithms): Tài liệu chính thức của `dnd-kit` về các thuật toán phát hiện va chạm.\n\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Nguyên nhân chính gây ra lỗi 'nhấp nháy' (flickering) khi kéo thả với `dnd-kit` được mô tả trong bài học là gì?",
+        "options": [
+          "Do lỗi render của component trong React.",
+          "Do xung đột CSS giữa các thư viện UI.",
+          "Do thuật toán phát hiện va chạm (collision detection) trả về mảng rỗng khi con trỏ chuột ra khỏi vùng có thể thả.",
+          "Do trình duyệt không xử lý kịp các sự kiện di chuyển chuột."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Nguyên nhân cốt lõi là khi con trỏ ra khỏi vùng droppable, `dnd-kit` không phát hiện va chạm nào (`intersections` rỗng), khiến phần tử bị trả về vị trí cũ, sau đó lại được kéo lại khi con trỏ vào lại, gây ra hiện tượng nhấp nháy."
+      },
+      {
+        "question": "Giải pháp chính được đề xuất trong bài học để khắc phục lỗi flickering là gì?",
+        "options": [
+          "Sử dụng hàm `setTimeout` để trì hoãn việc cập nhật giao diện.",
+          "Tạo một thuật toán phát hiện va chạm tùy chỉnh (custom collision detection).",
+          "Tăng thuộc tính `z-index` của phần tử đang được kéo.",
+          "Thay thế `dnd-kit` bằng một thư viện kéo thả khác."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học hướng dẫn tạo một hàm phát hiện va chạm tùy chỉnh để can thiệp vào logic mặc định của `dnd-kit`, từ đó xử lý được bug flickering."
+      },
+      {
+        "question": "Trong thuật toán va chạm tùy chỉnh, `useRef` được sử dụng với mục đích gì?",
+        "options": [
+          "Để lưu trữ tọa độ chính xác của con trỏ chuột.",
+          "Để đếm số lần một phần tử được kéo qua một container.",
+          "Để lưu lại `id` của container (droppable area) cuối cùng mà phần tử được kéo đã đi qua.",
+          "Để tham chiếu đến phần tử DOM đang được kéo."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Biến `ref` (ví dụ: `lastOverId`) hoạt động như một bộ nhớ để ghi nhớ container cuối cùng, giúp duy trì trạng thái khi con trỏ tạm thời di chuyển ra ngoài."
+      },
+      {
+        "question": "Hàm `pointerWithin(args)` của `dnd-kit` có vai trò gì trong giải pháp?",
+        "options": [
+          "Tính toán góc gần nhất giữa các phần tử.",
+          "Trả về danh sách các vùng droppable mà con trỏ chuột đang ở bên trong.",
+          "Xác định tâm của phần tử đang được kéo.",
+          "Kiểm tra xem con trỏ có nằm trong toàn bộ cửa sổ trình duyệt hay không."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`pointerWithin` là thuật toán được sử dụng đầu tiên trong hàm custom để xác định các vùng mà con trỏ đang giao nhau, làm cơ sở cho các logic xử lý tiếp theo."
+      },
+      {
+        "question": "Khi `pointerIntersections` trả về một mảng rỗng, logic tùy chỉnh sẽ làm gì?",
+        "options": [
+          "Ngay lập tức trả về một mảng rỗng, giữ nguyên hành vi mặc định.",
+          "Ném ra một lỗi để thông báo cho lập trình viên.",
+          "Kiểm tra xem `lastOverId.current` có giá trị không và trả về `id` đó.",
+          "Gọi lại hàm `pointerWithin` một lần nữa."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Đây là mấu chốt của giải pháp: nếu không có va chạm mới và trước đó đã có một container được ghi nhận, hàm sẽ trả về container đó để tránh việc phần tử bị trả về vị trí cũ."
+      },
+      {
+        "question": "Thuật toán `closestCorners` được đề cập có ưu điểm gì so với `closestCenter`?",
+        "options": [
+          "Nó luôn nhanh hơn `closestCenter` về mặt hiệu năng.",
+          "Nó chỉ hoạt động với các phần tử có cùng kích thước.",
+          "Nó cho kết quả chính xác và tự nhiên hơn, đặc biệt với các item có kích thước khác nhau.",
+          "Nó yêu cầu ít cấu hình hơn."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`closestCorners` tính toán khoảng cách dựa trên các góc, thường mang lại trải nghiệm người dùng mượt mà và trực quan hơn khi các phần tử có kích thước đa dạng."
+      },
+      {
+        "question": "Để áp dụng thuật toán va chạm tùy chỉnh, bạn cần truyền nó vào prop nào của `<DndContext>`?",
+        "options": [
+          "onDragEnd",
+          "sensors",
+          "collisionDetection",
+          "modifiers"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Prop `collisionDetection` của `<DndContext>` cho phép bạn ghi đè thuật toán phát hiện va chạm mặc định bằng một hàm tùy chỉnh của riêng bạn."
+      },
+      {
+        "question": "Hàm `getFirstCollision` được sử dụng trong đoạn code mẫu để làm gì?",
+        "options": [
+          "Để lấy ra `id` của va chạm đầu tiên từ mảng các va chạm được phát hiện.",
+          "Để khởi tạo va chạm đầu tiên khi bắt đầu kéo.",
+          "Để xóa va chạm đầu tiên khỏi danh sách.",
+          "Để sắp xếp các va chạm theo thứ tự ưu tiên."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`getFirstCollision` là một hàm trợ giúp (utility) của `dnd-kit` dùng để trích xuất `id` từ va chạm đầu tiên trong mảng kết quả mà các thuật toán như `pointerWithin` trả về."
+      },
+      {
+        "question": "Theo bài học, khi nào bạn KHÔNG cần áp dụng giải pháp sửa lỗi flickering này?",
+        "options": [
+          "Khi ứng dụng có quá nhiều cột.",
+          "Khi ứng dụng không gặp phải lỗi flickering.",
+          "Khi sử dụng trên thiết bị di động.",
+          "Khi kéo thả giữa hai danh sách khác nhau."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học lưu ý rằng bug này chỉ xảy ra trong một số trường hợp cụ thể. Nếu ứng dụng của bạn hoạt động mượt mà, việc thêm code tùy chỉnh là không cần thiết."
+      },
+      {
+        "question": "Đoạn code `return [{ id: lastOverId.current }];` có ý nghĩa gì?",
+        "options": [
+          "Báo cho `dnd-kit` rằng không có va chạm nào xảy ra.",
+          "Báo cho `dnd-kit` rằng một lỗi đã xảy ra với `id` được chỉ định.",
+          "\"Đánh lừa\" `dnd-kit` rằng phần tử vẫn đang va chạm với container cuối cùng nó đi qua.",
+          "Cập nhật `id` của `lastOverId` với giá trị `current`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bằng cách trả về một mảng chứa `id` của container trước đó, chúng ta giả lập một va chạm hợp lệ, ngăn `dnd-kit` thực hiện hành vi mặc định là trả phần tử về vị trí ban đầu."
+      },
+      {
+        "question": "Tư tưởng chính của việc \"ghi nhớ\" container cuối cùng là gì?",
+        "options": [
+          "Để tối ưu hóa hiệu năng bằng cách giảm số lần tính toán va chạm.",
+          "Để ngăn chặn hành vi quay về vị trí cũ của phần tử khi con trỏ tạm thời ra khỏi vùng droppable.",
+          "Để cho phép kéo thả giữa nhiều cửa sổ trình duyệt khác nhau.",
+          "Để lưu lại lịch sử di chuyển của tất cả các phần tử."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc ghi nhớ giúp duy trì một trạng thái \"an toàn\", đảm bảo rằng ngay cả khi không có va chạm mới, phần tử vẫn được coi là nằm trong một vùng hợp lệ, từ đó loại bỏ flickering."
+      },
+      {
+        "question": "Trong `DndContext`, ngoài `collisionDetection`, prop nào khác cũng quan trọng cho việc xử lý logic kéo thả?",
+        "options": [
+          "`onDragStart`, `onDragMove`, `onDragEnd`",
+          "`className`, `style`",
+          "`autoScroll`, `measuring`",
+          "Tất cả các đáp án trên đều đúng."
+        ],
+        "correctAnswer": 3,
+        "explanation": "`DndContext` cung cấp nhiều props để kiểm soát các khía cạnh khác nhau của trải nghiệm kéo thả, bao gồm các hàm xử lý sự kiện, cảm biến, và các tùy chỉnh hành vi."
+      },
+      {
+        "question": "Lỗi flickering thường xảy ra khi người dùng kéo một Card đến vị trí nào của Column?",
+        "options": [
+          "Chính giữa Column.",
+          "Sát mép trên hoặc mép dưới của Column.",
+          "Bên ngoài Column.",
+          "Khi kéo qua một Card khác trong cùng Column."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Lỗi này đặc biệt rõ rệt khi con trỏ di chuyển đến gần các cạnh của vùng droppable, nơi nó dễ dàng di chuyển ra ngoài và vào lại một cách nhanh chóng."
+      },
+      {
+        "question": "Việc triển khai thuật toán va chạm tùy chỉnh được coi là một kỹ năng ở cấp độ nào?",
+        "options": [
+          "Cơ bản, dành cho người mới bắt đầu.",
+          "Nâng cao, đòi hỏi hiểu biết sâu về cách hoạt động của thư viện.",
+          "Không cần thiết, vì thư viện đã xử lý tất cả.",
+          "Chỉ dành cho các chuyên gia về thuật toán máy tính."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học nhấn mạnh rằng đây là một kỹ năng nâng cao, hữu ích khi cần tùy chỉnh sâu và giải quyết các vấn đề phức tạp với `dnd-kit`."
+      },
+      {
+        "question": "Tài liệu nào là nguồn tham khảo chính thức và đáng tin cậy nhất khi làm việc với `dnd-kit`?",
+        "options": [
+          "Các bài viết trên Medium.",
+          "Các video hướng dẫn trên YouTube.",
+          "Tài liệu chính thức của `dnd-kit` (dndkit.com).",
+          "Các câu trả lời trên Stack Overflow."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Luôn luôn tham khảo tài liệu chính thức của thư viện để có thông tin chính xác và cập nhật nhất về API, các thuật toán và cách sử dụng được khuyến nghị."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Khai báo Ref để lưu ID",
+        "description": "Trong component chính chứa logic kéo thả, hãy khai báo một biến ref bằng cách sử dụng hook `useRef` của React. Biến ref này sẽ được sử dụng trong các bài tập sau để lưu trữ ID của container cuối cùng mà một mục được kéo đi qua. Đặt tên cho biến ref là `lastOverId`.",
+        "starterCode": "import React, { useRef } from 'react';\n\nfunction DragDropContainer() {\n  // Khai báo biến ref ở đây\n\n  return <div>Container kéo thả</div>;\n}",
+        "solution": "import React, { useRef } from 'react';\n\nfunction DragDropContainer() {\n  const lastOverId = useRef(null);\n\n  return <div>Container kéo thả</div>;\n}",
+        "testCases": "Kiểm tra xem biến `lastOverId` có được khai báo bằng `useRef` và có giá trị khởi tạo là `null` hay không."
+      },
+      {
+        "title": "Bài 2: Tạo khung cho hàm va chạm tùy chỉnh",
+        "description": "Tạo một hàm có tên `customCollisionDetection`. Hàm này nhận một tham số `args`. Bên trong hàm, hãy gọi thuật toán `pointerWithin` từ `dnd-kit` để lấy danh sách các vùng giao nhau và lưu vào biến `pointerIntersections`. Cuối cùng, trả về chính biến đó.",
+        "starterCode": "import { pointerWithin } from '@dnd-kit/core';\n\nconst customCollisionDetection = (args) => {\n  // Viết code của bạn ở đây\n};",
+        "solution": "import { pointerWithin } from '@dnd-kit/core';\n\nconst customCollisionDetection = (args) => {\n  const pointerIntersections = pointerWithin(args);\n  return pointerIntersections;\n};",
+        "testCases": "Kiểm tra xem hàm có gọi `pointerWithin(args)` và trả về kết quả của nó hay không."
+      },
+      {
+        "title": "Bài 3: Xử lý trường hợp không có va chạm",
+        "description": "Mở rộng hàm `customCollisionDetection` từ Bài 2. Thêm logic để kiểm tra nếu `pointerIntersections` là một mảng rỗng. Nếu nó rỗng, hãy trả về một mảng rỗng. Nếu không, hãy trả về `pointerIntersections` như trước.",
+        "starterCode": "import { pointerWithin } from '@dnd-kit/core';\n\nconst customCollisionDetection = (args) => {\n  const pointerIntersections = pointerWithin(args);\n\n  // Thêm logic kiểm tra ở đây\n};",
+        "solution": "import { pointerWithin } from '@dnd-kit/core';\n\nconst customCollisionDetection = (args) => {\n  const pointerIntersections = pointerWithin(args);\n\n  if (!pointerIntersections?.length) {\n    return [];\n  }\n\n  return pointerIntersections;\n};",
+        "testCases": "Kiểm tra nếu `pointerIntersections` rỗng, hàm trả về `[]`. Ngược lại, trả về `pointerIntersections`."
+      },
+      {
+        "title": "Bài 4: Hoàn thiện logic chống flickering",
+        "description": "Đây là bước quan trọng nhất. Kết hợp `lastOverId` từ Bài 1 vào hàm `customCollisionDetection`. Khi `pointerIntersections` rỗng, thay vì trả về mảng rỗng, hãy kiểm tra xem `lastOverId.current` có giá trị hay không. Nếu có, trả về một mảng chứa một object có dạng `[{ id: lastOverId.current }]`. Nếu không, hãy cập nhật `lastOverId.current` với `id` của va chạm đầu tiên và trả về `pointerIntersections`.",
+        "starterCode": "import { pointerWithin, getFirstCollision } from '@dnd-kit/core';\nimport { useRef } from 'react';\n\nconst lastOverId = useRef(null);\n\nconst customCollisionDetection = (args) => {\n  const pointerIntersections = pointerWithin(args);\n\n  // Viết logic hoàn chỉnh ở đây\n};",
+        "solution": "import { pointerWithin, getFirstCollision } from '@dnd-kit/core';\nimport { useRef } from 'react';\n\nconst lastOverId = useRef(null);\n\nconst customCollisionDetection = (args) => {\n  const pointerIntersections = pointerWithin(args);\n\n  if (!pointerIntersections?.length) {\n    if (lastOverId.current) {\n      return [{ id: lastOverId.current }];\n    }\n    return [];\n  }\n\n  const overId = getFirstCollision(pointerIntersections, 'id');\n\n  if (overId) {\n    lastOverId.current = overId;\n  }\n  \n  return pointerIntersections;\n};",
+        "testCases": "1. Khi không có va chạm mới, hàm trả về `[{ id: lastOverId.current }]`. 2. Khi có va chạm mới, `lastOverId.current` được cập nhật và hàm trả về danh sách va chạm."
+      },
+      {
+        "title": "Bài 5: Tích hợp vào DndContext",
+        "description": "Giả sử bạn có một component `App` với `DndContext`. Hãy sử dụng hàm `customCollisionDetection` đã tạo và truyền nó vào prop `collisionDetection` của `DndContext`.",
+        "starterCode": "import { DndContext } from '@dnd-kit/core';\n// Giả sử customCollisionDetection đã được định nghĩa ở trên\n\nfunction App() {\n  return (\n    <DndContext>\n      {/* Các components con */}\n    </DndContext>\n  );\n}",
+        "solution": "import { DndContext } from '@dnd-kit/core';\n// Giả sử customCollisionDetection đã được định nghĩa ở trên\n\nfunction App() {\n  return (\n    <DndContext collisionDetection={customCollisionDetection}>\n      {/* Các components con */}\n    </DndContext>\n  );\n}",
+        "testCases": "Kiểm tra xem component `DndContext` có nhận prop `collisionDetection` với giá trị là hàm `customCollisionDetection` hay không."
+      }
+    ]
+  }
+}

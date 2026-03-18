@@ -1,0 +1,656 @@
+[
+  {
+    "id": 1,
+    "title": "Bài 1: Demo dự án Trello Clone & Review khóa học MERN Stack Pro",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 2,
+    "title": "Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)",
+    "category": "react-basics",
+    "categoryName": "React Cơ bản"
+  },
+  {
+    "id": 3,
+    "title": "BÀI 2: AI CÓ THỂ HỌC ĐƯỢC KHÓA FULL STACK MERN PRO NÀY? NHỮNG LƯU Ý TRƯỚC KHI HỌC",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 4,
+    "title": "Buổi 3: Hiểu sâu sơ đồ vòng đời của Redux - Redux Lifecycle",
+    "category": "advanced",
+    "categoryName": "Nâng cao & Redux"
+  },
+  {
+    "id": 5,
+    "title": "Bài 3: Hướng dẫn cài đặt đầy đủ bộ Source Code Full Stack MERN Pro",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 6,
+    "title": "Buổi 4: React Router DOM & React Hook Form, Auth (Login Register) & 404 pages",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 7,
+    "title": "Bài học 4: Cài đặt môi trường dự án (NVM, Node, Git, Yarn...)",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 8,
+    "title": "Bài 4: JSX là gì? Hiểu Tường Tận về JSX",
+    "category": "react-basics",
+    "categoryName": "React Cơ bản"
+  },
+  {
+    "id": 9,
+    "title": "Bài học 5: What is Semantic Versioning? Important Notes on Project Code Base",
+    "category": "react-basics",
+    "categoryName": "React Cơ bản"
+  },
+  {
+    "id": 10,
+    "title": "Buổi 6: Gửi Email với Brevo Nodejs & Xử lý Register, Verify Account",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 11,
+    "title": "Bài học 6: Vite, Create React App và Next.js - Lựa chọn nào tối ưu?",
+    "category": "react-basics",
+    "categoryName": "React Cơ bản"
+  },
+  {
+    "id": 12,
+    "title": "Bài học 6: ESlint - Hãy biết Clean Code là gì? Cấu hình ESLint chuẩn dự án thực tế",
+    "category": "react-basics",
+    "categoryName": "React Cơ bản"
+  },
+  {
+    "id": 13,
+    "title": "Bài học 7: Material UI, TailwindCSS, Bootstrap - Chọn cái nào?",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 14,
+    "title": "Bài học 7: Vite - Hiểu toàn bộ Code Base ban đầu - Push lên GitHub",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 15,
+    "title": "BÀI 8: CÀI ĐẶT VÀ SỬ DỤNG MATERIAL UI (EMOTION, FONTS, ICONS…)",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 16,
+    "title": "Buổi 8: Xử lý HttpOnly Cookie, AuthMiddleware, Redux Persist, Protected Routes",
+    "category": "advanced",
+    "categoryName": "Nâng cao & Redux"
+  },
+  {
+    "id": 17,
+    "title": "Bài học 9: Cách Import chuẩn các Component của MUI để tối ưu dự án",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 18,
+    "title": "Buổi 9: Tính năng Logout, Refresh Token tự động với Axios Interceptors",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 19,
+    "title": "Bài 10: CSS Baseline - Nhất quán CSS trên các trình duyệt",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 20,
+    "title": "Buổi 10: Các tính năng Setting User, Change Avatar, Password...vv",
+    "category": "auth",
+    "categoryName": "Authentication & Security"
+  },
+  {
+    "id": 21,
+    "title": "Bài 11: Theming trong Material UI để làm gì?",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 22,
+    "title": "Buổi 12: Xử lý trang Board List: Query, Sort, Pagination",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 23,
+    "title": "Bài 12: Hiểu rõ cách triển khai Dark Mode & Light Mode trong MUI",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 24,
+    "title": "Bài 13: Đồng bộ chuẩn Dark Mode & Light Mode với System",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 25,
+    "title": "Buổi 13: Xử lý Active Board, Board Owners, và Members",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 26,
+    "title": "Bài học 14: Hiểu rõ về CSS Style thuần so với MUI SX Prop",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 27,
+    "title": "Buổi 14: Active Card, Board Owners, Members...vv",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 28,
+    "title": "Bài 15: Nắm rõ SX Prop, Styled API và Theme Override trong MUI",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 29,
+    "title": "Buổi 15: Update Card Description, Cover, Comment...vv",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 30,
+    "title": "Bài học 16: Custom CSS trong Material UI như thế nào cho đúng?",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 31,
+    "title": "Buổi 16: Add Card Comment, Invite User to Board by Email...vv",
+    "category": "react-basics",
+    "categoryName": "React Cơ bản"
+  },
+  {
+    "id": 32,
+    "title": "Bài 17: Phân tích Layout trang Trello Web (Kỹ Năng Quan Trọng)",
+    "category": "layout",
+    "categoryName": "Layout & Giao diện"
+  },
+  {
+    "id": 33,
+    "title": "Buổi 17: Tính năng Notifications - Query, Real-time Socket.io",
+    "category": "realtime",
+    "categoryName": "Real-time & Socket.io"
+  },
+  {
+    "id": 34,
+    "title": "Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 35,
+    "title": "Buổi 18: Update Board Invitation và Tính năng Real-time với Socket.io",
+    "category": "realtime",
+    "categoryName": "Real-time & Socket.io"
+  },
+  {
+    "id": 36,
+    "title": "Bài học 19: Tối ưu cấu trúc thư mục dự án chuyên nghiệp",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 37,
+    "title": "Buổi 19: Tính năng Card Members và Input Auto Search Board",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 38,
+    "title": "Bài 20: Absolute & Relative Import trong ReactJS",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 39,
+    "title": "Buổi 20: AutoComplete Search Board, Debounce Function và QueryFilters Regex",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 40,
+    "title": "Bài học 21: Code thanh Header: Trello App Bar (part 1)",
+    "category": "layout",
+    "categoryName": "Layout & Giao diện"
+  },
+  {
+    "id": 41,
+    "title": "Bài học 22: Code thanh Trello AppBar - Theme Override (part 2)",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 42,
+    "title": "Bài 24: Code thanh Trello Board Bar thực tế với ReactJS & Material UI",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 43,
+    "title": "Bài 25: Đập đi xây lại tone màu giao diện trang Trello",
+    "category": "layout",
+    "categoryName": "Layout & Giao diện"
+  },
+  {
+    "id": 44,
+    "title": "Bài học 26: Code phần Board Content (Columns & Cards)",
+    "category": "layout",
+    "categoryName": "Layout & Giao diện"
+  },
+  {
+    "id": 45,
+    "title": "Bài 27: Cấu trúc dự án chuyên sâu (Board - Columns - Cards)",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 46,
+    "title": "Tổng hợp kiến thức: Video 28 - Tạo Mock Data và Thuật Toán Sắp Xếp",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 47,
+    "title": "Bài 29: Kinh nghiệm chọn thư viện Kéo Thả cho dự án ReactJS",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 48,
+    "title": "Bài học 30: Kéo thả Trello Columns với ReactJS và Material UI",
+    "category": "mui",
+    "categoryName": "Material UI"
+  },
+  {
+    "id": 49,
+    "title": "Bài học 31: Đọc hiểu Code thư viện Dnd-kit nâng cao (Quan Trọng)",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 50,
+    "title": "Bài học 32: Kéo thả Trello Card với Dnd-kit: DragOverlay",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 51,
+    "title": "BÀI 33: KÉO THẢ TRELLO CARD VỚI DND-KIT: ONDRAGOVER",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 52,
+    "title": "Bài học 34: Thuật Toán Phát Hiện Va Chạm với Dnd-kit",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 53,
+    "title": "BÀI 36: HOÀN THIỆN KÉO THẢ CARD GIỮA 2 CỘT KHÁC NHAU VỚI DND-KIT",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 54,
+    "title": "Bài học 39: Hoàn thiện kéo thả Card trong cùng Column với dnd-kit",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 55,
+    "title": "Bài học 39: Khởi tạo dự án Back-end API từ con số 0 với NodeJS và MongoDB",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 56,
+    "title": "BÀI 41: XỬ LÝ BUG KÉO THẢ KHÓ CHỊU VỚI DND-KIT",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 57,
+    "title": "Bài học 41: BABEL là cái gì? Vì sao nó lại Quan Trọng và Cần Thiết?",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 58,
+    "title": "Bài 42: Tips Thiết kế cơ sở dữ liệu NoSQL | MongoDB Database",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 59,
+    "title": "Video 43: 37.2 Xử lý Bug khi Column rỗng không chứa Card",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 60,
+    "title": "Bài học 44: 38. Hãy nói cho mình biết cảm nghĩ của bạn nhé?",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 61,
+    "title": "Bài 46: Điểm qua nhanh MongoDB Compass và NoSQL Booster",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 62,
+    "title": "Video 46: 40. Cấu trúc dự án nâng cao, chuẩn thực tế, có ESLint",
+    "category": "react-basics",
+    "categoryName": "React Cơ bản"
+  },
+  {
+    "id": 63,
+    "title": "47. Tối ưu kết nối MongoDB Atlas vào dự án Back-end",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 64,
+    "title": "Bài học 48: Đóng kết nối MongoDB Atlas trong dự án Back-end",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 65,
+    "title": "BÀI HỌC 50: MONGODB ATLAS CLOUD DATABASE - KHI NÀO NÊN SỬ DỤNG?",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 66,
+    "title": "Bài 50: Viết API với Express Router, hiểu HTTP Status Codes",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 67,
+    "title": "Bài học 51: Tạo cơ sở dữ liệu MongoDB Atlas Cloud gói Free 512 MB",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 68,
+    "title": "51. Sử dụng Postman để Test API Back-end | NodeJS + MongoDB",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 69,
+    "title": "53. Code tầng Controller: Điều hướng dữ liệu",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 70,
+    "title": "Bài 54: Error Handling - Middleware Xử Lý Lỗi Tập Trung Phía Back-end",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 71,
+    "title": "Bài học 55: Môi trường Dev & Production trong dự án vì sao lại quan trọng?",
+    "category": "deploy",
+    "categoryName": "Deploy & Production"
+  },
+  {
+    "id": 72,
+    "title": "Bài 56: Service Layer - Xử lý Logic Dữ liệu theo Đặc thù Dự án",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 73,
+    "title": "BÀI 56: TỔ CHỨC BIẾN MÔI TRƯỜNG (ENV) ĐÚNG CÁCH TRONG DỰ ÁN NODEJS",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 74,
+    "title": "Bài 57: Model Layer Code - Định nghĩa Collection Schema với Mongoose",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 75,
+    "title": "Bài học 58: Hoàn thành API Create - Tạo mới bản ghi vào Database",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 76,
+    "title": "Bài học 59: Tại sao nên check data ở cả Validation và Model Schema?",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 77,
+    "title": "Video 59: Code tầng Validation - Dùng Joi để Validate dữ liệu",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 78,
+    "title": "Bài 60: Viết API Get Board Details - Bước đầu tích hợp vào Front-end",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 79,
+    "title": "BÀI 61: AXIOS - GỌI API TỪ PHÍA FRONT-END SAO CHO CLEAN CODE",
+    "category": "react-basics",
+    "categoryName": "React Cơ bản"
+  },
+  {
+    "id": 80,
+    "title": "Bài học 62: What's wrong with CORS? | Many people misunderstand CORS",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 81,
+    "title": "Bài 63: Aggregate - Query tổng hợp và Join dữ liệu giữa các Collections trong MongoDB",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 82,
+    "title": "Bài 64: Tạo UI/UX thêm mới Column & Card trong ứng dụng Trello",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 83,
+    "title": "Bài học 65: React-Toastify - Hiển thị Flash Messages chuyên nghiệp",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 84,
+    "title": "Bài học 68: Ghép 2 APIs tạo Column & Card vào giao diện Trello (phần 1)",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 85,
+    "title": "Bài 70: Hoàn thiện tích hợp kéo thả Columns với API",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 86,
+    "title": "Bài 71: Hoàn Thiện Tích Hợp Kéo Thả Card với API (Part 1)",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 87,
+    "title": "BÀI 74: VIẾT 2 APIS TẠO COLUMN & CARD TRONG ỨNG DỤNG TRELLO (PHẦN 1)",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 88,
+    "title": "Bài học 74: Xóa Column và Card - Code chi tiết từ Front-end đến Back-end",
+    "category": "backend",
+    "categoryName": "Backend & NodeJS"
+  },
+  {
+    "id": 89,
+    "title": "Bài học 75: Viết 2 APIs tạo Column & Card trong ứng dụng Trello (phần 2)",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 90,
+    "title": "Bài học 76: Deploy miễn phí ReactJS Front-end lên Vercel",
+    "category": "deploy",
+    "categoryName": "Deploy & Production"
+  },
+  {
+    "id": 91,
+    "title": "Bài học 77: Ghép 2 APIs tạo Column & Card vào giao diện Trello (phần 2)",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 92,
+    "title": "Video 80: 72. Hoàn thiện tích hợp kéo thả Card với API (part 2)",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 93,
+    "title": "Video 81: 73. Kỹ năng Debug gỡ lỗi quan trọng của Lập Trình Viên",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 94,
+    "title": "Bài 83: 74.1 Xóa Column Id trong Board (video bổ sung)",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 95,
+    "title": "Video 86: SIÊU PHẨM FULL STACK MERN ADVANCED ĐÃ CÓ TRÊN KÊNH TRUNGQUANDEV",
+    "category": "advanced",
+    "categoryName": "Nâng cao & Redux"
+  },
+  {
+    "id": 96,
+    "title": "Bài học 87: DEMO & REVIEW of the full FULL STACK MERN ADVANCED course, Learn practical programming",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 97,
+    "title": "BÀI 88: VIDEO QUAN TRỌNG PHẢI XEM TRƯỚC KHI HỌC KHÓA FULL STACK MERN ADVANCED NÀY",
+    "category": "advanced",
+    "categoryName": "Nâng cao & Redux"
+  },
+  {
+    "id": 98,
+    "title": "Bài 89: [BONUS] Hướng Dẫn Cài Đặt Bộ Source Code Final Full Đầy Đủ Chi Tiết Từ A-Z",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  },
+  {
+    "id": 99,
+    "title": "Bài học 90: Session 1 - Cấu hình Redux & Redux Toolkit & Thunk Middleware",
+    "category": "advanced",
+    "categoryName": "Nâng cao & Redux"
+  },
+  {
+    "id": 100,
+    "title": "Bài học 94: Khởi tạo và áp dụng Axios Interceptors, viết API Register User",
+    "category": "api",
+    "categoryName": "API & Integration"
+  },
+  {
+    "id": 101,
+    "title": "Bài 96: Hoàn thiện tính năng Verify Account - Login - JWT Tokens",
+    "category": "auth",
+    "categoryName": "Authentication & Security"
+  },
+  {
+    "id": 102,
+    "title": "BÀI HỌC 100: UPLOAD FILE LÊN CLOUDINARY & GHÉP GIAO DIỆN TRANG BOARD LIST",
+    "category": "features",
+    "categoryName": "Tính năng nâng cao"
+  },
+  {
+    "id": 103,
+    "title": "Bài học: Xử lý dữ liệu Board với Redux, Fix Bug và Refactor Code",
+    "category": "advanced",
+    "categoryName": "Nâng cao & Redux"
+  },
+  {
+    "id": 104,
+    "title": "Bài học: Xử lý triệt để Bug nhấp nháy (Flickering) khi kéo thả với dnd-kit",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 105,
+    "title": "Bài học: Code thanh Trello AppBar - Xử lý Responsive (part 3)",
+    "category": "layout",
+    "categoryName": "Layout & Giao diện"
+  },
+  {
+    "id": 106,
+    "title": "BÀI HỌC: FIX BUG KÉO THẢ KHI CẦN BÔI ĐEN TEXT BẰNG CHUỘT",
+    "category": "dnd",
+    "categoryName": "Kéo thả (Drag & Drop)"
+  },
+  {
+    "id": 107,
+    "title": "Bài học: MongoDB vs Mongoose - Đừng nhầm lẫn nữa",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 108,
+    "title": "Bài học: Xử lý lỗi kết nối MongoDB SSL Alert Number 80",
+    "category": "mongodb",
+    "categoryName": "MongoDB & Database"
+  },
+  {
+    "id": 109,
+    "title": "Deploy miễn phí NodeJS Back-end APIs lên Render",
+    "category": "intro",
+    "categoryName": "Giới thiệu & Cài đặt"
+  }
+]

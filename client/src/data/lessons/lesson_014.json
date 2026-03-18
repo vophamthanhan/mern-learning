@@ -1,0 +1,213 @@
+{
+  "id": 14,
+  "title": "Bài học 7: Vite - Hiểu toàn bộ Code Base ban đầu - Push lên GitHub",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# Bài học 7: Vite - Hiểu toàn bộ Code Base ban đầu - Push lên GitHub\n\n## I. Mục tiêu bài học\n\nVideo này tập trung vào việc giúp người mới bắt đầu hiểu rõ cấu trúc thư mục và các file mặc định được tạo ra bởi Vite, một công cụ build hiện đại cho các dự án web front-end. Sau khi nắm được nền tảng code base, bài học sẽ hướng dẫn chi tiết cách để đưa toàn bộ mã nguồn của dự án lên một kho chứa (repository) trên GitHub.\n\n**Mục tiêu chính:**\n\n*   Phân tích và giải thích chi tiết từng file và thư mục trong một dự án ReactJS được khởi tạo bằng Vite.\n*   Hiểu rõ các câu lệnh script trong file `package.json` (`dev`, `build`, `lint`, `preview`).\n*   Nắm được luồng thực thi của một ứng dụng Vite, từ file `index.html` đến các component React.\n*   Thực hành các bước để khởi tạo một repository trên GitHub.\n*   Học cách kết nối dự án ở local với repository trên GitHub và đẩy code lên.\n\n## II. Kiến thức chi tiết\n\n### 1. Phân tích Code Base được tạo bởi Vite\n\nKhi bạn khởi tạo một dự án ReactJS mới bằng Vite với câu lệnh `yarn create vite <tên-dự-án> --template react`, Vite sẽ tạo ra một cấu trúc thư mục và file ban đầu. Dưới đây là giải thích chi tiết:\n\n| File/Thư mục | Chức năng | Chi tiết |\n| :--- | :--- | :--- |\n| **`node_modules/`** | Chứa các thư viện | Thư mục này chứa tất cả các gói (packages) và các thư viện phụ thuộc mà dự án của bạn cần để hoạt động. Nó được tạo ra sau khi bạn chạy lệnh `yarn` hoặc `npm install`. |\n| **`public/`** | Chứa các tài sản tĩnh | Bất kỳ file nào được đặt trong thư mục này sẽ được phục vụ trực tiếp tại thư mục gốc của máy chủ và không được xử lý bởi quá trình build của Vite. Thường dùng để chứa `favicon.ico`, `robots.txt`, hoặc các hình ảnh không cần tối ưu. |\n| **`src/`** | Thư mục mã nguồn chính | Đây là nơi chứa toàn bộ mã nguồn của ứng dụng React của bạn. |\n| `src/assets/` | Chứa các tài sản của component | Thường dùng để lưu trữ hình ảnh, fonts, hoặc các file CSS được import trực tiếp vào các component. Các tài sản này sẽ được Vite xử lý và tối ưu hóa. |\n| `src/App.css` | File CSS cho component `App` | Chứa các style mặc định cho component chính của ứng dụng. |\n| `src/App.jsx` | Component React chính | Đây là component gốc, nơi ứng dụng của bạn bắt đầu được render. |\n| `src/index.css` | File CSS toàn cục | Chứa các style áp dụng cho toàn bộ ứng dụng. |\n| `src/main.jsx` | Điểm vào của ứng dụng | File JavaScript chính, nơi React được khởi tạo và component `App` được render vào trong DOM. |\n| **`.eslintrc.cjs`** | Cấu hình ESLint | File cấu hình cho ESLint, một công cụ giúp phân tích code để tìm ra các vấn đề, lỗi tiềm ẩn và đảm bảo code tuân thủ theo một quy chuẩn nhất định. |\n| **`.gitignore`** | Khai báo các file/thư mục bị bỏ qua bởi Git | Git sẽ bỏ qua các file và thư mục được liệt kê trong này khi bạn commit code. Thường chứa `node_modules`, các file biến môi trường (`.env`), và các file build. |\n| **`index.html`** | File HTML gốc | Đây là file HTML duy nhất của ứng dụng Single Page Application (SPA). Vite sẽ tự động chèn các file JavaScript và CSS đã được build vào file này. |\n| **`package.json`** | File thông tin dự án | Chứa các thông tin metadata về dự án (tên, phiên bản), danh sách các thư viện phụ thuộc (`dependencies` và `devDependencies`), và các câu lệnh script để quản lý dự án. |\n| **`vite.config.js`** | File cấu hình Vite | Cho phép bạn tùy chỉnh hành vi của Vite, ví dụ như thêm các plugin, cấu hình server, hoặc tối ưu hóa quá trình build. |\n| **`yarn.lock`** | File khóa phiên bản | Tự động được tạo ra bởi Yarn để \"khóa\" các phiên bản chính xác của các thư viện phụ thuộc, đảm bảo tính nhất quán khi cài đặt lại dự án trên các máy khác nhau. |\n\n### 2. Các câu lệnh Scripts trong `package.json`\n\n*   `\"dev\"`: `\"vite\"`\n    *   **Chức năng:** Khởi chạy một server phát triển (development server) với Hot Module Replacement (HMR) được bật. HMR cho phép bạn thấy các thay đổi về code ngay lập tức trên trình duyệt mà không cần tải lại toàn bộ trang.\n*   `\"build\"`: `\"vite build\"`\n    *   **Chức năng:** Build dự án của bạn để triển khai (production). Quá trình này sẽ tối ưu hóa code (nén, gộp file), tạo ra các file tĩnh trong thư mục `dist/` để bạn có thể deploy lên server.\n*   `\"lint\"`: `\"eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0\"`\n    *   **Chức năng:** Chạy ESLint để kiểm tra toàn bộ code trong dự án (các file có đuôi `.js` và `.jsx`), báo cáo các quy tắc ESLint bị vô hiệu hóa nhưng không được sử dụng và thoát với lỗi nếu có bất kỳ cảnh báo nào.\n*   `\"preview\"`: `\"vite preview\"`\n    *   **Chức năng:** Khởi chạy một server local để xem trước phiên bản production của ứng dụng sau khi đã chạy lệnh `build`. Lệnh này hữu ích để kiểm tra xem ứng dụng hoạt động đúng như mong đợi trên môi trường production hay không.\n\n### 3. Luồng thực thi của ứng dụng Vite\n\n1.  Khi bạn chạy `yarn dev`, Vite server khởi động và phục vụ file `index.html`.\n2.  Trình duyệt tải `index.html`. Bên trong file này có một thẻ `<script type=\"module\" src=\"/src/main.jsx\"></script>`.\n3.  Trình duyệt yêu cầu và thực thi file `/src/main.jsx`.\n4.  Trong `main.jsx`, code sẽ import `React`, `ReactDOM`, và component `App`.\n5.  `ReactDOM.createRoot(document.getElementById('root')).render(...)` được gọi. Lệnh này tìm một thẻ `div` có `id=\"root\"` trong `index.html` và render component `App` vào bên trong nó.\n6.  Ứng dụng React của bạn bắt đầu chạy.\n\n### 4. Push Code lên GitHub\n\nGitHub là một nền tảng cần thiết cho mọi lập trình viên để quản lý phiên bản code và hợp tác với người khác. Việc đưa code lên GitHub giúp bạn:\n\n*   Lưu trữ code an toàn trên cloud.\n*   Theo dõi lịch sử thay đổi của từng file.\n*   Dễ dàng quay lại các phiên bản cũ nếu có lỗi.\n*   Chia sẻ code và cộng tác với các lập trình viên khác.\n*   Xây dựng portfolio cho bản thân.\n\n## III. Các bước thực hành\n\n1.  **Khởi tạo dự án Vite (nếu chưa có):**\n    ```bash\n    yarn create vite my-trello-app --template react\n    cd my-trello-app\n    yarn\n    ```\n\n2.  **Tạo một Repository mới trên GitHub:**\n    *   Truy cập [GitHub](https://github.com) và đăng nhập.\n    *   Nhấn vào nút \"New\" hoặc dấu \"+\" ở góc trên bên phải và chọn \"New repository\".\n    *   Đặt tên cho repository (ví dụ: `vite-trello-web-base-project`).\n    *   Chọn \"Public\" hoặc \"Private\" tùy theo nhu cầu.\n    *   **KHÔNG** tick vào các ô \"Add a README file\", \"Add .gitignore\", hoặc \"Choose a license\". Chúng ta sẽ sử dụng các file đã được Vite tạo ra.\n    *   Nhấn \"Create repository\".\n\n3.  **Kết nối và đẩy code từ Local lên GitHub:**\n    *   Mở terminal trong thư mục dự án của bạn.\n    *   Khởi tạo Git cho dự án (chỉ làm lần đầu):\n        ```bash\n        git init\n        ```\n    *   Thêm tất cả các file vào staging area:\n        ```bash\n        git add .\n        ```\n    *   Tạo commit đầu tiên:\n        ```bash\n        git commit -m \"Initial commit: Setup project with Vite\"\n        ```\n    *   Đổi tên nhánh chính thành `main` (thực hành tốt hiện nay):\n        ```bash\n        git branch -M main\n        ```\n    *   Kết nối repository ở local với repository trên GitHub (sao chép URL từ trang GitHub của bạn):\n        ```bash\n        git remote add origin https://github.com/<username>/<repository-name>.git\n        ```\n    *   Đẩy code từ nhánh `main` ở local lên nhánh `main` trên GitHub:\n        ```bash\n        git push -u origin main\n        ```\n\n## IV. Lưu ý quan trọng\n\n*   **Hiểu rõ `.gitignore`:** Đảm bảo rằng file `.gitignore` của bạn có chứa `node_modules/` và các file nhạy cảm khác (như `.env`) để tránh đẩy các file không cần thiết và thông tin bí mật lên GitHub.\n*   **Commit thường xuyên:** Tập thói quen commit code sau mỗi khi hoàn thành một chức năng nhỏ hoặc một phần công việc có ý nghĩa. Điều này giúp bạn dễ dàng quản lý và theo dõi tiến trình.\n*   **Thông điệp commit rõ ràng:** Viết các thông điệp commit (commit message) một cách rõ ràng và có ý nghĩa. Ví dụ: `Feat: Add login form component` thay vì `Update code`.\n*   **Semantic Versioning:** Như được đề cập trong file `README.md` của repo gốc, việc tuân thủ phiên bản của các công cụ (`nodejs`, `yarn`) và thư viện là rất quan trọng để đảm bảo dự án chạy ổn định và tránh các lỗi không tương thích.\n\n## V. Tài liệu tham khảo\n\n*   **Video bài học:** [3. Vite - Hiểu toàn bộ Code Base ban đầu - Push lên GitHub | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=VIDEO_7&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=7)\n*   **GitHub Repository (Base Code):** [trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n*   **Trang chủ Vite:** [https://vitejs.dev/](https://vitejs.dev/)\n*   **Tài liệu Git:** [https://git-scm.com/doc](https://git-scm.com/doc)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Lệnh nào được sử dụng để tạo một dự án ReactJS mới bằng Vite thông qua yarn?",
+        "options": [
+          "yarn create vite my-project --template react",
+          "yarn new react-app my-project",
+          "npx create-react-app my-project",
+          "vite init my-project --react"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Câu lệnh `yarn create vite <tên-dự-án> --template react` là cách chính xác để khởi tạo một dự án React mới với Vite bằng công cụ quản lý gói yarn."
+      },
+      {
+        "question": "Thư mục `public` trong một dự án Vite dùng để làm gì?",
+        "options": [
+          "Chứa mã nguồn chính của ứng dụng React.",
+          "Chứa các tài sản tĩnh không cần qua quá trình build, như `favicon.ico`.",
+          "Chứa các thư viện và gói phụ thuộc của dự án.",
+          "Chứa các file đã được build để deploy lên server."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thư mục `public` chứa các tài sản tĩnh sẽ được phục vụ trực tiếp từ thư mục gốc của máy chủ mà không bị xử lý bởi quá trình build của Vite."
+      },
+      {
+        "question": "File nào là điểm vào (entry point) chính của một ứng dụng Vite, nơi React được khởi tạo?",
+        "options": [
+          "index.html",
+          "App.jsx",
+          "main.jsx",
+          "vite.config.js"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`src/main.jsx` là file JavaScript chính, nơi `ReactDOM.createRoot()` được gọi để render component `App` vào trong DOM, khởi đầu cho toàn bộ ứng dụng."
+      },
+      {
+        "question": "Mục đích chính của file `.gitignore` là gì?",
+        "options": [
+          "Cấu hình các quy tắc cho ESLint.",
+          "Liệt kê các script để quản lý dự án.",
+          "Khai báo các file và thư mục mà Git nên bỏ qua khi commit.",
+          "Khóa các phiên bản chính xác của các thư viện phụ thuộc."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`.gitignore` cho phép bạn chỉ định các file hoặc thư mục (như `node_modules`, `.env`) mà Git sẽ không theo dõi và không đưa vào repository."
+      },
+      {
+        "question": "Câu lệnh `yarn dev` hoặc `npm run dev` trong một dự án Vite có chức năng gì?",
+        "options": [
+          "Build dự án cho môi trường production.",
+          "Chạy kiểm tra linting trên toàn bộ code base.",
+          "Khởi chạy một server phát triển với Hot Module Replacement (HMR).",
+          "Xem trước phiên bản production của ứng dụng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Lệnh `dev` khởi chạy một development server, cho phép các thay đổi trong code được cập nhật ngay lập tức trên trình duyệt mà không cần tải lại trang, nhờ vào HMR."
+      },
+      {
+        "question": "Lệnh `vite build` sẽ tạo ra kết quả ở đâu?",
+        "options": [
+          "Trong thư mục `src/`",
+          "Trong thư mục `public/`",
+          "Trong thư mục `dist/`",
+          "Trong thư mục `node_modules/`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Quá trình build sẽ tối ưu hóa và tạo ra các file tĩnh trong thư mục `dist/`, sẵn sàng để deploy lên một web server."
+      },
+      {
+        "question": "Đâu là luồng thực thi đúng của một ứng dụng Vite khi khởi động?",
+        "options": [
+          "`main.jsx` -> `index.html` -> `App.jsx`",
+          "`index.html` -> `main.jsx` -> `App.jsx`",
+          "`App.jsx` -> `main.jsx` -> `index.html`",
+          "`vite.config.js` -> `index.html` -> `main.jsx`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trình duyệt tải `index.html` trước, sau đó file này yêu cầu thực thi `main.jsx`, và `main.jsx` sẽ render component `App` vào trong DOM."
+      },
+      {
+        "question": "Khi tạo một repository mới trên GitHub để push một dự án Vite đã có sẵn, bạn nên làm gì?",
+        "options": [
+          "Tick vào ô \"Add a README file\" để GitHub tạo sẵn.",
+          "Không tick vào các ô tạo file mặc định như README hay .gitignore.",
+          "Tick vào ô \"Add .gitignore\" và chọn template Node.",
+          "Nhất định phải chọn một license."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Vì dự án Vite đã có sẵn các file cần thiết như `.gitignore`, bạn không nên để GitHub tạo thêm để tránh xung đột."
+      },
+      {
+        "question": "Lệnh Git nào được dùng để khởi tạo một repository mới trong thư mục dự án của bạn?",
+        "options": [
+          "git start",
+          "git clone",
+          "git init",
+          "git remote add origin"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`git init` là lệnh đầu tiên bạn cần chạy trong thư mục dự án để bắt đầu theo dõi các thay đổi bằng Git."
+      },
+      {
+        "question": "Tại sao cần phải có file `yarn.lock` hoặc `package-lock.json`?",
+        "options": [
+          "Để định nghĩa các biến môi trường cho dự án.",
+          "Để \"khóa\" các phiên bản chính xác của các thư viện, đảm bảo tính nhất quán khi cài đặt lại.",
+          "Để chứa các tài sản tĩnh của ứng dụng.",
+          "Để cấu hình cách Vite build dự án."
+        ],
+        "correctAnswer": 1,
+        "explanation": "File lock đảm bảo rằng mọi thành viên trong nhóm và mọi môi trường cài đặt (local, server) đều sử dụng cùng một phiên bản của các gói phụ thuộc, tránh lỗi \"it works on my machine\"."
+      },
+      {
+        "question": "Chức năng của lệnh `vite preview` là gì?",
+        "options": [
+          "Chạy development server với HMR.",
+          "Kiểm tra lỗi code bằng ESLint.",
+          "Khởi chạy một server local để xem trước phiên bản production sau khi build.",
+          "Cài đặt các thư viện phụ thuộc."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`vite preview` rất hữu ích để kiểm tra xem ứng dụng đã được build cho production có hoạt động đúng như mong đợi hay không trước khi deploy."
+      },
+      {
+        "question": "Thư mục `src/assets` thường được dùng để làm gì?",
+        "options": [
+          "Chứa các file HTML của ứng dụng.",
+          "Chứa các file cấu hình của server.",
+          "Lưu trữ hình ảnh, fonts, hoặc CSS được import trực tiếp vào các component.",
+          "Chứa các file được phục vụ tĩnh mà không qua xử lý."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Các tài sản trong `src/assets` sẽ được Vite xử lý, tối ưu hóa và tích hợp vào quá trình build, khác với các file trong `public`."
+      },
+      {
+        "question": "Lệnh `git push -u origin main` thực hiện hành động gì?",
+        "options": [
+          "Lấy code mới nhất từ repository trên GitHub về máy.",
+          "Tạo một nhánh mới tên là `main`.",
+          "Xóa repository trên GitHub.",
+          "Đẩy code từ nhánh `main` ở local lên repository trên GitHub và thiết lập tracking."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Lệnh này đẩy các commit từ nhánh `main` ở local lên nhánh `main` của remote có tên là `origin`. Cờ `-u` thiết lập mối quan hệ theo dõi (tracking) cho các lần push sau."
+      },
+      {
+        "question": "ESLint là công cụ dùng để làm gì?",
+        "options": [
+          "Build và tối ưu hóa code cho production.",
+          "Quản lý các phiên bản của thư viện.",
+          "Phân tích code để tìm lỗi, vấn đề tiềm ẩn và đảm bảo tuân thủ quy chuẩn code.",
+          "Khởi chạy web server."
+        ],
+        "correctAnswer": 2,
+        "explanation": "ESLint giúp duy trì chất lượng code, phát hiện sớm các lỗi cú pháp, và đảm bảo code của cả nhóm tuân theo một phong cách chung."
+      },
+      {
+        "question": "Trong file `package.json`, `devDependencies` khác với `dependencies` như thế nào?",
+        "options": [
+          "`devDependencies` là bắt buộc, `dependencies` là tùy chọn.",
+          "`devDependencies` chỉ cần cho môi trường phát triển, `dependencies` cần cho cả lúc chạy ứng dụng production.",
+          "`dependencies` chỉ cần cho môi trường phát triển, `devDependencies` cần cho cả lúc chạy ứng dụng production.",
+          "Không có sự khác biệt nào, chúng chỉ là cách tổ chức."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`devDependencies` chứa các công cụ như Vite, ESLint, chỉ cần thiết khi phát triển. `dependencies` chứa các thư viện như React, sẽ được đóng gói cùng ứng dụng khi build cho production."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Khởi tạo dự án Vite",
+        "description": "Viết một dòng lệnh duy nhất trong terminal để tạo một dự án Vite mới có tên là `shopping-list` sử dụng template React.",
+        "starterCode": "# Viết câu lệnh của bạn ở đây",
+        "solution": "yarn create vite shopping-list --template react",
+        "testCases": "Sau khi chạy lệnh, một thư mục mới tên là `shopping-list` phải được tạo ra và chứa cấu trúc dự án Vite-React ban đầu."
+      },
+      {
+        "title": "Chỉnh sửa Component App",
+        "description": "Chỉnh sửa file `App.jsx` để nó chỉ hiển thị một thẻ `<h1>` với nội dung \"Welcome to my Vite App!\" và xóa bỏ tất cả các code mặc định khác.",
+        "starterCode": "import { useState } from 'react'\nimport reactLogo from './assets/react.svg'\nimport viteLogo from '/vite.svg'\nimport './App.css'\n\nfunction App() {\n  const [count, setCount] = useState(0)\n\n  return (\n    <>\n      <div>\n        <a href=\"https://vitejs.dev\" target=\"_blank\">\n          <img src={viteLogo} className=\"logo\" alt=\"Vite logo\" />\n        </a>\n        <a href=\"https://react.dev\" target=\"_blank\">\n          <img src={reactLogo} className=\"logo react\" alt=\"React logo\" />\n        </a>\n      </div>\n      <h1>Vite + React</h1>\n      <div className=\"card\">\n        <button onClick={() => setCount((count) => count + 1)}>\n          count is {count}\n        </button>\n        <p>\n          Edit <code>src/App.jsx</code> and save to test HMR\n        </p>\n      </div>\n      <p className=\"read-the-docs\">\n        Click on the Vite and React logos to learn more\n      </p>\n    </>\n  )\n}\n\nexport default App",
+        "solution": "import './App.css'\n\nfunction App() {\n  return (\n    <h1>Welcome to my Vite App!</h1>\n  )\n}\n\nexport default App",
+        "testCases": "Khi chạy ứng dụng với `yarn dev`, trang web chỉ hiển thị duy nhất dòng chữ \"Welcome to my Vite App!\" trong một thẻ h1."
+      },
+      {
+        "title": "Thêm script vào package.json",
+        "description": "Thêm một script mới vào file `package.json` có tên là `greet`. Khi chạy `yarn greet`, script này phải in ra console dòng chữ \"Hello, Developer!\".",
+        "starterCode": "{\n  \"name\": \"my-vite-project\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"lint\": \"eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\"\n  },\n  \"devDependencies\": {\n    \"@types/react\": \"^18.2.15\",\n    \"@types/react-dom\": \"^18.2.7\",\n    \"@vitejs/plugin-react-swc\": \"^3.3.2\",\n    \"eslint\": \"^8.45.0\",\n    \"eslint-plugin-react\": \"^7.32.2\",\n    \"eslint-plugin-react-hooks\": \"^4.6.0\",\n    \"eslint-plugin-react-refresh\": \"^0.4.3\",\n    \"vite\": \"^4.4.5\"\n  }\n}",
+        "solution": "{\n  \"name\": \"my-vite-project\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"lint\": \"eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0\",\n    \"preview\": \"vite preview\",\n    \"greet\": \"echo Hello, Developer!\"\n  },\n  \"dependencies\": {\n    \"react\": \"^18.2.0\",\n    \"react-dom\": \"^18.2.0\"\n  },\n  \"devDependencies\": {\n    \"@types/react\": \"^18.2.15\",\n    \"@types/react-dom\": \"^18.2.7\",\n    \"@vitejs/plugin-react-swc\": \"^3.3.2\",\n    \"eslint\": \"^8.45.0\",\n    \"eslint-plugin-react\": \"^7.32.2\",\n    \"eslint-plugin-react-hooks\": \"^4.6.0\",\n    \"eslint-plugin-react-refresh\": \"^0.4.3\",\n    \"vite\": \"^4.4.5\"\n  }\n}",
+        "testCases": "Trong terminal, chạy lệnh `yarn greet` sẽ in ra dòng chữ `Hello, Developer!`."
+      },
+      {
+        "title": "Commit code lần đầu",
+        "description": "Giả sử bạn đang ở trong một thư mục dự án đã được khởi tạo Git. Viết các lệnh cần thiết để thêm tất cả các file vào staging area và tạo một commit với message là \"Initial project setup\".",
+        "starterCode": "# Viết các lệnh git của bạn ở đây, mỗi lệnh một dòng",
+        "solution": "git add .\ngit commit -m \"Initial project setup\"",
+        "testCases": "Sau khi chạy các lệnh, `git status` sẽ báo \"nothing to commit, working tree clean\" và `git log` sẽ hiển thị một commit mới với message \"Initial project setup\"."
+      },
+      {
+        "title": "Push dự án lên GitHub",
+        "description": "Viết một chuỗi các lệnh terminal để thực hiện các công việc sau: 1. Đổi tên nhánh hiện tại thành `main`. 2. Kết nối repository local với một remote repository tại địa chỉ `https://github.com/your-user/my-awesome-app.git`. 3. Đẩy code từ nhánh `main` ở local lên remote.",
+        "starterCode": "# Viết các lệnh git của bạn ở đây, mỗi lệnh một dòng",
+        "solution": "git branch -M main\ngit remote add origin https://github.com/your-user/my-awesome-app.git\ngit push -u origin main",
+        "testCases": "Sau khi chạy các lệnh, code của bạn phải xuất hiện trên repository GitHub tại địa chỉ đã cho, trong nhánh `main`."
+      }
+    ]
+  }
+}

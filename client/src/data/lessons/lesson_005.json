@@ -1,0 +1,213 @@
+{
+  "id": 5,
+  "title": "Bài 3: Hướng dẫn cài đặt đầy đủ bộ Source Code Full Stack MERN Pro",
+  "category": "intro",
+  "categoryName": "Giới thiệu & Cài đặt",
+  "content": "# Bài 3: Hướng dẫn cài đặt đầy đủ bộ Source Code Full Stack MERN Pro\n\n## I. Mục tiêu bài học\n\nVideo này hướng dẫn chi tiết cách cài đặt và cấu hình môi trường để bắt đầu với dự án Full Stack MERN Pro, một bản clone của Trello. Sau bài học này, học viên sẽ có thể:\n\n*   Hiểu rõ các công cụ cần thiết cho môi trường phát triển MERN stack.\n*   Cài đặt thành công Node.js, Yarn và các công cụ khác.\n*   Clone và cài đặt bộ mã nguồn ban đầu (boilerplate) cho cả front-end và back-end của dự án.\n*   Nắm được các phiên bản khuyến nghị của các công cụ để đảm bảo tính tương thích.\n\n## II. Kiến thức chi tiết\n\n### 1. Giới thiệu về MERN Stack\n\nMERN là một bộ công nghệ JavaScript phổ biến được sử dụng để xây dựng các ứng dụng web full-stack. Tên gọi MERN là viết tắt của bốn thành phần chính:\n\n*   **MongoDB:** Một cơ sở dữ liệu NoSQL, lưu trữ dữ liệu dưới dạng các tài liệu giống JSON.\n*   **Express.js:** Một framework back-end cho Node.js, giúp xây dựng các API RESTful một cách nhanh chóng và hiệu quả.\n*   **React.js:** Một thư viện JavaScript front-end để xây dựng giao diện người dùng (UI) tương tác.\n*   **Node.js:** Một môi trường chạy JavaScript phía máy chủ, cho phép thực thi mã JavaScript bên ngoài trình duyệt.\n\n### 2. Các công cụ cần thiết\n\nĐể bắt đầu với dự án, chúng ta cần cài đặt các công cụ sau:\n\n*   **Node.js:** Môi trường chạy JavaScript phía máy chủ. Video khuyến nghị sử dụng phiên bản LTS (Long-Term Support) để đảm bảo tính ổn định. Cụ thể, phiên bản `18.16.0` trở lên được đề xuất.\n*   **npm (Node Package Manager):** Trình quản lý gói mặc định của Node.js. Phiên bản `9.5.1` (cho front-end) và `9.8.1` (cho back-end) được đề xuất.\n*   **Yarn:** Một trình quản lý gói thay thế cho npm, thường được ưa chuộng vì tốc độ và tính năng khóa phiên bản (version locking). Phiên bản `1.22.19` được khuyến nghị.\n*   **Git:** Hệ thống quản lý phiên bản phân tán, cần thiết để clone mã nguồn từ GitHub.\n*   **Visual Studio Code (VS Code):** Một trình soạn thảo mã nguồn phổ biến và mạnh mẽ, với nhiều tiện ích mở rộng hỗ trợ phát triển web.\n\n### 3. Source Code Base\n\nDự án được chia thành hai phần riêng biệt, mỗi phần có một kho lưu trữ GitHub riêng:\n\n*   **Front-end (vite-trello-web-base-project):** Được xây dựng bằng Vite, React.js và Material-UI. Vite là một công cụ xây dựng front-end hiện đại, cung cấp trải nghiệm phát triển nhanh chóng với Hot Module Replacement (HMR).\n*   **Back-end (nodejs-express-mongodb-rest-api-boilerplate):** Được xây dựng bằng Node.js, Express.js và MongoDB. Kho lưu trữ này cung cấp một cấu trúc API RESTful sẵn sàng để sử dụng, tích hợp Babel để biên dịch mã JavaScript hiện đại.\n\n## III. Các bước thực hành\n\n### 1. Cài đặt môi trường\n\n1.  **Cài đặt Node.js:**\n    *   Truy cập trang chủ [Node.js](https://nodejs.org/) và tải về phiên bản LTS.\n    *   Làm theo hướng dẫn để cài đặt. Sau khi cài đặt, mở terminal (hoặc Command Prompt) và kiểm tra phiên bản bằng lệnh:\n        ```bash\n        node -v\n        npm -v\n        ```\n\n2.  **Cài đặt Yarn:**\n    *   Sử dụng npm để cài đặt Yarn trên toàn hệ thống:\n        ```bash\n        npm install -g yarn\n        ```\n    *   Kiểm tra phiên bản Yarn:\n        ```bash\n        yarn --version\n        ```\n\n### 2. Clone và cài đặt Front-end\n\n1.  **Clone kho lưu trữ:**\n    ```bash\n    git clone https://github.com/trungquandev/vite-trello-web-base-project.git\n    ```\n\n2.  **Di chuyển vào thư mục dự án:**\n    ```bash\n    cd vite-trello-web-base-project\n    ```\n\n3.  **Cài đặt các gói phụ thuộc:**\n    ```bash\n    yarn install\n    ```\n\n4.  **Chạy dự án:**\n    ```bash\n    yarn dev\n    ```\n    Dự án front-end sẽ chạy trên `http://localhost:5173`.\n\n### 3. Clone và cài đặt Back-end\n\n1.  **Clone kho lưu trữ:**\n    ```bash\n    git clone https://github.com/trungquandev/nodejs-express-mongodb-rest-api-boilerplate.git\n    ```\n\n2.  **Di chuyển vào thư mục dự án:**\n    ```bash\n    cd nodejs-express-mongodb-rest-api-boilerplate\n    ```\n\n3.  **Cài đặt các gói phụ thuộc:**\n    ```bash\n    yarn install\n    ```\n\n4.  **Cấu hình biến môi trường:**\n    *   Tạo một file `.env` từ file `.env.example`.\n    *   Cấu hình các biến môi trường cần thiết, chẳng hạn như chuỗi kết nối MongoDB.\n\n5.  **Chạy dự án:**\n    ```bash\n    yarn dev\n    ```\n    Máy chủ back-end sẽ chạy trên `http://localhost:8017`.\n\n## IV. Lưu ý quan trọng\n\n*   **Semantic Versioning:** Tác giả nhấn mạnh tầm quan trọng của việc sử dụng đúng phiên bản của các công cụ và thư viện như đã chỉ định trong file `package.json` và `README.md` của mỗi kho lưu trữ. Điều này giúp tránh các lỗi không tương thích và đảm bảo dự án hoạt động ổn định.\n*   **NVM (Node Version Manager):** Video đề cập đến việc sử dụng NVM để quản lý nhiều phiên bản Node.js khác nhau trên cùng một máy. Đây là một công cụ hữu ích khi làm việc với nhiều dự án có yêu cầu phiên bản Node.js khác nhau.\n*   **Discord và Facebook:** Tác giả mời học viên tham gia cộng đồng Discord và Facebook để trao đổi, học hỏi và nhận được sự hỗ trợ.\n\n## V. Tài liệu tham khảo\n\n*   **Video YouTube:** [Hướng dẫn cài đặt đầy đủ bộ Source Code Full Stack MERN Pro](https://www.youtube.com/watch?v=VIDEO_3&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=3)\n*   **GitHub Repo (Front-end):** [trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n*   **GitHub Repo (Back-end):** [trungquandev/nodejs-express-mongodb-rest-api-boilerplate](https://github.com/trungquandev/nodejs-express-mongodb-rest-api-boilerplate)\n*   **Blog TrungQuanDev:** [https://trungquandev.com/](https://trungquandev.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "MERN là viết tắt của bộ công nghệ nào sau đây?",
+        "options": [
+          "MongoDB, Express.js, React.js, Node.js",
+          "MySQL, Express.js, React.js, Node.js",
+          "MongoDB, EJS, React.js, Node.js",
+          "MongoDB, Express.js, Angular, Node.js"
+        ],
+        "correctAnswer": 0,
+        "explanation": "MERN là một bộ công nghệ JavaScript bao gồm MongoDB, Express.js, React.js và Node.js để xây dựng ứng dụng web full-stack."
+      },
+      {
+        "question": "Phiên bản Node.js nào được khuyến nghị trong bài học để đảm bảo tính ổn định?",
+        "options": [
+          "Phiên bản mới nhất",
+          "Phiên bản 16.x",
+          "Phiên bản LTS (Long-Term Support) 18.16.0 trở lên",
+          "Bất kỳ phiên bản nào trên 14.0"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Video khuyến nghị sử dụng phiên bản LTS (Long-Term Support) của Node.js, cụ thể là 18.16.0 trở lên, để đảm bảo tính ổn định và tương thích."
+      },
+      {
+        "question": "Lệnh nào sau đây được sử dụng để cài đặt Yarn trên toàn hệ thống bằng npm?",
+        "options": [
+          "npm install yarn",
+          "npm install -g yarn",
+          "npm add global yarn",
+          "npm config set yarn"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Để cài đặt Yarn trên toàn hệ thống (globally), bạn sử dụng cờ `-g` với lệnh `npm install`."
+      },
+      {
+        "question": "Sau khi clone một dự án Node.js về, lệnh nào thường được chạy đầu tiên để cài đặt các gói phụ thuộc?",
+        "options": [
+          "yarn start",
+          "yarn dev",
+          "yarn install",
+          "yarn build"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`yarn install` là lệnh được sử dụng để đọc file `package.json` và cài đặt tất cả các gói phụ thuộc cần thiết cho dự án."
+      },
+      {
+        "question": "Lệnh để khởi chạy dự án front-end ở chế độ phát triển là gì?",
+        "options": [
+          "yarn start",
+          "yarn dev",
+          "yarn serve",
+          "yarn front-end"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Trong dự án front-end sử dụng Vite, lệnh `yarn dev` được dùng để khởi chạy máy chủ phát triển (development server)."
+      },
+      {
+        "question": "Dự án front-end trong bài học sẽ chạy trên cổng (port) mặc định nào?",
+        "options": [
+          "3000",
+          "8080",
+          "5173",
+          "8017"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Dự án front-end được xây dựng bằng Vite sẽ chạy trên cổng mặc định là `http://localhost:5173`."
+      },
+      {
+        "question": "Mục đích chính của file `.env` trong dự án back-end là gì?",
+        "options": [
+          "Lưu trữ tài liệu của dự án",
+          "Định nghĩa các biến môi trường nhạy cảm như chuỗi kết nối cơ sở dữ liệu",
+          "Chứa mã nguồn chính của ứng dụng",
+          "Quản lý các gói phụ thuộc của dự án"
+        ],
+        "correctAnswer": 1,
+        "explanation": "File `.env` được sử dụng để lưu trữ các biến môi trường, đặc biệt là các thông tin nhạy cảm như API keys hoặc chuỗi kết nối cơ sở dữ liệu, tách biệt khỏi mã nguồn."
+      },
+      {
+        "question": "Công cụ nào được sử dụng để xây dựng (build tool) cho dự án front-end?",
+        "options": [
+          "Webpack",
+          "Create React App",
+          "Next.js",
+          "Vite"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Dự án front-end được xây dựng bằng Vite, một công cụ xây dựng hiện đại cung cấp trải nghiệm phát triển nhanh chóng."
+      },
+      {
+        "question": "Trong MERN stack, Express.js đóng vai trò gì?",
+        "options": [
+          "Cơ sở dữ liệu",
+          "Thư viện xây dựng giao diện người dùng",
+          "Framework back-end cho Node.js",
+          "Môi trường chạy JavaScript"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Express.js là một framework back-end, chạy trên nền tảng Node.js, giúp xây dựng các API RESTful và quản lý logic phía máy chủ."
+      },
+      {
+        "question": "Lệnh nào dùng để kiểm tra phiên bản Node.js đã được cài đặt?",
+        "options": [
+          "node --version",
+          "node -v",
+          "Cả A và B đều đúng",
+          "node version"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cả hai lệnh `node --version` và `node -v` đều có thể được sử dụng để kiểm tra phiên bản Node.js hiện tại."
+      },
+      {
+        "question": "NVM (Node Version Manager) được đề cập trong video có công dụng gì?",
+        "options": [
+          "Quản lý các gói npm",
+          "Quản lý nhiều phiên bản Node.js trên cùng một máy",
+          "Tối ưu hóa hiệu năng của Node.js",
+          "Một trình soạn thảo mã nguồn cho Node.js"
+        ],
+        "correctAnswer": 1,
+        "explanation": "NVM là một công cụ hữu ích cho phép lập trình viên cài đặt và chuyển đổi giữa nhiều phiên bản Node.js khác nhau một cách dễ dàng."
+      },
+      {
+        "question": "Tại sao việc tuân thủ đúng phiên bản của các công cụ và thư viện lại quan trọng?",
+        "options": [
+          "Để dự án có giao diện đẹp hơn",
+          "Để tăng tốc độ mạng",
+          "Để tránh các lỗi không tương thích và đảm bảo dự án hoạt động ổn định",
+          "Để giảm dung lượng của dự án"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Sử dụng đúng phiên bản (Semantic Versioning) giúp đảm bảo rằng tất cả các thành phần của dự án tương thích với nhau, tránh được các lỗi không mong muốn."
+      },
+      {
+        "question": "Dự án back-end trong bài học sử dụng cơ sở dữ liệu nào?",
+        "options": [
+          "PostgreSQL",
+          "MySQL",
+          "SQLite",
+          "MongoDB"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Dự án back-end được xây dựng theo kiến trúc MERN, trong đó chữ 'M' đại diện cho MongoDB, một cơ sở dữ liệu NoSQL."
+      },
+      {
+        "question": "Lệnh `git clone` được sử dụng để làm gì?",
+        "options": [
+          "Tạo một kho lưu trữ mới trên GitHub",
+          "Sao chép một kho lưu trữ từ GitHub về máy tính cục bộ",
+          "Đẩy các thay đổi từ máy cục bộ lên GitHub",
+          "Kiểm tra trạng thái của kho lưu trữ"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`git clone` là lệnh cơ bản của Git để tạo một bản sao (copy) của một kho lưu trữ từ xa (remote repository) về môi trường làm việc cục bộ."
+      },
+      {
+        "question": "Máy chủ back-end trong bài học sẽ chạy trên cổng (port) mặc định nào?",
+        "options": [
+          "3000",
+          "5173",
+          "8017",
+          "8080"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Theo hướng dẫn, máy chủ back-end Node.js Express sẽ chạy trên cổng mặc định là `http://localhost:8017`."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Clone a Git Repository",
+        "description": "Viết lệnh để sao chép (clone) kho lưu trữ front-end có URL là `https://github.com/trungquandev/vite-trello-web-base-project.git` về máy tính của bạn.",
+        "starterCode": "# Nhập lệnh của bạn vào đây",
+        "solution": "git clone https://github.com/trungquandev/vite-trello-web-base-project.git",
+        "testCases": "Sau khi chạy lệnh, một thư mục mới có tên `vite-trello-web-base-project` sẽ được tạo ra chứa toàn bộ mã nguồn của dự án."
+      },
+      {
+        "title": "Bài 2: Install Dependencies with Yarn",
+        "description": "Bạn đang ở trong thư mục gốc của một dự án vừa được clone về. Viết lệnh để cài đặt tất cả các gói phụ thuộc được định nghĩa trong file `package.json` bằng Yarn.",
+        "starterCode": "# Nhập lệnh của bạn vào đây",
+        "solution": "yarn install",
+        "testCases": "Lệnh sẽ tải về và cài đặt các gói vào thư mục `node_modules`. File `yarn.lock` sẽ được tạo hoặc cập nhật."
+      },
+      {
+        "title": "Bài 3: Start the Backend Development Server",
+        "description": "Viết lệnh để khởi chạy máy chủ back-end ở chế độ phát triển (development mode) theo hướng dẫn trong bài học.",
+        "starterCode": "# Nhập lệnh của bạn vào đây",
+        "solution": "yarn dev",
+        "testCases": "Sau khi chạy lệnh, terminal sẽ hiển thị thông báo cho biết máy chủ đang lắng nghe trên cổng 8017."
+      },
+      {
+        "title": "Bài 4: Check Multiple Tool Versions",
+        "description": "Viết một chuỗi lệnh duy nhất trên terminal để kiểm tra phiên bản của cả Node.js và npm.",
+        "starterCode": "# Nhập chuỗi lệnh của bạn vào đây",
+        "solution": "node -v && npm -v",
+        "testCases": "Terminal sẽ hiển thị hai dòng output, dòng đầu tiên là phiên bản Node.js (ví dụ: v18.16.0) và dòng thứ hai là phiên bản npm (ví dụ: 9.5.1)."
+      },
+      {
+        "title": "Bài 5: Install a Global Package",
+        "description": "Viết lệnh để cài đặt gói `nodemon` trên toàn hệ thống (globally) bằng trình quản lý gói npm. `nodemon` là một công cụ giúp tự động khởi động lại ứng dụng Node.js khi có thay đổi file.",
+        "starterCode": "# Nhập lệnh của bạn vào đây",
+        "solution": "npm install -g nodemon",
+        "testCases": "Sau khi chạy lệnh, bạn có thể kiểm tra bằng cách chạy `nodemon -v`. Lệnh này sẽ hoạt động ở bất kỳ đâu trên hệ thống của bạn, không chỉ trong một thư mục dự án cụ thể."
+      }
+    ]
+  }
+}

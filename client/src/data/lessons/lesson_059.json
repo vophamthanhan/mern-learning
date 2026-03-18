@@ -1,0 +1,213 @@
+{
+  "id": 59,
+  "title": "Video 43: 37.2 Xử lý Bug khi Column rỗng không chứa Card",
+  "category": "features",
+  "categoryName": "Tính năng nâng cao",
+  "content": "# Video 43: 37.2 Xử lý Bug khi Column rỗng không chứa Card\n\n## Mục tiêu bài học\n\nVideo này tập trung vào việc giải quyết một bug phổ biến khi làm việc với thư viện `dnd-kit` trong các dự án ReactJS: không thể kéo và thả (drag and drop) một card vào một column rỗng. Mục tiêu chính là cung cấp cho người xem kiến thức và kỹ năng để:\n\n*   Hiểu rõ nguyên nhân sâu xa của bug.\n*   Học cách implement một giải pháp hiệu quả để fix bug, đảm bảo trải nghiệm người dùng mượt mà.\n*   Nâng cao kỹ năng xử lý vấn đề và debug trong quá trình phát triển ứng dụng web với ReactJS và `dnd-kit`.\n\n## Kiến thức chi tiết được trình bày trong video\n\n### Mô tả Bug\n\nTrong một giao diện kéo thả dạng bảng (Kanban board) như Trello, người dùng có thể kéo các card từ column này sang column khác. Tuy nhiên, khi một column không chứa bất kỳ card nào (rỗng), thư viện `dnd-kit` không thể xác định được column đó là một khu vực có thể thả (droppable area). Điều này dẫn đến việc người dùng không thể di chuyển card vào các column rỗng, gây ra một trải nghiệm người dùng khó chịu và thiếu trực quan.\n\n### Nguyên nhân\n\nNguyên nhân cốt lõi của vấn đề này nằm ở thuật toán phát hiện va chạm (collision detection algorithm) mặc định của `dnd-kit`. Thư viện này dựa vào sự tồn tại của các phần tử con (trong trường hợp này là các card) bên trong một container (column) để tính toán và xác định ranh giới của khu vực có thể thả. Khi một column rỗng, không có phần tử con nào để `dnd-kit` thực hiện các phép tính này, do đó nó không nhận diện được column đó là một mục tiêu hợp lệ để thả card vào.\n\n### Giải pháp\n\nĐể giải quyết vấn đề này, video đề xuất một giải pháp can thiệp vào logic phát hiện va chạm của `dnd-kit`. Thay vì phụ thuộc hoàn toàn vào thuật toán mặc định, chúng ta sẽ implement một chiến lược tùy chỉnh. Dựa trên các bình luận và kiến thức chung về `dnd-kit`, giải pháp có thể bao gồm các yếu tố sau:\n\n1.  **Sử dụng Placeholder:** Một cách tiếp cận là thêm một phần tử giữ chỗ (placeholder) vô hình hoặc có thể nhìn thấy được vào mỗi column khi nó rỗng. Phần tử này sẽ hoạt động như một \"mồi\" để `dnd-kit` có thể phát hiện ra column và cho phép thả card vào. Tuy nhiên, cách này có thể làm phức tạp thêm cấu trúc DOM và logic render.\n\n2.  **Tùy chỉnh Thuật toán Phát hiện Va chạm:** Một giải pháp mạnh mẽ và linh hoạt hơn được đề cập trong video là tùy chỉnh lại thuật toán phát hiện va chạm. `dnd-kit` cung cấp các API cho phép chúng ta định nghĩa logic va chạm của riêng mình. Trong video, tác giả có thể đã hướng dẫn cách viết một hàm custom để xử lý trường hợp column rỗng. Hàm này sẽ không chỉ dựa vào các card hiện có mà còn xem xét cả chính khu vực của column.\n\n    *   **`lastOverId`:** Một biến `lastOverId` được sử dụng để theo dõi `id` của container (column) cuối cùng mà một card đã được kéo qua. Điều này giúp duy trì trạng thái và đảm bảo rằng ngay cả khi card di chuyển ra khỏi một column và không \"va chạm\" với bất cứ thứ gì, ứng dụng vẫn \"nhớ\" được column cuối cùng đó là một mục tiêu tiềm năng.\n\n    *   **Logic trả về:** Khi không có va chạm nào được phát hiện (ví dụ, khi kéo qua một column rỗng), thay vì không trả về gì, hàm tùy chỉnh sẽ trả về `id` của column cuối cùng đã được ghi lại trong `lastOverId`. Điều này \"đánh lừa\" `dnd-kit` rằng có một va chạm hợp lệ, cho phép việc thả card được thực hiện.\n\n## Các bước thực hành\n\nDưới đây là các bước thực hành chi tiết để implement giải pháp được trình bày trong video:\n\n1.  **Xác định Vấn đề:**\n    *   Tạo một Trello board với nhiều column.\n    *   Di chuyển tất cả các card ra khỏi một column để làm cho nó rỗng.\n    *   Thử kéo một card từ column khác và thả vào column rỗng. Bạn sẽ thấy rằng không thể thực hiện được hành động này.\n\n2.  **Implement `lastOverId`:**\n    *   Sử dụng `useRef` để tạo một biến `lastOverId` để lưu trữ `id` của droppable container cuối cùng.\n\n    ```javascript\n    const lastOverId = useRef(null);\n    ```\n\n3.  **Tùy chỉnh Thuật toán Phát hiện Va chạm:**\n    *   Trong phần `DndContext`, sử dụng prop `collisionDetection` để cung cấp một hàm tùy chỉnh.\n    *   Bên trong hàm này, bạn sẽ gọi các thuật toán phát hiện va chạm có sẵn của `dnd-kit` (ví dụ: `closestCorners` hoặc `pointerWithin`).\n    *   Kiểm tra kết quả trả về. Nếu có va chạm, cập nhật `lastOverId`.\n    *   Nếu không có va chạm nào được phát hiện (`pointerIntersections` là một mảng rỗng), hãy trả về một mảng chứa `id` được lưu trong `lastOverId`.\n\n    ```javascript\n    const collisionDetectionStrategy = (args) => {\n      // Sử dụng thuật toán mặc định trước\n      const pointerIntersections = pointerWithin(args);\n\n      // Nếu không có va chạm, trả về lastOverId\n      if (!pointerIntersections?.length) {\n        return lastOverId.current ? [{ id: lastOverId.current }] : [];\n      }\n\n      // Nếu có va chạm, tìm ra droppable container gần nhất và cập nhật lastOverId\n      let overId = getFirstCollision(pointerIntersections, 'id');\n      if (overId) {\n        lastOverId.current = overId;\n      }\n      \n      return pointerIntersections;\n    };\n    ```\n\n4.  **Áp dụng vào `DndContext`:**\n\n    ```javascript\n    <DndContext collisionDetection={collisionDetectionStrategy} ... >\n      {/* ... a part of your application */}\n    </DndContext>\n    ```\n\n## Lưu ý quan trọng\n\n*   **Edge Cases:** Như một người dùng đã chỉ ra trong phần bình luận, giải pháp này có thể phát sinh vấn đề trong một số trường hợp cụ thể. Ví dụ, nếu một column có tiêu đề quá dài hoặc card chứa hình ảnh lớn, việc kéo card lên đầu hoặc xuống cuối column có thể trở nên khó khăn hơn so với hành vi mặc định của thư viện. Cần kiểm tra kỹ lưỡng các trường hợp này và tinh chỉnh lại logic nếu cần.\n*   **Hiểu sâu về `dnd-kit`:** Để tùy chỉnh và debug hiệu quả, việc hiểu rõ về các khái niệm cốt lõi của `dnd-kit` như `Sensors`, `Collision detection algorithms`, và `DndContext` là cực kỳ quan trọng.\n*   **Cộng đồng:** Các bình luận trên YouTube cho thấy một cộng đồng rất tích cực. Nhiều người dùng đã gặp phải các biến thể của bug này và chia sẻ các giải pháp hoặc vấn đề của riêng họ. Đây là một nguồn tài nguyên quý giá để học hỏi và tìm kiếm sự giúp đỡ.\n\n## Tài liệu tham khảo\n\n*   **Video gốc:** [37.2 Xử lý Bug khi Column rỗng không chứa Card | Dnd-kit | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=a263JPw1iI0&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=42)\n*   **GitHub của tác giả:** [https://github.com/trungquandev](https://github.com/trungquandev)\n*   **Blog của tác giả:** [https://trungquandev.com](https://trungquandev.com)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Vấn đề chính được thảo luận trong bài học liên quan đến thư viện `dnd-kit` là gì?",
+        "options": [
+          "A. Không thể kéo một card vào một column rỗng.",
+          "B. Hiệu suất kém khi kéo thả nhiều card cùng lúc.",
+          "C. Lỗi khi cài đặt thư viện trên các phiên bản React mới.",
+          "D. Card biến mất sau khi thả vào một column khác."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Bài học tập trung vào việc xử lý bug không thể kéo và thả card vào một column không chứa card nào, vì `dnd-kit` không xác định được nó là một khu vực có thể thả."
+      },
+      {
+        "question": "Nguyên nhân cốt lõi của bug không thể thả card vào column rỗng trong `dnd-kit` là gì?",
+        "options": [
+          "A. Do lỗi CSS trong component Column.",
+          "B. Do thuật toán phát hiện va chạm mặc định của `dnd-kit` cần có phần tử con để tính toán ranh giới.",
+          "C. Do phiên bản React không tương thích với `dnd-kit`.",
+          "D. Do thiếu một thuộc tính `droppable` trên component Column."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Nguyên nhân là do thuật toán phát hiện va chạm của `dnd-kit` dựa vào sự tồn tại của các phần tử con (cards) để xác định khu vực có thể thả. Khi column rỗng, không có gì để tính toán."
+      },
+      {
+        "question": "Giải pháp chính được đề xuất trong video để khắc phục bug này là gì?",
+        "options": [
+          "A. Thêm một phần tử placeholder vào các column rỗng.",
+          "B. Thay đổi CSS của column để luôn có chiều cao tối thiểu.",
+          "C. Tùy chỉnh thuật toán phát hiện va chạm để \"nhớ\" column cuối cùng được kéo qua.",
+          "D. Sử dụng một thư viện kéo thả khác thay thế cho `dnd-kit`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Giải pháp mạnh mẽ được đề xuất là tùy chỉnh thuật toán phát hiện va chạm, sử dụng một biến như `lastOverId` để theo dõi column cuối cùng mà card đã đi qua và trả về nó khi không có va chạm nào khác."
+      },
+      {
+        "question": "Trong `DndContext`, prop nào được sử dụng để cung cấp một thuật toán phát hiện va chạm tùy chỉnh?",
+        "options": [
+          "A. `onDragEnd`",
+          "B. `sensors`",
+          "C. `collisionDetection`",
+          "D. `modifiers`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Prop `collisionDetection` của `DndContext` cho phép lập trình viên cung cấp một hàm tùy chỉnh để thay thế hoặc mở rộng logic phát hiện va chạm mặc định."
+      },
+      {
+        "question": "Biến `lastOverId` trong giải pháp có vai trò gì?",
+        "options": [
+          "A. Lưu trữ ID của card đang được kéo.",
+          "B. Lưu trữ ID của column ban đầu chứa card.",
+          "C. Lưu trữ ID của container (column) cuối cùng mà card đã được kéo qua.",
+          "D. Lưu trữ tọa độ cuối cùng của con trỏ chuột."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`lastOverId` được dùng để \"nhớ\" column cuối cùng mà card đã ở trên. Khi card được kéo vào một vùng trống (như column rỗng), giá trị này được sử dụng để xác định đó là đích thả hợp lệ."
+      },
+      {
+        "question": "Trong React, `lastOverId` nên được triển khai bằng hook nào để giá trị của nó tồn tại qua các lần render lại mà không kích hoạt re-render?",
+        "options": [
+          "A. `useState`",
+          "B. `useEffect`",
+          "C. `useContext`",
+          "D. `useRef`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`useRef` là lựa chọn lý tưởng để lưu trữ các giá trị có thể thay đổi mà không cần render lại component, phù hợp cho việc theo dõi `lastOverId`."
+      },
+      {
+        "question": "Khi hàm phát hiện va chạm tùy chỉnh không tìm thấy va chạm nào (ví dụ: khi kéo qua column rỗng), nó nên làm gì theo giải pháp trong bài học?",
+        "options": [
+          "A. Trả về một mảng rỗng.",
+          "B. Trả về `null`.",
+          "C. Trả về một mảng chứa giá trị của `lastOverId.current`.",
+          "D. Ném ra một lỗi."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi không có va chạm nào được phát hiện, hàm sẽ trả về một mảng chứa `id` được lưu trong `lastOverId`, \"đánh lừa\" `dnd-kit` rằng có một va chạm hợp lệ."
+      },
+      {
+        "question": "Hàm `pointerWithin` từ `dnd-kit` được sử dụng để làm gì?",
+        "options": [
+          "A. Xác định va chạm dựa trên vị trí con trỏ chuột.",
+          "B. Xác định va chạm dựa trên các góc gần nhất của các đối tượng.",
+          "C. Di chuyển card theo con trỏ chuột.",
+          "D. Bắt đầu sự kiện kéo khi con trỏ được nhấn."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`pointerWithin` là một thuật toán phát hiện va chạm có sẵn trong `dnd-kit`, nó xác định các khu vực có thể thả mà con trỏ chuột hiện đang ở bên trong."
+      },
+      {
+        "question": "Một nhược điểm tiềm tàng của việc sử dụng phần tử giữ chỗ (placeholder) để sửa lỗi column rỗng là gì?",
+        "options": [
+          "A. Nó không hoạt động trên trình duyệt Firefox.",
+          "B. Nó làm giảm hiệu suất của ứng dụng một cách đáng kể.",
+          "C. Nó có thể làm phức tạp cấu trúc DOM và logic render.",
+          "D. Nó yêu cầu phải viết lại toàn bộ logic kéo thả."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc thêm một placeholder, dù là vô hình, sẽ thêm phần tử vào DOM và có thể yêu cầu logic render bổ sung để quản lý sự hiện diện của nó, làm phức tạp code."
+      },
+      {
+        "question": "Để tùy chỉnh và debug `dnd-kit` một cách hiệu quả, kiến thức nào là quan trọng nhất?",
+        "options": [
+          "A. Hiểu biết sâu về CSS Grid và Flexbox.",
+          "B. Hiểu rõ về các khái niệm cốt lõi của `dnd-kit` như `Sensors`, `Collision detection`, và `DndContext`.",
+          "C. Có kinh nghiệm với các thư viện animation như Framer Motion.",
+          "D. Nắm vững kiến thức về quản lý trạng thái với Redux."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hiểu rõ các khái niệm cốt lõi của thư viện là điều kiện tiên quyết để có thể tùy chỉnh và sửa lỗi các hành vi phức tạp một cách hiệu quả."
+      },
+      {
+        "question": "Hàm `getFirstCollision` được đề cập trong ví dụ code dùng để làm gì?",
+        "options": [
+          "A. Lấy ra va chạm đầu tiên từ mảng các va chạm được phát hiện.",
+          "B. Sắp xếp các va chạm theo khoảng cách.",
+          "C. Bỏ qua tất cả các va chạm ngoại trừ va chạm đầu tiên.",
+          "D. Tạo ra một va chạm mới."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Hàm này (giả định) được dùng để xử lý mảng các va chạm (`pointerIntersections`) và trích xuất `id` của đối tượng va chạm đầu tiên hoặc gần nhất."
+      },
+      {
+        "question": "Tại sao thuật toán phát hiện va chạm mặc định của `dnd-kit` lại thất bại với các column rỗng?",
+        "options": [
+          "A. Vì nó chỉ kiểm tra các phần tử có class là \"card\".",
+          "B. Vì nó không thể tính toán được kích thước của một column không có nội dung.",
+          "C. Vì nó yêu cầu các phần tử con để xác định ranh giới của vùng chứa.",
+          "D. Vì có một bug trong chính thư viện `dnd-kit`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Thuật toán mặc định cần các phần tử con để tính toán hình chữ nhật bao quanh (bounding rectangle) của vùng chứa. Nếu không có phần tử con, nó không có dữ liệu để làm việc."
+      },
+      {
+        "question": "Một trường hợp ngoại lệ (edge case) được đề cập trong bài học về giải pháp `lastOverId` là gì?",
+        "options": [
+          "A. Giải pháp không hoạt động trên thiết bị di động.",
+          "B. Việc kéo card vào đầu hoặc cuối column có thể khó khăn hơn.",
+          "C. Nó gây ra rò rỉ bộ nhớ sau nhiều lần kéo thả.",
+          "D. Nó xung đột với các thư viện UI khác như Material-UI."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một bình luận đã chỉ ra rằng khi column có tiêu đề dài hoặc card có ảnh lớn, việc kéo lên đầu/xuống cuối có thể khó hơn so với hành vi mặc định, đòi hỏi phải tinh chỉnh thêm."
+      },
+      {
+        "question": "Loại giao diện ứng dụng nào thường gặp phải bug liên quan đến column rỗng của `dnd-kit`?",
+        "options": [
+          "A. Một trang blog.",
+          "B. Một ứng dụng chat.",
+          "C. Một bảng Kanban (giống Trello).",
+          "D. Một trang thương mại điện tử."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Giao diện dạng bảng Kanban, nơi các công việc (card) được di chuyển giữa các cột trạng thái (column), là kịch bản phổ biến nhất cho vấn đề này."
+      },
+      {
+        "question": "Đoạn code nào sau đây áp dụng đúng chiến lược phát hiện va chạm tùy chỉnh (`collisionDetectionStrategy`) vào `DndContext`?",
+        "options": [
+          "A. `<DndContext onCollision={collisionDetectionStrategy}>`",
+          "B. `<DndContext strategy={collisionDetectionStrategy}>`",
+          "C. `<DndContext>{collisionDetectionStrategy}</DndContext>`",
+          "D. `<DndContext collisionDetection={collisionDetectionStrategy}>`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Cách đúng để áp dụng một chiến lược phát hiện va chạm tùy chỉnh là truyền nó vào prop `collisionDetection` của component `DndContext`."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Khởi tạo lastOverId",
+        "description": "Trong một component React, hãy sử dụng hook `useRef` để tạo một biến có tên `lastOverId` với giá trị khởi tạo là `null`. Biến này sẽ được sử dụng để theo dõi ID của container cuối cùng được kéo qua.",
+        "starterCode": "import React, { useRef } from 'react';\n\nfunction KanbanBoard() {\n  // Your code here\n\n  return <div>Kanban Board</div>;\n}",
+        "solution": "import React, { useRef } from 'react';\n\nfunction KanbanBoard() {\n  const lastOverId = useRef(null);\n\n  return <div>Kanban Board</div>;\n}",
+        "testCases": "Kiểm tra xem biến `lastOverId` có được tạo bằng `useRef` và có giá trị `current` ban đầu là `null` hay không."
+      },
+      {
+        "title": "Bài 2: Thiết lập DndContext cơ bản",
+        "description": "Hãy thiết lập một component `DndContext` cơ bản. Chưa cần thêm logic xử lý va chạm tùy chỉnh, chỉ cần cấu trúc cơ bản để chuẩn bị cho các bước sau.",
+        "starterCode": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\n\nfunction App() {\n  return (\n    // Your code here\n    <div>\n      {/* Các columns và cards sẽ ở đây */}\n    </div>\n    // Your code here\n  );\n}",
+        "solution": "import React from 'react';\nimport { DndContext } from '@dnd-kit/core';\n\nfunction App() {\n  return (\n    <DndContext>\n      <div>\n        {/* Các columns và cards sẽ ở đây */}\n      </div>\n    </DndContext>\n  );\n}",
+        "testCases": "Kiểm tra xem component `DndContext` có bao bọc các phần tử con đúng cách hay không."
+      },
+      {
+        "title": "Bài 3: Xây dựng hàm collisionDetectionStrategy",
+        "description": "Viết một hàm tên là `collisionDetectionStrategy`. Hàm này nhận một đối số `args` và bên trong nó, gọi hàm `pointerWithin` từ `dnd-kit` với `args`. Cuối cùng, trả về kết quả từ `pointerWithin`. Đây là bước đầu tiên để xây dựng logic tùy chỉnh.",
+        "starterCode": "import { pointerWithin } from '@dnd-kit/core';\n\nconst collisionDetectionStrategy = (args) => {\n  // Your code here\n};",
+        "solution": "import { pointerWithin } from '@dnd-kit/core';\n\nconst collisionDetectionStrategy = (args) => {\n  const pointerIntersections = pointerWithin(args);\n  return pointerIntersections;\n};",
+        "testCases": "Kiểm tra xem hàm có gọi `pointerWithin(args)` và trả về kết quả của nó hay không."
+      },
+      {
+        "title": "Bài 4: Hoàn thiện collisionDetectionStrategy",
+        "description": "Mở rộng hàm `collisionDetectionStrategy` từ bài 3. Thêm logic để kiểm tra nếu `pointerIntersections` là một mảng rỗng. Nếu đúng, trả về một mảng chứa `id` của `lastOverId.current`. Nếu không, hãy tìm `overId` từ `pointerIntersections`, cập nhật `lastOverId.current` và trả về `pointerIntersections`. (Giả sử có hàm `getFirstCollision` để lấy id).",
+        "starterCode": "import { pointerWithin } from '@dnd-kit/core';\n\n// Giả sử có hàm này: const getFirstCollision = (intersections, property) => { ... }\n\nconst collisionDetectionStrategy = (args, lastOverId) => {\n  const pointerIntersections = pointerWithin(args);\n\n  // Your code here\n};",
+        "solution": "import { pointerWithin } from '@dnd-kit/core';\n\n// Giả sử có hàm này: const getFirstCollision = (intersections, property) => intersections.length > 0 ? intersections[0][property] : null;\n\nconst collisionDetectionStrategy = (args, lastOverId) => {\n  const pointerIntersections = pointerWithin(args);\n\n  if (!pointerIntersections?.length) {\n    return lastOverId.current ? [{ id: lastOverId.current }] : [];\n  }\n\n  let overId = getFirstCollision(pointerIntersections, 'id');\n  if (overId) {\n    lastOverId.current = overId;\n  }\n\n  return pointerIntersections;\n};",
+        "testCases": "1. Khi `pointerIntersections` rỗng và `lastOverId.current` có giá trị, hàm trả về `[{ id: lastOverId.current }]`. 2. Khi `pointerIntersections` không rỗng, `lastOverId.current` được cập nhật và mảng `pointerIntersections` được trả về."
+      },
+      {
+        "title": "Bài 5: Tích hợp vào DndContext",
+        "description": "Tích hợp đầy đủ giải pháp. Tạo component React, khởi tạo `lastOverId` bằng `useRef`, định nghĩa hàm `collisionDetectionStrategy` hoàn chỉnh, và truyền nó vào prop `collisionDetection` của `DndContext`. Lưu ý: bạn cần bọc hàm `collisionDetectionStrategy` trong một hàm khác để truyền `lastOverId` vào.",
+        "starterCode": "import React, { useRef } from 'react';\nimport { DndContext, pointerWithin } from '@dnd-kit/core';\n\n// Giả sử có hàm getFirstCollision\n\nfunction App() {\n  const lastOverId = useRef(null);\n\n  const collisionDetectionStrategy = (args) => {\n    // ... logic từ bài 4 ...\n    // Bạn cần điều chỉnh để sử dụng lastOverId từ useRef\n  };\n\n  return (\n    <DndContext /* Your prop here */>\n      <div>Board</div>\n    </DndContext>\n  );\n}",
+        "solution": "import React, { useRef } from 'react';\nimport { DndContext, pointerWithin } from '@dnd-kit/core';\n\nconst getFirstCollision = (intersections, property) => intersections.length > 0 ? intersections[0][property] : null;\n\nfunction App() {\n  const lastOverId = useRef(null);\n\n  const collisionDetectionStrategy = (args) => {\n    const pointerIntersections = pointerWithin(args);\n\n    if (!pointerIntersections?.length) {\n      return lastOverId.current ? [{ id: lastOverId.current }] : [];\n    }\n\n    let overId = getFirstCollision(pointerIntersections, 'id');\n    if (overId) {\n      lastOverId.current = overId;\n    }\n\n    return pointerIntersections;\n  };\n\n  return (\n    <DndContext collisionDetection={collisionDetectionStrategy}>\n      <div>Board</div>\n    </DndContext>\n  );\n}",
+        "testCases": "Kiểm tra xem prop `collisionDetection` của `DndContext` có được gán hàm `collisionDetectionStrategy` hay không. Hàm này phải truy cập và cập nhật được `lastOverId.current`."
+      }
+    ]
+  }
+}

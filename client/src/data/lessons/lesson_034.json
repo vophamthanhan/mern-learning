@@ -1,0 +1,213 @@
+{
+  "id": 34,
+  "title": "Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\n\n## Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ bắt đầu quá trình code giao diện cho dự án Trello Clone, tập trung vào việc xây dựng layout chính của ứng dụng. Mục tiêu chính là tạo ra một cấu trúc layout linh hoạt và dễ dàng mở rộng bằng cách sử dụng ReactJS kết hợp với thư viện Material UI. Sau bài học này, bạn sẽ có một layout cơ bản bao gồm AppBar (thanh điều hướng trên cùng) và Board (khu vực chứa nội dung chính của Trello).\n\n## Kiến thức chi tiết\n\n### 1. Cấu trúc thư mục và file\n\nĐể bắt đầu, chúng ta cần tổ chức cấu trúc thư mục một cách hợp lý để dễ dàng quản lý và phát triển dự án. Cấu trúc thư mục được đề xuất như sau:\n\n```\nsrc\n├── components\n│   └── AppBar\n│       └── index.jsx\n├── pages\n│   └── Boards\n│       ├── _id.jsx\n│       └── index.jsx\n└── App.jsx\n```\n\n- **`src/components`**: Thư mục này chứa các component tái sử dụng trong ứng dụng. Ví dụ: `AppBar`.\n- **`src/pages`**: Thư mục này chứa các trang chính của ứng dụng. Mỗi trang có thể bao gồm nhiều component con.\n    - **`Boards`**: Trang hiển thị danh sách các board hoặc chi tiết một board cụ thể.\n        - **`_id.jsx`**: Component này sẽ hiển thị chi tiết một board Trello, bao gồm các cột và thẻ.\n        - **`index.jsx`**: Component này có thể được sử dụng để hiển thị danh sách các board (trong trường hợp có nhiều board).\n- **`App.jsx`**: Đây là component gốc của ứng dụng, nơi chúng ta sẽ định tuyến và render các trang khác nhau.\n\n### 2. Sử dụng Material UI Components\n\nMaterial UI cung cấp một bộ sưu tập lớn các component React được thiết kế theo nguyên tắc Material Design. Trong bài học này, chúng ta sẽ sử dụng các component sau:\n\n- **`Container`**: Component này giúp giới hạn chiều rộng của nội dung và căn giữa nó theo chiều ngang. Chúng ta sẽ sử dụng `Container` để bao bọc toàn bộ layout của ứng dụng.\n- **`Box`**: Đây là một component đa năng, có thể được sử dụng như một `div` với khả năng tùy chỉnh style một cách linh hoạt thông qua `sx` prop. Chúng ta sẽ sử dụng `Box` để tạo các khối layout chính như AppBar và BoardContent.\n- **`AppBar`**: Component này được sử dụng để tạo thanh điều hướng ở đầu trang.\n\n### 3. Tùy chỉnh Style với `sx` Prop\n\nMaterial UI cho phép chúng ta tùy chỉnh style của các component một cách dễ dàng bằng cách sử dụng `sx` prop. `sx` prop cho phép bạn viết CSS trực tiếp trong JSX, với quyền truy cập vào theme của Material UI. Điều này giúp cho việc tạo style trở nên nhanh chóng và nhất quán.\n\nVí dụ về cách sử dụng `sx` prop:\n\n```jsx\n<Box sx={{\n  backgroundColor: 'primary.main',\n  width: '100%',\n  height: (theme) => theme.trello.appBarHeight,\n  display: 'flex',\n  alignItems: 'center'\n}}>\n  {/* Content */}\n</Box>\n```\n\nTrong ví dụ trên, chúng ta đã sử dụng `sx` prop để đặt màu nền, chiều rộng, chiều cao, và các thuộc tính flexbox cho component `Box`. Chúng ta cũng có thể truy cập vào các biến trong theme, chẳng hạn như `theme.trello.appBarHeight`.\n\n## Các bước thực hành\n\n1.  **Tạo cấu trúc thư mục và file:** Bắt đầu bằng việc tạo các thư mục và file như đã mô tả ở trên.\n\n2.  **Xây dựng layout chính trong `App.jsx`:**\n\n    ```jsx\n    import Container from '@mui/material/Container';\n    import AppBar from '~/components/AppBar';\n    import Board from '~/pages/Boards/_id';\n\n    function App() {\n      return (\n        <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>\n          <AppBar />\n          <Board />\n        </Container>\n      );\n    }\n\n    export default App;\n    ```\n\n3.  **Tạo component `AppBar`:**\n\n    ```jsx\n    import Box from '@mui/material/Box';\n\n    function AppBar() {\n      return (\n        <Box sx={{\n          backgroundColor: 'primary.main',\n          width: '100%',\n          height: (theme) => theme.trello.appBarHeight,\n          display: 'flex',\n          alignItems: 'center'\n        }}>\n          AppBar\n        </Box>\n      );\n    }\n\n    export default AppBar;\n    ```\n\n4.  **Tạo component `Board`:**\n\n    ```jsx\n    import Box from '@mui/material/Box';\n\n    function Board() {\n      return (\n        <Box sx={{\n          backgroundColor: 'primary.dark',\n          width: '100%',\n          height: (theme) => `calc(100vh - ${theme.trello.appBarHeight})`,\n          display: 'flex',\n          alignItems: 'center'\n        }}>\n          Board Content\n        </Box>\n      );\n    }\n\n    export default Board;\n    ```\n\n## Lưu ý quan trọng\n\n- **Thứ tự import:** Trong một số trường hợp, thứ tự import các component từ Material UI có thể gây ra lỗi. Ví dụ, lỗi `createTheme_default is not a function` có thể xảy ra. Để khắc phục, hãy thử di chuyển các import liên quan đến `Box` xuống dưới cùng của danh sách import.\n- **Sử dụng `disableGutters`:** Khi sử dụng `Container`, prop `disableGutters` sẽ loại bỏ padding mặc định ở hai bên của container, cho phép nội dung chiếm toàn bộ chiều rộng.\n- **Truy cập theme:** Khi sử dụng `sx` prop, bạn có thể truy cập vào theme của Material UI thông qua một hàm callback, ví dụ: `(theme) => theme.palette.primary.main`.\n\n## Tài liệu tham khảo\n\n- **Video bài học:** [18. Code Layout trang Trello Web | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=VIDEO_22&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=22)\n- **GitHub Repository:** [trungquandev/vite-trello-web-base-project](https://github.com/trungquandev/vite-trello-web-base-project)\n- **Material UI Documentation:** [https://mui.com/](https://mui.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", khái niệm cơ bản được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến khái niệm cơ bản",
+          "Phương án B liên quan đến khái niệm cơ bản",
+          "Phương án C liên quan đến khái niệm cơ bản",
+          "Phương án D liên quan đến khái niệm cơ bản"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về khái niệm cơ bản."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", cú pháp được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cú pháp",
+          "Phương án B liên quan đến cú pháp",
+          "Phương án C liên quan đến cú pháp",
+          "Phương án D liên quan đến cú pháp"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cú pháp."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", cách sử dụng được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cách sử dụng",
+          "Phương án B liên quan đến cách sử dụng",
+          "Phương án C liên quan đến cách sử dụng",
+          "Phương án D liên quan đến cách sử dụng"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cách sử dụng."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", ưu điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ưu điểm",
+          "Phương án B liên quan đến ưu điểm",
+          "Phương án C liên quan đến ưu điểm",
+          "Phương án D liên quan đến ưu điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ưu điểm."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", nhược điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến nhược điểm",
+          "Phương án B liên quan đến nhược điểm",
+          "Phương án C liên quan đến nhược điểm",
+          "Phương án D liên quan đến nhược điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về nhược điểm."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", so sánh được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến so sánh",
+          "Phương án B liên quan đến so sánh",
+          "Phương án C liên quan đến so sánh",
+          "Phương án D liên quan đến so sánh"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về so sánh."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", ứng dụng thực tế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ứng dụng thực tế",
+          "Phương án B liên quan đến ứng dụng thực tế",
+          "Phương án C liên quan đến ứng dụng thực tế",
+          "Phương án D liên quan đến ứng dụng thực tế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ứng dụng thực tế."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", best practices được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến best practices",
+          "Phương án B liên quan đến best practices",
+          "Phương án C liên quan đến best practices",
+          "Phương án D liên quan đến best practices"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về best practices."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", cấu hình được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cấu hình",
+          "Phương án B liên quan đến cấu hình",
+          "Phương án C liên quan đến cấu hình",
+          "Phương án D liên quan đến cấu hình"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cấu hình."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", xử lý lỗi được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến xử lý lỗi",
+          "Phương án B liên quan đến xử lý lỗi",
+          "Phương án C liên quan đến xử lý lỗi",
+          "Phương án D liên quan đến xử lý lỗi"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về xử lý lỗi."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", tối ưu hóa được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến tối ưu hóa",
+          "Phương án B liên quan đến tối ưu hóa",
+          "Phương án C liên quan đến tối ưu hóa",
+          "Phương án D liên quan đến tối ưu hóa"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về tối ưu hóa."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", bảo mật được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến bảo mật",
+          "Phương án B liên quan đến bảo mật",
+          "Phương án C liên quan đến bảo mật",
+          "Phương án D liên quan đến bảo mật"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về bảo mật."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", kiến trúc được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến kiến trúc",
+          "Phương án B liên quan đến kiến trúc",
+          "Phương án C liên quan đến kiến trúc",
+          "Phương án D liên quan đến kiến trúc"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về kiến trúc."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", thiết kế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến thiết kế",
+          "Phương án B liên quan đến thiết kế",
+          "Phương án C liên quan đến thiết kế",
+          "Phương án D liên quan đến thiết kế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về thiết kế."
+      },
+      {
+        "question": "Trong bài \"Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI\", triển khai được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến triển khai",
+          "Phương án B liên quan đến triển khai",
+          "Phương án C liên quan đến triển khai",
+          "Phương án D liên quan đến triển khai"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về triển khai."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài tập 1: Thực hành Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 2: Thực hành Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 3: Thực hành Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 4: Thực hành Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 5: Thực hành Bài học 18: Code Layout trang Trello Web với ReactJS và Material UI",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      }
+    ]
+  }
+}

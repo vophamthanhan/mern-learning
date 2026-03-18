@@ -1,0 +1,213 @@
+{
+  "id": 103,
+  "title": "Bài học: Xử lý dữ liệu Board với Redux, Fix Bug và Refactor Code",
+  "category": "advanced",
+  "categoryName": "Nâng cao & Redux",
+  "content": "# Bài học: Xử lý dữ liệu Board với Redux, Fix Bug và Refactor Code\n\n**Video:** Buổi 2: Xử lý đưa dữ liệu Board vào trong Redux, Fix Bug, Refactor Code....vv\n\n## I. Mục tiêu bài học\n\nBài học này tập trung vào việc quản lý trạng thái của ứng dụng Trello-clone một cách hiệu quả bằng Redux Toolkit. Các mục tiêu chính bao gồm:\n\n1.  **Tích hợp Redux:** Đưa dữ liệu của một \"Board\" (bao gồm thông tin về columns và cards) vào Redux store để quản lý tập trung.\n2.  **Xử lý bất đồng bộ:** Thực hiện việc lấy dữ liệu Board từ API và cập nhật vào Redux store một cách bất đồng bộ.\n3.  **Sửa lỗi (Bug Fixing):** Xác định và sửa các lỗi thường gặp trong quá trình phát triển, đặc biệt là các lỗi liên quan đến quản lý state.\n4.  **Tái cấu trúc mã (Refactoring):** Cải thiện chất lượng mã nguồn, làm cho nó dễ đọc, dễ bảo trì và mở rộng hơn.\n\n## II. Kiến thức chi tiết\n\n### 1. Giới thiệu về Redux Toolkit\n\nRedux Toolkit là một thư viện chính thức từ đội ngũ Redux, giúp đơn giản hóa việc viết mã Redux. Nó cung cấp các công cụ mạnh mẽ để cấu hình store, tạo reducers, và xử lý các tác vụ bất đồng bộ.\n\n### 2. Cấu trúc Slice cho Board\n\nTrong Redux Toolkit, \"slice\" là một phần của Redux store, bao gồm reducer và các actions liên quan. Chúng ta sẽ tạo một `boardSlice` để quản lý dữ liệu của Board.\n\n**Code mẫu (`src/redux/slices/boardSlice.js`):**\n\n```javascript\nimport { createSlice, createAsyncThunk } from '@reduxjs/toolkit';\nimport boardAPI from '~/apis/boardAPI';\n\n// Tạo một thunk để xử lý việc lấy dữ liệu board bất đồng bộ\nexport const fetchBoardDetails = createAsyncThunk(\n  'board/fetchBoardDetails',\n  async (boardId) => {\n    const response = await boardAPI.fetchBoardDetails(boardId);\n    return response.data; // Giả sử API trả về dữ liệu trong response.data\n  }\n);\n\nconst boardSlice = createSlice({\n  name: 'board',\n  initialState: {\n    currentBoard: null,\n    loading: false,\n    error: null\n  },\n  reducers: {\n    // Các reducers đồng bộ khác có thể được thêm vào đây\n  },\n  extraReducers: (builder) => {\n    builder\n      .addCase(fetchBoardDetails.pending, (state) => {\n        state.loading = true;\n      })\n      .addCase(fetchBoardDetails.fulfilled, (state, action) => {\n        state.loading = false;\n        state.currentBoard = action.payload;\n      })\n      .addCase(fetchBoardDetails.rejected, (state, action) => {\n        state.loading = false;\n        state.error = action.error.message;\n      });\n  }\n});\n\nexport default boardSlice.reducer;\n```\n\n### 3. Tích hợp vào Component\n\nSau khi đã có `boardSlice`, chúng ta sẽ sử dụng nó trong component `Board` để hiển thị dữ liệu.\n\n**Code mẫu (`src/pages/Boards/_id.jsx`):**\n\n```javascript\nimport React, { useEffect } from 'react';\nimport { useSelector, useDispatch } from 'react-redux';\nimport { fetchBoardDetails } from '~/redux/slices/boardSlice';\n\nfunction Board() {\n  const dispatch = useDispatch();\n  const board = useSelector((state) => state.board.currentBoard);\n  const loading = useSelector((state) => state.board.loading);\n  const error = useSelector((state) => state.board.error);\n\n  useEffect(() => {\n    // Giả sử boardId được lấy từ URL\n    const boardId = 'your-board-id';\n    dispatch(fetchBoardDetails(boardId));\n  }, [dispatch]);\n\n  if (loading) {\n    return <div>Loading...</div>;\n  }\n\n  if (error) {\n    return <div>Error: {error}</div>;\n  }\n\n  return (\n    <div>\n      <h1>{board?.title}</h1>\n      {/* Hiển thị các columns và cards ở đây */}\n    </div>\n  );\n}\n\nexport default Board;\n```\n\n### 4. Sửa lỗi (Bug Fixing)\n\nTrong quá trình này, một số lỗi phổ biến có thể xảy ra:\n\n*   **Lỗi CORS:** Khi frontend và backend chạy trên các domain khác nhau. Cần cấu hình CORS trên server.\n*   **Dữ liệu không cập nhật:** Kiểm tra lại `extraReducers` và đảm bảo rằng `action.payload` chứa dữ liệu chính xác.\n*   **Vòng lặp render vô hạn:** Xảy ra nếu `useEffect` không có dependency array `[]` hoặc `[dispatch]` đúng cách.\n\n### 5. Tái cấu trúc mã (Refactoring)\n\nSau khi các tính năng đã hoạt động, chúng ta nên xem xét việc tái cấu trúc mã:\n\n*   **Tách components:** Chia nhỏ component `Board` thành các component con như `Column`, `Card` để dễ quản lý.\n*   **Tổ chức file:** Sắp xếp các file API, slice, component một cách logic.\n*   **Sử dụng selectors:** Tạo các selectors với `reselect` để tối ưu hóa việc lấy dữ liệu từ store và tránh re-render không cần thiết.\n\n## III. Các bước thực hành\n\n1.  **Cài đặt Redux Toolkit:** `npm install @reduxjs/toolkit react-redux`\n2.  **Tạo `boardSlice.js`:** Viết mã cho slice quản lý board.\n3.  **Cấu hình Redux Store:** Thêm `boardSlice` vào store.\n4.  **Gọi API và dispatch action:** Trong component `Board`, sử dụng `useEffect` và `useDispatch` để lấy dữ liệu.\n5.  **Hiển thị dữ liệu:** Sử dụng `useSelector` để lấy dữ liệu từ store và hiển thị ra giao diện.\n6.  **Kiểm tra và sửa lỗi:** Chạy ứng dụng và kiểm tra các tính năng, sửa lỗi nếu có.\n7.  **Tái cấu trúc mã:** Cải thiện cấu trúc mã nguồn.\n\n## IV. Lưu ý quan trọng\n\n*   **Immutability:** Redux Toolkit sử dụng Immer bên trong, cho phép chúng ta viết mã \"mutable\" trong reducers nhưng vẫn đảm bảo tính bất biến (immutability) của state.\n*   **Error Handling:** Luôn xử lý các trường hợp lỗi khi gọi API để ứng dụng không bị \"crash\" và cung cấp thông báo hữu ích cho người dùng.\n*   **Code Style:** Tuân thủ một quy tắc code style nhất quán (ví dụ: ESLint, Prettier) để mã nguồn dễ đọc và bảo trì.\n\n## V. Tài liệu tham khảo\n\n1.  [Redux Toolkit Documentation](https://redux-toolkit.js.org/)\n2.  [React Redux Documentation](https://react-redux.js.org/)\n3.  [TrungQuanDev GitHub](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Redux Toolkit là gì và mục đích chính của nó là gì?",
+        "options": [
+          "Một thư viện riêng biệt để thay thế hoàn toàn Redux.",
+          "Một bộ công cụ chính thức từ đội ngũ Redux giúp đơn giản hóa việc viết mã Redux.",
+          "Một công cụ chỉ dành cho việc xử lý các tác vụ bất đồng bộ trong React.",
+          "Một thư viện để tạo giao diện người dùng cho ứng dụng Redux."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Redux Toolkit là bộ công cụ chính thức, được khuyên dùng để viết logic Redux, giúp đơn giản hóa và giảm thiểu code boilerplate."
+      },
+      {
+        "question": "Trong Redux Toolkit, khái niệm \"slice\" bao gồm những gì?",
+        "options": [
+          "Chỉ bao gồm reducer function.",
+          "Bao gồm reducer và các actions liên quan.",
+          "Chỉ bao gồm các action creators.",
+          "Là một cách khác để gọi Redux store."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một slice là một phần của Redux store, tự động tạo ra reducer, action creators và action types dựa trên các hàm reducer mà bạn cung cấp."
+      },
+      {
+        "question": "Hàm `createAsyncThunk` được sử dụng để làm gì?",
+        "options": [
+          "Để tạo một reducer đồng bộ.",
+          "Để xử lý các tác vụ bất đồng bộ (ví dụ: gọi API) và dispatch các actions tương ứng với các giai đoạn (pending, fulfilled, rejected).",
+          "Để tạo một component React mới.",
+          "Để kết nối trực tiếp component với Redux store mà không cần `useSelector`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`createAsyncThunk` là một tiện ích giúp trừu tượng hóa quy trình xử lý tác vụ bất đồng bộ và dispatch các action theo trạng thái của promise."
+      },
+      {
+        "question": "Trong `extraReducers` của một slice, bạn xử lý các actions được tạo bởi `createAsyncThunk` như thế nào?",
+        "options": [
+          "Bằng cách sử dụng `builder.addCase` cho các trạng thái `pending`, `fulfilled`, và `rejected`.",
+          "Bằng cách định nghĩa các hàm reducer trực tiếp trong object `reducers`.",
+          "Bằng cách gọi `dispatch` trực tiếp bên trong `extraReducers`.",
+          "Không thể xử lý actions từ `createAsyncThunk` trong `extraReducers`."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`extraReducers` cho phép một slice xử lý các actions không được định nghĩa trong `reducers` của nó, và `builder.addCase` là cú pháp chuẩn để xử lý các actions này, đặc biệt là từ `createAsyncThunk`."
+      },
+      {
+        "question": "Cặp hook nào từ `react-redux` được sử dụng để đọc dữ liệu từ store và dispatch actions?",
+        "options": [
+          "`useState` và `useEffect`",
+          "`useContext` và `useReducer`",
+          "`useSelector` và `useDispatch`",
+          "`useStore` và `useAction`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`useSelector` được dùng để trích xuất và đăng ký với một phần của state trong Redux store, trong khi `useDispatch` trả về hàm `dispatch` để bạn có thể gửi actions đi."
+      },
+      {
+        "question": "Lỗi CORS (Cross-Origin Resource Sharing) thường xảy ra khi nào?",
+        "options": [
+          "Khi frontend và backend chạy trên cùng một domain.",
+          "Khi có lỗi cú pháp trong mã JavaScript của frontend.",
+          "Khi frontend cố gắng gửi yêu cầu đến một backend chạy trên một domain, protocol, hoặc port khác.",
+          "Khi Redux store không được cấu hình đúng cách."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Cơ chế bảo mật của trình duyệt ngăn chặn các yêu cầu HTTP cross-origin. Lỗi CORS xảy ra khi server không trả về các header cho phép origin của frontend truy cập."
+      },
+      {
+        "question": "Để tránh vòng lặp render vô hạn trong `useEffect` khi dispatch một action, bạn nên làm gì?",
+        "options": [
+          "Không bao giờ dispatch action bên trong `useEffect`.",
+          "Cung cấp một dependency array (mảng phụ thuộc) rỗng `[]` hoặc chứa các giá trị không thay đổi giữa các lần render, như `[dispatch]`.",
+          "Xóa `useEffect` và gọi action trực tiếp trong thân component.",
+          "Thêm `dispatch` vào tất cả các dependency array trong ứng dụng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một dependency array rỗng `[]` đảm bảo effect chỉ chạy một lần sau lần render đầu tiên. Nếu bạn cần dispatch, hãy thêm `dispatch` vào mảng, vì React đảm bảo hàm `dispatch` là ổn định và không thay đổi."
+      },
+      {
+        "question": "Tái cấu trúc mã (refactoring) nhằm mục đích gì?",
+        "options": [
+          "Thêm tính năng mới cho ứng dụng.",
+          "Thay đổi hoàn toàn logic kinh doanh của ứng dụng.",
+          "Cải thiện cấu trúc bên trong của mã nguồn mà không thay đổi hành vi bên ngoài của nó.",
+          "Viết lại toàn bộ ứng dụng từ đầu."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Mục tiêu của refactoring là làm cho mã dễ đọc, dễ hiểu, dễ bảo trì và mở rộng hơn, qua đó giảm thiểu khả năng phát sinh bug trong tương lai."
+      },
+      {
+        "question": "Thư viện nào được Redux Toolkit sử dụng bên trong để cho phép viết mã \"mutable\" trong reducers mà vẫn đảm bảo tính bất biến (immutability)?",
+        "options": [
+          "Redux-Saga",
+          "Reselect",
+          "Immer",
+          "Lodash"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Immer là thư viện cốt lõi giúp Redux Toolkit đơn giản hóa việc cập nhật state. Nó theo dõi các thay đổi trên một bản nháp (draft state) và tạo ra state mới không thể thay đổi dựa trên đó."
+      },
+      {
+        "question": "Tại sao việc xử lý lỗi (error handling) khi gọi API lại quan trọng?",
+        "options": [
+          "Để làm cho ứng dụng chạy nhanh hơn.",
+          "Để ngăn ứng dụng bị \"crash\" và cung cấp phản hồi hữu ích cho người dùng khi có sự cố xảy ra.",
+          "Để giảm số lượng mã cần viết.",
+          "Chỉ quan trọng trong môi trường development, không cần thiết trong production."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Xử lý lỗi tốt giúp cải thiện trải nghiệm người dùng, cho phép ứng dụng phục hồi một cách duyên dáng từ các lỗi không mong muốn và giúp lập trình viên dễ dàng gỡ lỗi hơn."
+      },
+      {
+        "question": "Trong `boardSlice`, trạng thái `loading` được đặt thành `true` khi nào?",
+        "options": [
+          "Khi action `fetchBoardDetails.fulfilled` được dispatch.",
+          "Khi action `fetchBoardDetails.rejected` được dispatch.",
+          "Khi action `fetchBoardDetails.pending` được dispatch.",
+          "Khi component được unmount."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trạng thái `pending` của một async thunk báo hiệu rằng yêu cầu bất đồng bộ đã bắt đầu nhưng chưa hoàn thành. Đây là thời điểm thích hợp để hiển thị chỉ báo loading cho người dùng."
+      },
+      {
+        "question": "`action.payload` trong trường hợp `fetchBoardDetails.fulfilled` chứa gì?",
+        "options": [
+          "Thông báo lỗi từ API.",
+          "Dữ liệu được trả về từ hàm `async (boardId) => { ... }` của `createAsyncThunk`.",
+          "Trạng thái `loading` hiện tại.",
+          "Toàn bộ Redux state."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khi một async thunk thành công, giá trị được `return` từ payload creator (hàm async thứ hai) sẽ được đặt vào `action.payload` của action `fulfilled`."
+      },
+      {
+        "question": "Việc tách component `Board` thành các component con như `Column` và `Card` mang lại lợi ích gì?",
+        "options": [
+          "Làm cho ứng dụng chạy chậm hơn do có nhiều component hơn.",
+          "Tăng tính tái sử dụng, dễ quản lý, và cải thiện hiệu suất bằng cách tránh re-render không cần thiết.",
+          "Không mang lại lợi ích gì, chỉ làm phức tạp hóa cấu trúc thư mục.",
+          "Là yêu cầu bắt buộc của React."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Chia nhỏ các component lớn giúp mỗi component có một trách nhiệm duy nhất, dễ dàng hơn trong việc đọc hiểu, kiểm thử và tối ưu hóa."
+      },
+      {
+        "question": "Lệnh nào dùng để cài đặt các thư viện cần thiết cho việc sử dụng Redux trong một dự án React?",
+        "options": [
+          "`npm install redux`",
+          "`npm install react-redux`",
+          "`npm install @reduxjs/toolkit react-redux`",
+          "`npm install redux-thunk`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học đề cập đến việc sử dụng Redux Toolkit, và lệnh `npm install @reduxjs/toolkit react-redux` là lệnh đầy đủ để cài đặt cả core toolkit và bindings cho React."
+      },
+      {
+        "question": "Thư viện `reselect` được đề cập trong bài học có công dụng chính là gì?",
+        "options": [
+          "Để chọn các phần tử DOM.",
+          "Để tạo các \"memoized selectors\", giúp tối ưu hóa việc lấy dữ liệu từ store và tránh re-render không cần thiết.",
+          "Để thay thế `useSelector` hook.",
+          "Để thực hiện các cuộc gọi API."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`reselect` tạo ra các selector có khả năng ghi nhớ (memoized). Chúng chỉ tính toán lại giá trị mới khi các phần của state mà chúng phụ thuộc vào thực sự thay đổi, giúp tối ưu hóa hiệu suất."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo Board Slice cơ bản",
+        "description": "Hãy tạo một file `boardSlice.js` và định nghĩa một slice Redux có tên là 'board' với trạng thái ban đầu bao gồm `currentBoard: null`, `loading: false`, và `error: null`.",
+        "starterCode": "import { createSlice } from '@reduxjs/toolkit';\n\n// Your code here\n\nexport default boardSlice.reducer;",
+        "solution": "import { createSlice } from '@reduxjs/toolkit';\n\nconst boardSlice = createSlice({\n  name: 'board',\n  initialState: {\n    currentBoard: null,\n    loading: false,\n    error: null\n  },\n  reducers: {}\n});\n\nexport default boardSlice.reducer;",
+        "testCases": "File `boardSlice.js` phải export một reducer. Reducer phải có initial state đúng với yêu cầu."
+      },
+      {
+        "title": "Tạo Async Thunk để fetch Board",
+        "description": "Sử dụng `createAsyncThunk` để tạo một action bất đồng bộ có tên `board/fetchBoardDetails`. Action này sẽ nhận `boardId` làm đối số và giả lập việc gọi API trả về một object board.",
+        "starterCode": "import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';\n\n// Giả lập API call\nconst fakeBoardAPI = (boardId) => Promise.resolve({ id: boardId, title: 'My Board' });\n\n// Your code here: export const fetchBoardDetails = ...\n\nconst boardSlice = createSlice({\n  name: 'board',\n  initialState: { currentBoard: null, loading: false, error: null },\n  reducers: {}\n});\n\nexport default boardSlice.reducer;",
+        "solution": "import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';\n\nconst fakeBoardAPI = (boardId) => Promise.resolve({ id: boardId, title: 'My Board' });\n\nexport const fetchBoardDetails = createAsyncThunk(\n  'board/fetchBoardDetails',\n  async (boardId) => {\n    const response = await fakeBoardAPI(boardId);\n    return response;\n  }\n);\n\nconst boardSlice = createSlice({\n  name: 'board',\n  initialState: { currentBoard: null, loading: false, error: null },\n  reducers: {}\n});\n\nexport default boardSlice.reducer;",
+        "testCases": "Phải export một hằng số tên `fetchBoardDetails`. Hằng số này phải là kết quả của việc gọi `createAsyncThunk` với đúng type prefix 'board/fetchBoardDetails'."
+      },
+      {
+        "title": "Hoàn thiện Extra Reducers",
+        "description": "Thêm `extraReducers` vào `boardSlice` để xử lý 3 trạng thái của `fetchBoardDetails`: `pending` (set loading = true), `fulfilled` (set loading = false và cập nhật currentBoard), và `rejected` (set loading = false và lưu thông báo lỗi).",
+        "starterCode": "import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';\n\nexport const fetchBoardDetails = createAsyncThunk(/*...*/);\n\nconst boardSlice = createSlice({\n  name: 'board',\n  initialState: { currentBoard: null, loading: false, error: null },\n  reducers: {},\n  // Your code here: extraReducers: ...\n});\n\nexport default boardSlice.reducer;",
+        "solution": "import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';\n\nexport const fetchBoardDetails = createAsyncThunk(\n  'board/fetchBoardDetails',\n  async (boardId) => {\n    // Giả sử API trả về dữ liệu board\n    return { id: boardId, title: 'Fetched Board' };\n  }\n);\n\nconst boardSlice = createSlice({\n  name: 'board',\n  initialState: { currentBoard: null, loading: false, error: null },\n  reducers: {},\n  extraReducers: (builder) => {\n    builder\n      .addCase(fetchBoardDetails.pending, (state) => {\n        state.loading = true;\n      })\n      .addCase(fetchBoardDetails.fulfilled, (state, action) => {\n        state.loading = false;\n        state.currentBoard = action.payload;\n      })\n      .addCase(fetchBoardDetails.rejected, (state, action) => {\n        state.loading = false;\n        state.error = action.error.message;\n      });\n  }\n});\n\nexport default boardSlice.reducer;",
+        "testCases": "Reducer phải xử lý đúng 3 action: pending, fulfilled, rejected. State phải được cập nhật chính xác trong mỗi trường hợp."
+      },
+      {
+        "title": "Sử dụng Redux trong Component",
+        "description": "Hoàn thiện component `Board` dưới đây. Sử dụng hook `useDispatch` để gọi `fetchBoardDetails` khi component được mount. Sử dụng hook `useSelector` để lấy `board`, `loading`, và `error` từ Redux store và hiển thị chúng.",
+        "starterCode": "import React, { useEffect } from 'react';\nimport { useSelector, useDispatch } from 'react-redux';\nimport { fetchBoardDetails } from './boardSlice';\n\nfunction Board() {\n  // Your code here\n\n  useEffect(() => {\n    // Dispatch action to fetch board details with id 'b-1'\n  }, [dispatch]);\n\n  // Handle loading and error states\n\n  return (\n    <div>\n      {/* Display board title */}\n    </div>\n  );\n}\n\nexport default Board;",
+        "solution": "import React, { useEffect } from 'react';\nimport { useSelector, useDispatch } from 'react-redux';\nimport { fetchBoardDetails } from './boardSlice';\n\nfunction Board() {\n  const dispatch = useDispatch();\n  const board = useSelector((state) => state.board.currentBoard);\n  const loading = useSelector((state) => state.board.loading);\n  const error = useSelector((state) => state.board.error);\n\n  useEffect(() => {\n    dispatch(fetchBoardDetails('b-1'));\n  }, [dispatch]);\n\n  if (loading) {\n    return <div>Loading...</div>;\n  }\n\n  if (error) {\n    return <div>Error: {error}</div>;\n  }\n\n  return (\n    <div>\n      <h1>{board?.title}</h1>\n    </div>\n  );\n}\n\nexport default Board;",
+        "testCases": "Component phải gọi `useDispatch` và `useSelector`. Action `fetchBoardDetails` phải được dispatch trong `useEffect`. Phải hiển thị trạng thái loading, error và title của board."
+      },
+      {
+        "title": "Refactor: Tách Component Card",
+        "description": "Cho một component `Column` hiển thị danh sách các card. Hãy tái cấu trúc nó bằng cách tạo ra một component con `Card` riêng biệt để hiển thị thông tin của mỗi card, sau đó sử dụng nó trong `Column`.",
+        "starterCode": "import React from 'react';\n\n// Tái cấu trúc: Tạo component Card tại đây\n// function Card({ card }) { ... }\n\nfunction Column({ column }) {\n  return (\n    <div className=\"column\">\n      <h2>{column.title}</h2>\n      <div className=\"card-list\">\n        {column.cards.map(card => (\n          // Thay thế div này bằng component Card của bạn\n          <div key={card.id} className=\"card-item\">\n            {card.title}\n          </div>\n        ))}\n      </div>\n    </div>\n  );\n}\n\nexport default Column;",
+        "solution": "import React from 'react';\n\n// Component Card được tách ra\nfunction Card({ card }) {\n  return (\n    <div className=\"card-item\">\n      {card.title}\n    </div>\n  );\n}\n\nfunction Column({ column }) {\n  return (\n    <div className=\"column\">\n      <h2>{column.title}</h2>\n      <div className=\"card-list\">\n        {column.cards.map(card => (\n          <Card key={card.id} card={card} />\n        ))}\n      </div>\n    </div>\n  );\n}\n\nexport default Column;",
+        "testCases": "Phải có một component `Card` mới nhận prop `card`. Component `Column` phải sử dụng component `Card` để render mỗi item trong danh sách."
+      }
+    ]
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "id": 101,
+  "title": "Bài 96: Hoàn thiện tính năng Verify Account - Login - JWT Tokens",
+  "category": "auth",
+  "categoryName": "Authentication & Security",
+  "content": "# Bài 96: Hoàn thiện tính năng Verify Account - Login - JWT Tokens\n\n## Mục tiêu bài học\n\nVideo này tập trung vào việc xây dựng và hoàn thiện các tính năng xác thực và ủy quyền cốt lõi cho một ứng dụng MERN Stack, bao gồm:\n\n*   **Xác thực tài khoản (Account Verification):** Hướng dẫn quy trình gửi email xác thực cho người dùng mới đăng ký và xử lý logic khi người dùng xác nhận.\n*   **Đăng nhập (Login):** Xây dựng API cho phép người dùng đăng nhập an toàn vào hệ thống.\n*   **Quản lý phiên đăng nhập với JWT (JSON Web Tokens):** Sử dụng JWT để tạo và quản lý các phiên đăng nhập, cho phép người dùng truy cập các tài nguyên được bảo vệ.\n\nSau khi hoàn thành bài học, bạn sẽ có thể tự mình triển khai một luồng xác thực người dùng hoàn chỉnh, an toàn và chuyên nghiệp cho bất kỳ dự án MERN Stack nào.\n\n## Kiến thức chi tiết\n\n### 1. Tổng quan về Luồng Xác thực\n\nLuồng xác thực người dùng trong ứng dụng web hiện đại thường bao gồm các bước sau:\n\n1.  **Đăng ký (Registration):** Người dùng cung cấp thông tin (ví dụ: email, password). Hệ thống lưu thông tin này vào cơ sở dữ liệu và tạo một trạng thái \"chưa xác thực\" cho tài khoản.\n2.  **Xác thực tài khoản (Verification):** Hệ thống gửi một email chứa liên kết xác thực duy nhất đến người dùng. Khi người dùng nhấp vào liên kết này, tài khoản của họ sẽ được kích hoạt.\n3.  **Đăng nhập (Login):** Người dùng cung cấp thông tin đăng nhập. Hệ thống xác minh thông tin và nếu hợp lệ, sẽ cấp cho người dùng một \"vé thông hành\" (access token).\n4.  **Truy cập được bảo vệ (Protected Access):** Người dùng sử dụng access token để truy cập các trang hoặc API yêu cầu xác thực.\n5.  **Đăng xuất (Logout):** Hủy bỏ access token, kết thúc phiên đăng nhập.\n\n### 2. Xác thực tài khoản qua Email\n\nĐây là một bước quan trọng để đảm bảo email người dùng cung cấp là có thật, tránh tình trạng spam và tài khoản ảo.\n\n**Quy trình hoạt động:**\n\n1.  **Tạo Token Xác thực:** Sau khi người dùng đăng ký, backend sẽ:\n    *   Tạo một chuỗi token ngẫu nhiên, duy nhất (có thể sử dụng `crypto` của Node.js).\n    *   Lưu token này cùng với thời gian hết hạn (ví dụ: 15 phút) vào document của người dùng trong MongoDB.\n2.  **Gửi Email:**\n    *   Sử dụng một dịch vụ gửi email như Nodemailer kết hợp với Gmail, SendGrid, hoặc Mailgun.\n    *   Tạo một đường link xác thực chứa token này (ví dụ: `https://your-app.com/verify-email?token=...`).\n    *   Gửi email chứa đường link trên đến địa chỉ email của người dùng.\n3.  **Xử lý Xác thực:**\n    *   Người dùng nhấp vào đường link.\n    *   Frontend điều hướng đến một trang xác thực và gọi API của backend với token tương ứng.\n    *   Backend tìm người dùng có token này, kiểm tra xem token có hợp lệ và còn hạn không.\n    *   Nếu hợp lệ, cập nhật trạng thái tài khoản thành \"đã xác thực\" và xóa token khỏi cơ sở dữ liệu.\n\n**Code mẫu (Backend - Express.js):**\n\n```javascript\n// user.model.js\nconst userSchema = new mongoose.Schema({\n  // ... other fields\n  email: { type: String, required: true, unique: true },\n  password: { type: String, required: true },\n  isVerified: { type: Boolean, default: false },\n  verificationToken: { type: String },\n  verificationTokenExpires: { type: Date }\n});\n\n// auth.controller.js\nconst register = async (req, res) => {\n  // ... (tạo user, hash password)\n\n  // Tạo verification token\n  const verificationToken = crypto.randomBytes(32).toString('hex');\n  user.verificationToken = verificationToken;\n  user.verificationTokenExpires = Date.now() + 15 * 60 * 1000; // 15 phút\n  await user.save();\n\n  // Gửi email (sử dụng một utility function)\n  const verifyUrl = `${req.protocol}://${req.get('host')}/v1/users/verify-email/${verificationToken}`;\n  await sendEmail({\n    email: user.email,\n    subject: 'Xác thực tài khoản của bạn',\n    message: `Vui lòng nhấp vào link sau để xác thực tài khoản: ${verifyUrl}`\n  });\n\n  res.status(201).json({ message: 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực.' });\n};\n\nconst verifyEmail = async (req, res) => {\n  const { token } = req.params;\n  const user = await User.findOne({\n    verificationToken: token,\n    verificationTokenExpires: { $gt: Date.now() }\n  });\n\n  if (!user) {\n    return res.status(400).json({ message: 'Token không hợp lệ hoặc đã hết hạn.' });\n  }\n\n  user.isVerified = true;\n  user.verificationToken = undefined;\n  user.verificationTokenExpires = undefined;\n  await user.save();\n\n  res.status(200).json({ message: 'Xác thực tài khoản thành công!' });\n};\n```\n\n### 3. Đăng nhập và tạo JWT\n\nSau khi tài khoản đã được xác thực, người dùng có thể đăng nhập.\n\n**Quy trình hoạt động:**\n\n1.  **Nhận thông tin:** Người dùng gửi email và password qua API đăng nhập.\n2.  **Xác minh:**\n    *   Backend tìm người dùng dựa trên email.\n    *   Nếu không tìm thấy hoặc tài khoản chưa được xác thực, trả về lỗi.\n    *   Sử dụng `bcrypt.compare()` để so sánh password người dùng gửi lên với password đã được hash trong cơ sở dữ liệu.\n3.  **Tạo JWT:**\n    *   Nếu thông tin hợp lệ, backend sẽ tạo một JSON Web Token (JWT).\n    *   JWT bao gồm 3 phần: Header, Payload, và Signature.\n    *   **Payload** chứa thông tin về người dùng (ví dụ: `userId`) và thời gian hết hạn của token (`exp`).\n    *   **Signature** được tạo bằng cách mã hóa Header, Payload cùng với một chuỗi bí mật (`JWT_SECRET`). Điều này đảm bảo token không thể bị giả mạo.\n4.  **Gửi Token:** Backend gửi JWT về cho client. Client sẽ lưu trữ token này (thường trong `localStorage` hoặc `cookies`).\n\n**Code mẫu (Backend - Express.js):**\n\n```javascript\n// auth.controller.js\nconst jwt = require('jsonwebtoken');\nconst bcrypt = require('bcryptjs');\n\nconst login = async (req, res) => {\n  const { email, password } = req.body;\n\n  const user = await User.findOne({ email });\n  if (!user || !user.isVerified) {\n    return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng, hoặc tài khoản chưa được xác thực.' });\n  }\n\n  const isMatch = await bcrypt.compare(password, user.password);\n  if (!isMatch) {\n    return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' });\n  }\n\n  // Tạo JWT\n  const payload = { userId: user._id };\n  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {\n    expiresIn: '1d' // Hết hạn sau 1 ngày\n  });\n\n  res.status(200).json({\n    message: 'Đăng nhập thành công!',\n    accessToken,\n    user: { id: user._id, email: user.email, name: user.name }\n  });\n};\n```\n\n### 4. Bảo vệ Routes với Middleware\n\nĐể yêu cầu người dùng phải đăng nhập mới được truy cập một số API nhất định (ví dụ: xem thông tin cá nhân, tạo bài viết), chúng ta sử dụng một middleware.\n\n**Quy trình hoạt động:**\n\n1.  **Gửi Token:** Client gửi JWT trong header của mỗi request, thường là `Authorization: Bearer <token>`.\n2.  **Middleware xác thực:**\n    *   Middleware này sẽ được gắn vào trước các route cần bảo vệ.\n    *   Nó đọc token từ header.\n    *   Sử dụng `jwt.verify()` để giải mã và xác thực token với `JWT_SECRET`.\n    *   Nếu token hợp lệ, nó sẽ lấy thông tin người dùng từ payload (ví dụ: `userId`), tìm người dùng trong DB và gắn vào đối tượng `req` (ví dụ: `req.user`).\n    *   Sau đó, gọi `next()` để cho phép request đi tiếp vào controller.\n    *   Nếu token không hợp lệ, hết hạn hoặc không có, middleware sẽ trả về lỗi 401 (Unauthorized).\n\n**Code mẫu (Backend - Express.js):**\n\n```javascript\n// auth.middleware.js\nconst jwt = require('jsonwebtoken');\nconst User = require('../models/user.model');\n\nconst protect = async (req, res, next) => {\n  let token;\n  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {\n    try {\n      token = req.headers.authorization.split(' ')[1];\n      const decoded = jwt.verify(token, process.env.JWT_SECRET);\n\n      req.user = await User.findById(decoded.userId).select('-password');\n      if (!req.user) {\n          return res.status(401).json({ message: 'Người dùng không tồn tại.' });\n      }\n      next();\n    } catch (error) {\n      return res.status(401).json({ message: 'Token không hợp lệ, truy cập bị từ chối.' });\n    }\n  }\n\n  if (!token) {\n    return res.status(401).json({ message: 'Không có token, truy cập bị từ chối.' });\n  }\n};\n\n// user.routes.js\nconst { getProfile } = require('../controllers/user.controller');\nconst { protect } = require('../middlewares/auth.middleware');\n\nrouter.get('/profile', protect, getProfile);\n```\n\n## Các bước thực hành\n\n1.  **Cài đặt thư viện:**\n    *   `npm install jsonwebtoken bcryptjs nodemailer`\n2.  **Cấu hình biến môi trường:** Tạo file `.env` và thêm các biến:\n    *   `JWT_SECRET=your_super_secret_key`\n    *   `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` (cho Nodemailer)\n3.  **Cập nhật User Model:** Thêm các trường `isVerified`, `verificationToken`, `verificationTokenExpires` vào schema người dùng.\n4.  **Xây dựng API Endpoints:**\n    *   `POST /api/v1/users/register`: Xử lý đăng ký, tạo token xác thực và gửi email.\n    *   `GET /api/v1/users/verify-email/:token`: Xử lý khi người dùng nhấp vào link xác thực.\n    *   `POST /api/v1/users/login`: Xử lý đăng nhập, xác minh thông tin và trả về JWT.\n5.  **Tạo Middleware `protect`:** Xây dựng middleware để kiểm tra JWT và bảo vệ các route cần thiết.\n6.  **Áp dụng Middleware:** Gắn middleware `protect` vào các route cần bảo vệ (ví dụ: lấy thông tin profile, thay đổi mật khẩu...).\n7.  **Tích hợp Frontend (React):**\n    *   Tạo các form Đăng ký, Đăng nhập.\n    *   Gọi API tương ứng khi người dùng submit form.\n    *   Sau khi đăng nhập thành công, lưu `accessToken` và thông tin người dùng vào `localStorage`.\n    *   Sử dụng một thư viện như `axios` để tạo một instance có thể tự động đính kèm `Authorization` header vào mỗi request.\n    *   Tạo các \"Protected Routes\" ở phía frontend, chỉ cho phép truy cập nếu người dùng đã đăng nhập.\n\n## Lưu ý quan trọng\n\n*   **Bảo mật `JWT_SECRET`:** Tuyệt đối không để lộ `JWT_SECRET`. Luôn lưu nó trong biến môi trường và không commit lên Git.\n*   **Lưu trữ JWT ở Client:**\n    *   **localStorage:** Dễ sử dụng nhưng có thể bị tấn công bởi XSS (Cross-Site Scripting). Nếu một script độc hại được tiêm vào trang của bạn, nó có thể đọc được token.\n    *   **HttpOnly Cookies:** An toàn hơn trước XSS vì JavaScript phía client không thể truy cập được. Tuy nhiên, cần phải cấu hình cẩn thận để chống lại tấn công CSRF (Cross-Site Request Forgery).\n*   **Refresh Tokens:** Access token thường có thời gian sống ngắn (vài giờ hoặc 1 ngày). Để duy trì phiên đăng nhập lâu hơn mà không cần người dùng đăng nhập lại, ta có thể sử dụng Refresh Token. Đây là một token có thời gian sống dài hơn (vài ngày hoặc vài tuần), được dùng để yêu cầu một access token mới khi cái cũ hết hạn.\n*   **Xử lý lỗi:** Luôn có cơ chế xử lý lỗi rõ ràng cho các trường hợp token hết hạn, không hợp lệ, hoặc người dùng không có quyền truy cập.\n\n## Tài liệu tham khảo\n\n1.  [JSON Web Token (JWT) - Introduction](https://jwt.io/introduction)\n2.  [Nodemailer - Send e-mails from Node.js](https://nodemailer.com/)\n3.  [bcrypt.js - Optimized bcrypt in JavaScript](https://www.npmjs.com/package/bcryptjs)\n4.  [TrungQuanDev Blog](https://trungquandev.com/)\n5.  [TrungQuanDev GitHub](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục đích chính của việc xác thực tài khoản qua email là gì?",
+        "options": [
+          "Để đảm bảo người dùng cung cấp email thật, tránh tài khoản ảo và spam.",
+          "Để thu thập địa chỉ email của người dùng cho mục đích marketing.",
+          "Để kiểm tra xem hòm thư của người dùng có hoạt động hay không.",
+          "Để làm chậm quá trình đăng ký và tăng tính bảo mật."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Xác thực email là bước quan trọng để xác minh danh tính ban đầu của người dùng và đảm bảo rằng email họ cung cấp là hợp lệ và có thể truy cập được, giúp giảm thiểu tài khoản giả mạo."
+      },
+      {
+        "question": "Trong luồng xác thực tài khoản, token xác thực (verificationToken) thường được lưu ở đâu?",
+        "options": [
+          "Trong `localStorage` của trình duyệt.",
+          "Trong một bảng riêng biệt chỉ chứa các token.",
+          "Trong document của người dùng trong cơ sở dữ liệu (ví dụ: MongoDB).",
+          "Trong một file text trên server."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Token xác thực và thời gian hết hạn của nó thường được lưu trực tiếp vào đối tượng người dùng trong DB để dễ dàng truy vấn và cập nhật khi người dùng thực hiện xác thực."
+      },
+      {
+        "question": "Thư viện nào của Node.js có thể được sử dụng để tạo một chuỗi token ngẫu nhiên, an toàn cho việc xác thực email?",
+        "options": [
+          "jsonwebtoken",
+          "crypto",
+          "bcryptjs",
+          "uuid"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Module `crypto` tích hợp sẵn trong Node.js cung cấp các chức năng mã hóa, bao gồm `crypto.randomBytes()` để tạo ra dữ liệu ngẫu nhiên an toàn, phù hợp để tạo token."
+      },
+      {
+        "question": "Khi người dùng đăng nhập thành công, thành phần nào của JWT (JSON Web Token) chứa thông tin về người dùng (ví dụ: userId) và thời gian hết hạn?",
+        "options": [
+          "Header",
+          "Signature",
+          "Payload",
+          "Secret Key"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Payload (phần thân) của JWT là nơi chứa các \"claims\" (tuyên bố) về thực thể (thường là người dùng) và các dữ liệu bổ sung như thời gian hết hạn (`exp`), thời điểm phát hành (`iat`)."
+      },
+      {
+        "question": "Thành phần nào của JWT đảm bảo rằng token không bị giả mạo hoặc thay đổi sau khi được tạo ra?",
+        "options": [
+          "Header",
+          "Payload",
+          "Algorithm (alg) trong Header",
+          "Signature"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Signature (chữ ký) được tạo bằng cách mã hóa Header, Payload cùng với một chuỗi bí mật (Secret Key). Bất kỳ sự thay đổi nào ở Header hoặc Payload sẽ làm cho chữ ký không hợp lệ khi xác minh."
+      },
+      {
+        "question": "Hàm nào của thư viện `bcryptjs` được sử dụng để so sánh mật khẩu người dùng nhập vào với mật khẩu đã được hash trong cơ sở dữ liệu?",
+        "options": [
+          "bcrypt.hash()",
+          "bcrypt.compareSync()",
+          "bcrypt.compare()",
+          "bcrypt.verify()"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`bcrypt.compare(plainPassword, hashedPassword)` là hàm bất đồng bộ được sử dụng để so sánh một mật khẩu dạng văn bản thuần với một chuỗi hash, trả về true nếu khớp và false nếu không."
+      },
+      {
+        "question": "Để bảo vệ một route trong Express.js, yêu cầu người dùng phải đăng nhập, chúng ta thường sử dụng kỹ thuật nào?",
+        "options": [
+          "Sử dụng một hàm kiểm tra trong mỗi controller.",
+          "Sử dụng một middleware xác thực.",
+          "Kiểm tra trực tiếp trong file route.",
+          "Lưu trạng thái đăng nhập trong một biến toàn cục."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Middleware là một cơ chế mạnh mẽ trong Express.js cho phép thực thi code trước khi request đến được controller. Middleware `protect` lý tưởng cho việc xác thực token và ủy quyền."
+      },
+      {
+        "question": "Khi client gửi JWT đến server để xác thực, nó thường được đặt ở đâu trong HTTP request?",
+        "options": [
+          "Trong request body.",
+          "Trong query parameters của URL.",
+          "Trong `Authorization` header với tiền tố `Bearer`.",
+          "Trong một cookie có tên là `jwt_token`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tiêu chuẩn phổ biến nhất để gửi token truy cập là sử dụng `Authorization` header theo định dạng `Authorization: Bearer <token>`, giúp tách biệt thông tin xác thực khỏi dữ liệu ứng dụng."
+      },
+      {
+        "question": "Hàm `jwt.verify(token, secretOrPublicKey, [options, callback])` dùng để làm gì?",
+        "options": [
+          "Tạo một token mới.",
+          "Giải mã một token mà không cần xác thực chữ ký.",
+          "Kiểm tra xem một token có được định dạng đúng hay không.",
+          "Giải mã và xác thực chữ ký của một token."
+        ],
+        "correctAnswer": 3,
+        "explanation": "`jwt.verify()` là hàm cốt lõi để bảo mật. Nó không chỉ giải mã payload mà còn xác minh rằng chữ ký của token là hợp lệ bằng cách sử dụng secret key, đảm bảo tính toàn vẹn của token."
+      },
+      {
+        "question": "Lưu trữ JWT trong `localStorage` có nhược điểm bảo mật chính là gì?",
+        "options": [
+          "Dễ bị tấn công CSRF (Cross-Site Request Forgery).",
+          "Dễ bị tấn công XSS (Cross-Site Scripting).",
+          "Dung lượng lưu trữ của `localStorage` rất thấp.",
+          "Tốc độ truy cập `localStorage` chậm hơn cookies."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Vì `localStorage` có thể được truy cập bởi bất kỳ đoạn mã JavaScript nào chạy trên trang, nếu một kẻ tấn công có thể tiêm mã độc (XSS), chúng có thể dễ dàng đánh cắp token."
+      },
+      {
+        "question": "Trong ngữ cảnh JWT, \"Refresh Token\" được sử dụng để làm gì?",
+        "options": [
+          "Để làm mới trang web sau khi đăng nhập.",
+          "Để yêu cầu một \"Access Token\" mới khi cái cũ hết hạn mà không cần người dùng đăng nhập lại.",
+          "Để thay đổi mật khẩu người dùng.",
+          "Để xác thực lại email của người dùng sau một khoảng thời gian."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Refresh Token là một giải pháp để duy trì phiên đăng nhập lâu dài. Nó có thời gian sống dài và được lưu trữ an toàn, chỉ được dùng để cấp phát Access Token mới, giúp giảm thiểu rủi ro nếu Access Token bị lộ."
+      },
+      {
+        "question": "Khi triển khai `auth.middleware.js`, sau khi xác thực token thành công, thông tin người dùng thường được gắn vào đối tượng nào để các controller sau đó có thể sử dụng?",
+        "options": [
+          "res (response object)",
+          "req (request object)",
+          "next (next function)",
+          "app (express app instance)"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Gắn thông tin người dùng (ví dụ: `req.user = user;`) vào đối tượng `req` là một quy ước phổ biến, cho phép các middleware và route handler tiếp theo trong chuỗi xử lý có thể truy cập thông tin của người dùng đã được xác thực."
+      },
+      {
+        "question": "Nếu một token trong request gửi đến một route được bảo vệ đã hết hạn, `jwt.verify()` sẽ làm gì?",
+        "options": [
+          "Trả về payload của token như bình thường.",
+          "Ném ra một lỗi (ví dụ: `TokenExpiredError`).",
+          "Tự động tạo một token mới.",
+          "Trả về `null`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thư viện `jsonwebtoken` sẽ tự động kiểm tra claim `exp` (expiration time). Nếu thời gian hiện tại đã vượt qua thời gian hết hạn, hàm `verify` sẽ thất bại và ném ra một lỗi cụ thể là `TokenExpiredError`."
+      },
+      {
+        "question": "Tại sao không nên lưu trữ mật khẩu của người dùng dưới dạng văn bản thuần (plain text) trong cơ sở dữ liệu?",
+        "options": [
+          "Vì nó chiếm nhiều dung lượng hơn so với mật khẩu đã được hash.",
+          "Vì nếu cơ sở dữ liệu bị rò rỉ, toàn bộ mật khẩu của người dùng sẽ bị lộ.",
+          "Vì việc so sánh plain text chậm hơn so sánh hash.",
+          "Vì các quy định về GDPR không cho phép."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hashing là một biện pháp bảo mật cơ bản. Bằng cách lưu trữ một phiên bản đã được biến đổi không thể đảo ngược của mật khẩu, bạn bảo vệ thông tin đăng nhập của người dùng ngay cả khi hệ thống của bạn bị xâm phạm."
+      },
+      {
+        "question": "Trong hàm `login`, sau khi tìm thấy người dùng bằng email, bước tiếp theo ngay sau đó là gì?",
+        "options": [
+          "Tạo ngay lập tức JWT.",
+          "Kiểm tra xem tài khoản đã được xác thực (`isVerified`) hay chưa.",
+          "So sánh mật khẩu người dùng cung cấp với mật khẩu đã hash trong DB.",
+          "Cả B và C đều cần được thực hiện trước khi tạo JWT."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Trước khi cấp quyền truy cập, hệ thống phải thực hiện hai kiểm tra quan trọng: tài khoản có tồn tại và đã được kích hoạt chưa, và thông tin xác thực (mật khẩu) có chính xác không. Cả hai điều kiện này phải được thỏa mãn."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo hàm tạo Token ngẫu nhiên",
+        "description": "Viết một hàm JavaScript sử dụng module `crypto` của Node.js để tạo ra một chuỗi token ngẫu nhiên gồm 32 bytes và trả về dưới dạng hex.",
+        "starterCode": "const crypto = require('crypto');\n\nfunction createRandomToken() {\n  // Viết code của bạn ở đây\n\n}\n\nmodule.exports = createRandomToken;",
+        "solution": "const crypto = require('crypto');\n\nfunction createRandomToken() {\n  return crypto.randomBytes(32).toString('hex');\n}\n\nmodule.exports = createRandomToken;",
+        "testCases": "Hàm phải trả về một chuỗi string. Chuỗi string phải có độ dài 64 ký tự (vì 32 bytes = 64 ký tự hex). Mỗi lần gọi hàm phải trả về một chuỗi khác nhau."
+      },
+      {
+        "title": "Bài 2: Hoàn thiện Controller Xác thực Email",
+        "description": "Hoàn thiện hàm `verifyEmail` bên dưới. Bạn cần tìm người dùng dựa trên `token` được cung cấp, kiểm tra xem token có hợp lệ và còn hạn không. Nếu có, hãy cập nhật trạng thái `isVerified` của người dùng thành `true` và xóa thông tin token.",
+        "starterCode": "const User = require('../models/user.model'); // Giả sử đã có model\n\nconst verifyEmail = async (req, res) => {\n  const { token } = req.params;\n\n  // Viết code của bạn ở đây\n  // 1. Tìm user với `verificationToken` và `verificationTokenExpires` > Date.now()\n  // 2. Nếu không tìm thấy, trả về lỗi 400\n  // 3. Nếu tìm thấy, cập nhật isVerified = true, xóa token và ngày hết hạn\n  // 4. Lưu lại user\n  // 5. Trả về thông báo thành công status 200\n};",
+        "solution": "const User = require('../models/user.model');\n\nconst verifyEmail = async (req, res) => {\n  const { token } = req.params;\n\n  const user = await User.findOne({\n    verificationToken: token,\n    verificationTokenExpires: { $gt: Date.now() }\n  });\n\n  if (!user) {\n    return res.status(400).json({ message: 'Token không hợp lệ hoặc đã hết hạn.' });\n  }\n\n  user.isVerified = true;\n  user.verificationToken = undefined;\n  user.verificationTokenExpires = undefined;\n  await user.save();\n\n  res.status(200).json({ message: 'Xác thực tài khoản thành công!' });\n};",
+        "testCases": "Gửi request với token không tồn tại -> trả về 400. Gửi request với token đã hết hạn -> trả về 400. Gửi request với token hợp lệ -> trả về 200 và cờ `isVerified` trong DB của user đó phải là `true`."
+      },
+      {
+        "title": "Bài 3: Hoàn thiện Controller Đăng nhập",
+        "description": "Hoàn thiện hàm `login`. Cho trước email và password, bạn cần tìm người dùng, so sánh mật khẩu, và nếu tất cả đều hợp lệ, tạo và trả về một JWT.",
+        "starterCode": "const jwt = require('jsonwebtoken');\nconst bcrypt = require('bcryptjs');\nconst User = require('../models/user.model');\n\nconst login = async (req, res) => {\n  const { email, password } = req.body;\n\n  const user = await User.findOne({ email });\n  if (!user || !user.isVerified) {\n    return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng, hoặc tài khoản chưa được xác thực.' });\n  }\n\n  // Viết code của bạn ở đây\n  // 1. So sánh password từ req.body với user.password bằng bcrypt.compare()\n  // 2. Nếu không khớp, trả về lỗi 401\n  // 3. Nếu khớp, tạo payload chứa userId\n  // 4. Tạo accessToken bằng jwt.sign() với payload, secret key và thời gian hết hạn '1d'\n  // 5. Trả về accessToken và thông tin user\n};",
+        "solution": "const jwt = require('jsonwebtoken');\nconst bcrypt = require('bcryptjs');\nconst User = require('../models/user.model');\n\nconst login = async (req, res) => {\n  const { email, password } = req.body;\n\n  const user = await User.findOne({ email });\n  if (!user || !user.isVerified) {\n    return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng, hoặc tài khoản chưa được xác thực.' });\n  }\n\n  const isMatch = await bcrypt.compare(password, user.password);\n  if (!isMatch) {\n    return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' });\n  }\n\n  const payload = { userId: user._id };\n  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {\n    expiresIn: '1d'\n  });\n\n  res.status(200).json({\n    message: 'Đăng nhập thành công!',\n    accessToken,\n    user: { id: user._id, email: user.email }\n  });\n};",
+        "testCases": "Đăng nhập với sai mật khẩu -> trả về 401. Đăng nhập với tài khoản chưa xác thực -> trả về 401. Đăng nhập thành công -> trả về 200 và một chuỗi JWT trong `accessToken`."
+      },
+      {
+        "title": "Bài 4: Viết Middleware bảo vệ Route (phần 1)",
+        "description": "Viết phần đầu của middleware `protect`. Middleware này cần kiểm tra xem `req.headers.authorization` có tồn tại và bắt đầu bằng 'Bearer' hay không. Nếu có, hãy tách token ra khỏi header. Nếu không có token hoặc header không đúng định dạng, trả về lỗi 401.",
+        "starterCode": "const protect = async (req, res, next) => {\n  let token;\n\n  // Viết code của bạn ở đây\n  // 1. Kiểm tra req.headers.authorization và có bắt đầu bằng 'Bearer'\n  // 2. Nếu có, lấy token (phần thứ 2 sau khi split bởi dấu cách)\n  // 3. Nếu không có header hoặc không đúng định dạng, trả về lỗi 401 `Không có token, truy cập bị từ chối.`\n  // 4. Nếu có token, tạm thời chỉ cần gọi next() để qua bài sau.\n\n};",
+        "solution": "const protect = async (req, res, next) => {\n  let token;\n  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {\n    token = req.headers.authorization.split(' ')[1];\n    // In the next exercise, we will verify the token here\n    req.token = token; // Pass token to the next middleware for now\n    next();\n  } else {\n    return res.status(401).json({ message: 'Không có token, truy cập bị từ chối.' });\n  }\n};",
+        "testCases": "Gửi request không có Authorization header -> trả về 401. Gửi request với header `Authorization: Basic ...` -> trả về 401. Gửi request với `Authorization: Bearer mytoken` -> request được đi tiếp (gọi `next()`)."
+      },
+      {
+        "title": "Bài 5: Hoàn thiện Middleware bảo vệ Route (phần 2)",
+        "description": "Hoàn thiện middleware `protect` từ bài 4. Sau khi đã lấy được token, hãy sử dụng `jwt.verify()` để xác thực nó. Nếu token hợp lệ, tìm người dùng trong DB bằng `userId` từ payload của token, gắn người dùng vào `req.user` và gọi `next()`. Nếu có bất kỳ lỗi nào (token sai, hết hạn), trả về lỗi 401.",
+        "starterCode": "const jwt = require('jsonwebtoken');\nconst User = require('../models/user.model');\n\nconst protect = async (req, res, next) => {\n  let token;\n  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {\n    try {\n      token = req.headers.authorization.split(' ')[1];\n      \n      // Viết code của bạn ở đây\n      // 1. Dùng jwt.verify để giải mã token với process.env.JWT_SECRET\n      // 2. Lấy userId từ payload đã giải mã\n      // 3. Dùng User.findById(decoded.userId) để tìm user (nhớ loại bỏ password)\n      // 4. Gắn user tìm được vào req.user\n      // 5. Gọi next()\n\n    } catch (error) {\n      return res.status(401).json({ message: 'Token không hợp lệ, truy cập bị từ chối.' });\n    }\n  }\n\n  if (!token) {\n    return res.status(401).json({ message: 'Không có token, truy cập bị từ chối.' });\n  }\n};",
+        "solution": "const jwt = require('jsonwebtoken');\nconst User = require('../models/user.model');\n\nconst protect = async (req, res, next) => {\n  let token;\n  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {\n    try {\n      token = req.headers.authorization.split(' ')[1];\n      const decoded = jwt.verify(token, process.env.JWT_SECRET);\n\n      req.user = await User.findById(decoded.userId).select('-password');\n      if (!req.user) {\n          return res.status(401).json({ message: 'Người dùng không tồn tại.' });\n      }\n      next();\n    } catch (error) {\n      return res.status(401).json({ message: 'Token không hợp lệ, truy cập bị từ chối.' });\n    }\n  }\n\n  if (!token) {\n    return res.status(401).json({ message: 'Không có token, truy cập bị từ chối.' });\n  }\n};",
+        "testCases": "Gửi request với token giả mạo -> trả về 401. Gửi request với token đã hết hạn -> trả về 401. Gửi request với token hợp lệ -> `req.user` phải chứa thông tin user tương ứng và request được đi tiếp."
+      }
+    ]
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "id": 97,
+  "title": "BÀI 88: VIDEO QUAN TRỌNG PHẢI XEM TRƯỚC KHI HỌC KHÓA FULL STACK MERN ADVANCED NÀY",
+  "category": "advanced",
+  "categoryName": "Nâng cao & Redux",
+  "content": "# BÀI 88: VIDEO QUAN TRỌNG PHẢI XEM TRƯỚC KHI HỌC KHÓA FULL STACK MERN ADVANCED NÀY\n\n## Mục tiêu bài học\n\nVideo này là một video giới thiệu và định hướng quan trọng cho khóa học \"Full Stack MERN Advanced\". Mục tiêu chính của video là cung cấp cho học viên một cái nhìn tổng quan về khóa học, những kiến thức cần chuẩn bị, và những lưu ý quan trọng để có thể theo học một cách hiệu quả nhất.\n\n## Kiến thức chi tiết được trình bày trong video\n\nDựa trên tiêu đề và mô tả video, nội dung chính của video sẽ xoay quanh các chủ đề sau:\n\n*   **Giới thiệu về khóa học MERN Advanced:** Khóa học này dành cho ai, mục tiêu của khóa học là gì, và học viên sẽ học được những gì sau khi hoàn thành.\n*   **Yêu cầu kiến thức đầu vào:** Những kiến thức và kỹ năng cần thiết mà học viên cần phải có trước khi bắt đầu khóa học. Điều này có thể bao gồm kiến thức vững về MERN Stack cơ bản (MongoDB, Express.js, React.js, Node.js), JavaScript, HTML/CSS, và các khái niệm lập trình cơ bản khác.\n*   **Cấu trúc khóa học:** Lộ trình học tập, các module chính, và các dự án sẽ được thực hiện trong khóa học.\n*   **Điểm khác biệt của khóa học MERN Advanced:** So với khóa MERN Pro, khóa học này sẽ tập trung vào những kiến thức nâng cao và thực tế hơn, giúp học viên sẵn sàng cho môi trường làm việc chuyên nghiệp.\n*   **Hướng dẫn và lưu ý quan trọng:** Những lời khuyên từ tác giả về cách học hiệu quả, cách tận dụng tối đa tài nguyên của khóa học, và những lỗi thường gặp cần tránh.\n\n## Các bước thực hành\n\nVideo này không phải là một video hướng dẫn thực hành code, mà là một video định hướng. Do đó, các \"bước thực hành\" ở đây sẽ là những hành động mà học viên cần thực hiện để chuẩn bị cho khóa học:\n\n1.  **Tự đánh giá kiến thức:** So sánh kiến thức hiện tại của bản thân với các yêu cầu đầu vào của khóa học.\n2.  **Ôn tập và bổ sung kiến thức:** Nếu còn thiếu sót, hãy dành thời gian để ôn tập và học bổ sung những kiến thức cần thiết.\n3.  **Chuẩn bị môi trường phát triển:** Cài đặt các công cụ cần thiết như Node.js, MongoDB, VS Code, và các extension liên quan.\n4.  **Tham gia cộng đồng:** Tham gia các nhóm chat, diễn đàn của khóa học để có thể trao đổi, học hỏi từ những người khác.\n\n## Lưu ý quan trọng\n\n*   **Không nên bỏ qua video này:** Đây là video bắt buộc phải xem để có một khởi đầu thuận lợi với khóa học.\n*   **Thành thật với bản thân:** Đánh giá đúng năng lực của mình để có kế hoạch học tập phù hợp.\n*   **Chủ động và kiên trì:** Khóa học nâng cao đòi hỏi sự chủ động nghiên cứu và sự kiên trì theo đuổi đến cùng.\n\n## Tài liệu tham khảo\n\n*   Playlist MERN Stack Pro: [https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n*   Blog của TrungQuanDev: [https://trungquandev.com](https://trungquandev.com)\n*   GitHub của TrungQuanDev: [https://github.com/trungquandev](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục tiêu chính của video trong Bài 88 là gì?",
+        "options": [
+          "Hướng dẫn chi tiết cách cài đặt môi trường MERN Stack.",
+          "Cung cấp cái nhìn tổng quan, định hướng và những lưu ý quan trọng cho khóa học MERN Advanced.",
+          "Dạy các kỹ thuật code nâng cao trong React.js.",
+          "So sánh chi tiết giữa MERN Stack và các stack công nghệ khác."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Video này là video giới thiệu và định hướng, giúp học viên có cái nhìn tổng quan về khóa học, không phải video hướng dẫn kỹ thuật."
+      },
+      {
+        "question": "Khóa học \"Full Stack MERN Advanced\" dành cho đối tượng nào?",
+        "options": [
+          "Người mới bắt đầu học lập trình.",
+          "Lập trình viên đã có kiến thức vững về MERN Stack cơ bản.",
+          "Chuyên gia về DevOps.",
+          "Nhà thiết kế UI/UX."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khóa học này yêu cầu học viên phải có kiến thức nền tảng vững chắc về MERN Stack cơ bản để có thể tiếp thu các kiến thức nâng cao."
+      },
+      {
+        "question": "Kiến thức nào KHÔNG được liệt kê là yêu cầu đầu vào bắt buộc cho khóa học?",
+        "options": [
+          "Kiến thức vững về MERN Stack cơ bản.",
+          "JavaScript, HTML/CSS.",
+          "Kiến thức chuyên sâu về trí tuệ nhân tạo (AI).",
+          "Các khái niệm lập trình cơ bản."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học chỉ đề cập đến các yêu cầu về MERN Stack, web cơ bản (HTML/CSS, JS) và lập trình cơ bản, không yêu cầu kiến thức về AI."
+      },
+      {
+        "question": "Điểm khác biệt chính của khóa học MERN Advanced so với khóa MERN Pro là gì?",
+        "options": [
+          "Khóa Advanced dạy các kiến thức cơ bản từ đầu.",
+          "Khóa Advanced tập trung vào kiến thức nâng cao và thực tế hơn cho môi trường chuyên nghiệp.",
+          "Khóa Advanced chỉ tập trung vào Frontend.",
+          "Khóa Advanced có thời lượng ngắn hơn."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Theo nội dung bài học, khóa Advanced được thiết kế để đi sâu vào các chủ đề nâng cao, chuẩn bị cho học viên các kỹ năng cần thiết cho công việc thực tế."
+      },
+      {
+        "question": "Hành động nào sau đây được coi là một \"bước thực hành\" cần làm sau khi xem video?",
+        "options": [
+          "Xây dựng ngay một dự án MERN Stack phức tạp.",
+          "Bỏ qua các kiến thức cơ bản và học thẳng vào phần nâng cao.",
+          "Tự đánh giá kiến thức hiện tại so với yêu cầu của khóa học.",
+          "Chờ đợi video hướng dẫn tiếp theo mà không cần chuẩn bị gì."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Video định hướng khuyến khích học viên tự đánh giá năng lực để có kế hoạch ôn tập và chuẩn bị tốt nhất trước khi vào các bài học chính thức."
+      },
+      {
+        "question": "Tại sao việc xem video này được nhấn mạnh là \"quan trọng\" và \"bắt buộc\\?",
+        "options": [
+          "Vì nó chứa mã giảm giá cho khóa học.",
+          "Vì nó giúp học viên có một khởi đầu thuận lợi và hiểu rõ lộ trình học.",
+          "Vì nó là bài kiểm tra đầu vào của khóa học.",
+          "Vì nó chứa toàn bộ source code của các dự án trong khóa học."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Video này đóng vai trò định hướng, giúp học viên hiểu rõ mục tiêu, yêu cầu và cấu trúc khóa học, từ đó có sự chuẩn bị tốt nhất."
+      },
+      {
+        "question": "Theo bài học, thái độ học tập nào được khuyến khích cho khóa học nâng cao này?",
+        "options": [
+          "Học thụ động, chỉ xem video.",
+          "Chủ động nghiên cứu và kiên trì theo đuổi.",
+          "Bỏ qua các phần lý thuyết, chỉ tập trung vào code.",
+          "Chỉ học những phần mình thích."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khóa học nâng cao đòi hỏi sự chủ động và kiên trì vì các khái niệm phức tạp cần thời gian để nghiên cứu và hiểu sâu."
+      },
+      {
+        "question": "Một trong những lưu ý quan trọng được đề cập trong bài học là gì?",
+        "options": [
+          "Nên học cùng lúc nhiều khóa học khác nhau.",
+          "Thành thật với bản thân về năng lực của mình.",
+          "Không cần tham gia cộng đồng học tập.",
+          "Có thể bỏ qua các bài tập về nhà."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Việc đánh giá đúng năng lực giúp học viên có kế hoạch học tập phù hợp, tránh bị quá tải hoặc chán nản."
+      },
+      {
+        "question": "Hành động nào KHÔNG được gợi ý để chuẩn bị cho khóa học?",
+        "options": [
+          "Ôn tập và bổ sung kiến thức còn thiếu.",
+          "Cài đặt môi trường phát triển cần thiết.",
+          "Tham gia cộng đồng học tập của khóa học.",
+          "Tìm kiếm một công việc MERN Stack ngay lập tức."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Việc chuẩn bị cho khóa học bao gồm ôn tập kiến thức, cài đặt môi trường và tham gia cộng đồng. Tìm việc làm là mục tiêu sau khi hoàn thành khóa học."
+      },
+      {
+        "question": "Tài liệu tham khảo nào được đề cập trong bài học?",
+        "options": [
+          "Tài liệu chính thức của React và Node.js.",
+          "Một khóa học về Python.",
+          "Playlist MERN Stack Pro, blog và GitHub của tác giả.",
+          "Sách giáo khoa về cấu trúc dữ liệu và giải thuật."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Bài học cung cấp các liên kết đến các tài nguyên liên quan do chính tác giả tạo ra để học viên có thể tham khảo và ôn tập."
+      },
+      {
+        "question": "Cấu trúc khóa học MERN Advanced bao gồm những gì?",
+        "options": [
+          "Chỉ có các bài giảng lý thuyết.",
+          "Lộ trình học tập, các module chính, và các dự án sẽ được thực hiện.",
+          "Một bài kiểm tra cuối kỳ duy nhất.",
+          "Các video phỏng vấn với các chuyên gia trong ngành."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Khóa học được cấu trúc với lộ trình rõ ràng, bao gồm các module lý thuyết và các dự án thực hành để áp dụng kiến thức."
+      },
+      {
+        "question": "MERN là viết tắt của những công nghệ nào?",
+        "options": [
+          "MySQL, Express.js, React.js, Node.js",
+          "MongoDB, Express.js, React.js, Node.js",
+          "MongoDB, EJS, React.js, Node.js",
+          "MariaDB, Express.js, React.js, Node.js"
+        ],
+        "correctAnswer": 1,
+        "explanation": "MERN Stack là một bộ công nghệ full-stack dựa trên JavaScript, bao gồm MongoDB, Express.js, React.js, và Node.js."
+      },
+      {
+        "question": "Trong MERN Stack, công nghệ nào chịu trách nhiệm xử lý logic ở phía server?",
+        "options": [
+          "React.js",
+          "MongoDB",
+          "Node.js và Express.js",
+          "HTML/CSS"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Node.js là môi trường chạy JavaScript ở phía server, và Express.js là một framework xây dựng trên Node.js để tạo ra các API và ứng dụng web."
+      },
+      {
+        "question": "Vai trò của React.js trong MERN Stack là gì?",
+        "options": [
+          "Quản lý cơ sở dữ liệu.",
+          "Xây dựng giao diện người dùng (UI).",
+          "Tạo ra máy chủ web.",
+          "Xử lý xác thực người dùng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "React.js là một thư viện JavaScript dùng để xây dựng các thành phần giao diện người dùng có tính tương tác và tái sử dụng cao."
+      },
+      {
+        "question": "MongoDB trong MERN Stack là một hệ quản trị cơ sở dữ liệu thuộc loại nào?",
+        "options": [
+          "Cơ sở dữ liệu quan hệ (SQL).",
+          "Cơ sở dữ liệu NoSQL, hướng tài liệu (document-oriented).",
+          "Cơ sở dữ liệu đồ thị (Graph).",
+          "Cơ sở dữ liệu dạng cột (Columnar)."
+        ],
+        "correctAnswer": 1,
+        "explanation": "MongoDB lưu trữ dữ liệu dưới dạng các tài liệu JSON (hoặc BSON), rất linh hoạt và phù hợp với các ứng dụng JavaScript."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo một server Express đơn giản",
+        "description": "Viết một đoạn mã Node.js sử dụng Express để tạo một server HTTP đơn giản lắng nghe ở cổng 3000 và trả về chuỗi \"Hello World!\" khi truy cập vào đường dẫn gốc (/).",
+        "starterCode": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\n// Your code here\n\napp.listen(port, () => {\n  console.log(`Server listening at http://localhost:${port}`);\n});",
+        "solution": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\napp.get('/', (req, res) => {\n  res.send('Hello World!');\n});\n\napp.listen(port, () => {\n  console.log(`Server listening at http://localhost:${port}`);\n});",
+        "testCases": "Gửi một yêu cầu GET đến http://localhost:3000/. Server phải trả về mã trạng thái 200 và nội dung là \"Hello World!\""
+      },
+      {
+        "title": "Tạo một component React đơn giản",
+        "description": "Tạo một functional component trong React có tên là `Greeting` nhận vào một prop `name` và hiển thị lời chào `Hello, {name}!`. Nếu không có prop `name`, hiển thị `Hello, Guest!`.",
+        "starterCode": "import React from 'react';\n\nfunction Greeting({ name }) {\n  // Your code here\n}\n\nexport default Greeting;",
+        "solution": "import React from 'react';\n\nfunction Greeting({ name = 'Guest' }) {\n  return <h1>Hello, {name}!</h1>;\n}\n\nexport default Greeting;",
+        "testCases": "Render component với prop `name=\"Alice\"` sẽ hiển thị \"Hello, Alice!\". Render component không có prop `name` sẽ hiển thị \"Hello, Guest!\""
+      },
+      {
+        "title": "Kết nối với MongoDB bằng Mongoose",
+        "description": "Viết một đoạn mã để kết nối đến một cơ sở dữ liệu MongoDB cục bộ có tên là `myTestDB` bằng thư viện Mongoose. In ra thông báo thành công hoặc lỗi khi kết nối.",
+        "starterCode": "const mongoose = require('mongoose');\n\nconst dbURI = 'mongodb://localhost:27017/myTestDB';\n\n// Your code here\n",
+        "solution": "const mongoose = require('mongoose');\n\nconst dbURI = 'mongodb://localhost:27017/myTestDB';\n\nmongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })\n  .then(() => console.log('MongoDB connected successfully.'))\n  .catch(err => console.error('MongoDB connection error:', err));",
+        "testCases": "Chạy đoạn mã. Nếu MongoDB server đang chạy, console sẽ in ra thông báo kết nối thành công. Nếu không, sẽ in ra thông báo lỗi."
+      },
+      {
+        "title": "Tạo một API GET đơn giản",
+        "description": "Mở rộng server Express từ bài 1. Tạo một API endpoint tại `/api/users` trả về một mảng JSON chứa 2 đối tượng người dùng. Mỗi đối tượng có `id` và `name`.",
+        "starterCode": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\napp.get('/', (req, res) => {\n  res.send('Hello World!');\n});\n\n// Your code here\n\napp.listen(port, () => {\n  console.log(`Server listening at http://localhost:${port}`);\n});",
+        "solution": "const express = require('express');\nconst app = express();\nconst port = 3000;\n\napp.get('/', (req, res) => {\n  res.send('Hello World!');\n});\n\nconst users = [\n  { id: 1, name: 'John Doe' },\n  { id: 2, name: 'Jane Doe' }\n];\n\napp.get('/api/users', (req, res) => {\n  res.json(users);\n});\n\napp.listen(port, () => {\n  console.log(`Server listening at http://localhost:${port}`);\n});",
+        "testCases": "Gửi một yêu cầu GET đến http://localhost:3000/api/users. Server phải trả về mã trạng thái 200 và một mảng JSON chứa 2 người dùng."
+      },
+      {
+        "title": "Sử dụng State trong React",
+        "description": "Tạo một component React có tên là `Counter`. Component này có một nút (button) và một đoạn văn bản (p). Khi người dùng nhấp vào nút, số hiển thị trong đoạn văn bản sẽ tăng lên 1. Giá trị ban đầu là 0.",
+        "starterCode": "import React, { useState } from 'react';\n\nfunction Counter() {\n  // Your code here\n\n  return (\n    <div>\n      {/* Your JSX here */}\n    </div>\n  );\n}\n\nexport default Counter;",
+        "solution": "import React, { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n\n  return (\n    <div>\n      <p>You clicked {count} times</p>\n      <button onClick={() => setCount(count + 1)}>\n        Click me\n      </button>\n    </div>\n  );\n}\n\nexport default Counter;",
+        "testCases": "Render component. Ban đầu, văn bản hiển thị \"You clicked 0 times\". Sau khi nhấp vào nút, văn bản sẽ cập nhật thành \"You clicked 1 times\", và cứ thế tăng dần."
+      }
+    ]
+  }
+}

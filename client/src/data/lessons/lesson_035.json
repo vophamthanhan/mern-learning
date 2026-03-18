@@ -1,0 +1,213 @@
+{
+  "id": 35,
+  "title": "Buổi 18: Update Board Invitation và Tính năng Real-time với Socket.io",
+  "category": "realtime",
+  "categoryName": "Real-time & Socket.io",
+  "content": "# Buổi 18: Update Board Invitation và Tính năng Real-time với Socket.io\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tập trung vào việc hoàn thiện hai tính năng quan trọng trong ứng dụng Trello clone:\n\n1.  **Cập nhật trạng thái lời mời tham gia Board:** Cho phép người dùng chấp nhận (Accept) hoặc từ chối (Reject) lời mời tham gia vào một Board cụ thể.\n2.  **Xây dựng tính năng thông báo Real-time:** Sử dụng Socket.io để thông báo cho người dùng về các hoạt động mới nhất trong Board một cách tức thì, chẳng hạn như khi có một lời mời mới hoặc một thành viên mới tham gia.\n\nKết thúc bài học, bạn sẽ có khả năng:\n\n*   Thiết kế và triển khai API cho việc xử lý lời mời.\n*   Tích hợp Socket.io vào cả server (Node.js) và client (ReactJS) để truyền và nhận dữ liệu real-time.\n*   Hiểu rõ luồng hoạt động của một tính năng real-time hoàn chỉnh trong ứng dụng MERN Stack.\n\n## II. Kiến thức chi tiết\n\n### 1. Cập nhật Lời mời tham gia Board (Board Invitation)\n\nĐây là một chức năng CRUD (Create, Read, Update, Delete) cơ bản. Trong các bài học trước, chúng ta có thể đã xây dựng chức năng mời thành viên. Bài học này sẽ tập trung vào phần **Update**, cho phép người nhận lời mời tương tác với nó.\n\n#### a. Luồng hoạt động\n\n1.  **Người dùng A** (chủ sở hữu Board) mời **Người dùng B** vào Board.\n2.  Hệ thống tạo một bản ghi `invitation` trong cơ sở dữ liệu với trạng thái `pending`.\n3.  **Người dùng B** nhận được thông báo (qua email hoặc trong giao diện ứng dụng) về lời mời.\n4.  **Người dùng B** có hai lựa chọn: **Accept** hoặc **Reject**.\n5.  Khi **Người dùng B** thực hiện một hành động, client sẽ gửi yêu cầu lên server để cập nhật trạng thái của `invitation`.\n6.  **Nếu Accept:**\n    *   Cập nhật trạng thái `invitation` thành `accepted`.\n    *   Thêm `userId` của **Người dùng B** vào danh sách `memberIds` của Board.\n    *   (Tùy chọn) Xóa bản ghi `invitation` sau khi đã xử lý.\n7.  **Nếu Reject:**\n    *   Cập nhật trạng thái `invitation` thành `rejected`.\n    *   (Tùy chọn) Xóa bản ghi `invitation`.\n\n#### b. API Endpoint (Backend - Node.js & Express)\n\nChúng ta cần một API endpoint để xử lý việc cập nhật này. Thông thường, đây sẽ là một `PUT` hoặc `PATCH` request.\n\n**Ví dụ về Route:**\n\n```javascript\n// src/routes/v1/invitation.route.js\n\nimport express from 'express'\nimport { invitationController } from '~/controllers/invitation.controller'\nimport { authMiddleware } from '~/middlewares/auth.middleware'\n\nconst router = express.Router()\n\n// Yêu cầu xác thực người dùng trước khi xử lý\nrouter.put('/:invitationId', authMiddleware.isAuth, invitationController.updateInvitation)\n\nexport const invitationRoute = router\n```\n\n**Ví dụ về Controller:**\n\n```javascript\n// src/controllers/invitation.controller.js\n\nimport { invitationService } from '~/services/invitation.service'\nimport { StatusCodes } from 'http-status-codes'\n\nconst updateInvitation = async (req, res, next) => {\n  try {\n    const { invitationId } = req.params\n    const { status } = req.body // status có thể là 'accepted' hoặc 'rejected'\n    const userId = req.jwtDecoded.userId // Lấy userId từ token đã xác thực\n\n    const result = await invitationService.updateInvitation(invitationId, userId, status)\n\n    res.status(StatusCodes.OK).json(result)\n  } catch (error) {\n    next(error)\n  }\n}\n\nexport const invitationController = { updateInvitation }\n```\n\n**Ví dụ về Service:**\n\n```javascript\n// src/services/invitation.service.js\n\nimport { invitationModel } from '~/models/invitation.model'\nimport { boardModel } from '~/models/board.model'\nimport ApiError from '~/utils/ApiError'\nimport { StatusCodes } from 'http-status-codes'\n\nconst updateInvitation = async (invitationId, userId, status) => {\n  const invitation = await invitationModel.findOneById(invitationId)\n\n  // Kiểm tra xem người dùng có quyền cập nhật lời mời này không\n  if (!invitation || invitation.inviteeId.toString() !== userId) {\n    throw new ApiError(StatusCodes.FORBIDDEN, 'You do not have permission to update this invitation.')\n  }\n\n  // Chỉ cho phép cập nhật khi trạng thái đang là 'pending'\n  if (invitation.status !== 'pending') {\n    throw new ApiError(StatusCodes.BAD_REQUEST, 'This invitation has already been responded to.')\n  }\n\n  if (status === 'accepted') {\n    // Thêm người dùng vào board\n    await boardModel.pushMember(invitation.boardId, userId)\n\n    // Cập nhật trạng thái lời mời\n    const updatedInvitation = await invitationModel.update(invitationId, { status: 'accepted' })\n    return updatedInvitation\n  }\n\n  if (status === 'rejected') {\n    // Chỉ cần cập nhật trạng thái\n    const updatedInvitation = await invitationModel.update(invitationId, { status: 'rejected' })\n    return updatedInvitation\n  }\n\n  throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid status.')\n}\n\nexport const invitationService = { updateInvitation }\n```\n\n### 2. Tính năng Real-time với Socket.io\n\nSocket.io là một thư viện JavaScript cho phép giao tiếp hai chiều, dựa trên sự kiện và real-time giữa client và server. Nó là lựa chọn hoàn hảo để xây dựng các tính năng như thông báo, chat, cập nhật trực tiếp...\n\n#### a. Cài đặt\n\n```bash\n# Server\nnpm install socket.io\n\n# Client\nnpm install socket.io-client\n```\n\n#### b. Tích hợp vào Server (Node.js)\n\nChúng ta cần gắn Socket.io vào HTTP server hiện có của Express.\n\n```javascript\n// src/server.js\n\nimport express from 'express'\nimport { createServer } from 'http'\nimport { Server } from 'socket.io'\nimport { env } from '~/config/environment'\n\nconst app = express()\nconst httpServer = createServer(app)\n\n// Khởi tạo Socket.IO server\nconst io = new Server(httpServer, {\n  cors: {\n    origin: env.CLIENT_URL, // Cho phép client kết nối từ địa chỉ này\n    methods: ['GET', 'POST']\n  }\n})\n\n// Lắng nghe sự kiện kết nối từ client\nio.on('connection', (socket) => {\n  console.log(`New client connected: ${socket.id}`)\n\n  // Lắng nghe các sự kiện tùy chỉnh từ client\n  socket.on('c_user_invited_to_board', (data) => {\n    // Gửi sự kiện tới một người dùng cụ thể (người được mời)\n    // Cần một cơ chế để map userId với socket.id\n    // Ví dụ: khi người dùng đăng nhập, họ sẽ join vào một \"room\" có tên là userId của họ\n    io.to(data.inviteeId).emit('s_receive_board_invitation', data.notification)\n  })\n\n  socket.on('disconnect', () => {\n    console.log(`Client disconnected: ${socket.id}`)\n  })\n})\n\n// ... (phần còn lại của file server.js)\n\nhttpServer.listen(env.APP_PORT, env.APP_HOST, () => {\n  console.log(`Server is running at http://${env.APP_HOST}:${env.APP_PORT}/`)\n})\n```\n\n**Lưu ý quan trọng:** Để gửi sự kiện đến một người dùng cụ thể, chúng ta cần một cách để xác định `socket.id` của họ. Một phương pháp phổ biến là khi người dùng kết nối, họ sẽ gửi `userId` của mình và server sẽ cho `socket` đó tham gia vào một `room` có tên chính là `userId`.\n\n```javascript\n// io.on('connection', ...)\nsocket.on('c_user_login', (userId) => {\n  socket.join(userId)\n})\n```\n\n#### c. Tích hợp vào Client (ReactJS)\n\nChúng ta sẽ tạo một context hoặc một custom hook để quản lý kết nối Socket.io.\n\n**Ví dụ về SocketContext:**\n\n```jsx\n// src/contexts/SocketContext.jsx\n\nimport React, { createContext, useContext, useEffect, useState } from 'react'\nimport io from 'socket.io-client'\nimport { API_ROOT } from '~/utils/constants'\nimport { useSelector } from 'react-redux' // Giả sử dùng Redux để lấy thông tin user\n\nconst SocketContext = createContext()\n\nexport const useSocket = () => useContext(SocketContext)\n\nexport const SocketProvider = ({ children }) => {\n  const [socket, setSocket] = useState(null)\n  const user = useSelector((state) => state.auth.user) // Lấy thông tin người dùng đang đăng nhập\n\n  useEffect(() => {\n    if (user) {\n      // Khởi tạo kết nối socket khi người dùng đã đăng nhập\n      const newSocket = io(API_ROOT, {\n        // Có thể truyền token để xác thực socket ở phía server\n        auth: {\n          token: localStorage.getItem('accessToken')\n        }\n      })\n\n      setSocket(newSocket)\n\n      // Gửi sự kiện thông báo server biết userId của client này\n      newSocket.emit('c_user_login', user._id)\n\n      // Lắng nghe các sự kiện từ server\n      newSocket.on('s_receive_board_invitation', (notification) => {\n        // Xử lý thông báo mới, ví dụ: hiển thị toast, cập nhật state...\n        console.log('New invitation received:', notification)\n        // Cập nhật UI...\n      })\n\n      return () => newSocket.close()\n    } else {\n      if (socket) {\n        socket.close()\n        setSocket(null)\n      }\n    }\n  }, [user])\n\n  return (\n    <SocketContext.Provider value={socket}>\n      {children}\n    </SocketContext.Provider>\n  )\n}\n```\n\nSau đó, bọc toàn bộ ứng dụng trong `SocketProvider`:\n\n```jsx\n// src/main.jsx\n\n// ... imports\nimport { SocketProvider } from './contexts/SocketContext'\n\nReactDOM.createRoot(document.getElementById('root')).render(\n  <React.StrictMode>\n    <Provider store={store}>\n      <SocketProvider>\n        <CssBaseline />\n        <App />\n      </SocketProvider>\n    </Provider>\n  </React.StrictMode>\n)\n```\n\n## III. Các bước thực hành\n\n1.  **Backend:**\n    *   Cài đặt `socket.io`.\n    *   Cập nhật file `server.js` để khởi tạo và lắng nghe các kết nối Socket.io.\n    *   Triển khai cơ chế `socket.join(userId)` khi người dùng kết nối.\n    *   Trong service xử lý việc mời thành viên (`boardService.invite`), sau khi tạo `invitation` thành công, hãy `emit` một sự kiện `s_receive_board_invitation` tới `inviteeId` (người được mời).\n    *   Xây dựng đầy đủ route, controller, service cho chức năng `updateInvitation`.\n\n2.  **Frontend:**\n    *   Cài đặt `socket.io-client`.\n    *   Tạo `SocketProvider` và `SocketContext` để quản lý kết nối.\n    *   Bọc ứng dụng trong `SocketProvider`.\n    *   Trong `SocketProvider`, lắng nghe sự kiện `s_receive_board_invitation` và xử lý (ví dụ: hiển thị thông báo toast, tăng số lượng thông báo chưa đọc).\n    *   Tạo giao diện cho người dùng xem danh sách lời mời và các nút \"Accept\" / \"Reject\".\n    *   Khi người dùng nhấn nút, gọi API `PUT /v1/invitations/:invitationId` để cập nhật trạng thái.\n    *   Cập nhật UI tương ứng sau khi nhận được phản hồi từ API.\n\n## IV. Lưu ý quan trọng\n\n*   **Bảo mật Socket.io:** Giống như API REST, các kết nối Socket.io cũng cần được bảo mật. Một cách phổ biến là gửi JWT token cùng với kết nối ban đầu và có một middleware ở phía server để xác thực nó.\n*   **Quản lý State:** Khi nhận được dữ liệu real-time, việc cập nhật state ở client cần được thực hiện cẩn thận để tránh re-render không cần thiết và đảm bảo dữ liệu luôn nhất quán.\n*   **Tái kết nối (Reconnection):** Socket.io-client có cơ chế tự động tái kết nối. Tuy nhiên, bạn cần đảm bảo rằng khi kết nối lại, client sẽ gửi lại các thông tin cần thiết (như `userId` để join lại room).\n*   **Tách biệt logic:** Giữ logic xử lý API và logic xử lý socket riêng biệt để mã nguồn dễ quản lý và bảo trì.\n\n## V. Tài liệu tham khảo\n\n*   **Socket.io Documentation:** [https://socket.io/docs/v4/](https://socket.io/docs/v4/)\n*   **Express.js Documentation:** [https://expressjs.com/](https://expressjs.com/)\n*   **Mongoose (cho MongoDB):** [https://mongoosejs.com/docs/guide.html](https://mongoosejs.com/docs/guide.html)\n*   **React Context:** [https://react.dev/learn/passing-data-deeply-with-context](https://react.dev/learn/passing-data-deeply-with-context)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Theo nội dung bài học, hai tính năng chính được tập trung phát triển trong ứng dụng Trello clone là gì?",
+        "options": [
+          "Đăng nhập bằng Google và tạo Board mới",
+          "Cập nhật trạng thái lời mời tham gia Board và thông báo real-time với Socket.io",
+          "Chỉnh sửa thông tin cá nhân và thay đổi ảnh đại diện",
+          "Kéo thả card giữa các column và thêm checklist vào card"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học tập trung vào việc cho phép người dùng chấp nhận/từ chối lời mời và xây dựng hệ thống thông báo tức thì bằng Socket.io."
+      },
+      {
+        "question": "Khi một người dùng được mời vào một Board, bản ghi `invitation` trong cơ sở dữ liệu sẽ được tạo với trạng thái ban đầu là gì?",
+        "options": [
+          "accepted",
+          "rejected",
+          "pending",
+          "expired"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trạng thái ban đầu của một lời mời luôn là `pending` (chờ xử lý) cho đến khi người nhận thực hiện hành động."
+      },
+      {
+        "question": "Khi người dùng B `Accept` (chấp nhận) lời mời tham gia Board, hành động nào sau đây KHÔNG xảy ra ở phía server?",
+        "options": [
+          "Cập nhật trạng thái `invitation` thành `accepted`.",
+          "Thêm `userId` của người dùng B vào danh sách `memberIds` của Board.",
+          "Xóa tất cả các lời mời khác liên quan đến Board đó.",
+          "Có thể xóa bản ghi `invitation` sau khi đã xử lý."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Logic xử lý chỉ tập trung vào việc thêm thành viên mới và cập nhật lời mời cụ thể đó, không xóa các lời mời khác."
+      },
+      {
+        "question": "Phương thức HTTP nào thường được sử dụng cho API endpoint xử lý việc cập nhật trạng thái của một lời mời (Accept/Reject)?",
+        "options": [
+          "GET",
+          "POST",
+          "DELETE",
+          "PUT hoặc PATCH"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`PUT` hoặc `PATCH` là các phương thức phù hợp nhất để cập nhật một tài nguyên đã tồn tại trên server."
+      },
+      {
+        "question": "Trong ví dụ về route `router.put('/:invitationId', authMiddleware.isAuth, invitationController.updateInvitation)`, `authMiddleware.isAuth` có vai trò gì?",
+        "options": [
+          "Kiểm tra xem `invitationId` có hợp lệ không.",
+          "Xác thực người dùng đã đăng nhập và hợp lệ trước khi cho phép họ cập nhật lời mời.",
+          "Phân tích cú pháp body của request.",
+          "Ghi log lại tất cả các yêu cầu đến endpoint này."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Middleware `isAuth` được dùng để bảo vệ route, đảm bảo chỉ những người dùng đã được xác thực (đăng nhập) mới có thể truy cập."
+      },
+      {
+        "question": "Trong `invitationService`, điều kiện nào được kiểm tra để đảm bảo một lời mời chỉ có thể được chấp nhận hoặc từ chối một lần?",
+        "options": [
+          "Kiểm tra xem `boardId` có tồn tại không.",
+          "Kiểm tra xem `userId` có trong danh sách thành viên của board chưa.",
+          "Kiểm tra xem trạng thái hiện tại của lời mời có phải là `pending` không.",
+          "Kiểm tra xem lời mời có được tạo trong vòng 24 giờ qua không."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Service chỉ cho phép cập nhật nếu `invitation.status` là `pending`, ngăn chặn việc thay đổi các lời mời đã được xử lý."
+      },
+      {
+        "question": "Socket.io là thư viện được sử dụng để làm gì?",
+        "options": [
+          "Chỉ để tạo các API RESTful.",
+          "Quản lý cơ sở dữ liệu MongoDB.",
+          "Cho phép giao tiếp hai chiều, dựa trên sự kiện và real-time giữa client và server.",
+          "Tạo giao diện người dùng cho ứng dụng React."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Socket.io chuyên về giao tiếp real-time, hai chiều, là nền tảng cho các tính năng như chat, thông báo trực tiếp."
+      },
+      {
+        "question": "Để sử dụng Socket.io, bạn cần cài đặt những gói npm nào cho server và client?",
+        "options": [
+          "Server: `socket`, Client: `socket-client`",
+          "Server: `socket.io`, Client: `socket.io-client`",
+          "Server: `express-socket`, Client: `react-socket`",
+          "Cả hai đều dùng chung gói `socket.io`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Gói `socket.io` dành cho phía server (Node.js) và `socket.io-client` dành cho phía client (trình duyệt/React)."
+      },
+      {
+        "question": "Trong file `server.js`, làm thế nào để khởi tạo một server Socket.io và gắn nó vào một HTTP server của Express?",
+        "options": [
+          "const io = new Socket(app)",
+          "const io = new Server(httpServer, { cors: { ... } })",
+          "const io = SocketIO.listen(app)",
+          "const io = express.socketio(httpServer)"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cần tạo một HTTP server từ Express app, sau đó khởi tạo `Server` từ thư viện `socket.io` và truyền `httpServer` vào."
+      },
+      {
+        "question": "Kỹ thuật phổ biến nào được mô tả trong bài học để có thể gửi một sự kiện Socket.io đến một người dùng cụ thể?",
+        "options": [
+          "Lưu tất cả `socket.id` vào một mảng toàn cục.",
+          "Bắt người dùng nhập `socket.id` của họ.",
+          "Khi người dùng kết nối, cho socket của họ tham gia vào một \"room\" có tên là `userId` của chính họ.",
+          "Gửi sự kiện broadcast đến tất cả mọi người và để client tự lọc."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc sử dụng room với tên là `userId` là một cách hiệu quả để định danh và gửi sự kiện đến một client cụ thể thông qua `io.to(userId).emit(...)`."
+      },
+      {
+        "question": "Phía client React, sự kiện nào được dùng để lắng nghe dữ liệu (`notification`) được gửi từ server qua sự kiện `s_receive_board_invitation`?",
+        "options": [
+          "socket.listen('s_receive_board_invitation', ...)",
+          "socket.get('s_receive_board_invitation', ...)",
+          "socket.on('s_receive_board_invitation', ...)",
+          "socket.emit('s_receive_board_invitation', ...)"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`socket.on()` là phương thức dùng ở cả client và server để đăng ký một trình xử lý (handler) cho một sự kiện cụ thể."
+      },
+      {
+        "question": "Trong `SocketProvider` của React, tại sao cần kiểm tra `if (user)` trước khi khởi tạo kết nối socket?",
+        "options": [
+          "Để đảm bảo chỉ người dùng đã đăng nhập mới thiết lập kết nối socket, giúp bảo mật và định danh người dùng.",
+          "Để tiết kiệm tài nguyên server, không tạo kết nối cho khách.",
+          "Để lấy `userId` và gửi lên server cho việc join room.",
+          "Tất cả các đáp án trên đều đúng."
+        ],
+        "correctAnswer": 3,
+        "explanation": "Việc kiểm tra `user` đảm bảo chỉ người dùng đã xác thực mới kết nối, cho phép định danh (`userId`) để join room và giúp bảo mật hệ thống."
+      },
+      {
+        "question": "Theo bài học, một phương pháp phổ biến để bảo mật kết nối Socket.io là gì?",
+        "options": [
+          "Chỉ cho phép kết nối từ một địa chỉ IP cố định.",
+          "Sử dụng mã hóa mật khẩu ở client.",
+          "Gửi JWT token cùng với kết nối ban đầu và xác thực nó ở phía server.",
+          "Yêu cầu người dùng trả lời câu hỏi bí mật."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tương tự như API REST, việc gửi JWT token trong phần `auth` của kết nối socket và có một middleware xác thực ở server là một cách làm hiệu quả."
+      },
+      {
+        "question": "Mục đích chính của việc gọi `socket.join(userId)` ở phía server là gì?",
+        "options": [
+          "Để thêm người dùng vào một kênh chat chung.",
+          "Để tạo một phòng (room) riêng cho người dùng đó, cho phép server gửi tin nhắn nhắm mục tiêu đến họ.",
+          "Để đếm số lượng người dùng đang hoạt động.",
+          "Để ngắt kết nối của người dùng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`socket.join()` cho phép nhóm các socket vào chung một phòng, giúp việc gửi sự kiện đến một nhóm hoặc một cá nhân cụ thể trở nên dễ dàng."
+      },
+      {
+        "question": "Trong luồng hoạt động real-time được mô tả, hành động nào của người dùng sẽ kích hoạt server phát ra sự kiện `s_receive_board_invitation`?",
+        "options": [
+          "Người dùng B chấp nhận lời mời.",
+          "Người dùng A (chủ board) mời một người dùng B mới vào board.",
+          "Người dùng B từ chối lời mời.",
+          "Người dùng B đăng nhập vào hệ thống."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sự kiện thông báo có lời mời mới được gửi đi ngay sau khi hành động mời (trong `boardService.invite`) được thực hiện thành công ở backend."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Route cho việc cập nhật lời mời",
+        "description": "Sử dụng Express Router, hãy tạo một route `PUT` để xử lý việc cập nhật một lời mời. Route phải nhận một tham số động là `invitationId`.",
+        "starterCode": "import express from 'express'\n\nconst router = express.Router()\n\n// Your code here\n// Tạo một route PUT với đường dẫn '/:invitationId'\n\n\nexport const invitationRoute = router",
+        "solution": "import express from 'express'\nimport { invitationController } from '~/controllers/invitation.controller'\n\nconst router = express.Router()\n\nrouter.put('/:invitationId', (req, res) => {\n  res.status(200).json({ message: `Invitation ${req.params.invitationId} updated` })\n})\n\nexport const invitationRoute = router",
+        "testCases": "Gửi một request PUT đến `/v1/invitations/some-id` sẽ trả về status 200 và một JSON object."
+      },
+      {
+        "title": "Bài 2: Viết Controller Function cơ bản",
+        "description": "Viết một hàm controller `updateInvitation` nhận vào `req`, `res`, `next`. Hàm này cần lấy `invitationId` từ `req.params` và `status` từ `req.body`, sau đó trả về chúng trong một JSON response.",
+        "starterCode": "const updateInvitation = async (req, res, next) => {\n  try {\n    // Your code here\n    // Lấy invitationId từ req.params\n    // Lấy status từ req.body\n\n    // Trả về response với status 200 và một object chứa invitationId và status\n  } catch (error) {\n    next(error)\n  }\n}\n\nexport const invitationController = { updateInvitation }",
+        "solution": "import { StatusCodes } from 'http-status-codes'\n\nconst updateInvitation = async (req, res, next) => {\n  try {\n    const { invitationId } = req.params\n    const { status } = req.body\n\n    res.status(StatusCodes.OK).json({ invitationId, status })\n  } catch (error) {\n    next(error)\n  }\n}\n\nexport const invitationController = { updateInvitation }",
+        "testCases": "Khi gọi hàm với request có params `{ invitationId: '123' }` và body `{ status: 'accepted' }`, response trả về phải là `{ \"invitationId\": \"123\", \"status\": \"accepted\" }`."
+      },
+      {
+        "title": "Bài 3: Hoàn thiện Service xử lý `rejected`",
+        "description": "Hoàn thiện hàm `updateInvitation` trong service. Giả sử các hàm `invitationModel.findOneById` và `invitationModel.update` đã tồn tại. Bạn chỉ cần xử lý logic cho trường hợp `status` là `rejected`.",
+        "starterCode": "const updateInvitation = async (invitationId, userId, status) => {\n  const invitation = await invitationModel.findOneById(invitationId)\n\n  if (!invitation || invitation.inviteeId.toString() !== userId) {\n    throw new Error('Permission denied')\n  }\n\n  if (invitation.status !== 'pending') {\n    throw new Error('Invitation already responded')\n  }\n\n  if (status === 'accepted') {\n    // Logic for accepted status...\n  }\n\n  if (status === 'rejected') {\n    // Your code here\n    // Chỉ cần cập nhật trạng thái lời mời thành 'rejected' và trả về kết quả\n  }\n\n  throw new Error('Invalid status')\n}\n",
+        "solution": "const updateInvitation = async (invitationId, userId, status) => {\n  const invitation = await invitationModel.findOneById(invitationId)\n\n  if (!invitation || invitation.inviteeId.toString() !== userId) {\n    throw new Error('Permission denied')\n  }\n\n  if (invitation.status !== 'pending') {\n    throw new Error('Invitation already responded')\n  }\n\n  if (status === 'accepted') {\n    // Logic for accepted status...\n  }\n\n  if (status === 'rejected') {\n    const updatedInvitation = await invitationModel.update(invitationId, { status: 'rejected' })\n    return updatedInvitation\n  }\n\n  throw new Error('Invalid status')\n}\n",
+        "testCases": "Gọi hàm với `status` là `'rejected'` sẽ gọi đến `invitationModel.update` với tham số `{ status: 'rejected' }` và trả về kết quả của nó."
+      },
+      {
+        "title": "Bài 4: Xử lý sự kiện kết nối và join room trên Server",
+        "description": "Trong sự kiện `connection` của Socket.io, hãy lắng nghe một sự kiện tùy chỉnh tên là `c_user_login`. Khi nhận được sự kiện này, lấy `userId` từ dữ liệu client gửi lên và cho socket đó tham gia vào một room có tên chính là `userId` đó.",
+        "starterCode": "io.on('connection', (socket) => {\n  console.log(`New client connected: ${socket.id}`)\n\n  // Your code here\n  // Lắng nghe sự kiện 'c_user_login'\n  // Khi nhận được, dùng socket.join() để cho client vào room có tên là userId\n\n\n  socket.on('disconnect', () => {\n    console.log(`Client disconnected: ${socket.id}`)\n  })\n})",
+        "solution": "io.on('connection', (socket) => {\n  console.log(`New client connected: ${socket.id}`)\n\n  socket.on('c_user_login', (userId) => {\n    if (userId) {\n      socket.join(userId)\n      console.log(`Socket ${socket.id} joined room ${userId}`)\n    }\n  })\n\n  socket.on('disconnect', () => {\n    console.log(`Client disconnected: ${socket.id}`)\n  })\n})",
+        "testCases": "Khi client emit sự kiện `c_user_login` với payload là `'user-abc'`, server sẽ log ra `Socket [socket.id] joined room user-abc`."
+      },
+      {
+        "title": "Bài 5: Component React lắng nghe sự kiện Socket",
+        "description": "Viết một React functional component tên `NotificationBell`. Sử dụng `useEffect`, component này sẽ lắng nghe sự kiện `s_receive_board_invitation` từ một đối tượng `socket` được truyền vào qua props. Khi nhận được sự kiện, hãy cập nhật state `notificationCount` tăng lên 1.",
+        "starterCode": "import React, { useState, useEffect } from 'react'\n\nconst NotificationBell = ({ socket }) => {\n  const [notificationCount, setNotificationCount] = useState(0)\n\n  useEffect(() => {\n    if (socket) {\n      // Your code here\n      // Lắng nghe sự kiện 's_receive_board_invitation'\n      // Khi có sự kiện, gọi setNotificationCount để tăng state lên 1\n\n      // Đừng quên cleanup listener khi component unmount\n    }\n  }, [socket])\n\n  return (\n    <div>\n      <span>🔔</span>\n      {notificationCount > 0 && <span>{notificationCount}</span>}\n    </div>\n  )\n}\n\nexport default NotificationBell",
+        "solution": "import React, { useState, useEffect } from 'react'\n\nconst NotificationBell = ({ socket }) => {\n  const [notificationCount, setNotificationCount] = useState(0)\n\n  useEffect(() => {\n    if (socket) {\n      const handleNewInvitation = (notification) => {\n        console.log('New notification:', notification)\n        setNotificationCount(prevCount => prevCount + 1)\n      }\n\n      socket.on('s_receive_board_invitation', handleNewInvitation)\n\n      return () => {\n        socket.off('s_receive_board_invitation', handleNewInvitation)\n      }\n    }\n  }, [socket])\n\n  return (\n    <div>\n      <span>🔔</span>\n      {notificationCount > 0 && <span>{notificationCount}</span>}\n    </div>\n  )\n}\n\nexport default NotificationBell",
+        "testCases": "Khi một sự kiện `s_receive_board_invitation` được `socket` nhận, số thông báo hiển thị trên component sẽ tăng lên."
+      }
+    ]
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "id": 50,
+  "title": "Bài học 32: Kéo thả Trello Card với Dnd-kit: DragOverlay",
+  "category": "dnd",
+  "categoryName": "Kéo thả (Drag & Drop)",
+  "content": "# Bài học 32: Kéo thả Trello Card với Dnd-kit: DragOverlay\n\n## I. Mục tiêu bài học\n\nTrong bài học này, chúng ta sẽ tìm hiểu cách sử dụng `DragOverlay` trong thư viện `dnd-kit` để tạo ra một trải nghiệm kéo thả Card mượt mà và chuyên nghiệp hơn trong dự án Trello clone. Cụ thể, `DragOverlay` cho phép chúng ta hiển thị một bản sao của Card đang được kéo, giúp người dùng có cảm giác trực quan hơn về hành động của mình.\n\n## II. Kiến thức chi tiết\n\n### 1. Giới thiệu về `DragOverlay`\n\n`DragOverlay` là một component của `dnd-kit` cho phép render một phần tử \"overlay\" trong quá trình kéo thả. Phần tử này sẽ di chuyển theo con trỏ chuột và hiển thị một bản sao của đối tượng đang được kéo. Điều này mang lại một số lợi ích:\n\n*   **Trải nghiệm người dùng tốt hơn:** Người dùng có thể thấy rõ đối tượng mình đang kéo và vị trí của nó trên màn hình.\n*   **Tùy biến cao:** Chúng ta có thể tùy chỉnh giao diện của `DragOverlay` để phù hợp với thiết kế của ứng dụng.\n*   **Giữ nguyên layout:** `DragOverlay` không ảnh hưởng đến layout của các phần tử khác trên trang, giúp tránh các lỗi hiển thị không mong muốn.\n\n### 2. Cách hoạt động\n\nKhi một hành động kéo bắt đầu, `dnd-kit` sẽ tạo ra một `DragOverlay` và render component con của nó. Component này sẽ được định vị tuyệt đối và di chuyển theo con trỏ chuột. Khi hành động kéo kết thúc, `DragOverlay` sẽ bị xóa khỏi DOM.\n\n### 3. Code mẫu\n\nĐể sử dụng `DragOverlay`, chúng ta cần import nó từ `dnd-kit` và đặt nó bên trong `DndContext`. Dưới đây là một ví dụ cơ bản:\n\n```jsx\nimport { DndContext, DragOverlay } from '@dnd-kit/core';\n\nfunction App() {\n  const [activeId, setActiveId] = useState(null);\n\n  return (\n    <DndContext\n      onDragStart={({ active }) => {\n        setActiveId(active.id);\n      }}\n      onDragEnd={() => {\n        setActiveId(null);\n      }}\n    >\n      {/* Các component Draggable và Droppable */}\n\n      <DragOverlay>\n        {activeId ? (\n          <div style={{ border: '1px solid black', padding: '8px' }}>\n            Dragging {activeId}\n          </div>\n        ) : null}\n      </DragOverlay>\n    </DndContext>\n  );\n}\n```\n\nTrong ví dụ trên:\n\n*   Chúng ta sử dụng `useState` để lưu trữ `id` của phần tử đang được kéo.\n*   Khi hành động kéo bắt đầu (`onDragStart`), chúng ta cập nhật `activeId`.\n*   Khi hành động kéo kết thúc (`onDragEnd`), chúng ta reset `activeId` về `null`.\n*   Bên trong `DragOverlay`, chúng ta kiểm tra nếu có `activeId` thì sẽ render một component để hiển thị thông tin về phần tử đang được kéo.\n\n## III. Các bước thực hành\n\n1.  **Cài đặt `dnd-kit`:** Nếu chưa có, hãy cài đặt `dnd-kit` bằng npm hoặc yarn:\n\n    ```bash\n    npm install @dnd-kit/core @dnd-kit/sortable\n    ```\n\n2.  **Tích hợp `DragOverlay` vào dự án:** Thêm `DragOverlay` vào component `Board` của bạn, bên trong `DndContext`.\n\n3.  **Xử lý `onDragStart` và `onDragEnd`:** Cập nhật state để lưu trữ thông tin về Card đang được kéo.\n\n4.  **Tùy chỉnh `DragOverlay`:** Tạo một component `Card` riêng để hiển thị bên trong `DragOverlay`, với các style phù hợp để tạo hiệu ứng \"bóng mờ\" hoặc các hiệu ứng khác theo ý muốn.\n\n## IV. Lưu ý quan trọng\n\n*   `DragOverlay` nên được đặt bên trong `DndContext` để có thể truy cập vào context của `dnd-kit`.\n*   Khi sử dụng `DragOverlay`, chúng ta cần tự quản lý state để biết khi nào nên hiển thị và nội dung cần hiển thị là gì.\n*   Để có hiệu ứng kéo thả mượt mà nhất, hãy đảm bảo rằng component được render bên trong `DragOverlay` có cùng kích thước và style với component gốc.\n\n## V. Tài liệu tham khảo\n\n*   [dnd-kit Documentation - DragOverlay](https://dndkit.com/legacy/api-documentation/draggable/drag-overlay)\n*   [YouTube - 32. Kéo thả Trello Card với Dnd-kit: DragOverlay | ReactJS + Material UI | TrungQuanDev](https://www.youtube.com/watch?v=bD26jjX0cHk)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Mục đích chính của việc sử dụng `DragOverlay` trong `dnd-kit` là gì?",
+        "options": [
+          "Để tạo một bản sao trực quan của phần tử đang được kéo, di chuyển theo con trỏ.",
+          "Để khóa các phần tử khác trên trang trong khi kéo.",
+          "Để tăng tốc độ của hoạt ảnh kéo thả.",
+          "Để xử lý logic khi một phần tử được thả vào vùng cho phép."
+        ],
+        "correctAnswer": 0,
+        "explanation": "`DragOverlay` được thiết kế để render một lớp phủ (overlay) trong quá trình kéo, hiển thị một bản sao của đối tượng đang được kéo để cải thiện trải nghiệm người dùng một cách trực quan."
+      },
+      {
+        "question": "`DragOverlay` nên được đặt ở đâu trong cây component React để hoạt động chính xác?",
+        "options": [
+          "Bên ngoài component `DndContext`.",
+          "Bên trong component `DndContext`.",
+          "Bên trong component `Draggable`.",
+          "Như một thành phần anh em (sibling) của `DndContext`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Theo tài liệu và các ví dụ, `DragOverlay` cần truy cập vào context của `dnd-kit`, vì vậy nó phải được đặt bên trong `DndContext`."
+      },
+      {
+        "question": "Làm thế nào để bạn kiểm soát nội dung được hiển thị bên trong `DragOverlay`?",
+        "options": [
+          "`DragOverlay` tự động hiển thị phần tử đang được kéo.",
+          "Bằng cách sử dụng state để lưu trữ thông tin của phần tử đang hoạt động (active) và render có điều kiện bên trong `DragOverlay`.",
+          "Bằng cách truyền một prop có tên `content` vào `DragOverlay`.",
+          "Bằng cách cấu hình nó trong file `dnd-kit.config.js`."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Chúng ta cần tự quản lý state (ví dụ: sử dụng `useState` để lưu `activeId`) và sử dụng state đó để quyết định xem có nên hiển thị gì bên trong `DragOverlay` hay không."
+      },
+      {
+        "question": "Sự kiện nào của `DndContext` thường được sử dụng để cập nhật state cho biết một mục đang được kéo?",
+        "options": [
+          "onDragMove",
+          "onDragOver",
+          "onDragStart",
+          "onDragEnd"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`onDragStart` được kích hoạt khi người dùng bắt đầu kéo một mục. Đây là nơi lý tưởng để lấy `id` của mục đó và cập nhật state để `DragOverlay` có thể render."
+      },
+      {
+        "question": "Điều gì xảy ra với `DragOverlay` khi hành động kéo kết thúc?",
+        "options": [
+          "Nó vẫn hiển thị cho đến khi trang được tải lại.",
+          "Nó mờ dần một cách từ từ.",
+          "Nó bị xóa khỏi DOM.",
+          "Nó biến thành phần tử gốc."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi hành động kéo kết thúc, `dnd-kit` sẽ tự động xóa `DragOverlay` khỏi DOM. Chúng ta cũng nên reset state liên quan (ví dụ: `activeId` về `null`) trong sự kiện `onDragEnd`."
+      },
+      {
+        "question": "Tại sao bài học lại khuyên rằng component được render bên trong `DragOverlay` nên có cùng kích thước và style với component gốc?",
+        "options": [
+          "Để tiết kiệm bộ nhớ.",
+          "Để tránh lỗi JavaScript.",
+          "Để tạo ra một hiệu ứng chuyển tiếp mượt mà, không bị giật khi bắt đầu và kết thúc kéo.",
+          "Đó là một yêu cầu bắt buộc của thư viện `dnd-kit`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc giữ kích thước và style nhất quán giúp quá trình chuyển từ phần tử gốc sang lớp phủ (và ngược lại) diễn ra liền mạch, mang lại trải nghiệm người dùng tốt nhất."
+      },
+      {
+        "question": "Lợi ích chính của `DragOverlay` đối với layout của trang là gì?",
+        "options": [
+          "Nó tự động sắp xếp lại các mục khác.",
+          "Nó không ảnh hưởng đến layout của các phần tử khác, giúp tránh các thay đổi không mong muốn.",
+          "Nó thêm một khoảng trống vào vị trí ban đầu của mục được kéo.",
+          "Nó làm cho tất cả các mục khác mờ đi."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Vì `DragOverlay` được định vị tuyệt đối và nằm trong một lớp riêng, nó không phá vỡ luồng tài liệu thông thường, giữ cho layout của các phần tử khác ổn định."
+      },
+      {
+        "question": "Trong ví dụ code của bài học, `activeId` được reset về `null` trong sự kiện nào?",
+        "options": [
+          "onDragStart",
+          "onDragCancel",
+          "onDragEnd",
+          "Cả onDragCancel và onDragEnd"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Ví dụ cho thấy `setActiveId(null)` được gọi trong `onDragEnd`. Trong thực tế, bạn cũng nên xử lý trong `onDragCancel` để đảm bảo state được dọn dẹp đúng cách."
+      },
+      {
+        "question": "Biến `active` được truyền vào hàm xử lý `onDragStart` chứa thông tin gì?",
+        "options": [
+          "Tọa độ con trỏ chuột.",
+          "Đối tượng (object) đại diện cho mục đang được kéo, bao gồm cả `id` của nó.",
+          "DOM node của mục đang được kéo.",
+          "Tên của vùng `droppable` gần nhất."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Đối tượng `active` chứa thông tin về mục `draggable` đã kích hoạt sự kiện kéo, quan trọng nhất là `active.id`."
+      },
+      {
+        "question": "Bạn có thể tùy chỉnh giao diện của phần tử trong `DragOverlay` không?",
+        "options": [
+          "Không, nó luôn là một bản sao chính xác của bản gốc.",
+          "Có, bạn có thể render bất kỳ component nào và áp dụng bất kỳ style nào bạn muốn bên trong `DragOverlay`.",
+          "Chỉ có thể thay đổi màu nền và đường viền.",
+          "Chỉ có thể thay đổi độ trong suốt (opacity)."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`DragOverlay` cung cấp sự linh hoạt hoàn toàn. Bạn có thể render một component hoàn toàn khác hoặc cùng một component với các props/style khác để tạo hiệu ứng mong muốn."
+      },
+      {
+        "question": "Lệnh nào sau đây dùng để cài đặt các gói `dnd-kit` cần thiết cho việc kéo thả cơ bản và sắp xếp?",
+        "options": [
+          "npm install dnd-kit",
+          "npm install @dnd-kit/core @dnd-kit/sortable",
+          "npm install react-dnd",
+          "npm install @dnd-kit/overlay"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Bài học chỉ rõ lệnh `npm install @dnd-kit/core @dnd-kit/sortable` để cài đặt thư viện core và tiện ích sắp xếp."
+      },
+      {
+        "question": "Nếu `activeId` là `null`, `DragOverlay` sẽ render ra cái gì?",
+        "options": [
+          "Một lỗi.",
+          "Một ô trống giữ chỗ.",
+          "Không có gì cả (hoặc `null`).",
+          "Component con cuối cùng đã được render."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Trong ví dụ, có một kiểm tra điều kiện `{activeId ? <Component /> : null}`. Nếu `activeId` là `null`, `DragOverlay` sẽ không render gì cả."
+      },
+      {
+        "question": "Việc sử dụng `DragOverlay` có ảnh hưởng đến component `Draggable` gốc không?",
+        "options": [
+          "Có, nó sẽ ẩn component gốc đi.",
+          "Không, component gốc vẫn có thể được hiển thị hoặc ẩn đi tùy thuộc vào logic của bạn.",
+          "Có, nó sẽ thêm một đường viền vào component gốc.",
+          "Có, nó sẽ vô hiệu hóa các tương tác với component gốc."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`DragOverlay` là một lớp riêng biệt. Cách bạn xử lý component gốc (ví dụ: ẩn nó đi trong khi kéo) là tùy thuộc vào bạn, `dnd-kit` không tự động làm điều đó."
+      },
+      {
+        "question": "Để `DragOverlay` hiển thị một component `Card` khi kéo, bạn sẽ viết code như thế nào?",
+        "options": [
+          "<DragOverlay component={Card} />",
+          "<DragOverlay>{activeId ? <Card id={activeId} /> : null}</DragOverlay>",
+          "<DragOverlay render={Card} />",
+          "<DragOverlay cardId={activeId} />"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cách tiếp cận đúng là render component `Card` như một con của `DragOverlay`, thường là dựa trên state `activeId` để truyền dữ liệu cần thiết cho `Card`."
+      },
+      {
+        "question": "Thuộc tính CSS nào thường được `dnd-kit` sử dụng để định vị `DragOverlay`?",
+        "options": [
+          "position: relative;",
+          "display: flex;",
+          "transform: translate(x, y);",
+          "position: static;"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`dnd-kit` sử dụng các phép biến đổi CSS (`transform`) để di chuyển `DragOverlay` theo con trỏ, vì nó hiệu quả hơn cho hiệu năng so với việc thay đổi các thuộc tính `top`/`left`."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Thiết lập `DragOverlay` cơ bản",
+        "description": "Trong một `DndContext`, hãy thiết lập `DragOverlay` để khi một mục `Draggable` được kéo, overlay sẽ hiển thị một `div` đơn giản với dòng chữ \"Đang kéo mục...\".",
+        "starterCode": "import React, { useState } from 'react';\nimport { DndContext, DragOverlay, useDraggable } from '@dnd-kit/core';\n\nfunction DraggableItem() {\n  const { attributes, listeners, setNodeRef } = useDraggable({ id: 'draggable' });\n  return (\n    <button ref={setNodeRef} {...listeners} {...attributes}>\n      Kéo tôi đi\n    </button>\n  );\n}\n\nexport default function App() {\n  const [activeId, setActiveId] = useState(null);\n\n  // TODO: Thêm các hàm xử lý onDragStart và onDragEnd\n\n  return (\n    <DndContext /* TODO: Thêm props */ >\n      <DraggableItem />\n      <DragOverlay>\n        {\n          // TODO: Render có điều kiện dựa trên activeId\n        }\n      </DragOverlay>\n    </DndContext>\n  );\n}",
+        "solution": "import React, { useState } from 'react';\nimport { DndContext, DragOverlay, useDraggable } from '@dnd-kit/core';\n\nfunction DraggableItem() {\n  const { attributes, listeners, setNodeRef } = useDraggable({ id: 'draggable' });\n  return (\n    <button ref={setNodeRef} {...listeners} {...attributes} style={{ padding: '10px' }}>\n      Kéo tôi đi\n    </button>\n  );\n}\n\nexport default function App() {\n  const [activeId, setActiveId] = useState(null);\n\n  function handleDragStart(event) {\n    setActiveId(event.active.id);\n  }\n\n  function handleDragEnd() {\n    setActiveId(null);\n  }\n\n  return (\n    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>\n      <DraggableItem />\n      <DragOverlay>\n        {activeId ? (\n          <div style={{ padding: '10px', backgroundColor: 'lightblue', border: '1px solid blue' }}>\n            Đang kéo mục...\n          </div>\n        ) : null}\n      </DragOverlay>\n    </DndContext>\n  );\n}",
+        "testCases": "1. Ban đầu, chỉ có nút \"Kéo tôi đi\" được hiển thị.\n2. Khi bắt đầu kéo nút, một `div` với nền xanh và dòng chữ \"Đang kéo mục...\" xuất hiện và di chuyển theo con trỏ.\n3. Khi thả nút, `div` đó biến mất."
+      },
+      {
+        "title": "Bài 2: Hiển thị bản sao của mục được kéo",
+        "description": "Mở rộng từ bài 1, thay vì hiển thị một `div` tĩnh, hãy làm cho `DragOverlay` hiển thị một bản sao của chính component `DraggableItem` đang được kéo.",
+        "starterCode": "import React, { useState } from 'react';\nimport { DndContext, DragOverlay, useDraggable } from '@dnd-kit/core';\n\nfunction DraggableItem() {\n  const { attributes, listeners, setNodeRef } = useDraggable({ id: 'draggable' });\n  return (\n    <button ref={setNodeRef} {...listeners} {...attributes} style={{ padding: '10px', backgroundColor: 'lightgreen' }}>\n      Kéo tôi đi\n    </button>\n  );\n}\n\nexport default function App() {\n  const [activeId, setActiveId] = useState(null);\n\n  function handleDragStart(event) {\n    setActiveId(event.active.id);\n  }\n\n  function handleDragEnd() {\n    setActiveId(null);\n  }\n\n  return (\n    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>\n      <DraggableItem />\n      <DragOverlay>\n        {\n          // TODO: Render một component DraggableItem nếu activeId tồn tại\n        }\n      </DragOverlay>\n    </DndContext>\n  );\n}",
+        "solution": "import React, { useState } from 'react';\nimport { DndContext, DragOverlay, useDraggable } from '@dnd-kit/core';\n\n// Tách component Item ra để tái sử dụng\nfunction Item({ isDragging }) {\n  return (\n    <div style={{ \n      padding: '10px', \n      backgroundColor: 'lightgreen', \n      border: '1px solid green',\n      opacity: isDragging ? 0.5 : 1\n    }}>\n      Kéo tôi đi\n    </div>\n  );\n}\n\nfunction DraggableItem() {\n  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: 'draggable' });\n  return (\n    <div ref={setNodeRef} {...listeners} {...attributes}>\n      <Item isDragging={isDragging} />\n    </div>\n  );\n}\n\nexport default function App() {\n  const [activeId, setActiveId] = useState(null);\n\n  function handleDragStart(event) {\n    setActiveId(event.active.id);\n  }\n\n  function handleDragEnd() {\n    setActiveId(null);\n  }\n\n  return (\n    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>\n      <DraggableItem />\n      <DragOverlay>\n        {activeId === 'draggable' ? <Item /> : null}\n      </DragOverlay>\n    </DndContext>\n  );\n}",
+        "testCases": "1. Khi bắt đầu kéo mục, một bản sao của mục đó (với nền xanh lá) sẽ xuất hiện và di chuyển theo con trỏ.\n2. Mục gốc có thể được làm mờ đi (opacity: 0.5) trong khi kéo.\n3. Khi thả ra, overlay biến mất và mục gốc trở lại bình thường."
+      },
+      {
+        "title": "Bài 3: Tùy chỉnh style cho Overlay",
+        "description": "Thêm style cho component bên trong `DragOverlay` để nó trông khác biệt với component gốc. Ví dụ: thêm hiệu ứng xoay nhẹ và đổ bóng.",
+        "starterCode": "import React, { useState } from 'react';\nimport { DndContext, DragOverlay, useDraggable } from '@dnd-kit/core';\n\nfunction Item() {\n  return <div style={{ padding: '20px', backgroundColor: 'gold' }}>Item</div>;\n}\n\nfunction DraggableItem() {\n  const { attributes, listeners, setNodeRef } = useDraggable({ id: 'draggable' });\n  return (\n    <div ref={setNodeRef} {...listeners} {...attributes}>\n      <Item />\n    </div>\n  );\n}\n\nexport default function App() {\n  const [activeId, setActiveId] = useState(null);\n  // ... onDragStart, onDragEnd ...\n  return (\n    <DndContext onDragStart={(e) => setActiveId(e.active.id)} onDragEnd={() => setActiveId(null)} >\n      <DraggableItem />\n      <DragOverlay>\n        {activeId ? (\n          // TODO: Render Item với style tùy chỉnh\n          <Item />\n        ) : null}\n      </DragOverlay>\n    </DndContext>\n  );\n}",
+        "solution": "import React, { useState } from 'react';\nimport { DndContext, DragOverlay, useDraggable } from '@dnd-kit/core';\n\nfunction Item({ style }) {\n  return <div style={{ padding: '20px', backgroundColor: 'gold', ...style }}>Item</div>;\n}\n\nfunction DraggableItem() {\n  const { attributes, listeners, setNodeRef } = useDraggable({ id: 'draggable' });\n  return (\n    <div ref={setNodeRef} {...listeners} {...attributes}>\n      <Item />\n    </div>\n  );\n}\n\nexport default function App() {\n  const [activeId, setActiveId] = useState(null);\n\n  const overlayStyle = {\n    boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.25)',\n    transform: 'rotate(5deg)'\n  };\n\n  return (\n    <DndContext onDragStart={(e) => setActiveId(e.active.id)} onDragEnd={() => setActiveId(null)} >\n      <DraggableItem />\n      <DragOverlay>\n        {activeId ? <Item style={overlayStyle} /> : null}\n      </DragOverlay>\n    </DndContext>\n  );\n}",
+        "testCases": "1. Khi kéo mục, overlay hiển thị.\n2. Overlay được xoay nhẹ (khoảng 5 độ).\n3. Overlay có hiệu ứng đổ bóng (box-shadow)."
+      },
+      {
+        "title": "Bài 4: Kéo thả giữa hai danh sách",
+        "description": "Tạo hai danh sách (droppable) và một mục có thể kéo (draggable). Sử dụng `DragOverlay` để hiển thị mục đang được kéo khi di chuyển nó giữa hai danh sách.",
+        "starterCode": "import React, { useState } from 'react';\nimport { DndContext, DragOverlay, useDraggable, useDroppable } from '@dnd-kit/core';\n\n// ... DraggableItem, Item components ...\n\nfunction Droppable({ id, children }) {\n  const { setNodeRef } = useDroppable({ id });\n  return <div ref={setNodeRef} style={{ padding: '20px', margin: '10px', border: '1px solid black', minHeight: '100px' }}>{children}</div>;\n}\n\nexport default function App() {\n  const [parent, setParent] = useState('list-1');\n  const [activeId, setActiveId] = useState(null);\n  const draggable = <DraggableItem />\n\n  // TODO: Viết hàm handleDragEnd để thay đổi `parent`\n\n  return (\n    <DndContext onDragStart={(e) => setActiveId(e.active.id)} onDragEnd={handleDragEnd}>\n      <Droppable id=\"list-1\">{parent === 'list-1' ? draggable : 'Empty'}</Droppable>\n      <Droppable id=\"list-2\">{parent === 'list-2' ? draggable : 'Empty'}</Droppable>\n      <DragOverlay>{activeId ? <Item /> : null}</DragOverlay>\n    </DndContext>\n  );\n}",
+        "solution": "import React, { useState } from 'react';\nimport { DndContext, DragOverlay, useDraggable, useDroppable } from '@dnd-kit/core';\n\nfunction Item() {\n  return <div style={{ padding: '10px', backgroundColor: 'cyan' }}>Draggable</div>;\n}\n\nfunction DraggableItem() {\n  const { attributes, listeners, setNodeRef } = useDraggable({ id: 'draggable' });\n  return <div ref={setNodeRef} {...listeners} {...attributes}><Item /></div>;\n}\n\nfunction Droppable({ id, children }) {\n  const { setNodeRef } = useDroppable({ id });\n  return <div ref={setNodeRef} style={{ padding: '20px', margin: '10px', border: '1px solid black', minHeight: '100px' }}>{children}</div>;\n}\n\nexport default function App() {\n  const [parent, setParent] = useState('list-1');\n  const [activeId, setActiveId] = useState(null);\n  const draggable = <DraggableItem />\n\n  function handleDragEnd({ over }) {\n    setActiveId(null);\n    if (over) {\n      setParent(over.id);\n    }\n  }\n\n  return (\n    <DndContext onDragStart={(e) => setActiveId(e.active.id)} onDragEnd={handleDragEnd}>\n      <Droppable id=\"list-1\">{parent === 'list-1' ? draggable : 'Empty'}</Droppable>\n      <Droppable id=\"list-2\">{parent === 'list-2' ? draggable : 'Empty'}</Droppable>\n      <DragOverlay>{activeId ? <Item /> : null}</DragOverlay>\n    </DndContext>\n  );\n}",
+        "testCases": "1. Ban đầu, mục kéo thả nằm trong \"list-1\".\n2. Khi kéo mục, một overlay màu xanh cyan xuất hiện.\n3. Khi thả mục vào \"list-2\", mục sẽ di chuyển sang \"list-2\" và overlay biến mất."
+      },
+      {
+        "title": "Bài 5: `DragOverlay` với `SortableContext`",
+        "description": "Tích hợp `DragOverlay` vào một danh sách có thể sắp xếp (`SortableContext`). Khi sắp xếp các mục, `DragOverlay` sẽ hiển thị mục đang được kéo, trong khi mục gốc được ẩn đi.",
+        "starterCode": "import React, { useState } from 'react';\nimport { DndContext, DragOverlay, closestCenter } from '@dnd-kit/core';\nimport { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\n// ... Item component ...\n\nfunction SortableItem({ id }) {\n  // TODO: Sử dụng useSortable hook\n  return <div ref={setNodeRef} style={style} {...attributes} {...listeners}><Item id={id} /></div>;\n}\n\nexport default function App() {\n  const [items, setItems] = useState(['1', '2', '3']);\n  const [activeId, setActiveId] = useState(null);\n\n  // TODO: Viết hàm handleDragEnd để sắp xếp lại `items`\n\n  return (\n    <DndContext onDragStart={(e) => setActiveId(e.active.id)} onDragEnd={handleDragEnd}>\n      <SortableContext items={items}>\n        {items.map(id => <SortableItem key={id} id={id} />)}\n      </SortableContext>\n      <DragOverlay>\n        {/* TODO: Render Item tương ứng với activeId */}\n      </DragOverlay>\n    </DndContext>\n  );\n}",
+        "solution": "import React, { useState } from 'react';\nimport { DndContext, DragOverlay, closestCenter } from '@dnd-kit/core';\nimport { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';\nimport { CSS } from '@dnd-kit/utilities';\n\nfunction Item({ id, isDragging }) {\n  return <div style={{ padding: '15px', margin: '5px', backgroundColor: 'lightgray', border: '1px solid gray', opacity: isDragging ? 0 : 1 }}>Item {id}</div>;\n}\n\nfunction SortableItem({ id }) {\n  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });\n  const style = {\n    transform: CSS.Transform.toString(transform),\n    transition,\n  };\n  return <div ref={setNodeRef} style={style} {...attributes} {...listeners}><Item id={id} isDragging={isDragging} /></div>;\n}\n\nexport default function App() {\n  const [items, setItems] = useState(['1', '2', '3']);\n  const [activeId, setActiveId] = useState(null);\n\n  function handleDragStart(event) {\n    setActiveId(event.active.id);\n  }\n\n  function handleDragEnd(event) {\n    const { active, over } = event;\n    if (active.id !== over.id) {\n      setItems((items) => {\n        const oldIndex = items.indexOf(active.id);\n        const newIndex = items.indexOf(over.id);\n        return arrayMove(items, oldIndex, newIndex);\n      });\n    }\n    setActiveId(null);\n  }\n\n  return (\n    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>\n      <SortableContext items={items} strategy={verticalListSortingStrategy}>\n        {items.map(id => <SortableItem key={id} id={id} />)}\n      </SortableContext>\n      <DragOverlay>\n        {activeId ? <Item id={activeId} /> : null}\n      </DragOverlay>\n    </DndContext>\n  );\n}",
+        "testCases": "1. Hiển thị một danh sách 3 mục có thể sắp xếp.\n2. Khi kéo \"Item 2\", một bản sao của nó xuất hiện trong `DragOverlay` và mục gốc bị ẩn đi (opacity: 0).\n3. Khi thả \"Item 2\" vào vị trí của \"Item 1\", danh sách được cập nhật thành ['2', '1', '3'] và overlay biến mất."
+      }
+    ]
+  }
+}

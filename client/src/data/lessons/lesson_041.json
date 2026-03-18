@@ -1,0 +1,213 @@
+{
+  "id": 41,
+  "title": "Bài học 22: Code thanh Trello AppBar - Theme Override (part 2)",
+  "category": "mui",
+  "categoryName": "Material UI",
+  "content": "# Bài học 22: Code thanh Trello AppBar - Theme Override (part 2)\n\n## Mục tiêu bài học\n\n*   Hiểu sâu hơn về khái niệm \"Theme Override\" trong Material-UI và cách áp dụng nó để tùy chỉnh giao diện của các component một cách chuyên nghiệp.\n*   Thực hành tùy chỉnh giao diện cho component `AppBar` để xây dựng thanh header của ứng dụng Trello clone.\n*   Sử dụng `CssBaseline` để đảm bảo tính nhất quán của giao diện trên các trình duyệt khác nhau.\n*   Tối ưu hóa cấu trúc của các component trong dự án ReactJS.\n\n## Kiến thức chi tiết\n\n### 1. Theme Override trong Material-UI\n\n**Theme Override** là một trong những tính năng mạnh mẽ nhất của Material-UI, cho phép lập trình viên tùy chỉnh sâu và toàn diện giao diện của các component mà không cần phải viết lại CSS từ đầu. Thay vì chỉ có thể thay đổi một vài thuộc tính cơ bản, `Theme Override` cho phép chúng ta định nghĩa lại toàn bộ style của một component ngay từ trong file theme.\n\n**Cách hoạt động:**\n\nMaterial-UI cung cấp một object `theme` mặc định. Chúng ta có thể tạo một theme tùy chỉnh bằng cách sử dụng hàm `createTheme` và truyền vào một object chứa các giá trị muốn thay đổi. Trong object này, chúng ta có thể truy cập vào key `components` để override style cho từng component cụ thể.\n\n**Ví dụ code:**\n\n```javascript\nimport { createTheme } from '@mui/material/styles';\n\nconst theme = createTheme({\n  components: {\n    // Name of the component\n    MuiAppBar: {\n      styleOverrides: {\n        // Name of the slot\n        root: {\n          // Some CSS\n          backgroundColor: '#1976d2',\n          fontSize: '1.2rem'\n        },\n      },\n    },\n  },\n});\n```\n\nTrong ví dụ trên, chúng ta đã override style cho `AppBar` component (`MuiAppBar`). Chúng ta đã thay đổi `backgroundColor` và `fontSize` của `root` slot (là thẻ HTML gốc của component).\n\n### 2. CssBaseline\n\n`CssBaseline` là một component giúp chuẩn hóa CSS trên các trình duyệt khác nhau. Nó thực hiện một số việc sau:\n\n*   Reset lại các giá trị `margin`, `padding` mặc định của trình duyệt.\n*   Thiết lập `box-sizing: border-box` cho tất cả các element.\n*   Chuẩn hóa các style của các thẻ HTML cơ bản như `<h1>`, `<p>`, `<a>`, ...\n\nViệc sử dụng `CssBaseline` giúp đảm bảo rằng giao diện của ứng dụng sẽ hiển thị một cách nhất quán trên Chrome, Firefox, Safari, và các trình duyệt khác.\n\n### 3. Tùy chỉnh AppBar cho ứng dụng Trello\n\nTrong video, tác giả đã hướng dẫn cách tùy chỉnh `AppBar` để tạo ra thanh header cho ứng dụng Trello. Các bước thực hiện bao gồm:\n\n*   Tạo một component `AppBar` mới.\n*   Sử dụng các component khác của Material-UI như `Box`, `Typography`, `Button` để xây dựng nội dung bên trong `AppBar`.\n*   Áp dụng `Theme Override` để tùy chỉnh màu sắc, font chữ, và các thuộc tính CSS khác của `AppBar` và các component con.\n\n## Các bước thực hành\n\n1.  **Tạo theme tùy chỉnh:** Tạo một file `theme.js` và sử dụng `createTheme` để định nghĩa theme cho ứng dụng.\n2.  **Override AppBar:** Trong file `theme.js`, thêm vào phần `components` để override style cho `MuiAppBar`.\n3.  **Tạo component AppBar:** Tạo một component `AppBar.jsx` và sử dụng `AppBar` của Material-UI.\n4.  **Tích hợp CssBaseline:** Trong file `App.jsx`, import và sử dụng `CssBaseline` và `ThemeProvider` để áp dụng theme cho toàn bộ ứng dụng.\n\n## Lưu ý quan trọng\n\n*   **Cấu trúc thư mục:** Nên tổ chức các component và file theme một cách khoa học để dễ dàng quản lý và bảo trì.\n*   **Performance:** Việc sử dụng `Theme Override` có thể ảnh hưởng đến performance nếu không được sử dụng đúng cách. Nên hạn chế việc override quá nhiều thuộc tính không cần thiết.\n*   **Đọc tài liệu:** Luôn tham khảo tài liệu chính thức của Material-UI để hiểu rõ hơn về các component và các tùy chọn có sẵn.\n\n## Tài liệu tham khảo\n\n*   [Video 22. Code thanh Trello AppBar - Theme Override (part 2)](https://www.youtube.com/watch?v=S3OUX2Xwcf0&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=26)\n*   [Material-UI Theming](https://mui.com/customization/theming/)\n*   [Material-UI Components](https://mui.com/components/)\n*   [TrungQuanDev GitHub](https://github.com/trungquandev)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Tính năng nào của Material-UI cho phép tùy chỉnh sâu và toàn diện giao diện của các component mà không cần viết lại CSS từ đầu?",
+        "options": [
+          "A) `sx` prop",
+          "B) `styled()` utility",
+          "C) Theme Override",
+          "D) `makeStyles()`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Theme Override là tính năng cho phép định nghĩa lại toàn bộ style của một component ngay từ trong file theme, mang lại khả năng tùy chỉnh mạnh mẽ và toàn diện nhất."
+      },
+      {
+        "question": "Để override style cho một component trong theme của Material-UI, bạn cần truy cập vào key nào trong object theme được tạo bởi `createTheme`?",
+        "options": [
+          "A) `styles`",
+          "B) `overrides`",
+          "C) `components`",
+          "D) `customization`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Key `components` trong object theme được sử dụng để chứa các tùy chỉnh style cho từng component cụ thể. Bên trong key này, bạn sẽ chỉ định tên component (ví dụ: MuiAppBar) và các `styleOverrides`."
+      },
+      {
+        "question": "Trong `styleOverrides` của một component Material-UI, \"root\" là gì?",
+        "options": [
+          "A) Thẻ HTML gốc của component",
+          "B) Một class CSS đặc biệt chỉ dành cho testing",
+          "C) Tên của một slot tùy chỉnh do người dùng định nghĩa",
+          "D) Một biến màu sắc trong theme"
+        ],
+        "correctAnswer": 0,
+        "explanation": "\"root\" là tên của slot mặc định, đại diện cho thẻ HTML gốc (phần tử ngoài cùng) của một component trong Material-UI. Tùy chỉnh slot này sẽ ảnh hưởng đến toàn bộ component."
+      },
+      {
+        "question": "Component `CssBaseline` trong Material-UI có tác dụng chính là gì?",
+        "options": [
+          "A) Thêm các style mới và độc đáo cho ứng dụng",
+          "B) Chuẩn hóa CSS để đảm bảo giao diện hiển thị nhất quán trên các trình duyệt khác nhau",
+          "C) Tối ưu hóa tốc độ tải trang bằng cách nén file CSS",
+          "D) Quản lý các biến màu sắc và font chữ cho toàn bộ ứng dụng"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`CssBaseline` thực hiện việc reset các style mặc định của trình duyệt (như margin, padding) và áp dụng một số chuẩn hóa cơ bản, giúp ứng dụng trông nhất quán hơn trên Chrome, Firefox, Safari, v.v."
+      },
+      {
+        "question": "`CssBaseline` KHÔNG thực hiện hành động nào sau đây?",
+        "options": [
+          "A) Reset `margin` và `padding` mặc định của trình duyệt",
+          "B) Thiết lập `box-sizing: border-box` cho tất cả các element",
+          "C) Tự động thêm Google Fonts vào ứng dụng",
+          "D) Chuẩn hóa style cho các thẻ HTML cơ bản như `<h1>`, `<p>`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`CssBaseline` chỉ tập trung vào việc chuẩn hóa CSS. Việc thêm và cấu hình font chữ từ các dịch vụ bên ngoài như Google Fonts cần được thực hiện riêng."
+      },
+      {
+        "question": "Hàm nào được sử dụng để tạo một theme tùy chỉnh trong Material-UI phiên bản 5 trở lên?",
+        "options": [
+          "A) `makeTheme()`",
+          "B) `createMuiTheme()` (phiên bản cũ)",
+          "C) `generateTheme()`",
+          "D) `createTheme()`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`createTheme` là hàm chính được cung cấp bởi `@mui/material/styles` để tạo hoặc mở rộng một object theme trong các phiên bản Material-UI gần đây."
+      },
+      {
+        "question": "Để áp dụng theme tùy chỉnh cho toàn bộ ứng dụng React, bạn cần bọc component gốc (thường là `App`) bằng component nào của Material-UI?",
+        "options": [
+          "A) `<StyleProvider>`",
+          "B) `<ThemeProvider>`",
+          "C) `<ThemeContext.Provider>`",
+          "D) `<MuiProvider>`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Component `<ThemeProvider>` của Material-UI sẽ cung cấp object theme cho tất cả các component con của nó thông qua React context, giúp áp dụng theme một cách nhất quán."
+      },
+      {
+        "question": "Trong ví dụ về thanh Trello AppBar, tác giả đã sử dụng component nào để nhóm các nút và icon lại với nhau và căn chỉnh chúng?",
+        "options": [
+          "A) `<Grid>`",
+          "B) `<Stack>`",
+          "C) `<Container>`",
+          "D) `<Box>`"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`<Box>` là một component đa dụng, thường được dùng như một `div` với khả năng truy cập trực tiếp vào các thuộc tính theme và `sx` prop, rất linh hoạt cho việc layout và nhóm các phần tử."
+      },
+      {
+        "question": "Lợi ích chính của việc tổ chức các component và file theme một cách khoa học là gì?",
+        "options": [
+          "A) Giúp ứng dụng chạy nhanh hơn một cách đáng kể",
+          "B) Dễ dàng quản lý, bảo trì và mở rộng code trong tương lai",
+          "C) Tự động tạo tài liệu cho dự án",
+          "D) Giảm kích thước bundle của ứng dụng"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Một cấu trúc thư mục rõ ràng và logic giúp các lập trình viên trong nhóm (hoặc chính bạn trong tương lai) dễ dàng tìm kiếm, hiểu và phát triển code hơn."
+      },
+      {
+        "question": "Cú pháp đúng để override màu nền của `MuiAppBar` trong theme là gì?",
+        "options": [
+          "A) `MuiAppBar: { root: { backgroundColor: 'red' } }`",
+          "B) `components: { MuiAppBar: { styleOverrides: { root: { backgroundColor: 'red' } } } }`",
+          "C) `MuiAppBar: { style: { backgroundColor: 'red' } }`",
+          "D) `components: { AppBar: { overrides: { backgroundColor: 'red' } } }`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cú pháp chuẩn là `components -> TênComponent -> styleOverrides -> TênSlot -> CSS`."
+      },
+      {
+        "question": "Tại sao nên hạn chế việc override quá nhiều thuộc tính không cần thiết trong theme?",
+        "options": [
+          "A) Vì nó có thể gây lỗi cú pháp trong file theme",
+          "B) Vì nó có thể làm tăng kích thước của file CSS cuối cùng và ảnh hưởng đến performance",
+          "C) Vì nó sẽ bị ghi đè bởi các style mặc định của Material-UI",
+          "D) Vì nó làm cho việc sử dụng `sx` prop trở nên vô dụng"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Mỗi `styleOverride` sẽ tạo ra thêm các lớp CSS. Việc override không cần thiết sẽ làm phình to file CSS, tăng thời gian xử lý của trình duyệt và có thể ảnh hưởng đến hiệu năng render."
+      },
+      {
+        "question": "Để sử dụng theme và `CssBaseline`, bạn cần import chúng từ đâu?",
+        "options": [
+          "A) `CssBaseline` từ `@mui/material` và `ThemeProvider` từ `@mui/styles`",
+          "B) Cả hai đều từ `@mui/core`",
+          "C) `CssBaseline` từ `@mui/material` và `ThemeProvider` từ `@mui/material/styles`",
+          "D) Cả hai đều từ `@mui/material/styles`"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`CssBaseline` là một component, trong khi `ThemeProvider` và `createTheme` là các tiện ích liên quan đến styling, vì vậy chúng được đặt ở các gói khác nhau."
+      },
+      {
+        "question": "Mục đích của việc tạo một component `AppBar.jsx` riêng thay vì viết code trực tiếp trong `App.jsx` là gì?",
+        "options": [
+          "A) Để tăng tính tái sử dụng và chia nhỏ ứng dụng thành các phần dễ quản lý",
+          "B) Để `ThemeProvider` có thể áp dụng style chính xác hơn",
+          "C) Vì Material-UI yêu cầu mỗi component phải nằm trong một file riêng",
+          "D) Để giảm số lượng dòng code trong toàn bộ dự án"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đây là một nguyên tắc cơ bản trong phát triển phần mềm, giúp code sạch sẽ, dễ đọc, dễ bảo trì và có thể tái sử dụng component ở nhiều nơi khác nhau."
+      },
+      {
+        "question": "Nếu bạn muốn thay đổi font chữ mặc định cho toàn bộ ứng dụng thông qua theme, bạn sẽ định nghĩa nó ở đâu?",
+        "options": [
+          "A) `components: { MuiTypography: { styleOverrides: { root: { fontFamily: 'Roboto' } } } }`",
+          "B) `typography: { fontFamily: 'Roboto' }`",
+          "C) `props: { MuiTypography: { fontFamily: 'Roboto' } }`",
+          "D) `font: { default: 'Roboto' }`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Object `theme` có một key cấp cao là `typography` để bạn có thể định nghĩa các thuộc tính văn bản mặc định cho toàn bộ ứng dụng, bao gồm `fontFamily`, `fontSize`, v.v."
+      },
+      {
+        "question": "Đâu là nguồn tài liệu đáng tin cậy nhất khi làm việc với Material-UI?",
+        "options": [
+          "A) Các bài viết trên Medium",
+          "B) Các câu trả lời trên Stack Overflow",
+          "C) Tài liệu chính thức trên trang chủ mui.com",
+          "D) Các video hướng dẫn trên YouTube"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Tài liệu chính thức luôn là nguồn thông tin cập nhật, đầy đủ và chính xác nhất về cách sử dụng, các API và các tùy chọn có sẵn của thư viện."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Theme Tùy Chỉnh Cơ Bản",
+        "description": "Sử dụng hàm `createTheme` từ `@mui/material/styles` để tạo một theme mới. Thay đổi màu `primary` và `secondary` mặc định của Material-UI.",
+        "starterCode": "import { createTheme } from '@mui/material/styles';\n\n// TODO: Tạo theme mới và thay đổi màu sắc\nconst theme = createTheme({\n  palette: {\n    // Điền vào đây\n  }\n});\n\nexport default theme;",
+        "solution": "import { createTheme } from '@mui/material/styles';\nimport { red, teal } from '@mui/material/colors';\n\nconst theme = createTheme({\n  palette: {\n    primary: {\n      main: teal[500],\n    },\n    secondary: {\n      main: red[500],\n    },\n  },\n});\n\nexport default theme;",
+        "testCases": "Kiểm tra xem màu `primary.main` của theme có phải là màu `teal[500]` và `secondary.main` có phải là `red[500]` hay không."
+      },
+      {
+        "title": "Bài 2: Áp Dụng Theme và CssBaseline",
+        "description": "Trong file `App.jsx`, import theme đã tạo ở Bài 1, `ThemeProvider` và `CssBaseline`. Bọc toàn bộ ứng dụng để áp dụng theme và chuẩn hóa CSS.",
+        "starterCode": "import React from 'react';\n// import theme from './theme';\n// import { ThemeProvider, CssBaseline } from '@mui/material';\nimport Box from '@mui/material/Box';\n\nfunction App() {\n  return (\n    // TODO: Bọc Box bằng ThemeProvider và thêm CssBaseline\n    <Box>Hello World!</Box>\n  );\n}\n\nexport default App;",
+        "solution": "import React from 'react';\nimport theme from './theme';\nimport { ThemeProvider, CssBaseline } from '@mui/material';\nimport Box from '@mui/material/Box';\n\nfunction App() {\n  return (\n    <ThemeProvider theme={theme}>\n      <CssBaseline />\n      <Box>Hello World!</Box>\n    </ThemeProvider>\n  );\n}\n\nexport default App;",
+        "testCases": "Kiểm tra xem component `Box` có nhận được font chữ và màu nền mặc định từ theme hay không. Giao diện không có margin mặc định từ trình duyệt."
+      },
+      {
+        "title": "Bài 3: Override Style cho Button",
+        "description": "Mở rộng theme đã tạo, sử dụng `Theme Override` để thay đổi style của component `MuiButton`. Cụ thể, hãy làm cho tất cả các button `variant=\"contained\"` có `borderRadius` là `8px` và `textTransform` là `none`.",
+        "starterCode": "import { createTheme } from '@mui/material/styles';\n\nconst theme = createTheme({\n  palette: {\n    primary: {\n      main: '#1976d2',\n    },\n  },\n  components: {\n    // TODO: Override MuiButton tại đây\n  }\n});\n\nexport default theme;",
+        "solution": "import { createTheme } from '@mui/material/styles';\n\nconst theme = createTheme({\n  palette: {\n    primary: {\n      main: '#1976d2',\n    },\n  },\n  components: {\n    MuiButton: {\n      styleOverrides: {\n        root: {\n          textTransform: 'none',\n        },\n        contained: {\n          borderRadius: '8px',\n        }\n      }\n    }\n  }\n});\n\nexport default theme;",
+        "testCases": "Render một `<Button variant=\"contained\">`. Kiểm tra xem button có `border-radius` là `8px` và chữ bên trong không bị viết hoa hay không."
+      },
+      {
+        "title": "Bài 4: Tạo Component AppBar Cơ Bản",
+        "description": "Tạo một component `Header.jsx` mới. Bên trong component này, sử dụng `AppBar`, `Toolbar`, và `Typography` của Material-UI để hiển thị một thanh header đơn giản với tiêu đề \"Trello Clone\".",
+        "starterCode": "import React from 'react';\nimport { AppBar, Toolbar, Typography } from '@mui/material';\n\nfunction Header() {\n  return (\n    // TODO: Xây dựng cấu trúc AppBar tại đây\n  );\n}\n\nexport default Header;",
+        "solution": "import React from 'react';\nimport { AppBar, Toolbar, Typography } from '@mui/material';\n\nfunction Header() {\n  return (\n    <AppBar position=\"static\">\n      <Toolbar>\n        <Typography variant=\"h6\">\n          Trello Clone\n        </Typography>\n      </Toolbar>\n    </AppBar>\n  );\n}\n\nexport default Header;",
+        "testCases": "Render component `Header`. Kiểm tra xem có một thanh `AppBar` hiển thị với dòng chữ \"Trello Clone\" bên trong hay không."
+      },
+      {
+        "title": "Bài 5: Tùy Chỉnh AppBar với Theme Override",
+        "description": "Quay lại file theme, hãy override `MuiAppBar`. Thay đổi `backgroundColor` của nó thành màu trắng (`#ffffff`) và `color` (màu chữ) thành màu của `primary.main` trong theme.",
+        "starterCode": "import { createTheme } from '@mui/material/styles';\n\nconst theme = createTheme({\n  palette: {\n    primary: {\n      main: '#1976d2',\n    },\n  },\n  components: {\n    MuiAppBar: {\n      // TODO: Override MuiAppBar tại đây\n    }\n  }\n});\n\nexport default theme;",
+        "solution": "import { createTheme } from '@mui/material/styles';\n\nconst theme = createTheme({\n  palette: {\n    primary: {\n      main: '#1565c0', // Một màu xanh đậm hơn\n    },\n  },\n  components: {\n    MuiAppBar: {\n      styleOverrides: {\n        root: ({ theme }) => ({\n          backgroundColor: '#ffffff',\n          color: theme.palette.primary.main\n        })\n      }\n    }\n  }\n});\n\nexport default theme;",
+        "testCases": "Render component `Header` từ Bài 4 với theme này. Kiểm tra xem `AppBar` có nền màu trắng và chữ có màu xanh (primary) hay không."
+      }
+    ]
+  }
+}

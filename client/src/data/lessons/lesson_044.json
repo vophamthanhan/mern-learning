@@ -1,0 +1,213 @@
+{
+  "id": 44,
+  "title": "Bài học 26: Code phần Board Content (Columns & Cards)",
+  "category": "layout",
+  "categoryName": "Layout & Giao diện",
+  "content": "# Bài học 26: Code phần Board Content (Columns & Cards)\n\n## I. Mục tiêu bài học\n\nVideo này hướng dẫn cách xây dựng giao diện cho phần thân của một ứng dụng quản lý công việc kiểu Trello, cụ thể là khu vực hiển thị các cột (Columns) và các thẻ (Cards) bên trong. Mục tiêu chính là tạo ra một giao diện người dùng (UI) hoàn chỉnh, có thể cuộn ngang để xem các cột và sắp xếp các thẻ một cách trực quan bằng cách sử dụng thư viện Material UI trong một dự án ReactJS.\n\n## II. Kiến thức chi tiết\n\n### 1. Cấu trúc component\n\nBài học tập trung vào việc xây dựng component chính là `BoardContent`. Component này sẽ chứa toàn bộ logic để hiển thị danh sách các cột và các thẻ tương ứng. Cấu trúc được chia nhỏ như sau:\n\n- **`BoardContent`**: Component cha, chịu trách nhiệm layout chính và chứa các cột.\n- **`Column`**: Component con, đại diện cho một cột trong board. Nó sẽ chứa tiêu đề cột và danh sách các thẻ.\n- **`Card`T**: Component cháu, đại diện cho một thẻ công việc trong một cột.\n\n### 2. Sử dụng Material UI\n\nMaterial UI là thư viện component React được sử dụng rộng rãi để xây dựng giao diện người dùng một cách nhanh chóng và nhất quán. Trong bài học này, các component Material UI sau được sử dụng:\n\n- **`Box`**: Một component đa dụng, được sử dụng như một `div` với khả năng truy cập trực tiếp vào các thuộc tính CSS thông qua `sx` prop. `Box` được dùng để tạo layout, định dạng khoảng cách, và áp dụng các style tùy chỉnh.\n- **`Container`**: Giúp giới hạn chiều rộng tối đa của nội dung và căn giữa nó, đảm bảo giao diện hiển thị tốt trên các màn hình lớn.\n- **`Typography`**: Dùng để hiển thị văn bản với các kiểu dáng và kích thước đã được định nghĩa sẵn, đảm bảo tính nhất quán về mặt chữ viết.\n- **`Button`**: Tạo các nút bấm tương tác, ví dụ như nút \"Thêm thẻ mới\".\n\n### 3. Layout và Styling với `sx` Prop\n\nMột trong những điểm mạnh của Material UI là `sx` prop, cho phép viết CSS trực tiếp trong component React. Điều này giúp quản lý style một cách linh hoạt và hiệu quả. Các kỹ thuật chính được sử dụng bao gồm:\n\n- **Flexbox**: `display: 'flex'` được sử dụng rộng rãi để sắp xếp các cột theo chiều ngang và các thẻ theo chiều dọc.\n- **Overflow**: Thuộc tính `overflow-x: 'auto'` được áp dụng cho `BoardContent` để cho phép cuộn ngang khi số lượng cột vượt quá chiều rộng của màn hình.\n- **Custom Scrollbar**: Tùy chỉnh thanh cuộn để có giao diện đẹp và nhất quán hơn trên các trình duyệt khác nhau bằng cách sử dụng các pseudo-element như `::-webkit-scrollbar`.\n- **Khoảng cách (Spacing)**: Sử dụng `gap`, `margin`, và `padding` để tạo khoảng cách hợp lý giữa các cột và các thẻ.\n\n### 4. Dữ liệu mẫu (Mock Data)\n\nĐể phát triển giao diện mà không cần phụ thuộc vào API backend, bài học sử dụng dữ liệu mẫu được định nghĩa sẵn trong một file riêng (`mock-data.js`). Cấu trúc dữ liệu này mô phỏng cấu trúc của một board Trello, bao gồm một đối tượng `board` chứa một mảng `columns`, và mỗi `column` lại chứa một mảng `cards`.\n\n```javascript\n// Ví dụ về cấu trúc mock data\nexport const mockData = {\n  board: {\n    _id: 'board-id-01',\n    title: 'TrungQuanDev MERN Stack Board',\n    columns: [\n      {\n        _id: 'column-id-01',\n        title: 'To Do Column',\n        cards: [\n          { _id: 'card-id-01', title: 'Title of card 01' },\n          { _id: 'card-id-02', title: 'Title of card 02' },\n        ]\n      },\n      // ... các columns khác\n    ]\n  }\n}\n```\n\n## III. Các bước thực hành\n\n1.  **Tạo component `BoardContent`**: Tạo một file mới `BoardContent.jsx` và import các component cần thiết từ Material UI.\n2.  **Xây dựng layout chính**: Sử dụng `Box` component làm container chính cho `BoardContent`. Áp dụng `display: 'flex'` và `overflow-x: 'auto'` để các cột có thể xếp hàng ngang và cuộn được.\n3.  **Render danh sách cột**: Lặp qua mảng `columns` từ dữ liệu mẫu và render ra các `Box` component đại diện cho mỗi cột. Sử dụng `map()` để thực hiện việc này.\n4.  **Tạo component `Column`**: Để tái sử dụng code, tạo một component `Column.jsx` riêng. Component này nhận vào `column` data qua props và hiển thị tiêu đề cột cũng như danh sách các thẻ.\n5.  **Tạo component `Card`**: Tương tự, tạo component `Card.jsx` để hiển thị thông tin của một thẻ. Component này nhận `card` data qua props.\n6.  **Styling chi tiết**: Sử dụng `sx` prop để tùy chỉnh giao diện cho các cột và thẻ, bao gồm chiều rộng, chiều cao, màu nền, bo góc, và thanh cuộn.\n7.  **Thêm các nút tương tác**: Thêm các `Button` để thực hiện các hành động như \"Thêm cột mới\" và \"Thêm thẻ mới\", chuẩn bị cho việc tích hợp chức năng ở các bài học sau.\n\n## IV. Lưu ý quan trọng\n\n- **Chiều cao của `BoardContent`**: Cần tính toán và thiết lập chiều cao cho `BoardContent` một cách chính xác để nó không bị tràn ra ngoài viewport và thanh cuộn hoạt động đúng. Chiều cao này thường được tính bằng cách lấy chiều cao của viewport trừ đi chiều cao của `AppBar` và `BoardBar`.\n- **Tối ưu hóa hiệu năng**: Khi làm việc với danh sách dài, cần xem xét các kỹ thuật tối ưu hóa như `React.memo` để tránh việc render lại không cần thiết các component con.\n- **Cấu trúc `sx`**: Nên tổ chức các style trong `sx` prop một cách rõ ràng và có cấu trúc để dễ dàng bảo trì và mở rộng sau này.\n\n## V. Tài liệu tham khảo\n\n1.  [Trang chủ Material UI](https://mui.com/)\n2.  [Tài liệu về Box component](https://mui.com/system/react-box/)\n3.  [Tài liệu về Flexbox trên MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)\n4.  [Playlist MERN Stack Pro của TrungQuanDev](https://www.youtube.com/playlist?list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Component nào trong Material UI được sử dụng như một `div` đa dụng với khả năng truy cập trực tiếp vào các thuộc tính CSS thông qua `sx` prop?",
+        "options": [
+          "Container",
+          "Box",
+          "Typography",
+          "Paper"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Box là một component đa dụng trong Material UI, hoạt động tương tự như một thẻ `div` và cho phép tùy chỉnh style một cách linh hoạt thông qua `sx` prop."
+      },
+      {
+        "question": "Thuộc tính CSS nào được áp dụng cho `BoardContent` để cho phép cuộn ngang khi số lượng cột vượt quá chiều rộng màn hình?",
+        "options": [
+          "overflow-y: 'scroll'",
+          "overflow-x: 'hidden'",
+          "overflow-x: 'auto'",
+          "display: 'grid'"
+        ],
+        "correctAnswer": 2,
+        "explanation": "`overflow-x: 'auto'` cho phép trình duyệt tự động hiển thị thanh cuộn ngang khi nội dung (các cột) vượt quá chiều rộng của container."
+      },
+      {
+        "question": "Mục đích chính của việc sử dụng dữ liệu mẫu (mock data) trong bài học là gì?",
+        "options": [
+          "Để kiểm thử hiệu năng của ứng dụng với dữ liệu lớn.",
+          "Để phát triển giao diện người dùng (UI) mà không cần phụ thuộc vào API backend.",
+          "Để lưu trữ dữ liệu vĩnh viễn trên trình duyệt của người dùng.",
+          "Để xác thực dữ liệu từ form người dùng."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Dữ liệu mẫu giúp lập trình viên xây dựng và kiểm tra giao diện một cách độc lập, không cần chờ đợi hoặc phụ thuộc vào việc API backend đã sẵn sàng hay chưa."
+      },
+      {
+        "question": "Trong cấu trúc component được đề xuất, component nào chịu trách nhiệm chính cho việc chứa tiêu đề cột và danh sách các thẻ?",
+        "options": [
+          "BoardContent",
+          "Card",
+          "BoardBar",
+          "Column"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Component `Column` được thiết kế để đại diện cho một cột, bao gồm tiêu đề của cột đó và danh sách các thẻ (Cards) thuộc về nó."
+      },
+      {
+        "question": "Làm thế nào để tạo khoảng cách (gap) giữa các cột (flex items) trong `BoardContent` một cách hiệu quả bằng `sx` prop?",
+        "options": [
+          "Sử dụng `margin` cho mỗi cột.",
+          "Sử dụng `padding` cho container `BoardContent`.",
+          "Sử dụng thuộc tính `gap` trong `sx` của container có `display: 'flex'`.",
+          "Sử dụng `border` để tạo khoảng trống."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Khi một container có `display: 'flex'`, thuộc tính `gap` là cách hiện đại và hiệu quả nhất để tạo khoảng trống đồng đều giữa các flex items (các cột)."
+      },
+      {
+        "question": "Pseudo-element nào được sử dụng để tùy chỉnh thanh cuộn trong các trình duyệt dựa trên WebKit (như Chrome)?",
+        "options": [
+          "::-webkit-scrollbar",
+          "::scrollbar",
+          "::-moz-scrollbar",
+          "::ms-scrollbar"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Các trình duyệt dựa trên WebKit cung cấp bộ pseudo-elements bắt đầu bằng `::-webkit-scrollbar` để cho phép các nhà phát triển tùy chỉnh giao diện của thanh cuộn."
+      },
+      {
+        "question": "Tại sao việc tính toán và thiết lập chiều cao cho `BoardContent` lại quan trọng?",
+        "options": [
+          "Để component luôn có chiều rộng 100%.",
+          "Để đảm bảo thanh cuộn dọc của trang không bị ảnh hưởng và thanh cuộn ngang của board hoạt động đúng.",
+          "Để tăng tốc độ tải trang.",
+          "Để giới hạn số lượng cột có thể được thêm vào."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Thiết lập chiều cao cố định cho `BoardContent` (thường bằng chiều cao viewport trừ đi chiều cao của AppBar và BoardBar) ngăn nó mở rộng không kiểm soát, đảm bảo thanh cuộn ngang hoạt động trong phạm vi của nó và không xung đột với thanh cuộn chính của trang."
+      },
+      {
+        "question": "Trong Material UI, component `Typography` dùng để làm gì?",
+        "options": [
+          "Để tạo các layout phức tạp.",
+          "Để xử lý logic trạng thái.",
+          "Để hiển thị văn bản với các kiểu dáng và kích thước nhất quán.",
+          "Để tạo các nút bấm và tương tác."
+        ],
+        "correctAnswer": 2,
+        "explanation": "`Typography` là component chuyên dụng để hiển thị văn bản, giúp đảm bảo tính nhất quán về font chữ, kích thước, và kiểu dáng theo hệ thống thiết kế của Material UI."
+      },
+      {
+        "question": "Phương thức lặp (iteration method) nào của JavaScript thường được sử dụng trong React để render một danh sách các component từ một mảng dữ liệu?",
+        "options": [
+          "for...of",
+          "forEach()",
+          "map()",
+          "while()"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Phương thức `map()` là lựa chọn hàng đầu trong React vì nó duyệt qua mỗi phần tử của mảng và trả về một mảng mới chứa các phần tử JSX, phù hợp hoàn hảo với cú pháp render của React."
+      },
+      {
+        "question": "Đâu là cách đúng để truyền dữ liệu của một cột từ `BoardContent` vào component `Column`?",
+        "options": [
+          "Sử dụng context API của React.",
+          "Truyền dữ liệu qua props.",
+          "Lưu dữ liệu vào `localStorage`.",
+          "Sử dụng Redux store."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Cách cơ bản và phổ biến nhất để truyền dữ liệu từ component cha (`BoardContent`) xuống component con (`Column`) trong React là thông qua props."
+      },
+      {
+        "question": "Thành phần nào sau đây KHÔNG phải là một phần của cấu trúc dữ liệu mẫu được mô tả trong bài học?",
+        "options": [
+          "board",
+          "columns",
+          "cards",
+          "users"
+        ],
+        "correctAnswer": 3,
+        "explanation": "Dữ liệu mẫu trong bài học mô phỏng cấu trúc của một board, bao gồm các `columns` và `cards`, nhưng không đề cập đến thông tin `users`."
+      },
+      {
+        "question": "Để một `Box` chứa các cột có thể cuộn ngang, ngoài `overflow-x: 'auto'`, nó cần có thuộc tính `display` là gì?",
+        "options": [
+          "display: 'block'",
+          "display: 'inline'",
+          "display: 'grid'",
+          "display: 'flex'"
+        ],
+        "correctAnswer": 3,
+        "explanation": "`display: 'flex'` sẽ sắp xếp các cột (items) thành một hàng ngang, và khi kết hợp với `overflow-x: 'auto'`, nó cho phép hàng đó có thể cuộn được."
+      },
+      {
+        "question": "Kỹ thuật nào có thể được sử dụng để tối ưu hóa hiệu năng, tránh việc render lại không cần thiết các component `Column` hoặc `Card`?",
+        "options": [
+          "Sử dụng `useEffect`",
+          "Sử dụng `React.memo`",
+          "Sử dụng `useState`",
+          "Sử dụng `useContext`"
+        ],
+        "correctAnswer": 1,
+        "explanation": "`React.memo` là một Higher-Order Component (HOC) giúp ghi nhớ (memoize) kết quả render của component. Nếu props không thay đổi, React sẽ bỏ qua việc render lại component đó."
+      },
+      {
+        "question": "Trong `sx` prop, làm thế nào để bạn truy cập các giá trị theme (ví dụ: màu sắc, khoảng cách) của Material UI?",
+        "options": [
+          "Viết thẳng tên biến CSS, ví dụ: `color: --primary-main`",
+          "Sử dụng một hàm callback, ví dụ: `(theme) => ({ color: theme.palette.primary.main })`",
+          "Sử dụng hàm `vars()`, ví dụ: `color: vars(primary.main)`",
+          "Không thể truy cập giá trị theme từ `sx` prop."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`sx` prop hỗ trợ một hàm callback nhận đối tượng `theme` làm đối số, cho phép bạn truy cập và sử dụng các giá trị đã được định nghĩa trong theme một cách linh hoạt."
+      },
+      {
+        "question": "Component `Container` của Material UI có chức năng chính là gì?",
+        "options": [
+          "Tạo một lớp phủ (overlay) trên toàn màn hình.",
+          "Giới hạn chiều rộng tối đa của nội dung và căn giữa nó.",
+          "Hiển thị một danh sách các mục có thể mở rộng.",
+          "Là một container cho các form input."
+        ],
+        "correctAnswer": 1,
+        "explanation": "`Container` giúp bao bọc nội dung, giới hạn chiều rộng tối đa của nó theo các điểm ngắt (breakpoints) và căn giữa nó theo chiều ngang, tạo ra một layout cân đối."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài 1: Tạo Component Card đơn giản",
+        "description": "Tạo một component React tên là `Card` nhận vào một prop `card`. Component này sẽ sử dụng `Card` và `CardContent` từ `@mui/material` để hiển thị tiêu đề của thẻ (lấy từ `card.title`).",
+        "starterCode": "import React from 'react';\nimport { Card as MuiCard, CardContent, Typography } from '@mui/material';\n\nfunction Card({ card }) {\n  // Code của bạn ở đây\n  // Hãy trả về một MuiCard component chứa CardContent và Typography để hiển thị card.title\n  return null;\n}",
+        "solution": "import React from 'react';\nimport { Card as MuiCard, CardContent, Typography } from '@mui/material';\n\nfunction Card({ card }) {\n  return (\n    <MuiCard sx={{ mb: 1 }}>\n      <CardContent>\n        <Typography>{card.title}</Typography>\n      </CardContent>\n    </MuiCard>\n  );\n}",
+        "testCases": "1. Component render đúng `MuiCard`. 2. `Typography` bên trong hiển thị chính xác giá trị của `card.title`. 3. Component không bị lỗi khi prop `card` là một object hợp lệ."
+      },
+      {
+        "title": "Bài 2: Tạo Header cho Cột",
+        "description": "Tạo một phần header cho component `Column`. Sử dụng `Box` với `display: 'flex'`, `alignItems: 'center'`, `justifyContent: 'space-between'` để chứa một `Typography` cho tiêu đề cột và một `Button` cho menu (chưa cần chức năng).",
+        "starterCode": "import React from 'react';\nimport { Box, Typography, Button } from '@mui/material';\n\nfunction ColumnHeader({ title }) {\n  // Code của bạn ở đây\n  return (\n    <Box>\n      {/* Thêm Typography cho title và một Button ở đây */}\n    </Box>\n  );\n}",
+        "solution": "import React from 'react';\nimport { Box, Typography, Button } from '@mui/material';\nimport MoreHorizIcon from '@mui/icons-material/MoreHoriz';\n\nfunction ColumnHeader({ title }) {\n  return (\n    <Box sx={{\n      display: 'flex',\n      alignItems: 'center',\n      justifyContent: 'space-between',\n      p: 2\n    }}>\n      <Typography variant='h6'>{title}</Typography>\n      <Button startIcon={<MoreHorizIcon />} />\n    </Box>\n  );\n}",
+        "testCases": "1. `Box` có các thuộc tính flexbox đúng. 2. `Typography` hiển thị đúng `title`. 3. Có một `Button` được render bên cạnh tiêu đề."
+      },
+      {
+        "title": "Bài 3: Render danh sách Card trong Cột",
+        "description": "Trong component `Column`, nhận vào một mảng `cards` qua props. Sử dụng phương thức `map()` để lặp qua mảng này và render một component `Card` cho mỗi phần tử. Bọc danh sách các card này trong một `Box` cho phép cuộn dọc nếu nội dung quá dài.",
+        "starterCode": "import React from 'react';\nimport { Box } from '@mui/material';\nimport Card from './Card'; // Giả sử Card component đã tồn tại\n\nfunction CardList({ cards }) {\n  // Code của bạn ở đây\n  // Sử dụng map để render danh sách các Card component\n  return (\n    <Box sx={{\n      maxHeight: 'calc(100% - 50px - 50px)', // Giả sử chiều cao header và footer là 50px mỗi cái\n      overflowY: 'auto'\n    }}>\n      {/* Render danh sách card ở đây */}\n    </Box>\n  );\n}",
+        "solution": "import React from 'react';\nimport { Box } from '@mui/material';\nimport Card from './Card';\n\nfunction CardList({ cards }) {\n  return (\n    <Box sx={{\n      display: 'flex',\n      flexDirection: 'column',\n      gap: 1,\n      p: '0 5px',\n      maxHeight: 'calc(100% - 50px - 50px)',\n      overflowY: 'auto'\n    }}>\n      {cards.map(card => <Card key={card._id} card={card} />)}\n    </Box>\n  );\n}",
+        "testCases": "1. Render đúng số lượng `Card` component tương ứng với độ dài mảng `cards`. 2. Mỗi `Card` component nhận được prop `key` và `card` chính xác. 3. `Box` container có `overflowY: 'auto'`."
+      },
+      {
+        "title": "Bài 4: Xây dựng Component Column hoàn chỉnh",
+        "description": "Tích hợp các phần đã làm ở bài 2 và 3. Tạo component `Column` nhận prop `column`. Component này sẽ render `ColumnHeader`, `CardList`, và một `ColumnFooter` (chứa một `Button` \"Thêm thẻ mới\"). Toàn bộ component `Column` phải được bọc trong một `Box` có chiều rộng và màu nền xác định.",
+        "starterCode": "import React from 'react';\nimport { Box } from '@mui/material';\nimport ColumnHeader from './ColumnHeader';\nimport CardList from './CardList';\nimport ColumnFooter from './ColumnFooter';\n\nfunction Column({ column }) {\n  return (\n    <Box sx={{ \n      minWidth: '300px', \n      maxWidth: '300px', \n      bgcolor: '#f1f2f4', \n      borderRadius: '6px',\n      height: 'fit-content'\n    }}>\n      {/* Tích hợp ColumnHeader, CardList, và ColumnFooter ở đây */}\n    </Box>\n  );\n}",
+        "solution": "import React from 'react';\nimport { Box } from '@mui/material';\nimport ColumnHeader from './ColumnHeader';\nimport CardList from './CardList';\nimport ColumnFooter from './ColumnFooter';\n\nfunction Column({ column }) {\n  return (\n    <Box sx={{ \n      minWidth: '300px', \n      maxWidth: '300px', \n      bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#333643' : '#ebecf0'), \n      borderRadius: '6px',\n      height: 'fit-content',\n      maxHeight: (theme) => `calc(${theme.trello.boardContentHeight} - ${theme.spacing(5)})`\n    }}>\n      <ColumnHeader title={column.title} />\n      <CardList cards={column.cards} />\n      <ColumnFooter />\n    </Box>\n  );\n}",
+        "testCases": "1. Component `Column` render đủ 3 phần: header, list, footer. 2. `ColumnHeader` nhận đúng `title`. 3. `CardList` nhận đúng mảng `cards`. 4. `Box` chính có style chiều rộng và màu nền như yêu cầu."
+      },
+      {
+        "title": "Bài 5: Xây dựng layout BoardContent",
+        "description": "Tạo component `BoardContent` nhận vào một mảng `columns`. Sử dụng `Box` với `display: 'flex'` và `overflow-x: 'auto'` để render một danh sách các component `Column` theo chiều ngang. Áp dụng thuộc tính `gap` để tạo khoảng cách giữa các cột.",
+        "starterCode": "import React from 'react';\nimport { Box } from '@mui/material';\nimport Column from './Column';\n\nfunction BoardContent({ columns }) {\n  return (\n    <Box sx={{\n      bgcolor: 'primary.main',\n      width: '100%',\n      height: (theme) => theme.trello.boardContentHeight,\n      p: '10px 0'\n    }}>\n      {/* Sử dụng map để render danh sách các Column component ở đây */}\n    </Box>\n  );\n}",
+        "solution": "import React from 'react';\nimport { Box } from '@mui/material';\nimport Column from './Column';\n\nfunction BoardContent({ columns }) {\n  return (\n    <Box sx={{\n      bgcolor: 'primary.main',\n      width: '100%',\n      height: (theme) => theme.trello.boardContentHeight,\n      display: 'flex',\n      overflowX: 'auto',\n      overflowY: 'hidden',\n      '&::-webkit-scrollbar-track': { m: 2 }\n    }}>\n      {columns.map(column => <Column key={column._id} column={column} />)}\n    </Box>\n  );\n}",
+        "testCases": "1. `BoardContent` có `display: 'flex'` và `overflow-x: 'auto'`. 2. Render đúng số lượng `Column` component tương ứng với mảng `columns`. 3. Mỗi `Column` component nhận được `key` và `column` prop chính xác."
+      }
+    ]
+  }
+}

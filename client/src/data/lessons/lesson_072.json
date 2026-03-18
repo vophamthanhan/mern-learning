@@ -1,0 +1,213 @@
+{
+  "id": 72,
+  "title": "Bài 56: Service Layer - Xử lý Logic Dữ liệu theo Đặc thù Dự án",
+  "category": "api",
+  "categoryName": "API & Integration",
+  "content": "# Bài 56: Service Layer - Xử lý Logic Dữ liệu theo Đặc thù Dự án\n\n## I. Mục tiêu bài học\n\nVideo này tập trung vào việc xây dựng **Service Layer** trong kiến trúc back-end của một ứng dụng MERN Stack. Mục tiêu chính là tách biệt phần xử lý logic nghiệp vụ (business logic) ra khỏi Controller Layer, giúp cho code trở nên sạch sẽ, dễ bảo trì và tái sử dụng hơn.\n\nSau bài học này, người xem sẽ hiểu được:\n\n*   Vai trò và tầm quan trọng của Service Layer trong kiến trúc phần mềm.\n*   Cách triển khai Service Layer trong một dự án NodeJS và ExpressJS.\n*   Cách di chuyển logic xử lý dữ liệu từ Controller sang Service.\n*   Cách Service Layer tương tác với các tầng khác như Controller và Model.\n\n## II. Kiến thức chi tiết\n\n### 1. Service Layer là gì?\n\nTrong kiến trúc 3 lớp (3-tier architecture) phổ biến, ứng dụng thường được chia thành 3 tầng chính:\n\n1.  **Presentation Layer (Controller/Router):** Tầng giao tiếp với người dùng hoặc client. Nhiệm vụ chính là tiếp nhận request, gọi các service tương ứng để xử lý và trả về response.\n2.  **Business Logic Layer (Service):** Tầng chứa toàn bộ logic nghiệp vụ của ứng dụng. Đây là nơi xử lý các yêu cầu, tính toán, và ra quyết định dựa trên các quy tắc của dự án.\n3.  **Data Access Layer (Model):** Tầng chịu trách nhiệm truy cập và thao tác với cơ sở dữ liệu (CSDL).\n\n**Service Layer** chính là Business Logic Layer. Việc tách riêng tầng này mang lại nhiều lợi ích:\n\n*   **Single Responsibility Principle (Nguyên tắc đơn nhiệm):** Controller chỉ nên làm nhiệm vụ điều hướng (routing) và xác thực dữ liệu đầu vào cơ bản. Toàn bộ logic xử lý phức tạp nên được đặt ở Service. Model chỉ nên làm nhiệm vụ tương tác với CSDL.\n*   **Reusability (Tái sử dụng):** Các logic nghiệp vụ có thể được tái sử dụng ở nhiều Controller khác nhau mà không cần viết lại code.\n*   **Testability (Dễ kiểm thử):** Việc tách biệt logic giúp viết unit test cho từng service một cách độc lập và dễ dàng hơn.\n*   **Maintainability (Dễ bảo trì):** Khi cần thay đổi logic, chúng ta chỉ cần tập trung vào Service Layer mà không ảnh hưởng nhiều đến các tầng khác.\n\n### 2. Triển khai Service Layer trong dự án\n\nTrong video, tác giả TrungQuanDev đã hướng dẫn cách tạo và cấu trúc Service Layer cho chức năng \"create new board\".\n\n#### Cấu trúc thư mục:\n\n```\nsrc/\n├── controllers/\n│   └── boardController.js\n├── services/\n│   └── boardService.js\n├── models/\n│   └── boardModel.js\n└── routes/\n    └── v1/\n        └── boardRoute.js\n```\n\n*   `boardController.js`: Chứa controller xử lý các request liên quan đến \"board\".\n*   `boardService.js`: Chứa service xử lý logic nghiệp vụ cho \"board\".\n*   `boardModel.js`: Chứa model định nghĩa schema và tương tác với collection \"boards\" trong MongoDB.\n\n#### Luồng hoạt động (Flow of Control):\n\n1.  Client gửi request `POST /v1/boards` để tạo một board mới.\n2.  `boardRoute.js` nhận request và gọi đến hàm `createNew` trong `boardController.js`.\n3.  `boardController.js` nhận `req.body`, sau đó gọi hàm `createNew` trong `boardService.js` và truyền `req.body` vào.\n4.  `boardService.js` thực hiện các xử lý logic:\n    *   Nhận dữ liệu từ controller.\n    *   Xử lý dữ liệu (ví dụ: tạo slug từ tên board).\n    *   Gọi hàm `createNew` trong `boardModel.js` để lưu dữ liệu vào CSDL.\n    *   Trả về kết quả cho `boardController.js`.\n5.  `boardController.js` nhận kết quả từ service và gửi response về cho client.\n\n### 3. Code mẫu chi tiết\n\n#### `boardController.js`\n\n```javascript\nimport { StatusCodes } from 'http-status-codes'\nimport { boardService } from '~/services/boardService'\n\nconst createNew = async (req, res, next) => {\n  try {\n    // Gọi đến service để xử lý logic\n    const createdBoard = await boardService.createNew(req.body)\n\n    // Trả về kết quả cho client\n    res.status(StatusCodes.CREATED).json(createdBoard)\n  } catch (error) { next(error) }\n}\n\nexport const boardController = {\n  createNew\n}\n```\n\n**Giải thích:**\n\n*   Controller đã trở nên rất gọn nhẹ. Nó chỉ nhận request, gọi service và trả về response.\n*   Toàn bộ logic xử lý đã được \"ủy thác\" cho `boardService`.\n*   Sử dụng `try...catch` để bắt lỗi và chuyển cho middleware xử lý lỗi tập trung.\n\n#### `boardService.js`\n\n```javascript\nimport { slugify } from '~/utils/formatters'\nimport { boardModel } from '~/models/boardModel'\n\nconst createNew = async (reqBody) => {\n  try {\n    // Xử lý logic dữ liệu\n    const newBoard = {\n      ...reqBody,\n      slug: slugify(reqBody.title)\n    }\n\n    // Gọi đến tầng Model để lưu vào CSDL\n    const createdBoard = await boardModel.createNew(newBoard)\n\n    // Lấy bản ghi board sau khi tạo\n    const getNewBoard = await boardModel.findOneById(createdBoard.insertedId)\n\n    // Trả kết quả về cho Controller\n    return getNewBoard\n  } catch (error) { throw error }\n}\n\nexport const boardService = {\n  createNew\n}\n```\n\n**Giải thích:**\n\n*   Hàm `createNew` của service nhận `reqBody` từ controller.\n*   **Xử lý logic:** Tạo một `slug` từ `title` của board bằng hàm `slugify`. Đây là một ví dụ điển hình của business logic. Logic này không nên nằm ở Controller hay Model.\n*   Tạo một đối tượng `newBoard` hoàn chỉnh.\n*   Gọi đến `boardModel.createNew` để thực hiện thao tác ghi vào CSDL.\n*   Sau khi tạo thành công, gọi `boardModel.findOneById` để lấy lại toàn bộ thông tin của board vừa tạo (bao gồm cả các trường do MongoDB tự sinh như `_id`).\n*   `return getNewBoard`: Trả về đối tượng board đầy đủ cho controller.\n*   `throw error`: Ném lỗi ra ngoài để controller có thể bắt được và xử lý.\n\n## III. Các bước thực hành\n\n1.  **Tạo file `services/boardService.js`:** Tạo mới file service để chứa logic cho board.\n2.  **Di chuyển logic từ Controller:** Cut toàn bộ phần code xử lý logic trong hàm `createNew` của `boardController.js` và paste vào hàm `createNew` trong `boardService.js`.\n3.  **Refactor Controller:** Chỉnh sửa lại `boardController.js` để nó chỉ gọi đến `boardService.js`.\n4.  **Refactor Service:** Chỉnh sửa `boardService.js` để nó nhận dữ liệu, xử lý, gọi đến Model và trả về kết quả.\n5.  **Import và Export:** Đảm bảo các module được import và export chính xác giữa các file Controller, Service và Model.\n6.  **Kiểm thử:** Sử dụng Postman để gửi request tạo board mới và kiểm tra xem luồng hoạt động có đúng như mong đợi hay không.\n\n## IV. Lưu ý quan trọng\n\n*   **Luồng dữ liệu một chiều:** Dữ liệu nên đi theo một luồng rõ ràng: `Route -> Controller -> Service -> Model` và ngược lại. Service không nên gọi trực tiếp Route, và Controller không nên truy cập trực tiếp Model.\n*   **Xử lý lỗi:** Service nên `throw` lỗi khi có vấn đề xảy ra. Controller sẽ bắt lỗi này và chuyển cho một middleware xử lý lỗi tập trung để trả về response lỗi cho client một cách nhất quán.\n*   **Không chứa `req`, `res` trong Service:** Service chỉ nên nhận và trả về dữ liệu thuần túy (plain data), không nên chứa các đối tượng `req` hay `res` của Express. Điều này giúp Service độc lập với framework và dễ dàng tái sử dụng hoặc kiểm thử hơn.\n*   **Tên hàm:** Tên hàm trong Service nên thể hiện rõ nghiệp vụ mà nó thực hiện (ví dụ: `createNewBoard`, `getBoardDetails`, `updateBoard`).\n\n## V. Tài liệu tham khảo\n\n*   **Video bài học:** [56. Service layer code: Data logic processing according to project specifics | NodeJS + MongoDB | TrungQuanDev](https://www.youtube.com/watch?v=HRYBYQ8vsw4&list=PLP6tw4Zpj-RJP2-YrhtkWqObMQ-AA4TDy&index=63)\n*   **GitHub Repository (Tham khảo):** [trungquandev/mern-stack-trello-api](https://github.com/trungquandev/mern-stack-trello-api)\n*   **Blog TrungQuanDev:** [https://trungquandev.com/](https://trungquandev.com/)\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Vai trò chính của Service Layer trong kiến trúc 3 lớp là gì?",
+        "options": [
+          "Tiếp nhận request và trả về response cho client.",
+          "Chứa toàn bộ logic nghiệp vụ (business logic) của ứng dụng.",
+          "Chịu trách nhiệm truy cập và thao tác trực tiếp với cơ sở dữ liệu.",
+          "Định nghĩa các tuyến đường (routes) của ứng dụng web."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Service Layer (Business Logic Layer) là nơi chứa toàn bộ logic nghiệp vụ, tách biệt khỏi Controller (Presentation Layer) và Model (Data Access Layer)."
+      },
+      {
+        "question": "Theo Nguyên tắc Đơn nhiệm (Single Responsibility Principle), nhiệm vụ của Controller là gì?",
+        "options": [
+          "Thực hiện các phép tính toán phức tạp và xử lý nghiệp vụ.",
+          "Chỉ làm nhiệm vụ điều hướng (routing) và xác thực dữ liệu đầu vào cơ bản.",
+          "Tương tác trực tiếp với collection trong MongoDB.",
+          "Tạo slug cho tiêu đề bài viết."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Controller chỉ nên chịu trách nhiệm điều hướng request và xác thực đầu vào, còn toàn bộ logic xử lý phức tạp nên được đặt ở Service Layer."
+      },
+      {
+        "question": "Lợi ích nào KHÔNG phải là của việc tách riêng Service Layer?",
+        "options": [
+          "Tăng khả năng tái sử dụng (Reusability) logic.",
+          "Giúp việc viết Unit Test trở nên dễ dàng hơn (Testability).",
+          "Làm cho ứng dụng chạy nhanh hơn một cách đáng kể.",
+          "Giúp code dễ bảo trì hơn (Maintainability)."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc tách Service Layer chủ yếu cải thiện cấu trúc, khả năng bảo trì, tái sử dụng và kiểm thử code, chứ không trực tiếp làm tăng tốc độ thực thi của ứng dụng một cách đáng kể."
+      },
+      {
+        "question": "Luồng dữ liệu (flow of control) một chiều được khuyến nghị trong bài học là gì?",
+        "options": [
+          "Route -> Model -> Service -> Controller",
+          "Controller -> Model -> Service -> Route",
+          "Route -> Controller -> Service -> Model",
+          "Service -> Controller -> Model -> Route"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Luồng dữ liệu nên đi theo một chiều rõ ràng: Route nhận request, gọi Controller, Controller gọi Service để xử lý logic, và Service gọi Model để tương tác với CSDL."
+      },
+      {
+        "question": "Trong `boardController.js`, tại sao cần dùng `try...catch` và gọi `next(error)`?",
+        "options": [
+          "Để tự động tạo board mới khi có lỗi xảy ra.",
+          "Để ghi log lỗi ra console và tiếp tục thực thi.",
+          "Để bắt lỗi và chuyển cho một middleware xử lý lỗi tập trung.",
+          "Để trả về một trang HTML thông báo lỗi cho người dùng."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Controller bắt lỗi từ Service và dùng `next(error)` để chuyển nó đến một middleware xử lý lỗi tập trung, giúp quản lý và trả về lỗi cho client một cách nhất quán."
+      },
+      {
+        "question": "Trong `boardService.js`, hàm `createNew` làm gì sau khi gọi `boardModel.createNew(newBoard)`?",
+        "options": [
+          "Trả về ngay lập tức `createdBoard.insertedId`.",
+          "Gọi `boardModel.findOneById` để lấy lại toàn bộ bản ghi vừa tạo.",
+          "Xóa board vừa tạo để rollback nếu có lỗi.",
+          "Cập nhật lại slug của board."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Sau khi tạo, service cần lấy lại bản ghi đầy đủ từ CSDL (bao gồm các trường do DB tự sinh như _id) để trả về cho controller."
+      },
+      {
+        "question": "Tại sao Service Layer không nên chứa các đối tượng `req` và `res` của Express?",
+        "options": [
+          "Vì `req` và `res` quá lớn, làm tăng bộ nhớ.",
+          "Vì nó vi phạm nguyên tắc đóng gói (Encapsulation).",
+          "Để giúp Service độc lập với framework, dễ tái sử dụng và kiểm thử.",
+          "Vì chỉ có Controller mới có quyền truy cập `req` và `res`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc giữ cho Service độc lập với các đối tượng của framework (như req, res) giúp nó trở nên thuần túy, dễ dàng tái sử dụng trong các ngữ cảnh khác (ví dụ: một CLI tool) và dễ viết unit test hơn."
+      },
+      {
+        "question": "Ví dụ nào sau đây là một ví dụ điển hình của Business Logic được đặt trong Service Layer?",
+        "options": [
+          "Kiểm tra xem `req.body` có tồn tại hay không.",
+          "Lưu một đối tượng người dùng vào cơ sở dữ liệu.",
+          "Tạo một `slug` duy nhất từ `title` của một bài viết.",
+          "Trả về một mã trạng thái HTTP 201 (Created)."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Việc tạo slug là một quy tắc nghiệp vụ đặc thù của dự án, nó không phải là trách nhiệm của Controller hay Model, do đó nó nên được đặt trong Service Layer."
+      },
+      {
+        "question": "Khi có lỗi xảy ra trong Service, cách xử lý được khuyến nghị là gì?",
+        "options": [
+          "Service tự xử lý và trả về một response lỗi cho client.",
+          "Service nên `console.error(error)` và trả về `null`.",
+          "Service nên `throw` lỗi ra ngoài.",
+          "Service nên ghi lỗi vào một file log và kết thúc tiến trình."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Service nên `throw` lỗi để Controller có thể bắt được và quyết định cách xử lý tiếp theo, thường là chuyển cho middleware xử lý lỗi."
+      },
+      {
+        "question": "Trong đoạn code `boardService.js`, `const newBoard = { ...reqBody, slug: slugify(reqBody.title) }` có ý nghĩa gì?",
+        "options": [
+          "Tạo một bản sao của `reqBody` và ghi đè trường `slug`.",
+          "Thêm trường `slug` vào đối tượng `reqBody` ban đầu.",
+          "Tạo một đối tượng mới chỉ có trường `slug`.",
+          "Lọc ra các trường không cần thiết từ `reqBody`."
+        ],
+        "correctAnswer": 0,
+        "explanation": "Cú pháp spread (`...reqBody`) tạo một bản sao nông (shallow copy) của `reqBody`, sau đó thêm hoặc cập nhật trường `slug` vào đối tượng mới này."
+      },
+      {
+        "question": "Mục đích của việc gọi `boardModel.findOneById` trong service sau khi tạo mới là gì?",
+        "options": [
+          "Để kiểm tra xem board đã thực sự được tạo hay chưa.",
+          "Để lấy thông tin đầy đủ của board, bao gồm cả các trường do CSDL tự sinh.",
+          "Để cập nhật lại board với dữ liệu mới.",
+          "Để xóa board nếu có lỗi xảy ra."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Hàm `createNew` của model có thể chỉ trả về `insertedId`. Việc gọi `findOneById` đảm bảo service trả về một đối tượng board hoàn chỉnh cho controller."
+      },
+      {
+        "question": "Tầng nào chịu trách nhiệm định nghĩa schema và tương tác với collection trong CSDL?",
+        "options": [
+          "Presentation Layer (Controller/Router)",
+          "Business Logic Layer (Service)",
+          "Data Access Layer (Model)",
+          "Middleware Layer"
+        ],
+        "correctAnswer": 2,
+        "explanation": "Data Access Layer, thường được triển khai bằng các Model, có trách nhiệm duy nhất là định nghĩa cấu trúc dữ liệu và thực hiện các thao tác CRUD với cơ sở dữ liệu."
+      },
+      {
+        "question": "Nếu một nghiệp vụ cần được sử dụng ở cả `boardController` và `cardController`, bạn nên đặt logic đó ở đâu?",
+        "options": [
+          "Viết lại logic ở cả hai controller.",
+          "Tạo một file `utils.js` và đặt logic vào đó.",
+          "Tạo một Service (ví dụ: `commonService.js`) và đặt logic vào đó để tái sử dụng.",
+          "Đặt logic vào trong `boardModel`."
+        ],
+        "correctAnswer": 2,
+        "explanation": "Service Layer được thiết kế để chứa các logic nghiệp vụ có thể tái sử dụng. Tạo một service chung hoặc các service chuyên biệt là cách tốt nhất để chia sẻ logic giữa các controller."
+      },
+      {
+        "question": "Trong `boardController.js`, `const createdBoard = await boardService.createNew(req.body)` cho thấy điều gì?",
+        "options": [
+          "Controller đang thực hiện logic nghiệp vụ.",
+          "Controller đang ủy thác việc xử lý logic cho Service.",
+          "Controller đang truy cập trực tiếp vào Model.",
+          "Controller đang trả về response cho client."
+        ],
+        "correctAnswer": 1,
+        "explanation": "Dòng code này thể hiện rõ vai trò của Controller: nhận request, lấy dữ liệu cần thiết (`req.body`) và gọi đến lớp Service tương ứng để thực hiện công việc, thay vì tự mình xử lý."
+      },
+      {
+        "question": "Việc di chuyển logic từ Controller sang Service được gọi là gì?",
+        "options": [
+          "Optimization",
+          "Refactoring",
+          "Debugging",
+          "Scaffolding"
+        ],
+        "correctAnswer": 1,
+        "explanation": "Refactoring là quá trình tái cấu trúc lại code hiện có mà không làm thay đổi hành vi bên ngoài của nó. Di chuyển logic giữa các lớp là một kỹ thuật refactoring phổ biến để cải thiện thiết kế."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Tạo Product Service cơ bản",
+        "description": "Tạo một file `productService.js` và một hàm `createNewProduct`. Hàm này nhận dữ liệu sản phẩm, log ra console và trả về chính dữ liệu đó.",
+        "starterCode": "const createNewProduct = async (productData) => {\n  // TODO: Nhận dữ liệu, log ra console và trả về dữ liệu đó.\n  console.log('Data received:', productData);\n  return productData;\n};\n\nexport const productService = {\n  createNewProduct\n};",
+        "solution": "const createNewProduct = async (productData) => {\n  console.log('Creating new product with data:', productData);\n  // Trong thực tế, ở đây sẽ có logic gọi đến Model\n  return productData;\n};\n\nexport const productService = {\n  createNewProduct\n};",
+        "testCases": "Import `productService` và gọi `createNewProduct` với một object sản phẩm mẫu. Kiểm tra xem hàm có trả về đúng object đó không."
+      },
+      {
+        "title": "Refactor Product Controller",
+        "description": "Cho một `productController` đang xử lý logic bên trong. Hãy refactor lại hàm `createNew` để nó gọi đến `productService.createNewProduct` đã tạo ở bài 1.",
+        "starterCode": "import { StatusCodes } from 'http-status-codes';\n// Giả sử productService đã được import\n// import { productService } from '~/services/productService';\n\nconst createNew = async (req, res, next) => {\n  try {\n    // Logic đang nằm ở controller\n    console.log('Creating product:', req.body);\n    const newProduct = { ...req.body, createdAt: new Date() };\n    res.status(StatusCodes.CREATED).json(newProduct);\n  } catch (error) {\n    next(error);\n  }\n};",
+        "solution": "import { StatusCodes } from 'http-status-codes';\nimport { productService } from '~/services/productService';\n\nconst createNew = async (req, res, next) => {\n  try {\n    // Gọi đến service để xử lý logic\n    const createdProduct = await productService.createNewProduct(req.body);\n\n    // Trả về kết quả cho client\n    res.status(StatusCodes.CREATED).json(createdProduct);\n  } catch (error) {\n    next(error);\n  }\n};",
+        "testCases": "Tạo một mock `req` và `res`. Gọi hàm `createNew` và kiểm tra xem `productService.createNewProduct` có được gọi với `req.body` hay không."
+      },
+      {
+        "title": "Thêm Business Logic vào Service",
+        "description": "Mở rộng `productService` từ bài 1. Thêm logic để tạo một trường `sku` (Stock Keeping Unit) cho sản phẩm. `sku` được tạo bằng cách lấy 3 ký tự đầu của tên sản phẩm, nối với dấu gạch ngang và 5 chữ số ngẫu nhiên.",
+        "starterCode": "const createNewProduct = async (productData) => {\n  // TODO: Thêm logic tạo SKU\n  const newProduct = {\n    ...productData\n    // sku: ...\n  };\n  return newProduct;\n};\n\nexport const productService = {\n  createNewProduct\n};",
+        "solution": "const createNewProduct = async (productData) => {\n  const sku = `${productData.name.substring(0, 3).toUpperCase()}-${Math.floor(10000 + Math.random() * 90000)}`;\n\n  const newProduct = {\n    ...productData,\n    sku: sku\n  };\n\n  // Giả sử ở đây có lệnh gọi model để lưu vào CSDL\n  // const createdProduct = await productModel.createNew(newProduct);\n\n  return newProduct;\n};\n\nexport const productService = {\n  createNewProduct\n};",
+        "testCases": "Gọi `createNewProduct` với `{ name: 'Laptop Dell' }`. Kiểm tra xem object trả về có chứa trường `sku` với định dạng `LAP-XXXXX` hay không."
+      },
+      {
+        "title": "Tích hợp Model vào Service",
+        "description": "Hoàn thiện `productService` bằng cách gọi đến một `productModel` giả lập. Service sẽ gọi `productModel.createNew` để lưu sản phẩm và sau đó gọi `productModel.findOneById` để trả về dữ liệu đầy đủ.",
+        "starterCode": "// Giả lập Model\nconst productModel = {\n  createNew: async (data) => ({ insertedId: 'product_id_123' }),\n  findOneById: async (id) => ({ _id: id, name: 'Sample Product', sku: 'SAM-12345' })\n};\n\nconst createNewProduct = async (productData) => {\n  const sku = `${productData.name.substring(0, 3).toUpperCase()}-${Math.floor(10000 + Math.random() * 90000)}`;\n  const newProductData = { ...productData, sku };\n\n  // TODO: Gọi model để lưu và lấy lại dữ liệu\n\n  return null; // Thay thế dòng này\n};",
+        "solution": "// Giả lập Model\nconst productModel = {\n  createNew: async (data) => ({ insertedId: 'product_id_123' }),\n  findOneById: async (id) => ({ _id: id, name: 'Sample Product', sku: 'SAM-12345' })\n};\n\nconst createNewProduct = async (productData) => {\n  const sku = `${productData.name.substring(0, 3).toUpperCase()}-${Math.floor(10000 + Math.random() * 90000)}`;\n  const newProductData = { ...productData, sku };\n\n  // Gọi đến tầng Model để lưu vào CSDL\n  const createdResult = await productModel.createNew(newProductData);\n\n  // Lấy bản ghi product sau khi tạo\n  const getNewProduct = await productModel.findOneById(createdResult.insertedId);\n\n  // Trả kết quả về cho Controller\n  return getNewProduct;\n};",
+        "testCases": "Gọi hàm `createNewProduct`. Kiểm tra xem `productModel.createNew` và `productModel.findOneById` có được gọi. Kết quả trả về phải là object từ `findOneById`."
+      },
+      {
+        "title": "Xử lý lỗi trong Service",
+        "description": "Sửa đổi `productService` để xử lý trường hợp `productModel.createNew` ném ra lỗi. Service phải bắt lỗi này và ném lại nó ra ngoài để controller có thể xử lý.",
+        "starterCode": "const productModel = {\n  createNew: async (data) => {\n    if (!data.name) throw new Error('Product name is required');\n    return { insertedId: 'product_id_123' };\n  },\n  findOneById: async (id) => ({ _id: id, name: 'Sample Product' })\n};\n\nconst createNewProduct = async (productData) => {\n  // TODO: Thêm khối try...catch để xử lý lỗi từ model\n  const createdResult = await productModel.createNew(productData);\n  const getNewProduct = await productModel.findOneById(createdResult.insertedId);\n  return getNewProduct;\n};",
+        "solution": "const productModel = {\n  createNew: async (data) => {\n    if (!data.name) throw new Error('Product name is required');\n    return { insertedId: 'product_id_123' };\n  },\n  findOneById: async (id) => ({ _id: id, name: 'Sample Product' })\n};\n\nconst createNewProduct = async (productData) => {\n  try {\n    const createdResult = await productModel.createNew(productData);\n    const getNewProduct = await productModel.findOneById(createdResult.insertedId);\n    return getNewProduct;\n  } catch (error) {\n    // Ném lỗi ra ngoài để controller bắt\n    throw error;\n  }\n};",
+        "testCases": "Gọi `createNewProduct` với một object không có trường `name`. Dùng `try...catch` ở nơi gọi hàm để kiểm tra xem nó có ném ra đúng lỗi (`Product name is required`) hay không."
+      }
+    ]
+  }
+}

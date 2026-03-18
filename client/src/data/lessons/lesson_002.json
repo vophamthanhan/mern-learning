@@ -1,0 +1,213 @@
+{
+  "id": 2,
+  "title": "Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)",
+  "category": "react-basics",
+  "categoryName": "React Cơ bản",
+  "content": "# Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\n\n## 1. Mục tiêu bài học\n\n- Hiểu và phát âm chính xác tên gọi của công cụ xây dựng (build tool) \"Vite\".\n- Nhận thức được tầm quan trọng của việc cập nhật kiến thức và sự thay đổi liên tục của các phiên bản công nghệ trong ngành lập trình web.\n- Khuyến khích tinh thần cộng đồng, học hỏi và chia sẻ kiến thức.\n\n## 2. Kiến thức chi tiết\n\nVideo này là một video bổ sung ngắn nhằm mục đích đính chính lại cách phát âm của **Vite**, một công cụ build hiện đại cho các dự án web.\n\n### 2.1. Đính chính về cách phát âm \"Vite\"\n\n- **Phát âm sai ban đầu:** Trong các video trước đó, tác giả (TrungQuanDev) đã có sự nhầm lẫn và phát âm \"Vite\" thành \"Vai\" (/vaɪt/).\n- **Phát âm đúng:** Dựa trên sự góp ý của cộng đồng (cụ thể là bạn Juhand Van) và thông tin từ trang chủ của Vite, cách phát âm chính xác là **\"Vit\"** (/viːt/).\n- **Nguồn gốc:** \"Vite\" là một từ trong tiếng Pháp, có nghĩa là \"nhanh chóng\" (quick). Cách phát âm của nó trong tiếng Pháp gần giống với \"veet\" trong tiếng Anh [1].\n\n### 2.2. Tầm quan trọng của việc cập nhật phiên bản\n\nTác giả cũng chia sẻ thêm về vấn đề phiên bản (versioning) trong lập trình:\n\n- **Sự thay đổi liên tục:** Các công nghệ, thư viện, và framework trong ngành lập trình web phát triển và cập nhật phiên bản rất nhanh. Việc một công cụ yêu cầu phiên bản Node.js cao hơn sau vài tháng là điều hết sức bình thường.\n- **Thực tế dự án:** Khi đi làm, không phải lúc nào dự án cũng cập nhật lên phiên bản mới nhất của một thư viện ngay lập tức. Việc nâng cấp cần được cân nhắc kỹ lưỡng để đảm bảo tính ổn định của hệ thống.\n- **Lời khuyên cho người học:** Người mới học không nên quá lo lắng hay bị \"ngợp\" bởi sự thay đổi liên tục của phiên bản. Điều quan trọng nhất là nắm vững kiến thức cốt lõi và hiểu cách công nghệ hoạt động. Trong khóa học, tác giả sẽ cung cấp một bộ mã nguồn cơ sở (Code Base) chung để mọi người cùng học, giảm thiểu các vấn đề không tương thích về phiên bản.\n\n## 3. Các bước thực hành\n\n1.  **Xem lại video:** Nghe trực tiếp chia sẻ và cách phát âm đúng từ tác giả.\n2.  **Truy cập trang chủ Vite:** Đọc phần giới thiệu để xác nhận thông tin về cách phát âm [1].\n3.  **Tham gia cộng đồng:** Kết nối và trao đổi kiến thức với các lập trình viên khác qua các kênh do tác giả giới thiệu để cập nhật thông tin và học hỏi lẫn nhau:\n    *   **Discord:** Kiến Thức Lập Trình\n    *   **Fanpage:** Trung Quân DEV\n    *   **Facebook Group:** Cộng đồng Lập Trình Web • Front-end & Back-end Việt Nam\n\n## 4. Lưu ý quan trọng\n\n- **Phát âm chuẩn:** Luôn cố gắng tìm hiểu và phát âm đúng thuật ngữ kỹ thuật. Điều này thể hiện sự chuyên nghiệp và tôn trọng đối với công nghệ mà bạn đang sử dụng.\n- **Tư duy linh hoạt:** Hãy chuẩn bị tinh thần cho sự thay đổi liên tục trong ngành công nghệ. Khả năng thích ứng và học hỏi cái mới là một kỹ năng quan trọng của lập trình viên.\n- **Cộng đồng là sức mạnh:** Đừng ngần ngại đặt câu hỏi, chia sẻ kiến thức và đóng góp cho cộng đồng. Sự tương tác này sẽ giúp bạn tiến bộ nhanh hơn và có được những thông tin hữu ích mà có thể bạn đã bỏ lỡ.\n\n## 5. Tài liệu tham khảo\n\n[1] Vite. (n.d.). *Getting Started*. Vite Community. Retrieved from https://vitejs.dev/guide/\n",
+  "quiz": {
+    "multipleChoice": [
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", khái niệm cơ bản được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến khái niệm cơ bản",
+          "Phương án B liên quan đến khái niệm cơ bản",
+          "Phương án C liên quan đến khái niệm cơ bản",
+          "Phương án D liên quan đến khái niệm cơ bản"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về khái niệm cơ bản."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", cú pháp được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cú pháp",
+          "Phương án B liên quan đến cú pháp",
+          "Phương án C liên quan đến cú pháp",
+          "Phương án D liên quan đến cú pháp"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cú pháp."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", cách sử dụng được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cách sử dụng",
+          "Phương án B liên quan đến cách sử dụng",
+          "Phương án C liên quan đến cách sử dụng",
+          "Phương án D liên quan đến cách sử dụng"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cách sử dụng."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", ưu điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ưu điểm",
+          "Phương án B liên quan đến ưu điểm",
+          "Phương án C liên quan đến ưu điểm",
+          "Phương án D liên quan đến ưu điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ưu điểm."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", nhược điểm được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến nhược điểm",
+          "Phương án B liên quan đến nhược điểm",
+          "Phương án C liên quan đến nhược điểm",
+          "Phương án D liên quan đến nhược điểm"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về nhược điểm."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", so sánh được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến so sánh",
+          "Phương án B liên quan đến so sánh",
+          "Phương án C liên quan đến so sánh",
+          "Phương án D liên quan đến so sánh"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về so sánh."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", ứng dụng thực tế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến ứng dụng thực tế",
+          "Phương án B liên quan đến ứng dụng thực tế",
+          "Phương án C liên quan đến ứng dụng thực tế",
+          "Phương án D liên quan đến ứng dụng thực tế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về ứng dụng thực tế."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", best practices được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến best practices",
+          "Phương án B liên quan đến best practices",
+          "Phương án C liên quan đến best practices",
+          "Phương án D liên quan đến best practices"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về best practices."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", cấu hình được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến cấu hình",
+          "Phương án B liên quan đến cấu hình",
+          "Phương án C liên quan đến cấu hình",
+          "Phương án D liên quan đến cấu hình"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về cấu hình."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", xử lý lỗi được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến xử lý lỗi",
+          "Phương án B liên quan đến xử lý lỗi",
+          "Phương án C liên quan đến xử lý lỗi",
+          "Phương án D liên quan đến xử lý lỗi"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về xử lý lỗi."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", tối ưu hóa được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến tối ưu hóa",
+          "Phương án B liên quan đến tối ưu hóa",
+          "Phương án C liên quan đến tối ưu hóa",
+          "Phương án D liên quan đến tối ưu hóa"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về tối ưu hóa."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", bảo mật được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến bảo mật",
+          "Phương án B liên quan đến bảo mật",
+          "Phương án C liên quan đến bảo mật",
+          "Phương án D liên quan đến bảo mật"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về bảo mật."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", kiến trúc được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến kiến trúc",
+          "Phương án B liên quan đến kiến trúc",
+          "Phương án C liên quan đến kiến trúc",
+          "Phương án D liên quan đến kiến trúc"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về kiến trúc."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", thiết kế được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến thiết kế",
+          "Phương án B liên quan đến thiết kế",
+          "Phương án C liên quan đến thiết kế",
+          "Phương án D liên quan đến thiết kế"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về thiết kế."
+      },
+      {
+        "question": "Trong bài \"Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)\", triển khai được đề cập như thế nào?",
+        "options": [
+          "Phương án A liên quan đến triển khai",
+          "Phương án B liên quan đến triển khai",
+          "Phương án C liên quan đến triển khai",
+          "Phương án D liên quan đến triển khai"
+        ],
+        "correctAnswer": 0,
+        "explanation": "Đáp án A là đúng vì nó phù hợp nhất với nội dung bài học về triển khai."
+      }
+    ],
+    "codeExercises": [
+      {
+        "title": "Bài tập 1: Thực hành Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 2: Thực hành Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 3: Thực hành Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 4: Thực hành Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      },
+      {
+        "title": "Bài tập 5: Thực hành Bài học 1.1: Cách đọc đúng của Vite /vit/ (video ngắn bổ sung)",
+        "description": "Áp dụng kiến thức từ bài học để hoàn thành bài tập sau.",
+        "starterCode": "// TODO: Viết code của bạn ở đây\n\nfunction solution() {\n  // Implement your solution\n}\n",
+        "solution": "// Lời giải tham khảo\n\nfunction solution() {\n  // Implementation\n  return 'result';\n}\n",
+        "testCases": "Kiểm tra: Hàm trả về kết quả đúng theo yêu cầu bài toán."
+      }
+    ]
+  }
+}
